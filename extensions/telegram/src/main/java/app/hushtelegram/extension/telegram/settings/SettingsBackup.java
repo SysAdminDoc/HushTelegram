@@ -213,6 +213,7 @@ public final class SettingsBackup {
             Settings.MESSAGE_MENU_SAVE_PROTECTED,
             Settings.MESSAGE_MENU_FORWARD_COPY,
             Settings.STORY_SAVE_BUTTON,
+            Settings.ALLOW_SCREENSHOTS,
             Settings.MESSAGE_MENU_FAST_FORWARD,
             Settings.MESSAGE_MENU_FORWARD_SAVED,
             Settings.MESSAGE_MENU_SAVE_COVER,

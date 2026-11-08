@@ -1159,6 +1159,11 @@ call record button	die Aufnahmetaste bei Anrufen
 Add Save to Gallery to stories	„In der Galerie speichern“ zu Stories hinzufügen
 Puts Save to Gallery in a story's three-dot menu without Premium, stories that don't allow saving included. It saves only the ones you pick.	Zeigt „In der Galerie speichern“ ohne Premium im Drei-Punkte-Menü einer Story, auch bei Stories, die kein Speichern erlauben. Gespeichert wird nur, was du auswählst.
 Save to Gallery in stories	„In der Galerie speichern“ in Stories
+# context: Switch on the Conversations page (Discussion #34). Turned on, screenshots and screen recording work in chats, channels, their photos, profiles and stories whose owner turned on Telegram's content protection. Secret chats, view-once media and the passcode lock stay protected.
+Allow screenshots in chats that don't allow saving	Screenshots in Chats zulassen, die das Speichern nicht erlauben
+Screenshots and screen recording work in those chats, their photos, profiles and stories. Telegram doesn't tell anyone. Secret chats, view-once media and the passcode screen stay blocked.	Screenshots und Bildschirmaufnahmen funktionieren in diesen Chats, ihren Fotos, Profilen und Stories. Telegram sagt niemandem Bescheid. Geheime Chats, einmalige Medien und die Code-Sperre bleiben geschützt.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the switch that allows screenshots in chats that don't allow saving.
+screenshots in chats that don't allow saving	Screenshots in Chats, die das Speichern nicht erlauben
 # context: Switch for Fast forward in the message menu (#53), its item, choices and picker.
 Add Fast forward to the message menu	Schnell weiterleiten zum Nachrichtenmenü hinzufügen
 Adds Fast forward to a message you can forward. Pick without the sender's name, without the caption, or both, then pick a chat.	Fügt Schnell weiterleiten zu einer Nachricht hinzu, die du weiterleiten kannst. Wähle ohne Absendernamen, ohne Bildunterschrift oder beides, dann einen Chat.

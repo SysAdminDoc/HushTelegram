@@ -123,6 +123,7 @@ val messageMenuPatch = bytecodePatch(
         val site = resolveMessageMenu()
         val selection = resolveSelectionCopy()
         val story = resolveStorySave()
+        val screenshots = resolveScreenshots()
         // Assembled on copies first, so a refusal leaves the app untouched.
         site.insertFill(MutableMethod(ImmutableMethod.of(site.fill)))
         site.insertChosen(MutableMethod(ImmutableMethod.of(site.choose)))
@@ -140,6 +141,12 @@ val messageMenuPatch = bytecodePatch(
             enableCapability("storySave")
         } else {
             patchLog.warning("Add Repeat to the message menu: ${story.missing}. The patch goes on without Save to Gallery in stories.")
+        }
+        if (screenshots.missing == null) {
+            screenshots.apply()
+            enableCapability("allowScreenshots")
+        } else {
+            patchLog.warning("Add Repeat to the message menu: ${screenshots.missing}. The patch goes on without screenshots in chats that don't allow saving.")
         }
         val between = resolveSelectBetween(site.chat)
         if (between.missing == null) {
@@ -191,6 +198,9 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
     requireStatusMethod("storySave")
     controlHook(STORY_SAVE, "shareable", listOf("I"), "Z")
     controlHook(STORY_SAVE, "premium", listOf("I"), "Z")
+    requireStatusMethod("allowScreenshots")
+    controlHook(SCREENSHOTS, "protectedContent", listOf("I"), "Z")
+    controlHook(SCREENSHOTS, "storyAllowed", listOf("I"), "Z")
     controlHook(MESSAGE_MENU, "selectionCopy", listOf(), "Z")
     controlHook(MESSAGE_MENU, "fill", listOf(OBJECT, OBJECT, LIST, LIST, LIST), "V")
     controlHook(MESSAGE_MENU, "chosen", listOf(OBJECT, "I"), "V")

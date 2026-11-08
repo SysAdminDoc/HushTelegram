@@ -1155,6 +1155,11 @@ call record button	бутона за записване на обаждания
 Add Save to Gallery to stories	Добавяне на „Запиши в галерия“ към историите
 Puts Save to Gallery in a story's three-dot menu without Premium, stories that don't allow saving included. It saves only the ones you pick.	Поставя „Запиши в галерия“ в менюто с трите точки на историята без Premium, включително при истории, които не позволяват запазване. Запазва само избраните от теб.
 Save to Gallery in stories	„Запиши в галерия“ в историите
+# context: Switch on the Conversations page (Discussion #34). Turned on, screenshots and screen recording work in chats, channels, their photos, profiles and stories whose owner turned on Telegram's content protection. Secret chats, view-once media and the passcode lock stay protected.
+Allow screenshots in chats that don't allow saving	Разрешаване на екранни снимки в чатове, които не позволяват запазване
+Screenshots and screen recording work in those chats, their photos, profiles and stories. Telegram doesn't tell anyone. Secret chats, view-once media and the passcode screen stay blocked.	Екранните снимки и записът на екрана работят в тези чатове, в техните снимки, профили и истории. Telegram не уведомява никого. Тайните чатове, медията за еднократно гледане и екранът с кода за достъп остават блокирани.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the switch that allows screenshots in chats that don't allow saving.
+screenshots in chats that don't allow saving	екранните снимки в чатове, които не позволяват запазване
 # context: Switch for Fast forward in the message menu (#53), its item, choices and picker.
 Add Fast forward to the message menu	Добавяне на Бързо препращане в менюто на съобщението
 Adds Fast forward to a message you can forward. Pick without the sender's name, without the caption, or both, then pick a chat.	Добавя Бързо препращане към съобщение, което можеш да препратиш. Избери без името на подателя, без надписа или без двете, после избери чат.

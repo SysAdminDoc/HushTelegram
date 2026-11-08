@@ -1159,6 +1159,11 @@ call record button	el botón de grabar en llamadas
 Add Save to Gallery to stories	Añadir «Guardar en la galería» a las historias
 Puts Save to Gallery in a story's three-dot menu without Premium, stories that don't allow saving included. It saves only the ones you pick.	Pone «Guardar en la galería» en el menú de tres puntos de una historia sin Premium, incluso en historias que no permiten guardar. Solo guarda las que elijas.
 Save to Gallery in stories	«Guardar en la galería» en historias
+# context: Switch on the Conversations page (Discussion #34). Turned on, screenshots and screen recording work in chats, channels, their photos, profiles and stories whose owner turned on Telegram's content protection. Secret chats, view-once media and the passcode lock stay protected.
+Allow screenshots in chats that don't allow saving	Permitir capturas de pantalla en chats que no permiten guardar
+Screenshots and screen recording work in those chats, their photos, profiles and stories. Telegram doesn't tell anyone. Secret chats, view-once media and the passcode screen stay blocked.	Las capturas y la grabación de pantalla funcionan en esos chats, sus fotos, perfiles e historias. Telegram no avisa a nadie. Los chats secretos, los medios de una sola vista y la pantalla del código de acceso siguen bloqueados.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the switch that allows screenshots in chats that don't allow saving.
+screenshots in chats that don't allow saving	las capturas de pantalla en chats que no permiten guardar
 # context: Switch for Fast forward in the message menu (#53), its item, choices and picker.
 Add Fast forward to the message menu	Añadir Reenvío rápido al menú del mensaje
 Adds Fast forward to a message you can forward. Pick without the sender's name, without the caption, or both, then pick a chat.	Añade Reenvío rápido a un mensaje que puedes reenviar. Elige sin el nombre del remitente, sin el pie de foto o ambos, y luego un chat.

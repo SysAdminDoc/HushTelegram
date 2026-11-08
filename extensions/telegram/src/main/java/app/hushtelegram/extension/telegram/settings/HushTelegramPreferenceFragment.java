@@ -782,6 +782,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Puts Save to Gallery in a story's three-dot menu without Premium, stories "
                                 + "that don't allow saving included. It saves only the ones you pick."))));
             }
+            if (PatchFamily.Capability.SCREENSHOTS.installed()) {
+                on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.ALLOW_SCREENSHOTS, L10n.t("Allow screenshots in chats that don't allow saving"),
+                        PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Screenshots and screen recording work in those chats, their photos, profiles "
+                                + "and stories. Telegram doesn't tell anyone. Secret chats, view-once media and the passcode screen stay blocked."))));
+            }
             on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_SAVE_PROTECTED, L10n.t("Add Save to Downloads to the message menu"),
                     PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Save to Downloads to a downloaded photo, video, file or song "
                             + "in a chat that doesn't allow saving. Nothing is copied until you tap it."))));

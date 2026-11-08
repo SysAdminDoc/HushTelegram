@@ -701,6 +701,9 @@ public class Settings extends BaseSettings {
     /** A story's three-dot menu gets Save to Gallery without Premium, on stories that don't allow saving too (#52). */
     public static final BooleanSetting STORY_SAVE_BUTTON =
             new BooleanSetting("hushtelegram_story_save_button", FALSE);
+    /** Screenshots and screen recording work in chats, profiles, photos and stories that don't allow saving (Discussion #34). */
+    public static final BooleanSetting ALLOW_SCREENSHOTS =
+            new BooleanSetting("hushtelegram_allow_screenshots", FALSE);
     /** A message in a chat that doesn't allow forwarding gets Forward as copy in its long-press menu (#46, #47). */
     public static final BooleanSetting MESSAGE_MENU_FORWARD_COPY =
             new BooleanSetting("hushtelegram_message_menu_forward_copy", FALSE);
