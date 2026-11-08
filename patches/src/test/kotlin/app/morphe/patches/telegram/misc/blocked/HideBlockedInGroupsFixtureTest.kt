@@ -13,6 +13,8 @@ import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.notifications.NOTIFICATIONS
+import app.morphe.patches.telegram.misc.notifications.runsNotificationsLambda
+import app.morphe.patches.telegram.misc.notifications.runsUnder
 import app.morphe.util.branchTarget
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
@@ -26,6 +28,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import app.morphe.util.names.origRef
 import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origDescriptor
 import app.morphe.util.names.origName
 import app.morphe.util.names.tgMutableClassDefBy
 
@@ -37,7 +40,7 @@ class HideBlockedInGroupsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val hosts = FixtureDex.classesWhere(build, { true }) { m ->
-                m.origDefiningClass in hostTypes || m.controlBody().any { it.opcode == Opcode.INSTANCE_OF && it.controlRef() == MIGRATE_TO }
+                m.origDefiningClass in hostTypes || m.runsNotificationsLambda() || m.controlBody().any { it.opcode == Opcode.INSTANCE_OF && it.controlRef() == MIGRATE_TO }
             }.map(ImmutableClassDef::of)
             val context = PatchContexts.of(ExtensionDex.classes() + hosts)
             val sites = context.resolveHideBlockedInGroups()
@@ -46,13 +49,13 @@ class HideBlockedInGroupsFixtureTest {
             assertEquals("$name: one chat screen", 1, sites.map { it.first.definingClass }.distinct().size)
             val old = sites.map { ImmutableMethod.of(it.first) }
             val (notify, answer) = context.resolveBlockedNotificationSkip()
-            assertTrue("$name: the new-message loop", notify.origName.contains("processNewMessages"))
+            assertTrue("$name: the new-message loop", context.runsUnder(context.tgMutableClassDefBy(NOTIFICATIONS))(notify).any { it.contains("processNewMessages") })
             val oldNotify = ImmutableMethod.of(notify).controlBody()
             assertEquals(Opcode.MOVE_RESULT, oldNotify[answer].opcode)
             assertEquals(IMPORTED_FORWARD, oldNotify[answer - 1].controlRef())
             val (reply, yes) = context.resolveBlockedReplyQuote()
             assertEquals("$name: the message's own reply check", listOf(MESSAGE_OBJECT, VALID_REPLY),
-                listOf(reply.definingClass, "${reply.name}(${reply.parameterTypes.joinToString("")})${reply.returnType}"))
+                listOf(reply.origDefiningClass, "${reply.origName}${reply.origDescriptor}"))
             val oldReply = ImmutableMethod.of(reply).controlBody()
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { hideBlockedInGroupsPatch.execute(context) })
 

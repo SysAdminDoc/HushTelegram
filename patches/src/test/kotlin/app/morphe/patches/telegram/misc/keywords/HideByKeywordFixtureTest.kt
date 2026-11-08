@@ -20,6 +20,7 @@ import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.notifications.NOTIFICATIONS
+import app.morphe.patches.telegram.misc.notifications.runsNotificationsLambda
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
@@ -107,6 +108,6 @@ class HideByKeywordFixtureTest {
 
     /** MessageObject, the controller, the blocked list, a message's own fields and the chat screen. */
     private fun hosts(build: File) = FixtureDex.classesWhere(build, { true }) { m ->
-        m.origDefiningClass in hostTypes || m.controlBody().any { it.opcode == Opcode.INSTANCE_OF && it.controlRef() == MIGRATE_TO }
+        m.origDefiningClass in hostTypes || m.runsNotificationsLambda() || m.controlBody().any { it.opcode == Opcode.INSTANCE_OF && it.controlRef() == MIGRATE_TO }
     }.map(ImmutableClassDef::of)
 }

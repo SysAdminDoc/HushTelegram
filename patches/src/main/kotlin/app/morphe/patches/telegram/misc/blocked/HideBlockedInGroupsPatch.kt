@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.blocked
 
+import app.morphe.util.names.origDescriptor
 import app.morphe.util.names.origString
 import app.morphe.util.names.addInstructions
 import app.morphe.util.names.addInstructionsWithLabels
@@ -27,6 +28,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
 import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.notifications.NOTIFICATIONS
+import app.morphe.patches.telegram.misc.notifications.runsUnder
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.branchTarget
@@ -228,7 +230,8 @@ internal fun BytecodePatchContext.resolveBlockedNotificationSkip(): Pair<Mutable
     controlHook(BLOCKED_SENDERS, "skipNotification", listOf("Ljava/lang/Object;", "Z"), "Z")
     val notifications = tgMutableClassDefByOrNull(NOTIFICATIONS)
     controlShape(notifications != null, "NotificationsController is missing")
-    val sites = notifications!!.methods.filter { it.origName.contains("processNewMessages") }.flatMap { method ->
+    val names = runsUnder(notifications!!)
+    val sites = notifications.methods.filter { method -> names(method).any { it.contains("processNewMessages") } }.flatMap { method ->
         val body = method.controlBody()
         body.indices.filter { at ->
             body[at].opcode == Opcode.INVOKE_VIRTUAL && body[at].controlRef() == IMPORTED_FORWARD &&
@@ -345,6 +348,6 @@ private fun typeTests(body: List<Instruction>): List<Pair<Int, Int>> = body.indi
     if (body.getOrNull(test)?.opcode == Opcode.IF_LTZ && body[test].namedRegisters() == listOf(type)) at to test else null
 }
 
-private fun signature(m: Method) = "${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
+private fun signature(m: Method) = "${m.origName}${m.origDescriptor}"
 private fun callable(m: Method, static: Boolean) = AccessFlags.PUBLIC.isSet(m.accessFlags) && AccessFlags.STATIC.isSet(m.accessFlags) == static
 private fun origSig(m: Method) = "${m.origName}(${m.origParameterTypes.joinToString("")})${m.origReturnType}"
