@@ -20842,3 +20842,11 @@ m Lorg/telegram/messenger/MessagesController; updateEmojiStatus (Lorg/telegram/t
 m Lorg/telegram/messenger/MessageObject; selectReaction (Lsf/o0;ZZ)Z Lorg/telegram/messenger/lj; I5 (Lvf/l0;Z)Z
 # added by hand: pinned order
 m Lorg/telegram/messenger/MessagesController; reorderPinnedDialogs (ILjava/util/ArrayList;J)V Lorg/telegram/messenger/vp; m4 (IJLjava/util/ArrayList;)V
+# added by hand: DispatchQueue
+c Lorg/telegram/messenger/DispatchQueue; Lorg/telegram/messenger/l5; Ljava/lang/Thread; Ljava/lang/Thread;
+m Lorg/telegram/messenger/DispatchQueue; postRunnable (Ljava/lang/Runnable;)Z Lorg/telegram/messenger/l5; c (Ljava/lang/Runnable;)V
+m Lorg/telegram/messenger/DispatchQueue; postRunnable (Ljava/lang/Runnable;J)Z Lorg/telegram/messenger/l5; d (Ljava/lang/Runnable;J)Z
+m Lorg/telegram/messenger/DispatchQueue; cancelRunnable (Ljava/lang/Runnable;)V Lorg/telegram/messenger/l5; a (Ljava/lang/Runnable;)V
+m Lorg/telegram/messenger/DispatchQueue; getHandler ()Landroid/os/Handler; Lorg/telegram/messenger/l5; b ()Landroid/os/Handler;
+f Lorg/telegram/messenger/DispatchQueue; handler Landroid/os/Handler; Lorg/telegram/messenger/l5; a Landroid/os/Handler;
+f Lorg/telegram/messenger/DispatchQueue; syncLatch Ljava/util/concurrent/CountDownLatch; Lorg/telegram/messenger/l5; d Ljava/util/concurrent/CountDownLatch;
