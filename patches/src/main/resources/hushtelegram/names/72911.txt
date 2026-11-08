@@ -20838,3 +20838,5 @@ c Lorg/telegram/messenger/AppGlobalConfig$ConfigBoolean$Internal; Lorg/telegram/
 f Lorg/telegram/messenger/AppGlobalConfig$ConfigBoolean$Internal; value Z Lorg/telegram/messenger/i0; c Z
 # added by hand: own emoji status send
 m Lorg/telegram/messenger/MessagesController; updateEmojiStatus (Lorg/telegram/tgnet/TLRPC$EmojiStatus;Lorg/telegram/tgnet/tl/TL_stars$StarGift;)V Lorg/telegram/messenger/vp; i5 (Lorg/telegram/tgnet/TLRPC$EmojiStatus;Lorg/telegram/tgnet/tl/TL_stars$TL_starGiftUnique;)V
+# added by hand: double-tap preview
+m Lorg/telegram/messenger/MessageObject; selectReaction (Lsf/o0;ZZ)Z Lorg/telegram/messenger/lj; I5 (Lvf/l0;Z)Z

@@ -46,8 +46,10 @@ import java.io.File
 import java.lang.ref.SoftReference
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origType
+import app.morphe.util.names.TelegramNames
 import app.morphe.util.names.tgClassDefByOrNull
 import app.morphe.util.names.tgMutableClassDefBy
 
@@ -57,8 +59,11 @@ class LocalControlsFixtureTest {
             val context = context(build)
             val sites = context.resolveNormalPaste()
             val originals = sites.associate { key(it.method) to ImmutableMethod.of(it.method) }
-            val untouched = hostState(build, context, sites.map { it.method }.toSet())
+            // The patch also hooks the entities method for Mention by ID; MentionByIdFixtureTest checks that body.
+            val mention = context.resolveMentionById().method
+            val untouched = hostState(build, context, sites.map { it.method }.toSet() + mention)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { useNormalPastePatch.execute(context) })
+            assertTrue("${build.name}: Mention by ID hook", mention.controlBody().any { it.controlRef() == ADD_MENTIONS })
             for (site in sites) {
                 val body = site.method.controlBody()
                 assertEquals(listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT), body.take(2).map { it.opcode })
@@ -68,7 +73,7 @@ class LocalControlsFixtureTest {
                 assertStock(build.name, originals.getValue(key(site.method)), site.method, 0, 2)
             }
             assertEquals("${build.name}: clipboard ancestors, image handling and other host methods", untouched,
-                hostState(build, context, sites.map { it.method }.toSet()))
+                hostState(build, context, sites.map { it.method }.toSet() + mention))
             flags(context, PASTE_FLAGS, true)
             flags(context, ID_FLAGS + REACTION_FLAGS, false)
         }
@@ -81,7 +86,11 @@ class LocalControlsFixtureTest {
             assertEquals("no gesture state", 0, context.tgMutableClassDefBy(DOUBLE_TAP_REACTIONS).fields.size)
             val originals = sites.associate { key(it.method) to ImmutableMethod.of(it.method) }
             val untouched = hostState(build, context, sites.map { it.method }.toSet())
-            assertEquals(emptyList<String>(), PatchLogCapture.warnings { disableDoubleTapReactionsPatch.execute(context) }.filterNot { "reaction rows switch" in it || "reaction picker switch" in it || "what TalkBack reads" in it })
+            // The emoji pack line's own class is outside this slice (HideReactionsFixtureTest covers that switch),
+            // so only its "not built by one class" report is expected, and only while no host loads the line's text.
+            val packLineAbsent = hosts(build).none { cls -> cls.methods.any { m -> m.controlBody().any { it.controlString() == EMOJI_PACK_PLURAL } } }
+            assertEquals(emptyList<String>(), PatchLogCapture.warnings { disableDoubleTapReactionsPatch.execute(context) }.filterNot { "reaction rows switch" in it || "reaction picker switch" in it || "what TalkBack reads" in it ||
+                (packLineAbsent && "the emoji pack line is no longer built by one class" in it) })
             for (site in sites) {
                 val body = site.method.controlBody()
                 val extra = if (site.method.origReturnType == "V") 4 else 5
@@ -112,7 +121,9 @@ class LocalControlsFixtureTest {
             assertEquals(listOf(plan.user.toString(), plan.chat.toString(), plan.menu.toString()), inserted.subList(1, 4).map { it.controlRef() })
             assertEquals("$LOCAL_IDS->addToProfile(Landroid/view/View;JJ)V", inserted.last().controlRef())
             val add = context.tgMutableClassDefBy(LOCAL_IDS).methods.single { it.origName == "nativeAddRow" }.controlBody()
-            assertEquals(listOf(Opcode.CHECK_CAST, Opcode.CONST, Opcode.SGET, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.RETURN_OBJECT), add.map { it.opcode })
+            // 13.2 inlines R, so the icon id loads as a const; the next line still pins which id.
+            val icon = if (add.getOrNull(2)?.opcode == Opcode.CONST) Opcode.CONST else Opcode.SGET
+            assertEquals(listOf(Opcode.CHECK_CAST, Opcode.CONST, icon, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.RETURN_OBJECT), add.map { it.opcode })
             assertEquals(LOCAL_ID_ROW.toLong(), (add[1] as WideLiteralInstruction).wideLiteral)
             assertEquals("Lorg/telegram/messenger/R\$drawable;->msg_copy:I", add[2].controlRef())
             assertEquals(plan.addRow.toString(), add[3].controlRef())
@@ -140,8 +151,10 @@ class LocalControlsFixtureTest {
                 else assertTrue("${build.name}: $warnings", warnings.none { "commerceProfileSendGram" in it })
             }
             val after = builder.controlBody()
-            assertEquals("${build.name}: both hooks and nothing else", stock.size + 7, after.size)
+            // Hide commerce also asks before each Send a Gift item, which the same builder adds.
+            assertEquals("${build.name}: both hooks, the gift item checks and nothing else", stock.size + 11, after.size)
             assertEquals(1, after.count { it.controlRef() == "$COMMERCE->showProfileSendGram(Z)Z" })
+            assertEquals(2, after.count { it.controlRef() == "$COMMERCE->profileGiftMenuBlocked(I)Z" })
             assertEquals(1, after.count { it.controlRef() == "$LOCAL_IDS->addToProfile(Landroid/view/View;JJ)V" })
             assertEquals("${build.name}: the stock visibility refresh still ends the builder", stock.takeLast(3).map { it.opcode },
                 after.takeLast(3).map { it.opcode })
@@ -162,7 +175,7 @@ class LocalControlsFixtureTest {
             for ((name, change) in paste) { val c = context(build); change(c); refused(build, name, c) { useNormalPastePatch.execute(c) } }
             val reactions: List<Pair<String, (BytecodePatchContext) -> Unit>> = listOf(
                 "missing reaction choice" to { c -> val site = c.resolveDoubleTapReactions().last(); site.method.replaceInstruction(site.method.controlBody().indexOfFirst { it.controlRef() == DOUBLE_TAP_CHOICE }, "nop") },
-                "reaction sink removed" to { c -> val site = c.resolveDoubleTapReactions().first(); site.method.replaceInstruction(site.method.controlBody().indexOfFirst { it.call()?.parameterTypes?.take(2)?.map { p -> p.toString() } == listOf("Landroid/view/View;", "Lorg/telegram/messenger/MessageObject;") }, "nop") },
+                "reaction sink removed" to { c -> val site = c.resolveDoubleTapReactions().first(); site.method.replaceInstruction(site.method.controlBody().indexOfFirst { it.call()?.origParameterTypes?.take(2) == listOf("Landroid/view/View;", "Lorg/telegram/messenger/MessageObject;") }, "nop") },
                 "private chat gesture" to { c -> makePrivate(c.resolveDoubleTapReactions().first().method) },
                 "duplicate preview gesture" to { c -> duplicateCandidate(c, c.resolveDoubleTapReactions().last().method) },
                 "missing eligibility contract" to { c -> val m = c.resolveDoubleTapReactions().first().method; val owner = c.tgMutableClassDefBy(m.definingClass); val iface = c.tgMutableClassDefBy(owner.interfaces.single()); iface.methods.removeAll { it.controlShape(listOf("Landroid/view/View;"), "Z") } },
@@ -181,14 +194,17 @@ class LocalControlsFixtureTest {
                 "local ID read removed" to { c, _ -> val init = c.tgMutableClassDefBy(PROFILE).methods.single { it.origName == "onFragmentCreate" }; init.replaceInstruction(init.controlBody().indexOfFirst { it.call()?.origName == "getLong" }, "nop") },
                 "static user ID field" to { c, p -> val f = c.tgMutableClassDefBy(PROFILE).fields.single { it.origName == p.user.origName }; f.accessFlags = f.accessFlags or AccessFlags.STATIC.value },
                 "static menu field" to { c, p -> val f = c.tgMutableClassDefBy(PROFILE).fields.single { it.origName == p.menu.origName }; f.accessFlags = f.accessFlags or AccessFlags.STATIC.value },
-                "different profile receiver" to { c, _ -> val view = c.tgMutableClassDefBy(PROFILE).methods.single { it.origName == "createView" }; val at = view.controlBody().indexOfFirst { it.controlRef() == "Lorg/telegram/messenger/R\$drawable;->ic_ab_other:I" } + 5; val store = view.controlBody()[at]; view.replaceInstruction(at, "iput-object v${store.namedRegisters()[0]}, v0, ${store.controlRef()}") },
+                // The menu store right after the maker's result (13.2 makes the item through a menu helper).
+                "different profile receiver" to { c, p -> val view = c.tgMutableClassDefBy(PROFILE).methods.single { it.origName == "createView" }; val body = view.controlBody(); val at = body.indices.first { body[it].opcode == Opcode.IPUT_OBJECT && body[it].controlField()?.toString() == p.menu.toString() && body[it - 1].opcode == Opcode.MOVE_RESULT_OBJECT }; val store = body[at]; view.replaceInstruction(at, "iput-object v${store.namedRegisters()[0]}, v0, ${store.controlRef()}") },
                 "overwritten profile receiver alias" to { c, _ -> val view = c.tgMutableClassDefBy(PROFILE).methods.single { it.origName == "createView" }; view.replaceInstruction(3, "const/4 v1, 0x0") },
-                "private native submenu factory" to { c, p -> makePrivate(c.tgMutableClassDefBy(p.menu.type).methods.single { it.toString() == p.addRow.toString() }) },
-                "native submenu text operand changed" to { c, p -> val factory = c.tgMutableClassDefBy(p.menu.type).methods.single { it.toString() == p.addRow.toString() }; factory.replaceInstruction(7, "move-object v4, p0") },
-                "native row builder requests transport" to { c, p -> val factory = c.tgMutableClassDefBy(p.menu.type).methods.single { it.toString() == p.addRow.toString() }; val core = factory.controlBody()[8].call()!!; c.tgMutableClassDefBy(p.menu.type).methods.single { it.toString() == core.toString() }.replaceInstruction(0, "invoke-static {}, Lorg/telegram/tgnet/ConnectionsManager;->getInstance(I)Lorg/telegram/tgnet/ConnectionsManager;") },
+                // 13.2 declares the row factory, its row builder and the dismissal on the menu item's base class.
+                "private native submenu factory" to { c, p -> makePrivate(c.tgMutableClassDefBy(p.addRow.definingClass).methods.single { it.toString() == p.addRow.toString() }) },
+                "native submenu text operand changed" to { c, p -> val factory = c.tgMutableClassDefBy(p.addRow.definingClass).methods.single { it.toString() == p.addRow.toString() }; factory.replaceInstruction(7, "move-object v4, p0") },
+                "native row builder requests transport" to { c, p -> val factory = c.tgMutableClassDefBy(p.addRow.definingClass).methods.single { it.toString() == p.addRow.toString() }; val core = factory.controlBody()[8].call()!!; c.tgMutableClassDefBy(core.definingClass).methods.single { it.toString() == core.toString() }.replaceInstruction(0, "invoke-static {}, Lorg/telegram/tgnet/ConnectionsManager;->getInstance(I)Lorg/telegram/tgnet/ConnectionsManager;") },
                 "private menu owner" to { c, p -> val cls = c.tgMutableClassDefBy(p.menu.type); cls.accessFlags = cls.accessFlags and AccessFlags.PUBLIC.value.inv() },
-                "missing dismiss bridge target" to { c, p -> c.tgMutableClassDefBy(p.menu.type).methods.removeAll { it.toString() == p.dismiss.toString() } },
-                "dismiss receiver changed" to { c, p -> c.tgMutableClassDefBy(p.menu.type).methods.single { it.toString() == p.dismiss.toString() }.replaceInstruction(0, "iget-object v0, v0, " + c.tgMutableClassDefBy(p.menu.type).methods.single { it.toString() == p.dismiss.toString() }.controlBody()[0].controlRef()) },
+                "missing dismiss bridge target" to { c, p -> c.tgMutableClassDefBy(p.dismiss.definingClass).methods.removeAll { it.toString() == p.dismiss.toString() } },
+                // The popup read: first in 13.1, after the submenu overlay's early return in 13.2.
+                "dismiss receiver changed" to { c, p -> val dismiss = c.tgMutableClassDefBy(p.dismiss.definingClass).methods.single { it.toString() == p.dismiss.toString() }; val at = dismiss.controlBody().indexOfFirst { it.opcode == Opcode.IGET_OBJECT }; dismiss.replaceInstruction(at, "iget-object v0, v0, " + dismiss.controlBody()[at].controlRef()) },
                 "duplicate native menu builder" to { c, p -> duplicate(c, p.method) },
                 "stock visibility refresh removed" to { _, p -> p.method.replaceInstruction(p.index + 1, "nop") },
                 "entry profile receiver overwritten" to { _, p -> val self = p.method.implementation!!.registerCount - 2; p.method.replaceInstruction(0, "const/16 v$self, 0x0") },
@@ -204,10 +220,20 @@ class LocalControlsFixtureTest {
                     c.tgMutableClassDefBy(PROFILE).methods.add(ImmutableMethod(method.definingClass, method.name, method.parameters,
                         method.returnType, method.accessFlags, method.annotations, method.hiddenApiRestrictions, implementation).toMutable())
                 },
-                "inaccessible copy icon" to { c, _ -> val f = c.tgMutableClassDefBy("Lorg/telegram/messenger/R\$drawable;").fields.single { it.origName == "msg_copy" }; f.accessFlags = f.accessFlags and AccessFlags.PUBLIC.value.inv() },
+                // 13.2 inlines R, so there the icon is an id the build has to carry; the loop puts it back.
+                "inaccessible copy icon" to { c, _ -> val names = TelegramNames.of(c)
+                    if (names.isIdentity) { val f = c.tgMutableClassDefBy("Lorg/telegram/messenger/R\$drawable;").fields.single { it.origName == "msg_copy" }; f.accessFlags = f.accessFlags and AccessFlags.PUBLIC.value.inv() }
+                    else assertNotNull(names.resourceIds.remove(COPY_ICON)) },
             )
             for ((name, change) in mutations) {
-                val c = context(build); change(c, c.resolveLocalIds()); refused(build, name, c) { showLocalIdsPatch.execute(c) }
+                val c = context(build)
+                val names = TelegramNames.of(c)
+                val icon = names.resourceId("drawable", "msg_copy")
+                try {
+                    change(c, c.resolveLocalIds()); refused(build, name, c) { showLocalIdsPatch.execute(c) }
+                } finally {
+                    if (icon != null) names.resourceIds[COPY_ICON] = icon
+                }
             }
         }
     }
@@ -280,12 +306,34 @@ class LocalControlsFixtureTest {
         val profile = result.getValue(PROFILE)
         // The menu is identified by its overflow icon/store, rather than any obfuscated name.
         val create = profile.methods.single { it.origName == "createView" }.controlBody()
-        val icon = create.indexOfFirst { it.controlRef() == "Lorg/telegram/messenger/R\$drawable;->ic_ab_other:I" }
-        val boundMenu = create[icon + 5].controlField()!!.type
-        result.putAll(FixtureDex.classes(build, setOf(boundMenu, "Lorg/telegram/messenger/R\$drawable;") + PROFILE_DC_TYPES))
-        val rows = result.getValue(boundMenu).methods.filter { it.controlShape(listOf("I", "I", "Ljava/lang/String;"), it.returnType) }
+        val icon = create.indexOfFirst { it.controlRef() == OVERFLOW_ICON }
+        val boundMenu = if (icon >= 0) create[icon + 5].controlField()!!.type else {
+            // 13.2 adds the overflow item through a helper of the menu that loads the icon itself.
+            val calls = create.indices.filter { at -> create[at].opcode == Opcode.INVOKE_VIRTUAL &&
+                create[at].call()?.parameterTypes?.isEmpty() == true && create.getOrNull(at + 2)?.opcode == Opcode.IPUT_OBJECT }
+            val owners = FixtureDex.classes(build, calls.map { create[it].call()!!.definingClass }.toSet())
+            val made = calls.single { at -> val call = create[at].call()!!
+                owners[call.definingClass]?.methods?.any { it.name == call.name && it.parameterTypes.isEmpty() &&
+                    it.controlBody().any { load -> load.controlRef() == OVERFLOW_ICON } } == true }
+            result[create[made].call()!!.definingClass] = owners.getValue(create[made].call()!!.definingClass)
+            create[made + 2].controlField()!!.type
+        }
+        // Use normal paste also reads the entities method Mention by ID hooks. LocaleController holds the
+        // getString(int) wrapper whose forwarded call 13.2 inlined into the profile's Send Gram title.
+        result.putAll(FixtureDex.classes(build, setOf(boundMenu, "Lorg/telegram/messenger/R\$drawable;", "Lorg/telegram/messenger/MediaDataController;",
+            "Lorg/telegram/messenger/LocaleController;") + PROFILE_DC_TYPES))
+        loadAncestors(build, result)
+        // 13.2 declares the row factory on the menu item's superclass and takes the title as a CharSequence.
+        val menuLine = generateSequence(result.getValue(boundMenu)) { menu -> menu.superclass?.let { result[it] } }.toList()
+        val rows = menuLine.flatMap { it.methods }.filter { it.controlShape(listOf("I", "I", "Ljava/lang/String;"), it.returnType) ||
+            it.controlShape(listOf("I", "I", "Ljava/lang/CharSequence;"), it.returnType) }
             .map { it.returnType }.filter { it.startsWith("Lorg/telegram/") }.toSet()
         result.putAll(FixtureDex.classes(build, rows))
+        loadAncestors(build, result)
+        return result.values.map(ImmutableClassDef::of)
+    }
+
+    private fun loadAncestors(build: File, result: MutableMap<String, ClassDef>) {
         while (true) {
             val ancestors = result.values.flatMap { listOfNotNull(it.superclass) + it.interfaces }.filter { it.startsWith("Lorg/telegram/") && it !in result }.toSet()
             if (ancestors.isEmpty()) break
@@ -293,7 +341,6 @@ class LocalControlsFixtureTest {
             assertEquals("${build.name}: declared Telegram ancestor classes", ancestors, found.keys)
             result.putAll(found)
         }
-        return result.values.map(ImmutableClassDef::of)
     }
 
     private fun assertStock(case: String, old: Method, changed: Method, at: Int, extra: Int) {
@@ -344,6 +391,8 @@ class LocalControlsFixtureTest {
         private val PASTE_FLAGS = listOf("normalPaste", "composePlainPaste", "captionPlainPaste")
         private val ID_FLAGS = listOf("showLocalIds", "profileLocalIds")
         private val REACTION_FLAGS = listOf("disableDoubleTapReactions", "chatDoubleTapReaction", "previewDoubleTapReaction")
+        private const val OVERFLOW_ICON = "Lorg/telegram/messenger/R\$drawable;->ic_ab_other:I"
+        private const val COPY_ICON = "drawable/msg_copy"
 
         // These large native classes are shared only within this fixture suite. Retaining
         // both APK snapshots after it finishes starves subsequent fixture readers.

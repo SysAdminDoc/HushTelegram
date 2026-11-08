@@ -22,6 +22,7 @@ import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
+import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
@@ -134,29 +135,46 @@ internal fun BytecodePatchContext.resolveLocalIds(): LocalIdsPlan {
     val create = profile.methods.filter { it.origName == "createView" }.controlSingle("profile view")
     controlShape(create.controlCallable(false) && create.controlShape(listOf("Landroid/content/Context;"), "Landroid/view/View;"), "profile view changed")
     val view = create.controlBody()
-    val more = view.indices.filter { view[it].controlRef() == "Lorg/telegram/messenger/R\$drawable;->ic_ab_other:I" }.controlSingle("profile overflow icon")
-    val maker = view.getOrNull(more + 3)?.call()
-    val menu = view.getOrNull(more + 5)?.controlField()
-    controlShape(view[more].loadsInt() && view[more + 2].opcode == Opcode.CONST_16 &&
-        (view[more + 2] as? NarrowLiteralInstruction)?.narrowLiteral == 10 && maker != null &&
-        maker.parameterTypes.take(2).map { it.toString() } == listOf("I", "I") &&
-        view[more + 4].opcode == Opcode.MOVE_RESULT_OBJECT && view[more + 5].opcode == Opcode.IPUT_OBJECT &&
-        menu?.origDefiningClass == PROFILE && menu.origType == maker.origReturnType &&
-        view[more + 5].namedRegisters().firstOrNull() == view[more + 4].namedRegisters().singleOrNull(), "profile overflow binding changed")
-    create.controlReceiverAlias(view[more + 5].namedRegisters()[1], more + 5)
+    val icons = view.indices.filter { view[it].controlRef() == OVERFLOW_ICON }
+    // 13.1 adds the overflow item in place: the icon, const/16 10, the (I, I) maker, its result and
+    // the store. 13.2's R8 moved the icon and the 10 into a no-argument helper on the menu bar whose
+    // whole body is that call, so the store follows the helper's call and result.
+    val made = if (icons.isNotEmpty()) icons.controlSingle("profile overflow icon").let { more ->
+        controlShape(view[more].loadsInt() && view[more + 2].opcode == Opcode.CONST_16 &&
+            (view[more + 2] as? NarrowLiteralInstruction)?.narrowLiteral == 10, "profile overflow binding changed")
+        more + 3
+    } else view.indices.filter { at ->
+        view[at].opcode == Opcode.INVOKE_VIRTUAL && view[at].call()?.parameterTypes?.isEmpty() == true &&
+            view.getOrNull(at + 2)?.opcode == Opcode.IPUT_OBJECT && overflowHelper(view[at].call()!!) != null
+    }.controlSingle("profile overflow icon")
+    val maker = view[made].call()?.let { if (icons.isNotEmpty()) it else overflowHelper(it) }
+    val store = made + 2
+    val menu = view.getOrNull(store)?.controlField()
+    controlShape(maker != null && maker.parameterTypes.take(2).map { it.toString() } == listOf("I", "I") &&
+        view[made + 1].opcode == Opcode.MOVE_RESULT_OBJECT && view[store].opcode == Opcode.IPUT_OBJECT &&
+        menu?.origDefiningClass == PROFILE && menu.origType == maker.origReturnType && menu.origType == view[made].call()?.origReturnType &&
+        view[store].namedRegisters().firstOrNull() == view[made + 1].namedRegisters().singleOrNull(), "profile overflow binding changed")
+    create.controlReceiverAlias(view[store].namedRegisters()[1], store)
     val menuDeclaration = profile.fields.filter { it.toString() == menu.toString() }.controlSingle("profile menu field")
     controlShape(!AccessFlags.STATIC.isSet(menuDeclaration.accessFlags), "profile menu isn't an instance field")
     val menuClass = tgMutableClassDefBy(menu!!.type)
-    controlShape(AccessFlags.PUBLIC.isSet(menuClass.accessFlags) && menuClass.origSuperclass == "Landroid/widget/FrameLayout;", "native overflow owner changed")
+    // 13.2 splits the item into a searchable item over a plain base; the base is the FrameLayout.
+    val menuLine = generateSequence(menuClass as ClassDef) { owner -> owner.superclass?.let { classDefByOrNull(it) } }
+        .takeWhile { it.origType.startsWith("Lorg/telegram/") }.take(3).toList()
+    val menuTypes = menuLine.map { it.origType }
+    controlShape(menuLine.all { AccessFlags.PUBLIC.isSet(it.accessFlags) } && menuLine.last().origSuperclass == "Landroid/widget/FrameLayout;",
+        "native overflow owner changed")
     val builder = profile.methods.filter { method -> method.controlShape(listOf("Z"), "V") && method.controlBody().any {
         it.controlRef() == "Lorg/telegram/messenger/R\$string;->LogOut:I"
     } && method.controlBody().any { it.controlRef() == menu.toString() } }.controlSingle("profile menu builder")
     val body = builder.controlBody()
     controlShape(builder.controlCallable(false) && body.none { (it as? NarrowLiteralInstruction)?.narrowLiteral == LOCAL_ID_ROW }, "profile menu identity collides")
-    val adds = body.mapNotNull { it.call() }.filter { it.origDefiningClass == menu.origType &&
-        it.parameterTypes.map { p -> p.toString() } == listOf("I", "I", "Ljava/lang/String;") }.distinctBy { it.toString() }
+    // 13.2's R8 folded the String overload into the CharSequence one on the base.
+    val adds = body.mapNotNull { it.call() }.filter { it.origDefiningClass in menuTypes &&
+        it.parameterTypes.map { p -> p.toString() }.let { p -> p == listOf("I", "I", "Ljava/lang/String;") || p == listOf("I", "I", "Ljava/lang/CharSequence;") } }
+        .distinctBy { it.toString() }
     val add = adds.controlSingle("native profile submenu factory")
-    val factory = menuClass.methods.filter { it.toString() == add.toString() }.controlSingle("native submenu method")
+    val factory = menuLine.flatMap { it.methods }.filter { it.toString() == add.toString() }.controlSingle("native submenu method")
     val factoryBody = factory.controlBody()
     controlShape(factory.controlCallable(false) && factory.localRegisterCount() == 8 && factoryBody.map { it.opcode } == listOf(
         Opcode.CONST_4, Opcode.IGET_OBJECT, Opcode.CONST_4, Opcode.CONST_4, Opcode.MOVE_OBJECT, Opcode.MOVE, Opcode.MOVE,
@@ -165,35 +183,72 @@ internal fun BytecodePatchContext.resolveLocalIds(): LocalIdsPlan {
     controlShape(factoryBody.map { it.namedRegisters() } == listOf(listOf(6), listOf(7, 8), listOf(3), listOf(5), listOf(0, 8),
         listOf(1, 9), listOf(2, 10), listOf(4, 11), (0..7).toList(), listOf(9), listOf(9)) &&
         (factoryBody[0] as NarrowLiteralInstruction).narrowLiteral == 0 && (factoryBody[2] as NarrowLiteralInstruction).narrowLiteral == 0 &&
-        (factoryBody[3] as NarrowLiteralInstruction).narrowLiteral == 1 && core?.origDefiningClass == menu.origType && core.origReturnType == add.origReturnType &&
+        (factoryBody[3] as NarrowLiteralInstruction).narrowLiteral == 1 && core?.origDefiningClass in menuTypes && core!!.origReturnType == add.origReturnType &&
         core.parameterTypes.map { it.toString() } == listOf("I", "I", "Landroid/graphics/drawable/Drawable;", "Ljava/lang/CharSequence;", "Z", "Z", factoryBody[1].controlField()?.type),
         "native submenu operands changed")
-    val coreFactory = menuClass.methods.filter { it.toString() == core.toString() }.controlSingle("native submenu row builder")
+    val coreFactory = menuLine.flatMap { it.methods }.filter { it.toString() == core.toString() }.controlSingle("native submenu row builder")
     controlShape(coreFactory.controlCallable(false) && coreFactory.controlBody().none { it.controlRef()?.startsWith("Lorg/telegram/tgnet/") == true ||
         it.call()?.origName in listOf("sendRequest", "sendMessage") }, "native row builder is no longer local")
     val item = tgMutableClassDefBy(add.returnType)
     controlShape(AccessFlags.PUBLIC.isSet(item.accessFlags) && item.origSuperclass == "Landroid/widget/FrameLayout;", "native submenu row isn't a view")
-    val dismiss = menuClass.methods.filter { it.controlCallable(false) && it.controlShape(emptyList(), "V") &&
+    val dismiss = menuLine.flatMap { it.methods }.filter { it.controlCallable(false) && it.controlShape(emptyList(), "V") &&
         it.controlBody().any { ins -> ins.call()?.toString() == "Landroid/widget/PopupWindow;->isShowing()Z" } &&
         it.controlBody().count { ins -> ins.call()?.origName == "dismiss" } == 1 }.controlSingle("native menu dismissal")
     val dismissal = dismiss.controlBody()
-    controlShape(dismiss.localRegisterCount() == 1 && dismissal.map { it.opcode } == listOf(Opcode.IGET_OBJECT, Opcode.IF_EQZ, Opcode.INVOKE_VIRTUAL,
+    val menuSelf = dismiss.localRegisterCount()
+    val dismissFlow = ControlFlow.of(dismiss)
+    // 13.2 first closes a shown submenu overlay, animated, and returns; the popup's dismissal follows unchanged.
+    val overlay = if (dismissal.size == 14) 6 else 0
+    controlShape(overlay == 0 || (menuSelf == 2 && dismissal.take(6).map { it.opcode } == listOf(Opcode.INVOKE_DIRECT, Opcode.MOVE_RESULT_OBJECT,
+        Opcode.IF_EQZ, Opcode.CONST_4, Opcode.INVOKE_VIRTUAL, Opcode.RETURN_VOID) &&
+        dismissal.take(6).map { it.namedRegisters() } == listOf(listOf(2), listOf(0), listOf(0), listOf(1), listOf(0, 1), emptyList()) &&
+        dismissal[0].call()?.origDefiningClass in menuTypes && dismissFlow.normal[2].toSet() == setOf(3, 6)), "native menu dismissal changed")
+    val tail = dismissal.drop(overlay)
+    controlShape((overlay != 0 || menuSelf == 1) && tail.map { it.opcode } == listOf(Opcode.IGET_OBJECT, Opcode.IF_EQZ, Opcode.INVOKE_VIRTUAL,
         Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.IGET_OBJECT, Opcode.INVOKE_VIRTUAL, Opcode.RETURN_VOID) &&
-        dismissal.map { it.namedRegisters() } == listOf(listOf(0, 1), listOf(0), listOf(0), listOf(0), listOf(0), listOf(0, 1), listOf(0), emptyList()) &&
-        dismissal[0].controlField() == dismissal[5].controlField() && ControlFlow.of(dismiss).normal[1].toSet() == setOf(2, 7) &&
-        ControlFlow.of(dismiss).normal[4].toSet() == setOf(5, 7), "native menu dismissal changed")
+        tail.map { it.namedRegisters() } == listOf(listOf(0, menuSelf), listOf(0), listOf(0), listOf(0), listOf(0), listOf(0, menuSelf), listOf(0), emptyList()) &&
+        tail[0].controlField() == tail[5].controlField() && dismissFlow.normal[overlay + 1].toSet() == setOf(overlay + 2, overlay + 7) &&
+        dismissFlow.normal[overlay + 4].toSet() == setOf(overlay + 5, overlay + 7), "native menu dismissal changed")
     controlMembers("Lorg/telegram/messenger/R\$drawable;", "static msg_copy:I")
     // The stock final visibility refresh follows this insertion. Its sole normal exit remains intact.
+    // 13.1 ends with the zero and refresh(false). 13.2 sets the zero up before an item refresh with
+    // the builder's own flag, so the insertion goes in front of both refreshes.
+    fun refresh(at: Int) = body.getOrNull(at)?.let { it.opcode == Opcode.INVOKE_VIRTUAL || it.opcode == Opcode.INVOKE_VIRTUAL_RANGE } == true &&
+        body[at].call()?.let { it.origDefiningClass == PROFILE && it.controlShape(listOf("Z"), "V") } == true
+    val paired = body.size >= 4 && refresh(body.size - 3) && refresh(body.size - 2) && body[body.size - 4].opcode == Opcode.CONST_4
     val index = body.size - 3
-    controlShape(body[index].opcode == Opcode.CONST_4 && (body[index] as? NarrowLiteralInstruction)?.narrowLiteral == 0 &&
-        body[index + 1].opcode == Opcode.INVOKE_VIRTUAL && body[index + 1].call()?.let {
-            it.origDefiningClass == PROFILE && it.controlShape(listOf("Z"), "V")
-        } == true && body.last().opcode == Opcode.RETURN_VOID, "profile final visibility refresh changed")
+    val zero = if (paired) index - 1 else index
+    val last = body.size - 2
+    controlShape(body[zero].opcode == Opcode.CONST_4 && (body[zero] as? NarrowLiteralInstruction)?.narrowLiteral == 0 &&
+        refresh(last) && body[last].namedRegisters().last() == body[zero].namedRegisters().single() &&
+        body.last().opcode == Opcode.RETURN_VOID, "profile final visibility refresh changed")
     val flow = ControlFlow.of(builder)
-    controlShape(flow.normal[index] == listOf(index + 1) && flow.normal[index + 1] == listOf(index + 2) &&
-        flow.exceptional[index].isEmpty() && flow.exceptional[index + 1].isEmpty(), "profile visibility lifetime changed")
+    controlShape((index..last).all { flow.normal[it] == listOf(it + 1) && flow.exceptional[it].isEmpty() }, "profile visibility lifetime changed")
     builder.requireThisIntact("Local IDs", listOf(index))
-    val free = builder.freeLocalsAt("Local IDs", index, 5)
-    controlShape(free == (free.first()..free.first() + 4).toList(), "profile ID operands have no free contiguous registers")
-    return LocalIdsPlan(builder, index, free.first(), menu, user, chat, add, dismiss)
+    builder.freeLocalsAt("Local IDs", index, 5)
+    // 13.2's builder keeps values live in scattered low registers, so look for five free in a row. The
+    // iget-wide operands are four-bit, so the run has to end at v15.
+    val live = builder.liveAcrossInjection(index)
+    val first = (0..11).firstOrNull { start -> start + 4 < builder.localRegisterCount() && (start..start + 4).none { it in live } }
+    controlShape(first != null, "profile ID operands have no free contiguous registers")
+    return LocalIdsPlan(builder, index, first!!, menu, user, chat, add, dismiss)
+}
+
+private const val OVERFLOW_ICON = "Lorg/telegram/messenger/R\$drawable;->ic_ab_other:I"
+
+/** The (I, I) maker a 13.2 overflow helper calls with const/16 10 and the overflow icon, or null. */
+private fun BytecodePatchContext.overflowHelper(call: MethodReference): MethodReference? {
+    val helper = classDefByOrNull(call.definingClass)?.methods?.singleOrNull {
+        it.name == call.name && it.parameterTypes.isEmpty() && it.returnType == call.returnType
+    } ?: return null
+    val body = helper.controlBody()
+    if (body.map { it.opcode } != listOf(Opcode.CONST_16, Opcode.CONST, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.RETURN_OBJECT)) return null
+    val maker = body[2].call() ?: return null
+    val (count, icon) = body[0].namedRegisters().single() to body[1].namedRegisters().single()
+    val self = helper.localRegisterCount()
+    return maker.takeIf {
+        (body[0] as NarrowLiteralInstruction).narrowLiteral == 10 && body[1].controlRef() == OVERFLOW_ICON &&
+            body[2].namedRegisters() == listOf(self, count, icon) && maker.definingClass == call.definingClass &&
+            maker.returnType == call.returnType && body[3].namedRegisters() == body[4].namedRegisters()
+    }
 }

@@ -18,6 +18,7 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origSuperclass
 import app.morphe.util.names.origType
@@ -128,7 +129,7 @@ internal fun BytecodePatchContext.resolveDoubleTapReactions(): List<DoubleTapSit
                 "chat reaction is no longer confined to the native double-tap gesture")
             dispatcher = callerOwner.methods.filter { it.toString() == caller.toString() }.controlSingle("chat gesture dispatcher")
             controlShape(body.count { it.controlRef() == DOUBLE_TAP_CHOICE } == 1 &&
-                body.count { it.call()?.let { call -> call.parameterTypes.take(2).map { p -> p.toString() } ==
+                body.count { it.call()?.let { call -> call.origParameterTypes.take(2) ==
                     listOf("Landroid/view/View;", "Lorg/telegram/messenger/MessageObject;") && call.origReturnType == "V" } == true } == 2 &&
                 body.last().opcode == Opcode.RETURN_VOID, "chat reaction sinks changed")
         } else {
