@@ -9,6 +9,7 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.patches.telegram.misc.channelbar.commerceReads
 import app.morphe.patches.telegram.misc.commerce.COMMERCE
 import app.morphe.patches.telegram.misc.commerce.hideCommercePatch
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
@@ -198,7 +199,7 @@ class MessageMenuFixtureTest {
     /** Hide Premium, gifts and Stars asks before the Gram transfer's Send Gram, in the same builder. */
     @Test fun `the message menu and the Gram transfer Send Gram hook share the builder in either order`() {
         for (build in Fixtures.declaredBuilds()) for (commerceFirst in listOf(true, false)) {
-            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val context = PatchContexts.of(ExtensionDex.classes() + commerceReads(build, hosts(build)))
             val fill = context.resolveMessageMenu().fill
             val stock = ImmutableMethod.of(fill).controlBody()
             for (patch in if (commerceFirst) listOf(hideCommercePatch, messageMenuPatch) else listOf(messageMenuPatch, hideCommercePatch)) {

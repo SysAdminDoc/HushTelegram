@@ -8,6 +8,7 @@ import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
+import app.morphe.patches.telegram.misc.channelbar.commerceReads
 import app.morphe.patches.telegram.misc.commerce.COMMERCE
 import app.morphe.patches.telegram.misc.commerce.hideCommercePatch
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
@@ -47,7 +48,7 @@ class HideFeaturesInviteFixtureTest {
             // Settings' list view and its adapter, both reached from Settings' onResume.
             val listTypes = anchors.flatMap { it.methods }.filter { it.origName == "onResume" }.flatMap { it.controlBody() }
                 .mapNotNull { it.controlField() }.flatMap { listOf(it.definingClass, it.type) }.filter { it.startsWith("L") }.toSet()
-            val hosts = (anchors + bases + FixtureDex.classes(build, listTypes).values).distinctBy { it.type }
+            val hosts = commerceReads(build, (anchors + bases + FixtureDex.classes(build, listTypes).values).distinctBy { it.type })
             // Either patch may run first; they never touch the same instruction.
             for (commerceFirst in listOf(false, true)) {
                 val context = PatchContexts.of(ExtensionDex.classes() + hosts)

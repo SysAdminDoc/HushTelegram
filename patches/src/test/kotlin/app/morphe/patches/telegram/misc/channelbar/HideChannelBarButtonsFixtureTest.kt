@@ -178,7 +178,7 @@ class HideChannelBarButtonsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             for (commerceFirst in listOf(true, false)) {
                 val name = "${build.name} commerce first=$commerceFirst"
-                val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+                val context = PatchContexts.of(ExtensionDex.classes() + commerceReads(build, hosts(build)))
                 val plan = context.resolveChannelBarButtons()
                 if (commerceFirst) PatchLogCapture.warnings { hideCommercePatch.execute(context) }
                 assertEquals(emptyList<String>(), PatchLogCapture.warnings { hideChannelBarButtonsPatch.execute(context) })
@@ -228,4 +228,16 @@ class HideChannelBarButtonsFixtureTest {
 
     private fun stub(context: BytecodePatchContext, name: String) =
         context.tgMutableClassDefBy(CHANNEL_BUTTONS).methods.single { it.origName == name }.controlBody()
+}
+
+/**
+ * What Hide Premium, gifts and Stars reads beside a slice on 13.2: LocaleController, whose getString wrapper
+ * 13.2 inlined into the title sites, and the class 13.2 merges the slice's walletAvailable flag into.
+ */
+internal fun commerceReads(build: File, slice: List<ClassDef>): List<ClassDef> {
+    val flags = slice.flatMap { it.methods }.flatMap { it.controlBody() }.mapNotNull { it.controlField() }
+        .filter { it.origDefiningClass == "Lorg/telegram/messenger/AppGlobalConfig;" && it.origName == "walletAvailable" }
+        .map { it.type }.toSet()
+    val found = FixtureDex.classes(build, setOf("Lorg/telegram/messenger/LocaleController;") + flags).values
+    return (slice + found).distinctBy { it.type }
 }
