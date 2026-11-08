@@ -348,7 +348,7 @@
     },
     {
       "name": "Disable analytics",
-      "description": "Stops Telegram from reporting how you use the app, like how long you read channel posts and what you tap on Premium screens, and keeps the camera from reporting your phone's maker and model. Messages, calls and notifications work as before. On by default. Turn it off in HushTelegram settings > Privacy.",
+      "description": "Stops Telegram from reporting how you use the app, like how long you read channel posts and what you tap on Premium screens, and keeps the camera from reporting your phone's maker and model. Messages, calls and notifications work as before. On by default. Turn it off in HushTelegram settings > Privacy, where Receive only mode and Power off accounts also live, both off by default.",
       "category": "Privacy",
       "use": true,
       "dependencies": [
@@ -861,7 +861,7 @@
     },
     {
       "name": "Faster downloads",
-      "description": "Downloads files in 512 KB pieces, 8 at a time, the way Telegram already does for accounts its servers pick, instead of 128 KB pieces 4 at a time. If a big piece fails, Telegram still drops back to small ones. A second switch, Hold automatic downloads on Data Saver, keeps Telegram from downloading media on its own while Android's Data Saver is on and the network is metered. Both start off. Turn them on in HushTelegram settings > Playback.",
+      "description": "Downloads files in 512 KB pieces, 8 at a time, the way Telegram already does for accounts its servers pick, instead of 128 KB pieces 4 at a time. If a big piece fails, Telegram still drops back to small ones. A second switch, Hold automatic downloads on Data Saver, keeps Telegram from downloading media on its own while Android's Data Saver is on and the network is metered. A third, Faster uploads, keeps four times as many upload pieces in flight. A fourth, Download manager, runs downloads one at a time in the order you asked and adds a Downloads row to the side menu. All four start off. Turn them on in HushTelegram settings > Playback.",
       "category": "Playback",
       "use": true,
       "dependencies": [
@@ -1887,7 +1887,7 @@
     },
     {
       "name": "Hide popular apps",
-      "description": "Hides the Popular apps list on the Apps tab of search and stops Telegram from loading it. On by default. Turn it off in HushTelegram settings > Ads. Two more switches there start off. Search only my chats keeps search to your own chats and contacts, with nothing public. Find names in styled letters finds names written in decorative letters when you type plain ones.",
+      "description": "Hides the Popular apps list on the Apps tab of search and stops Telegram from loading it. On by default. Turn it off in HushTelegram settings > Ads. More switches there start off. Search only my chats keeps search to your own chats and contacts, with nothing public. Find names in styled letters finds names written in decorative letters when you type plain ones. Disable secret chats ignores it when someone asks for a secret chat, with no answer sent back.",
       "category": "Search",
       "use": true,
       "dependencies": [
@@ -2420,7 +2420,7 @@
     },
     {
       "name": "HushTelegram settings",
-      "description": "Adds a HushTelegram row to Telegram's Settings, where you turn features on or off, pause HushTelegram, save your choices and export a report. You can also press and hold Telegram's app icon. Works as soon as you patch it in, with no switch.",
+      "description": "Adds a HushTelegram row to Telegram's Settings, where you turn features on or off, pause HushTelegram, save your choices and export a report. You can also press and hold Telegram's app icon or the Telegram title at the top of the chat list. Works as soon as you patch it in, with no switch.",
       "category": "Settings",
       "use": true,
       "dependencies": [
@@ -2877,7 +2877,7 @@
     },
     {
       "name": "Repair Firebase push registration",
-      "description": "Tries to help a patched Telegram sign up for push notifications, by giving Google's Firebase service Telegram's original certificate. If Telegram's server still turns the sign-up down, as it does with your own API ID, it turns on Telegram's own Keep-Alive Service and Background Connection instead, unless you've set either one yourself. On by default. Turn it off in HushTelegram settings > Notifications.",
+      "description": "Tries to help a patched Telegram sign up for push notifications, by giving Google's Firebase service Telegram's original certificate. If Telegram's server still turns the sign-up down, as it does with your own API ID, it turns on Telegram's own Keep-Alive Service and Background Connection instead, unless you've set either one yourself. While Keep-Alive Service is on, it runs with a quiet notification so Android doesn't stop it in the background. On by default. Turn it off in HushTelegram settings > Notifications.",
       "category": "Fixes",
       "use": true,
       "dependencies": [
@@ -3220,7 +3220,7 @@
     },
     {
       "name": "Strip link tracking",
-      "description": "Removes tracking tags like utm_source, gclid and fbclid from links you open or share. Links with any other extra part stay unchanged. A second switch, No automatic sign-in on Telegram's sites, opens links to Telegram's own websites without the sign-in token Telegram adds for your account. Both start off. Turn them on in HushTelegram settings > More settings > Links.",
+      "description": "Removes tracking tags like utm_source, gclid and fbclid from links you open or share. Links with any other extra part stay unchanged. A second switch, Clean links when you copy or paste, does the same for a link you copy or paste into the message box. A third, No automatic sign-in on Telegram's sites, opens links to Telegram's own websites without the sign-in token Telegram adds for your account. All start off. Turn them on in HushTelegram settings > More settings > Links.",
       "category": "Privacy",
       "use": true,
       "dependencies": [
@@ -3563,7 +3563,7 @@
     },
     {
       "name": "Use normal paste",
-      "description": "Pastes text exactly as you copied it, without Telegram adding formatting, tables or code styling. Starts off. Turn it on in HushTelegram settings > Conversations.",
+      "description": "Pastes text exactly as you copied it, without Telegram adding formatting, tables or code styling. A second switch, Mention by ID, turns @ and a user ID typed in the message box into a real mention of people the app has already seen. Both start off. Turn them on in HushTelegram settings > Conversations.",
       "category": "Conversations",
       "use": true,
       "dependencies": [
