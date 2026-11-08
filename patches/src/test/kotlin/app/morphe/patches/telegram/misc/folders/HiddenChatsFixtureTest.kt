@@ -157,9 +157,14 @@ class HiddenChatsFixtureTest {
     @Test fun `both pin checks shrink only the chat list's own limit`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
-            val context = PatchContexts.of(ExtensionDex.classes() + launchFolderHosts(build))
+            // Every class that reads the folder limit, as on the phone: 13.2's config save reads it from a runnable of its own.
+            val hosts = launchFolderHosts(build)
+            val readers = FixtureDex.classesWhere(build, { true }) { m -> m.controlBody().any { it.controlRef() == FOLDER_PIN_LIMIT } }
+                .filter { reader -> hosts.none { it.type == reader.type } }.distinctBy { it.type }.map(ImmutableClassDef::of)
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts + readers)
             context.requireHiddenChatsRuntime()
             val plan = context.resolveHiddenChats()
+            assertEquals(name, emptyList<String>(), plan.pinGaps)
             assertEquals(name, 2, plan.pinLimits.size)
             val stock = plan.pinLimits.associateWith { it.body().code() }
             val shown = plan.pinLimits.flatMap { method -> method.body().mapNotNull { it.ref() }.filter { it in MAIN_PIN_LIMITS } }.toSet()

@@ -105,8 +105,13 @@ internal const val PIN_ROOM = "$HIDDEN_CHATS->pinRoom(I)I"
 private const val DISPATCH_QUEUE = "Lorg/telegram/messenger/DispatchQueue;"
 private const val BASE_CONTROLLER = "Lorg/telegram/messenger/BaseController;"
 private const val GET_STORAGE = "$BASE_CONTROLLER->getMessagesStorage()$STORAGE"
-/** Read only by the two pin checks and the controller itself, so it finds them. */
+/** Read only by the two pin checks and the controller's config, so it finds them. */
 internal const val FOLDER_PIN_LIMIT = "$MESSAGES_CONTROLLER->maxFolderPinnedDialogsCountDefault:I"
+/**
+ * The limit's preference key, which only the config's save names. 13.2's R8 moved that save out of
+ * the controller into a runnable of its own, where it reads the limit like a pin check would.
+ */
+private const val FOLDER_PIN_LIMIT_KEY = "maxFolderPinnedDialogsCountDefault"
 /** What those checks read for the chat list itself. The archive's and the folder tabs' read is one shared branch, left alone. */
 internal val MAIN_PIN_LIMITS = listOf("maxPinnedDialogsCountPremium", "maxPinnedDialogsCountDefault",
     "dialogFiltersPinnedLimitPremium", "dialogFiltersPinnedLimitDefault").map { "$MESSAGES_CONTROLLER->$it:I" }.toSet()
@@ -553,8 +558,10 @@ private fun BytecodePatchContext.pinLimitReaders(): List<MutableMethod> {
     val readers = mutableListOf<Pair<String, String>>()
     forEachClassMentioning(Mention.allReferences(listOf(FOLDER_PIN_LIMIT))) { cls ->
         if (cls.origType.startsWith("Lapp/hushtelegram/") || cls.origType == MESSAGES_CONTROLLER) return@forEachClassMentioning
-        cls.methods.filter { m -> m.controlBody().any { it.opcode == Opcode.IGET && it.controlRef() == FOLDER_PIN_LIMIT } }
-            .forEach { readers += cls.type to it.toString() }
+        cls.methods.filter { m ->
+            val body = m.controlBody()
+            body.any { it.opcode == Opcode.IGET && it.controlRef() == FOLDER_PIN_LIMIT } && body.none { it.controlString() == FOLDER_PIN_LIMIT_KEY }
+        }.forEach { readers += cls.type to it.toString() }
     }
     hiddenFits(readers.size == 2, "the pin checks are no longer two")
     return readers.map { (type, method) ->
