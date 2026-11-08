@@ -288,7 +288,8 @@ class HideContactsTabFixtureTest {
             assertEquals(listOf(plan.slide, plan.mark), stub("turnTo").filter { it.opcode == Opcode.INVOKE_VIRTUAL }.map { it.controlRef() })
             assertEquals(listOf(side.accounts), stub("accounts").filter { it.opcode == Opcode.INVOKE_VIRTUAL }.map { it.controlRef() })
             assertEquals("$name: Telegram's word for each row, in order", LABELS.map { "Lorg/telegram/messenger/R\$string;->$it:I" },
-                stub("labels").filter { it.opcode == Opcode.SGET }.map { it.controlRef() })
+                // A build that inlines its string ids loads each one as a number instead.
+                stub("labels").filter { it.opcode == Opcode.SGET || it.opcode == Opcode.CONST }.mapNotNull { it.controlRef() })
             assertEquals(side.currentAccount, stub("selfId").first { it.opcode == Opcode.INVOKE_VIRTUAL }.controlRef())
             assertEquals(Opcode.RETURN_WIDE, stub("selfId").last().opcode)
             assertTrue(name, stub("selfName").any { it.controlRef()?.startsWith("Lorg/telegram/messenger/UserObject;->getUserName(") == true })
@@ -467,10 +468,12 @@ class HideContactsTabFixtureTest {
         if (withChatList) {
             val chatLists = FixtureDex.classesWhere(build, { true }, ::isChatListButton)
             chatLists.forEach { loaded[it.type] = it }
-            val buttonTypes = chatLists.flatMap { cls -> cls.methods.filter(::isChatListButton).map { method ->
-                val body = method.controlBody()
-                body[body.indexOfFirst { it.controlRef() == COMPOSE_ICON } + 1].call()!!.definingClass
-            } }.toSet()
+            val buttonTypes = FixtureDex.namedBy(build) {
+                chatLists.flatMap { cls -> cls.methods.filter(::isChatListButton).map { method ->
+                    val body = method.controlBody()
+                    body[body.indexOfFirst { it.controlRef() == COMPOSE_ICON } + 1].call()!!.definingClass
+                } }.toSet()
+            }
             loaded.putAll(FixtureDex.classes(build, buttonTypes))
         }
         val asked = HashSet<String>(leaveOut)
@@ -483,7 +486,7 @@ class HideContactsTabFixtureTest {
                 loaded.values.mapNotNull { it.superclass }
             wanted = named.filter { it.startsWith("L") && isAppType(it) && it !in asked && it !in loaded }.toSet()
         }
-        return if (withChatList) loaded.values else loaded.values.filterNot { cls -> cls.methods.any(::isChatListButton) }
+        return if (withChatList) loaded.values else FixtureDex.namedBy(build) { loaded.values.filterNot { cls -> cls.methods.any(::isChatListButton) } }
     }
 
     /** What the side menu reads beyond the main screen: the activity its links go to, and Telegram's account, name and words. */

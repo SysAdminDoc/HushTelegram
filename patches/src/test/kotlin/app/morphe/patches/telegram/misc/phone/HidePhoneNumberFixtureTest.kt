@@ -24,6 +24,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
+import app.morphe.util.names.origType
 import app.morphe.util.names.tgClassDefByOrNull
 import app.morphe.util.names.tgMutableClassDefBy
 
@@ -49,14 +50,18 @@ class HidePhoneNumberFixtureTest {
                 indices.forEach { assertEquals("$name: ${method.definingClass} asks the extension", SHOWN, body[it].controlRef()) }
             }
             val left = hosts.map { it.type }.filter { !it.startsWith("Lapp/hushtelegram/") }.flatMap { type ->
-                context.tgMutableClassDefBy(type).methods.filter { m -> m.controlBody().any { it.controlRef() == site.format } }.map { "$type->${it.name}" }
+                val cls = context.tgMutableClassDefBy(type)
+                cls.methods.filter { m -> m.controlBody().any { it.controlRef() == site.format } }.map { "${cls.origType}->${it.name}" }
             }
             assertEquals("$name: only the kept classes still format directly", kept.toSet(), left.map { it.substringBefore("->") }.toSet())
 
             val stub = { n: String -> context.tgMutableClassDefBy(HIDE_PHONE).methods.single { it.origName == n }.controlBody().mapNotNull { it.controlRef() } }
             assertTrue("$name: Telegram's formatting", site.format in stub("stockFormat"))
             assertTrue("$name: the account's number", "$TL_USER->phone:Ljava/lang/String;" in stub("ownPhone"))
-            assertTrue("$name: every account", "$USER_CONFIG->getMaxAccountCount()I" in stub("accounts"))
+            // 13.2 inlines getMaxAccountCount, so the stub counts every slot of the per-account table.
+            assertTrue("$name: every account", "$USER_CONFIG->Instance:[$USER_CONFIG" in stub("accounts"))
+            assertTrue("$name: every account", context.tgMutableClassDefBy(HIDE_PHONE).methods.single { it.origName == "accounts" }
+                .controlBody().any { it.opcode == Opcode.ARRAY_LENGTH })
             assertEquals("$name: the share box asks the runtime once", 1, share.view.controlBody().count { it.controlRef() == STARTS_TICKED })
             for (flag in listOf("hidePhoneNumber", "shareNumberUnticked")) {
                 val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == flag }.controlBody()

@@ -133,6 +133,23 @@ internal object FixtureDex {
      */
     fun forEach(build: File, visit: (DexBackedDexFile) -> Unit) = forEachDex(build, visit)
 
+    /**
+     * Runs [block] with [build]'s names. A helper that reads a resource id 13.2 inlined into a const
+     * off copies it kept, outside any scan, would otherwise name it through whichever context a test
+     * made last, which may be the other build's.
+     */
+    fun <T> namedBy(build: File, block: () -> T): T {
+        val current = PatcherContext::class.java.getDeclaredField("current").apply { isAccessible = true }
+        val patcher = current.get(null)
+        current.set(null, null)
+        TelegramNames.forVersionCode(build.nameWithoutExtension.substringAfterLast('-'))?.let { TelegramNames.ambient = it }
+        try {
+            return block()
+        } finally {
+            current.set(null, patcher)
+        }
+    }
+
     /** The classes of [types] (source names) the build carries, keyed by those names. */
     fun classes(build: File, types: Set<String>): Map<String, ClassDef> {
         val found = mutableMapOf<String, ClassDef>()
@@ -192,6 +209,9 @@ internal object FixtureDex {
     }
 
     fun inputIdentity(build: File): String {
+        // Tests key their kept copies of a build's classes by this identity and then read names off
+        // them without reading the fixture again, so the names have to come from this build's table.
+        TelegramNames.forVersionCode(build.nameWithoutExtension.substringAfterLast('-'))?.let { TelegramNames.ambient = it }
         val digest = MessageDigest.getInstance("SHA-256")
         build.inputStream().use { input ->
             val buffer = ByteArray(256 * 1024)

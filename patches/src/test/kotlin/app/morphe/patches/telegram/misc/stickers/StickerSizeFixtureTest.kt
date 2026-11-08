@@ -23,6 +23,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import app.morphe.util.names.origRef
+import app.morphe.util.names.loadsInt
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
 import app.morphe.util.names.tgMutableClassDefBy
@@ -36,7 +37,8 @@ class StickerSizeFixtureTest {
             val name = build.name
             val hosts = FixtureDex.classesWhere(build, { true }) { m ->
                 m.origDefiningClass == MESSAGE_OBJECT ||
-                    m.controlBody().any { it.opcode == Opcode.SGET && it.controlRef() == contentLabel }
+                    // 13.2 loads the label's id as a number, without the R field.
+                    m.controlBody().any { it.loadsInt() && it.controlRef() == contentLabel }
             }.map(ImmutableClassDef::of)
             val context = PatchContexts.of(ExtensionDex.classes() + hosts)
             val plan = context.resolveStickerSize()

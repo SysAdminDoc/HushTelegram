@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.apps
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
@@ -28,6 +29,7 @@ internal const val SECRET_CHAT = "Lorg/telegram/tgnet/TLRPC\$EncryptedChat;"
 internal const val SECRET_REQUESTED = "Lorg/telegram/tgnet/TLRPC\$TL_encryptedChatRequested;"
 internal const val SECRET_REFUSE = "$SECRET_CHATS->refuse()Z"
 private const val SECRET_CHAT_FIELD = "$SECRET_UPDATE->chat:$SECRET_CHAT"
+private const val SECRET_DH_CONFIG = "Lorg/telegram/tgnet/TLRPC\$TL_messages_getDhConfig;"
 
 /** processUpdateEncryption, and the check that goes in front of it. */
 internal class SecretChatsSite(val method: MutableMethod) {
@@ -61,13 +63,15 @@ internal fun BytecodePatchContext.resolveSecretChats(): SecretChatsSite {
     val owner = tgMutableClassDefByOrNull(SECRET_HELPER)
     controlShape(owner != null, "Telegram's secret chat helper is missing")
     val method = owner!!.methods.filter { it.origName == "processUpdateEncryption" && it.origReturnType == "V" &&
-        it.parameterTypes.size == 2 && it.parameterTypes[0].toString() == SECRET_UPDATE && it.implementation != null &&
+        it.parameterTypes.size == 2 && it.origParameterTypes[0] == SECRET_UPDATE && it.implementation != null &&
         !AccessFlags.STATIC.isSet(it.accessFlags) }.controlSingle("the secret chat update entry")
     val body = method.controlBody()
     controlShape(body.firstOrNull()?.let { it.opcode == Opcode.IGET_OBJECT && it.controlRef() == SECRET_CHAT_FIELD } == true,
         "the secret chat update no longer starts by reading its chat")
+    // 13.2 inlined acceptSecretChat here, which starts by asking for the key exchange's DH config.
     controlShape(body.any { it.opcode == Opcode.INSTANCE_OF && it.controlRef() == SECRET_REQUESTED } &&
-        body.any { it.controlRef()?.startsWith("$SECRET_HELPER->acceptSecretChat(") == true },
+        body.any { it.controlRef()?.startsWith("$SECRET_HELPER->acceptSecretChat(") == true ||
+            (it.opcode == Opcode.NEW_INSTANCE && it.controlRef() == SECRET_DH_CONFIG) },
         "the secret chat update no longer accepts a requested chat")
     controlShape(method.implementation!!.registerCount - method.parameterTypes.size - 1 >= 2, "the secret chat update has no free registers")
     return SecretChatsSite(method).also { it.rehearse() }

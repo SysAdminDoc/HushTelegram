@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.forward
 
+import app.morphe.util.names.origString
 import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
@@ -28,6 +29,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
+import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origType
 import app.morphe.util.names.tgClassDefByOrNull
 import app.morphe.util.names.tgMutableClassDefByOrNull
@@ -126,11 +129,11 @@ internal fun BytecodePatchContext.resolveForwardHideSender(): ForwardHideSenderS
 
     val params = tgMutableClassDefByOrNull(PREVIEW_PARAMS)
     controlShape(params != null, "MessagePreviewParams is missing")
-    controlShape(params!!.fields.any { "${it.definingClass}->${it.name}:${it.type}" == FORWARDS && !AccessFlags.STATIC.isSet(it.accessFlags) },
+    controlShape(params!!.fields.any { it.origString() == FORWARDS && !AccessFlags.STATIC.isSet(it.accessFlags) },
         "the forward preview no longer holds its messages")
-    controlShape(params.fields.any { "${it.definingClass}->${it.name}:${it.type}" == HIDE_SENDERS && !AccessFlags.STATIC.isSet(it.accessFlags) },
+    controlShape(params.fields.any { it.origString() == HIDE_SENDERS && !AccessFlags.STATIC.isSet(it.accessFlags) },
         "the forward preview no longer has a Hide sender's name flag")
-    val update = params.methods.filter { "${it.definingClass}->${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == UPDATE_FORWARD &&
+    val update = params.methods.filter { it.origString() == UPDATE_FORWARD &&
         !AccessFlags.STATIC.isSet(it.accessFlags) }.controlSingle("forward preview update")
     controlShape(update.controlBody().any { it.controlRef() == FORWARDS }, "the forward preview update no longer stores the messages")
     controlShape(ControlFlow.of(update).normal.none { 0 in it }, "something jumps back to the start of the forward preview update")
@@ -140,7 +143,7 @@ internal fun BytecodePatchContext.resolveForwardHideSender(): ForwardHideSenderS
         "a message no longer has its type and account")
     val config = tgClassDefByOrNull(USER_CONFIG)
     controlShape(config != null && listOf("getInstance(I)$USER_CONFIG", "isPremium()Z").all { wanted ->
-        config.methods.any { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) }
+        config.methods.any { "${it.origName}(${it.origParameterTypes.joinToString("")})${it.origReturnType}" == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) }
     }, "Telegram's Premium check changed")
 
     val article = premiumHideSenderTypes().toList().controlSingle("the Premium gate on hiding an article's sender")

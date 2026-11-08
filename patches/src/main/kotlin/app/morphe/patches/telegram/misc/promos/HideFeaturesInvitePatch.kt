@@ -4,6 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.promos
 
+import app.morphe.util.names.origParameterTypes
+import app.morphe.util.names.origString
 import app.morphe.util.names.addInstructions
 import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -33,6 +35,8 @@ import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
@@ -177,7 +181,7 @@ internal fun BytecodePatchContext.resolveFeaturesInvite(): FeaturesInviteSite {
         cls.methods.forEach { m ->
             val refs = m.controlBody().mapNotNull { it.controlRef() }
             if (FEATURES_LABEL in refs && AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" &&
-                m.parameterTypes.map(CharSequence::toString) == listOf(cls.type, "Ljava/util/ArrayList;")) builders += cls.type to ref(m)
+                m.origParameterTypes == listOf(cls.origType, "Ljava/util/ArrayList;")) builders += cls.type to ref(m)
             if (INVITE_LABEL in refs && INVITE_ICON in refs && !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" &&
                 m.parameterTypes.size == 3 && m.parameterTypes.take(2).map(CharSequence::toString) == listOf("I", "I")) binders += cls.type to ref(m)
         }
@@ -188,7 +192,7 @@ internal fun BytecodePatchContext.resolveFeaturesInvite(): FeaturesInviteSite {
     val settings = tgMutableClassDefBy(settingsType).methods.single { ref(it) == settingsRef }
     val body = settings.controlBody()
     val label = body.indices.filter { body[it].controlRef() == FEATURES_LABEL }.controlSingle("Telegram Features label")
-    controlShape(body.getOrNull(label + 1)?.controlRef() == STRING && body.getOrNull(label + 2)?.opcode == Opcode.MOVE_RESULT_OBJECT,
+    controlShape(body.getOrNull(label + 1)?.isGetString() == true && body.getOrNull(label + 2)?.opcode == Opcode.MOVE_RESULT_OBJECT,
         "the Telegram Features label no longer becomes a row title")
     val title = body[label + 2].namedRegisters().single()
     val factory = (label + 3 until minOf(body.size, label + FACTORY_REACH)).firstOrNull { at ->
@@ -221,11 +225,11 @@ internal fun BytecodePatchContext.resolveFeaturesInvite(): FeaturesInviteSite {
     val adapterField = resume[view + 1].controlField()!!
     controlShape(adapterField.origDefiningClass == listField.origType, "Settings' adapter isn't its list view's")
     val update = screen.methods.flatMap { m -> m.controlBody().filter { it.opcode == Opcode.INVOKE_VIRTUAL } }.mapNotNull { it.call() }
-        .filter { it.origDefiningClass == adapterField.origType && it.parameterTypes.map(CharSequence::toString) == listOf("Z") && it.origReturnType == "V" }
-        .map { "${it.definingClass}->${it.name}(Z)V" }.distinct().controlSingle("Settings' list update")
+        .filter { it.origDefiningClass == adapterField.origType && it.origParameterTypes == listOf("Z") && it.origReturnType == "V" }
+        .map { "${it.origDefiningClass}->${it.origName}(Z)V" }.distinct().controlSingle("Settings' list update")
     controlShape(AccessFlags.PUBLIC.isSet(screen.accessFlags) && reachable(listField.definingClass, listField.name) &&
         reachable(adapterField.definingClass, adapterField.name) && tgClassDefByOrNull(adapterField.type)?.let { found ->
-            AccessFlags.PUBLIC.isSet(found.accessFlags) && found.methods.any { "${it.definingClass}->${it.name}(Z)V" == update && AccessFlags.PUBLIC.isSet(it.accessFlags) }
+            AccessFlags.PUBLIC.isSet(found.accessFlags) && found.methods.any { "${it.origDefiningClass}->${it.origName}(Z)V" == update && AccessFlags.PUBLIC.isSet(it.accessFlags) }
         } == true, "Settings' list update can't be called from outside")
 
     // Contacts: the adapter that binds Invite Friends, and the sectioned list base it extends.
@@ -282,14 +286,19 @@ internal fun BytecodePatchContext.resolveFeaturesInvite(): FeaturesInviteSite {
     val onlyUsers = stored("I", Opcode.IPUT)
     val binder = adapter.methods.single { ref(it) == binderRef }
     val bound = binder.controlBody()
-    val inviteList = bound.indices.filter { bound[it].controlRef() == INVITE_LABEL }.flatMap { at ->
-        (maxOf(0, at - HEADING_REACH) until at).filter { bound[it].opcode == Opcode.IGET_BOOLEAN && bound[it].controlField()?.origDefiningClass == adapterType }
+    // A heading is where the label's text is fetched: 13.2 loads the id once at the top and fetches it further down.
+    val boundFlow = ControlFlow.of(binder)
+    val headings = bound.indices.filter { at -> bound[at].isGetString() &&
+        boundFlow.oneWrite(at, bound[at].namedRegisters().first())?.let { bound[it].controlRef() == INVITE_LABEL } == true }
+    val inviteList = headings.flatMap { at ->
+        (at - 1 downTo 0).filter { bound[it].controlRef() != INVITE_LABEL }.take(HEADING_REACH)
+            .filter { bound[it].opcode == Opcode.IGET_BOOLEAN && bound[it].controlField()?.origDefiningClass == adapterType }
             .map { bound[it].controlRef()!! }
     }.filter { it != phonebook }.distinct().controlSingle("the empty Contacts list's flag")
     controlShape(adapter.methods.any { it.origName == count.origName && shape(it, listOf("I"), "I") && it.controlBody().firstOrNull()?.controlRef() == inviteList },
         "the empty Contacts list's flag no longer decides its section counts")
     controlShape(AccessFlags.PUBLIC.isSet(adapter.accessFlags) && listOf(phonebook, onlyUsers, inviteList).all { wanted ->
-        adapter.fields.any { "${it.definingClass}->${it.name}:${it.type}" == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) }
+        adapter.fields.any { it.origString() == wanted && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) }
     }, "the Contacts list's flags can't be read from outside")
 
     val base2 = tgMutableClassDefBy(base.type)
@@ -312,11 +321,33 @@ private fun onlyEntry(method: Method, at: Int, from: Int): Boolean {
     return flow.normal.indices.filter { at in flow.normal[it] } == listOf(from)
 }
 
+/** The one write of [register] that reaches [use] on every path in, or null when none or several do. */
+private fun ControlFlow.oneWrite(use: Int, register: Int): Int? {
+    val predecessors = Array(instructions.size) { mutableListOf<Int>() }
+    for (index in instructions.indices) for (next in normal[index] + exceptional[index]) predecessors[next] += index
+    val pending = ArrayDeque(predecessors[use])
+    val visited = mutableSetOf<Int>()
+    val found = mutableSetOf<Int>()
+    while (pending.isNotEmpty()) {
+        val index = pending.removeFirst()
+        if (!visited.add(index)) continue
+        if (instructions[index].writes(register)) found += index
+        else if (predecessors[index].isEmpty()) return null
+        else pending.addAll(predecessors[index])
+    }
+    return found.singleOrNull()
+}
+
 private fun Instruction.writes(register: Int): Boolean {
     if (!opcode.setsRegister()) return false
     val destination = namedRegisters().firstOrNull() ?: return false
     return destination == register || opcode.setsWideRegister() && destination + 1 == register
 }
 
-private fun shape(m: Method, parameters: List<String>, result: String) = m.parameterTypes.map(CharSequence::toString) == parameters && m.origReturnType == result
-private fun ref(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
+private fun shape(m: Method, parameters: List<String>, result: String) = m.origParameterTypes == parameters && m.origReturnType == result
+private fun ref(m: Method) = m.origString()
+
+/** LocaleController.getString(int), which 13.2 mostly inlines into getString(null, int) with the two swapped. */
+private fun Instruction.isGetString() = controlRef() == STRING || ((this as? ReferenceInstruction)?.reference as? MethodReference)?.let {
+    it.origDefiningClass == "Lorg/telegram/messenger/LocaleController;" && it.origName == "getString" &&
+        it.origParameterTypes == listOf("I", "Ljava/lang/String;") } == true

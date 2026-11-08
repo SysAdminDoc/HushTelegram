@@ -9,8 +9,10 @@ import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
 import app.morphe.util.names.origRef
+import app.morphe.util.names.origString
 import app.morphe.util.names.addInstruction
 import app.morphe.util.names.replaceInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction as rawReplaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
@@ -122,10 +124,12 @@ class RevealSpoilersFixtureTest {
         // and the photo strip draw media; sending, retrying and notifications ask Telegram. Text is
         // covered in messages, the chat list, replies, quotes, Instant View and the composer, which
         // keeps its cover. A new caller fails here so it gets the same review.
+        // Reviewed 2026-11-07 for 13.2: two helpers built around a chat bubble (each takes the
+        // ChatMessageCell it draws for) now draw part of its media, and the bubble keeps 13 of its 14.
         for (build in Fixtures.declaredBuilds()) {
             val methods = hosts(build).flatMap { it.methods }
             val checks = methods.filter { m -> m.controlBody().any { it.controlRef() == HAS_MEDIA_SPOILERS } }
-            assertEquals("${build.name}: media checks ${checks.map { key(it) }}", 28, checks.size)
+            assertEquals("${build.name}: media checks ${checks.map { key(it) }}", 29, checks.size)
             val covers = FixtureDex.classesWhere(build, { true }) { m -> m.controlBody().any { it.controlRef()?.endsWith(CORE) == true } }
                 .flatMap { it.methods }.count { m -> m.controlBody().any { it.controlRef()?.endsWith(CORE) == true } }
             assertEquals("${build.name}: text covers", 7, covers)
@@ -135,8 +139,9 @@ class RevealSpoilersFixtureTest {
     @Test fun `a changed check or runtime refuses before any method changes`() {
         for (build in Fixtures.declaredBuilds()) {
             val mutations: List<Pair<String, (BytecodePatchContext, RevealSpoilersSite) -> Unit>> = listOf(
-                "the media check reads something new" to { c, _ -> c.tgMutableClassDefBy(MESSAGE_OBJECT).methods.single { it.toString() == HAS_MEDIA_SPOILERS }
-                    .replaceInstruction(0, "iget-boolean v0, v1, $MESSAGE_OBJECT->hushNew:Z") },
+                // In the build's own names: 13.2's table refuses a member the class doesn't have, and this one is made up.
+                "the media check reads something new" to { c, _ -> c.tgMutableClassDefBy(MESSAGE_OBJECT).methods.single { it.origString() == HAS_MEDIA_SPOILERS }
+                    .let { m -> m.rawReplaceInstruction(0, "iget-boolean v0, v1, ${m.definingClass}->hushNew:Z") } },
                 "a drawing class sends a spoiler" to { _, s -> s.media.first().method.addInstruction(0, "iput-boolean v0, v0, $SEND_PARAMS->hasMediaSpoilers:Z") },
                 "the answer isn't read" to { _, s -> s.media.first().let { it.method.replaceInstruction(it.index + 1, "nop") } },
                 "no reveal check" to { c, _ -> c.tgMutableClassDefBy(TEXT_BLOCKS).methods.forEach { m ->
@@ -144,7 +149,7 @@ class RevealSpoilersFixtureTest {
                 "text cover not static" to { _, s -> s.textCovers.accessFlags = s.textCovers.accessFlags and AccessFlags.STATIC.value.inv() },
                 "span check private" to { c, s -> val m = c.tgMutableClassDefBy(s.span.definingClass).methods.single { it.origName == s.span.origName && it.parameterTypes.isEmpty() }
                     m.accessFlags = m.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value },
-                "view-once check private" to { c, _ -> val m = c.tgMutableClassDefBy(MESSAGE_OBJECT).methods.single { it.toString() == "$MESSAGE_OBJECT->needDrawBluredPreview()Z" }
+                "view-once check private" to { c, _ -> val m = c.tgMutableClassDefBy(MESSAGE_OBJECT).methods.single { it.origString() == "$MESSAGE_OBJECT->needDrawBluredPreview()Z" }
                     m.accessFlags = m.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value },
                 "missing build flag" to { c, _ -> c.tgMutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.origName == "revealSpoilers" } },
                 "private media hook" to { c, _ -> val h = c.tgMutableClassDefBy(SPOILERS).methods.single { it.origName == "mediaCovered" }

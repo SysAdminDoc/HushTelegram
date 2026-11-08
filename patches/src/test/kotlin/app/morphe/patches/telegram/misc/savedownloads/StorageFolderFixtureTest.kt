@@ -22,7 +22,9 @@ import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
+import app.morphe.util.names.origParameterTypes
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -41,6 +43,7 @@ import org.junit.rules.TemporaryFolder
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import app.morphe.util.names.origName
+import app.morphe.util.names.origType
 import app.morphe.util.names.tgMutableClassDefBy
 
 /** ImageLoader's Android 11 folder for Telegram's own files on both declared builds, where the storage folder switch reaches it (#7). */
@@ -51,9 +54,8 @@ class StorageFolderFixtureTest {
         MESSAGES_STORAGE, GALLERY_MEDIA_CONTROLLER, ANDROID_UTILITIES, LOAD_OPERATION)
 
     private fun context(build: File): BytecodePatchContext {
-        val images = FixtureDex.classes(build, setOf(IMAGE_LOADER)).values.single()
         // Keyed by source names, and kept as read, so the context takes this build's name table.
-        val host = FixtureDex.classes(build, hosts + images.delegateCandidates())
+        val host = FixtureDex.classes(build, hosts + downloadHosts(build))
         assertTrue("${build.name}: Telegram's download and folder classes", host.keys.containsAll(hosts))
         return PatchContexts.of(ExtensionDex.classes() + host.values)
     }
@@ -67,9 +69,13 @@ class StorageFolderFixtureTest {
 
     private fun BytecodePatchContext.attachPaths() = tgMutableClassDefBy(FILE_LOADER).methods.filter { it.origName == "getPathToAttach" }
 
-    private fun BytecodePatchContext.attachPath() = attachPaths().single { it.parameterTypes.size == 5 }
+    // (object, ext, ext, boolean, boolean), or (object, ext, boolean, boolean) where the build drops the unused ext.
+    private fun BytecodePatchContext.attachPath() = attachPaths().single { it.parameterTypes.size >= 4 }
 
-    private fun BytecodePatchContext.loadStart() = tgMutableClassDefBy(LOAD_OPERATION).methods.single { it.origName == "start" && it.parameterTypes.size == 3 }
+    // The start that keeps cacheFileFinal: start(stream, offset, priority), or the plain start() the build merges it into.
+    private fun BytecodePatchContext.loadStart() = tgMutableClassDefBy(LOAD_OPERATION).methods.single { method ->
+        method.origName == "start" && method.controlBody().any { it.opcode == Opcode.IPUT_OBJECT && it.controlRef() == STORAGE_CACHE_FINAL }
+    }
 
     private fun BytecodePatchContext.olderLoads() = tgMutableClassDefBy(LOAD_OPERATION).methods.sumOf { m ->
         m.controlBody().count { it.controlRef() == STORAGE_OLDER_FILE }
@@ -107,7 +113,7 @@ class StorageFolderFixtureTest {
             assertEquals(name, Opcode.RETURN_OBJECT, path[k + 2].opcode)
             assertEquals(name, GALLERY_FILE_IN, path[k - 1].controlRef())
             assertEquals(name, file, path[k - 1].namedRegisters().first())
-            assertEquals(name, STORAGE_ATTACH_NAME, path[k - 3].controlRef())
+            assertTrue(name, path[k - 3].callsAttachName())
             assertEquals(name, stockPath.filter { it[0] != Opcode.NOP },
                 path.filterIndexed { i, _ -> i != k && i != k + 1 }.map { it.shape() }.filter { it[0] != Opcode.NOP })
 
@@ -197,16 +203,17 @@ class StorageFolderFixtureTest {
 
     @Test fun `a changed download path keeps the moved folder and older files download again`() {
         val build = Fixtures.declaredBuilds().first()
-        fun BytecodePatchContext.nameCall() = attachPath().controlBody().indexOfFirst { it.controlRef() == STORAGE_ATTACH_NAME }
         val shapes = listOf<Pair<String, (BytecodePatchContext) -> Unit>>(
             "Telegram's download path changed (0 places)" to { context ->
                 val method = context.attachPath()
-                val at = context.nameCall()
-                val attached = method.getInstruction(at).namedRegisters().first()
+                val at = context.resolveOlderFiles().at - 3
+                // The object's register, wherever the build puts it among the call's two.
+                val call = method.getInstruction(at)
+                val attached = call.namedRegisters()[call.call()!!.origParameterTypes.indexOf(TL_OBJECT)]
                 method.replaceInstruction(at, "invoke-static/range {v$attached .. v$attached}, $ATTACH_NAME")
             },
             "FileLoader.getPathToAttach changed" to { context ->
-                context.tgMutableClassDefBy(FILE_LOADER).methods.removeAll { it.origName == "getPathToAttach" && it.parameterTypes.size == 5 }
+                context.tgMutableClassDefBy(FILE_LOADER).methods.removeAll { it.origName == "getPathToAttach" && it.parameterTypes.size >= 4 }
             },
         )
         for ((why, change) in shapes) {
@@ -238,8 +245,9 @@ class StorageFolderFixtureTest {
                 val start = context.loadStart()
                 val methods = context.tgMutableClassDefBy(LOAD_OPERATION).methods
                 methods.remove(start)
-                methods.add(MutableMethod(ImmutableMethod(start.definingClass, start.name, start.parameters, "V", start.accessFlags,
-                    null, null, start.implementation)))
+                // Its result flipped (the build's start() returns nothing), under the source name so it's still start.
+                methods.add(MutableMethod(ImmutableMethod(start.definingClass, "start", start.parameters,
+                    if (start.returnType == "V") "Z" else "V", start.accessFlags, null, null, start.implementation)))
             },
         )
         fun BytecodePatchContext.loader() = tgMutableClassDefBy(LOAD_OPERATION).methods.filter { it.origName != "onFinishLoadingFile" }

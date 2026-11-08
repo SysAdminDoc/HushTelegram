@@ -35,7 +35,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import java.lang.ref.SoftReference
+import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
+import app.morphe.util.names.origString
 import app.morphe.util.names.tgClassDefByOrNull
 import app.morphe.util.names.tgMutableClassDefBy
 
@@ -69,7 +71,7 @@ class HideTranslateBarFixtureTest {
             // Message translation and the controller itself keep Telegram's answer.
             assertEquals("$name: every other method, MessageObject's included", untouched, hostState(build, context, changed))
             val readers = hosts(build).flatMap { it.methods }.filter { m -> m.controlBody().any { it.controlRef() == BAR_HIDDEN } }
-                .map { it.definingClass }.toSet()
+                .map { it.origDefiningClass }.toSet()
             assertTrue("$name: message translation still asks", MESSAGE_OBJECT in readers && TRANSLATE_CONTROLLER in readers)
 
             for ((stub, target) in listOf("stockHidden" to BAR_HIDDEN, "translating" to TRANSLATING)) {
@@ -87,7 +89,7 @@ class HideTranslateBarFixtureTest {
             val mutations: List<Pair<String, (BytecodePatchContext, List<TranslateBarSite>) -> Unit>> = listOf(
                 "the answer isn't read" to { _, s -> s.first().method.replaceInstruction(s.first().index + 1, "nop") },
                 "no read left" to { _, s -> s.forEach { it.method.replaceInstruction(it.index, "nop") } },
-                "translating check private" to { c, _ -> val m = c.tgMutableClassDefBy(TRANSLATE_CONTROLLER).methods.single { it.toString() == TRANSLATING }
+                "translating check private" to { c, _ -> val m = c.tgMutableClassDefBy(TRANSLATE_CONTROLLER).methods.single { it.origString() == TRANSLATING }
                     m.accessFlags = m.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value },
                 "missing build flag" to { c, _ -> c.tgMutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.origName == "hideTranslateBar" } },
                 "private hidden hook" to { c, _ -> val h = c.tgMutableClassDefBy(TRANSLATE_BAR).methods.single { it.origName == "hidden" }

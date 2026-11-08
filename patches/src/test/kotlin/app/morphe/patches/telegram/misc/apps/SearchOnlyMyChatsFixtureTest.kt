@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.apps
 
+import app.morphe.util.names.loadsInt
 import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
@@ -109,14 +110,20 @@ class SearchOnlyMyChatsFixtureTest {
             val row = stock.getValue(System.identityHashCode(update)).body()
             val rowAfter = update.body()
             val end = sites.tabs.end
+            // 13.2's merged adapter keeps the list in an Object field, so the hook casts it first.
+            val cast = sites.tabs.list.type != "Ljava/util/ArrayList;"
+            val hook = if (cast) 3 else 2
             assertEquals("$name: the row keeps every instruction it had", row.map(::operands),
-                rowAfter.indices.filter { it !in end until end + 2 }.map { operands(rowAfter[it]) })
-            assertEquals("$name: the row's list goes to the runtime", listOf(Opcode.IGET_OBJECT, Opcode.INVOKE_STATIC, Opcode.RETURN_VOID),
-                rowAfter.subList(end, end + 3).map { it.opcode })
+                rowAfter.indices.filter { it !in end until end + hook }.map { operands(rowAfter[it]) })
+            assertEquals("$name: the row's list goes to the runtime",
+                listOfNotNull(Opcode.IGET_OBJECT, Opcode.CHECK_CAST.takeIf { cast }, Opcode.INVOKE_STATIC, Opcode.RETURN_VOID),
+                rowAfter.subList(end, end + hook + 1).map { it.opcode })
             assertEquals("$name: it's the row's own list", sites.tabs.list.toString(), rowAfter[end].ref())
             assertEquals("$name: read from the adapter", update.implementation!!.registerCount - 1, rowAfter[end].namedRegisters()[1])
-            assertEquals("$name: and handed over", listOf(rowAfter[end].namedRegisters()[0]), rowAfter[end + 1].namedRegisters())
-            assertEquals("$name: to dropPublicTabs", DROP_PUBLIC_TABS, rowAfter[end + 1].ref())
+            if (cast) assertEquals("$name: as a list", listOf(Opcode.CHECK_CAST, listOf(rowAfter[end].namedRegisters()[0]), "Ljava/util/ArrayList;"),
+                operands(rowAfter[end + 1]))
+            assertEquals("$name: and handed over", listOf(rowAfter[end].namedRegisters()[0]), rowAfter[end + hook - 1].namedRegisters())
+            assertEquals("$name: to dropPublicTabs", DROP_PUBLIC_TABS, rowAfter[end + hook - 1].ref())
             val stockInto = ControlFlow.of(stock.getValue(System.identityHashCode(update))).let { flow ->
                 flow.instructions.indices.filter { end in flow.normal[it] } }
             val into = ControlFlow.of(update).let { flow -> flow.instructions.indices.filter { end in flow.normal[it] } }
@@ -149,10 +156,22 @@ class SearchOnlyMyChatsFixtureTest {
             assertEquals("$name: asks keepHashtag", KEEP_HASHTAG, hashtag[2].ref())
             assertEquals("$name: with the controller, the tag and the kind",
                 listOf(sites.hashtag.self, sites.hashtag.hashtag, sites.hashtag.kind), hashtag[2].namedRegisters())
-            assertEquals("$name: the tag is the first argument", search.implementation!!.registerCount - 4, sites.hashtag.hashtag)
+            // 13.2 hands the tag over behind the numbers, so it's wherever the build put the string.
+            val arguments = search.parameterTypes.map(CharSequence::toString)
+            assertEquals("$name: the tag is the string argument", search.implementation!!.registerCount - 4 + arguments.indexOf("Ljava/lang/String;"),
+                sites.hashtag.hashtag)
             assertEquals("$name: ends through endPublicPosts", END_PUBLIC_POSTS, hashtag[5].ref())
             assertEquals("$name: with the controller, the screen and the kind",
                 listOf(sites.hashtag.self, sites.hashtag.guid, sites.hashtag.kind), hashtag[5].namedRegisters())
+            // The screen's number is the argument a chat hands over from its classGuid.
+            val chat = myChatsSearchHosts(build).flatMap { it.methods }.flatMap { method -> method.body().let { body ->
+                body.indices.filter { at -> body[at].call()?.let { it.definingClass == search.definingClass && it.name == search.name } == true }
+                    .mapNotNull { at -> body.subList(0, at).lastOrNull { it.opcode == Opcode.IGET && (it as ReferenceInstruction).reference
+                        .let { field -> field is FieldReference && field.name == "classGuid" } }
+                        ?.let { guid -> body[at].namedRegisters().drop(1).indexOf(guid.namedRegisters()[0]).takeIf { it >= 0 } } } } }
+            assertTrue("$name: a chat hands its classGuid to the search", chat.isNotEmpty())
+            assertEquals("$name: the screen's number is the one a chat hands over", setOf(sites.hashtag.guid - search.implementation!!.registerCount + 4),
+                chat.toSet())
             assertEquals("$name: the stock search follows untouched", stockHashtag.map(::operands), hashtag.drop(7).map(::operands))
             val flow = ControlFlow.of(search)
             assertEquals("$name: your own messages go to the stock search", setOf(2, 7), flow.normal[1].toSet())
@@ -203,6 +222,8 @@ class SearchOnlyMyChatsFixtureTest {
             }
             assertEquals("$name: the row from the pager", listOf(sites.tabs.adapter.toString(), sites.tabs.list.toString()),
                 stub("tabs").filter { it.opcode == Opcode.IGET_OBJECT }.map { it.ref() })
+            if (cast) assertEquals("$name: handed back as a list", listOf(Opcode.CHECK_CAST, "Ljava/util/ArrayList;", Opcode.RETURN_OBJECT),
+                stub("tabs").takeLast(2).flatMap { listOfNotNull(it.opcode, it.ref()) })
             val finish = stub("finishPublicPosts").mapNotNull { it.ref() }
             for (part in listOf("$HASHTAG_SEARCH->getSearchResult(I)$HASHTAG_RESULT", "$HASHTAG_RESULT->clear()V",
                 "$HASHTAG_RESULT->loading:Z", "$HASHTAG_RESULT->endReached:Z", "$NOTIFICATIONS->hashtagSearchUpdated:I",
@@ -290,9 +311,9 @@ class SearchOnlyMyChatsFixtureTest {
             Triple("a public tab's title gone", "search tab titles has 0 matches") { context, sites ->
                 val apps = "$TITLES->AppsTab:I"
                 val title = context.tgMutableClassDefBy(sites.tabs.update.definingClass).methods.single { method ->
-                    method.body().any { it.opcode == Opcode.SGET && it.ref() == apps } }
+                    method.body().any { it.loadsInt() && it.ref() == apps } }
                 val body = title.body()
-                val at = body.indices.single { body[it].opcode == Opcode.SGET && body[it].ref() == apps }
+                val at = body.indices.single { body[it].loadsInt() && body[it].ref() == apps }
                 title.replaceInstruction(at, "sget v${body[at].namedRegisters()[0]}, $TITLES->SearchAppsPopular:I")
             },
             Triple("Downloads counted from another place", "no longer opens the Downloads tab by its place on the row") { _, sites ->
@@ -353,7 +374,7 @@ class SearchOnlyMyChatsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val titled = FixtureDex.methodsWhere(build, { true }) { method -> method.body().let { body ->
-                SearchTab.entries.all { tab -> body.any { it.opcode == Opcode.SGET && it.ref() == "$TITLES->${tab.title}:I" } } } }
+                SearchTab.entries.all { tab -> body.any { it.loadsInt() && it.ref() == "$TITLES->${tab.title}:I" } } } }
             assertEquals("$name: one method names all five tabs", 1, titled.size)
             val shortcuts = FixtureDex.methodsWhere(build, { true }) { method -> method.body().let { body ->
                 body.indices.any { at -> at + 2 < body.size && body[at].opcode == Opcode.IGET_BOOLEAN &&
@@ -362,7 +383,7 @@ class SearchOnlyMyChatsFixtureTest {
             val posts = FixtureDex.methodsWhere(build, { true }) { method -> method.body().any {
                 it.opcode == Opcode.NEW_INSTANCE && it.ref() == CHANNELS_POSTS } }
             assertTrue("$name: the hashtag search asks for public posts: ${posts.map { it.definingClass }}",
-                posts.any { it.origDefiningClass == HASHTAG_SEARCH && it.origName == "searchHashtag" })
+                FixtureDex.namedBy(build) { posts.any { it.origDefiningClass == HASHTAG_SEARCH && it.origName == "searchHashtag" } })
             // Every account search answer is read by the one reader, whichever screen asked.
             val readers = FixtureDex.methodsWhere(build, { true }) { method -> method.origDefiningClass == CONTACTS_FOUND && method.origName == "readParams" }
             assertEquals("$name: one account search answer reader", 1, readers.size)
@@ -397,7 +418,7 @@ class SearchOnlyMyChatsFixtureTest {
     private fun contextFor(build: File, runtime: Boolean = true): BytecodePatchContext {
         val extension = ExtensionDex.classes().filter { runtime || it.origType != MY_CHATS_SEARCH }
         return PatchContexts.of((extension + popularAppsOwners(build) + myChatsSearchHosts(build) + nameFoldHosts(build) +
-            newChatsHosts(build)).distinctBy { it.type })
+            newChatsHosts(build) + FixtureDex.classes(build, setOf(SECRET_HELPER)).values).distinctBy { it.type })
     }
 }
 
@@ -408,12 +429,12 @@ private val OWNERS = ConcurrentHashMap<String, List<ClassDef>>()
 internal fun popularAppsOwners(build: File): List<ClassDef> = OWNERS.hostsOf(build.path) {
     FixtureDex.classesWhere(build, { true }) { method ->
         method.body().any { (it.opcode == Opcode.NEW_INSTANCE && it.ref() == GET_POPULAR_APP_BOTS) ||
-            (it.opcode == Opcode.SGET && it.ref() == "$TITLES->SearchAppsPopular:I") }
+            (it.loadsInt() && it.ref() == "$TITLES->SearchAppsPopular:I") }
     }
 }
 
 private fun Method.namesEveryTab() = body().let { body ->
-    SearchTab.entries.all { tab -> body.any { it.opcode == Opcode.SGET && it.ref() == "$TITLES->${tab.title}:I" } } }
+    SearchTab.entries.all { tab -> body.any { it.loadsInt() && it.ref() == "$TITLES->${tab.title}:I" } } }
 
 /**
  * Everything Search only my chats reads or edits: chat search and what it builds or calls, the tab
@@ -421,11 +442,13 @@ private fun Method.namesEveryTab() = body().let { body ->
  * with its results and the notification center it posts to, the account search answer with the
  * accounts, chats and peers it lists, the lookup that tells your chats apart, and the public stories search.
  */
-internal fun myChatsSearchHosts(build: File): List<ClassDef> = HOSTS.hostsOf(build.path) {
+internal fun myChatsSearchHosts(build: File): List<ClassDef> = HOSTS.getOrPut(build.path) { FixtureDex.namedBy(build) {
     val found = FixtureDex.classesWhere(build, { true }) { method -> method.namesEveryTab() || method.body().let { body ->
         body.indices.any { at -> at + 2 < body.size && body[at].opcode == Opcode.IGET_BOOLEAN &&
             body[at + 1].opcode == Opcode.ADD_INT_LIT8 && body[at + 2].call()?.origName == "setPosition" } ||
-            body.any { it.opcode == Opcode.NEW_INSTANCE && it.ref() == PUBLIC_STORIES } } }
+            body.any { it.opcode == Opcode.NEW_INSTANCE && it.ref() == PUBLIC_STORIES } ||
+            // The screens that start a hashtag search, which tell the patch which number is theirs.
+            body.any { it.call()?.let { call -> call.origDefiningClass == HASHTAG_SEARCH && call.origName == "searchHashtag" } == true } } }
     // The adapter's tab items and the pager whose flag it reads.
     val adapter = found.single { classDef -> classDef.methods.any { it.namesEveryTab() } }
     val named = adapter.methods.flatMap { method -> method.body().mapNotNull { instruction ->
@@ -437,7 +460,7 @@ internal fun myChatsSearchHosts(build: File): List<ClassDef> = HOSTS.hostsOf(bui
     val kept = FixtureDex.classes(build, named.toSet() + setOf(HASHTAG_SEARCH, HASHTAG_RESULT, NOTIFICATIONS, CONTACTS_FOUND,
         MESSAGES_CONTROLLER, CHAT_OBJECT, TL_USER, TL_CHAT, TL_PEER)).values
     (localSearchHosts(build) + found + kept).distinctBy { it.type }.map(ImmutableClassDef::of)
-}
+} }
 
 private fun Method.body(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Instruction.ref(): String? = origRef()

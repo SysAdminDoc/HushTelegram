@@ -4,6 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.messagemenu
 
+import app.morphe.util.names.origString
+import app.morphe.util.names.origParameterTypes
 import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
@@ -42,7 +44,7 @@ class SelectBetweenFixtureTest {
             assertEquals("$name: ${sites.missing}", null, sites.missing)
             val create = chat.methods.single { m -> m.parameterTypes.isEmpty() && m.origReturnType == "V" && m.controlBody().any { it.controlRef() == "Lorg/telegram/messenger/R\$string;->SaveToMusic:I" } }
             val before = context.tgMutableClassDefBy(chat.type).methods.single { it.toString() == create.toString() }.controlBody()
-            val wrapper = chat.methods.single { m -> m.parameterTypes.map(CharSequence::toString) == listOf("Lorg/telegram/messenger/MessageObject;", "Z") && m.controlBody().size <= 4 &&
+            val wrapper = chat.methods.single { m -> m.origParameterTypes == listOf("Lorg/telegram/messenger/MessageObject;", "Z") && m.controlBody().size <= 4 &&
                 m.controlBody().any { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef()?.contains("(Lorg/telegram/messenger/MessageObject;ZZ)V") == true } }
             val recorder = wrapper.controlBody().first { it.opcode == Opcode.INVOKE_VIRTUAL }.controlRef()!!
 
@@ -74,7 +76,7 @@ class SelectBetweenFixtureTest {
             assertEquals("$name: the id register takes the answer", listOf(id), clicking[4].namedRegisters())
 
             // Selecting: the hook sees the chat and the message first.
-            val select = context.tgMutableClassDefBy(chat.type).methods.single { it.parameterTypes.size == 3 && recorder.endsWith(it.toString().substringAfter("->")) && it.toString() == recorder }
+            val select = context.tgMutableClassDefBy(chat.type).methods.single { it.parameterTypes.size == 3 && recorder.endsWith(it.origString().substringAfter("->")) && it.origString() == recorder }
             val picking = select.controlBody().filter { it.opcode != Opcode.NOP }
             val top = select.implementation!!.registerCount - 4
             assertEquals(Opcode.INVOKE_STATIC_RANGE, picking[0].opcode)
@@ -84,9 +86,14 @@ class SelectBetweenFixtureTest {
             val stub = { n: String -> context.tgMutableClassDefBy(SELECT_BETWEEN).methods.single { it.origName == n }.controlBody() }
             assertTrue("$name: the selected messages", stub("selected").any { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.origType == "[Landroid/util/SparseArray;" })
             assertTrue("$name: Telegram's list getter", stub("messages").any { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef()?.endsWith(")Ljava/util/ArrayList;") == true })
-            assertEquals("$name: the chat's select method", wrapper.toString(), stub("pick").single { it.opcode == Opcode.INVOKE_VIRTUAL }.controlRef())
+            assertEquals("$name: the chat's select method", wrapper.origString(), stub("pick").single { it.opcode == Opcode.INVOKE_VIRTUAL }.controlRef())
             assertTrue("$name: the bar's menu", stub("menu").any { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef()?.contains("(Ljava/lang/String;)") == true })
-            assertTrue("$name: the add call", stub("addMenuItem").any { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef()?.contains("(IILjava/lang/String;I)") == true })
+            // The label and the width land in their own slots whichever order the build takes them in (Play's 13.2 has the width first).
+            val add = stub("addMenuItem").single { it.opcode == Opcode.INVOKE_VIRTUAL }
+            val addDesc = add.controlRef()!!.substringAfter("(").substringBefore(")")
+            assertTrue("$name: the add call $addDesc", addDesc in setOf("IILjava/lang/String;I", "IIILjava/lang/String;"))
+            assertEquals("$name: menu, ID, icon, label, width", if (addDesc == "IILjava/lang/String;I") listOf(0, 1, 2, 3, 4) else listOf(0, 1, 2, 4, 3),
+                add.namedRegisters())
             assertEquals("Lorg/telegram/messenger/R\$drawable;->msg_select:I", stub("icon").first().controlRef())
             assertEquals("Lorg/telegram/messenger/MessageObject;->getId()I", stub("messageId").single { it.opcode == Opcode.INVOKE_VIRTUAL }.controlRef())
             assertEquals("Lorg/telegram/messenger/MessageObject;->contentType:I", stub("contentType").single { it.opcode == Opcode.IGET }.controlRef())
@@ -120,7 +127,7 @@ class SelectBetweenFixtureTest {
 
     private fun chatOf(base: List<ClassDef>) = base.first { cls ->
         cls.methods.any { m ->
-            m.parameterTypes.map(CharSequence::toString) == listOf("Lorg/telegram/messenger/MessageObject;", list, list, list) &&
+            m.origParameterTypes == listOf("Lorg/telegram/messenger/MessageObject;", list, list, list) &&
                 m.controlBody().any { it.controlRef() == FORWARD_LABEL }
         }
     }
@@ -141,11 +148,11 @@ class SelectBetweenFixtureTest {
 }
 
 /** The classes the selection bar's button needs beside the menu's own: the click handler, the list adapter and the action bar's classes. */
-internal fun selectBetweenHosts(build: File, base: List<ClassDef>): List<ClassDef> {
+internal fun selectBetweenHosts(build: File, base: List<ClassDef>): List<ClassDef> = FixtureDex.namedBy(build) {
     val list = "Ljava/util/ArrayList;"
     val chat = base.first { cls ->
         cls.methods.any { m ->
-            m.parameterTypes.map(CharSequence::toString) == listOf("Lorg/telegram/messenger/MessageObject;", list, list, list) &&
+            m.origParameterTypes == listOf("Lorg/telegram/messenger/MessageObject;", list, list, list) &&
                 m.controlBody().any { it.controlRef() == FORWARD_LABEL }
         }
     }
@@ -156,5 +163,5 @@ internal fun selectBetweenHosts(build: File, base: List<ClassDef>): List<ClassDe
     val bar = chat.methods.flatMap { it.controlBody() }.mapNotNull { it.controlRef()?.substringBefore("->") }
         .filter { it.startsWith("Lorg/telegram/ui/ActionBar/") }.toSet() + setOfNotNull(chat.superclass)
     val barClasses = FixtureDex.classes(build, bar).values.map(ImmutableClassDef::of)
-    return (owned + barClasses).filter { found -> base.none { it.origType == found.origType } }
+    (owned + barClasses).filter { found -> base.none { it.origType == found.origType } }
 }

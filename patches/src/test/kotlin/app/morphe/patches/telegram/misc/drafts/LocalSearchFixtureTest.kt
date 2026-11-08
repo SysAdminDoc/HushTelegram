@@ -268,7 +268,7 @@ class LocalSearchFixtureTest {
     }
 
     @Test fun `the census has one chat search, one second step and one pager, and a helper other screens share`() {
-        for (build in Fixtures.declaredBuilds()) {
+        for (build in Fixtures.declaredBuilds()) FixtureDex.namedBy(build) {
             val name = build.name
             val search = FixtureDex.methodsWhere(build, { true }) { it.builds(GET_SPONSORED_PEERS) }.single()
             val adapter = search.definingClass
@@ -280,9 +280,11 @@ class LocalSearchFixtureTest {
             // One pass over the app for the three things left to count.
             val wide = FixtureDex.methodsWhere(build, { true }) { method -> method.body().any {
                 it.ref() == NO_RESULT_LINE || it.call() == helper || (it.opcode == Opcode.NEW_INSTANCE && it.ref() == PUBLIC_POSTS) } }
-            val pagers = wide.filter { method -> method.body().any { it.ref() == NO_RESULT_LINE } }
-            assertEquals("$name: one method writes the no results line", 1, pagers.size)
-            assertTrue("$name: and it's the one that starts chat search", pagers.single().runs(adapter, search))
+            val writers = wide.filter { method -> method.body().any { it.ref() == NO_RESULT_LINE } }
+            // 13.2 also writes the line from one list redraw R8 merged for other screens' searches, which never starts chat search.
+            val pagers = writers.filter { it.runs(adapter, search) }
+            assertEquals("$name: one method that starts chat search writes the no results line", 1, pagers.size)
+            assertTrue("$name: past the pager, at most the one shared redraw writes it: ${writers.map { it.definingClass }}", writers.size <= 2)
             // The filtered search view searches for other screens too, so only the pager's two calls are hooked.
             val filtered = pagers.single().body().mapNotNull { it.call() }.filter { call ->
                 call.parameterTypes.map(CharSequence::toString).filterIndexed { at, _ -> at != 4 } == FILTERED }
@@ -385,7 +387,7 @@ private val HOSTS = ConcurrentHashMap<String, List<ClassDef>>()
  * classes whose text it reads (the Channels and Apps tabs among them), the filtered search view and
  * the runnables that view's search posts.
  */
-internal fun localSearchHosts(build: File): List<ClassDef> = HOSTS.hostsOf(build.path) {
+internal fun localSearchHosts(build: File): List<ClassDef> = HOSTS.getOrPut(build.path) { FixtureDex.namedBy(build) {
     val adapter = FixtureDex.classesWhere(build, { true }) { it.builds(GET_SPONSORED_PEERS) }.single()
     val search = adapter.methods.single { it.builds(GET_SPONSORED_PEERS) }
     val messages = adapter.methods.single { it.builds(GLOBAL_MESSAGES) }
@@ -416,7 +418,7 @@ internal fun localSearchHosts(build: File): List<ClassDef> = HOSTS.hostsOf(build
     val observed = FixtureDex.classes(build, supers.lastOrNull()?.fields?.map { it.type }?.toSet().orEmpty()).values
     (listOf(adapter) + users + views + supers + observed + FixtureDex.classes(build, named.toSet()).values)
         .distinctBy { it.type }.map(ImmutableClassDef::of)
-}
+} }
 
 /**
  * Where [edit]'s request is built or started in its method's stock [body]: a request a Chats tab

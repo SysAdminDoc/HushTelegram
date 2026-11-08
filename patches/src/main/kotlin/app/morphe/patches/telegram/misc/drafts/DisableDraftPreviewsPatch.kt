@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.drafts
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -41,6 +42,7 @@ import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import java.util.BitSet
 import app.morphe.util.names.origRef
 import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origInterfaces
 import app.morphe.util.names.origName
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origSuperclass
@@ -168,9 +170,9 @@ internal fun BytecodePatchContext.resolveDraftPreviewHooks(): Map<DraftPreviewTa
             builder.isStatic() && builder.hasShape(listOf(builder.definingClass, CHAR_SEQUENCE, MESSAGES_CONTROLLER, "Z"), "V") -> DraftPreviewTarget.CHAT
             !builder.isStatic() && builder.hasShape(listOf(CHAR_SEQUENCE, "Z"), "V") -> DraftPreviewTarget.SHARE
             !builder.isStatic() && builder.origReturnType == "V" && builder.params().size == 2 && builder.params()[0] == "I" -> DraftPreviewTarget.POLL
-            builder.isStatic() && builder.hasShape(listOf(builder.definingClass), "V") -> DraftPreviewTarget.STORY
             !builder.isStatic() && builder.origName == "run" && builder.hasShape(emptyList(), "V") &&
                 builder.instructions().any { it.opcode == Opcode.INSTANCE_OF && it.reference() == BOT_WEB_PAGE } -> DraftPreviewTarget.BOT_SHARE
+            builder.storySheet() != null -> DraftPreviewTarget.STORY
             else -> refuse("unknown link preview builder ${builder.definingClass}->${builder.name}")
         }
         if (target != null) found.getValue(target) += builder
@@ -304,9 +306,24 @@ private fun pollHook(method: MutableMethod): DraftPreviewHook {
     return gate(DraftPreviewTarget.POLL, method, index, finish, request)
 }
 
+/**
+ * The story link sheet a preview builder belongs to: its own class for 13.1.1's static builder, or,
+ * where 13.2 inlines that builder into the runnable the sheet posts, the sheet that runnable captured
+ * and reads right after making the request. Null for any other builder.
+ */
+internal fun Method.storySheet(): String? {
+    if (isStatic()) return definingClass.takeIf { hasShape(listOf(definingClass), "V") }
+    if (origName != "run" || !hasShape(emptyList(), "V")) return null
+    val body = instructions()
+    val request = body.indexOfFirst { it.opcode == Opcode.NEW_INSTANCE && it.reference() == WEB_PAGE_PREVIEW }
+    val read = body.getOrNull(request + 2)?.takeIf { request >= 0 && it.opcode == Opcode.IGET_OBJECT } ?: return null
+    val field = read.field() ?: return null
+    return field.type.takeIf { field.definingClass == definingClass && read.namedRegisters()[1] == implementation!!.registerCount - 1 }
+}
+
 /** The story link sheet: the builder is a delayed runnable, so the hook sits where its URL check would post it. */
 private fun BytecodePatchContext.storyHook(builder: MutableMethod): DraftPreviewHook {
-    val sheet = builder.definingClass
+    val sheet = builder.storySheet()!!
     val checks = tgMutableClassDefBy(sheet).methods.filter { it.isStatic() && it.hasShape(listOf(sheet, STRING), "V") &&
         it.instructions().any { instruction -> instruction.call()?.let { call -> call.origDefiningClass == UTILITIES && call.origName == "cancelRunOnUIThread" } == true } }
     val method = checks.one("story link URL check", ::refuse)
@@ -321,9 +338,10 @@ private fun BytecodePatchContext.storyHook(builder: MutableMethod): DraftPreview
     shape(body[load].opcode == Opcode.IGET_OBJECT && (load + 1 until post).none { runnable in body[it].writes() },
         "story URL check doesn't post the runnable it read")
     val runnableType = body[load].field()!!.type
-    shape(body[load].namedRegisters()[1] == method.parameterRegisterNumber(0) &&
+    // 13.2's runnable is the builder itself.
+    shape(body[load].namedRegisters()[1] == method.parameterRegisterNumber(0) && (runnableType == builder.definingClass && builder.origName == "run" ||
         tgClassDefByOrNull(runnableType)?.methods?.any { it.origName == "run" && it.instructions().any { instruction ->
-            instruction.call()?.let { call -> call.origDefiningClass == sheet && call.origName == builder.origName } == true } } == true,
+            instruction.call()?.let { call -> call.origDefiningClass == sheet && call.origName == builder.origName } == true } } == true),
         "story preview runnable no longer builds the request")
     val result = body.indices.filter { body[it].opcode == Opcode.MOVE_RESULT && body.getOrNull(it - 1)?.call()?.let { call ->
         call.origDefiningClass == sheet && call.hasShape(listOf(STRING), "Z") } == true }.one("story containsURL result", ::refuse)
@@ -357,7 +375,11 @@ private fun BytecodePatchContext.botShareHook(method: MutableMethod): DraftPrevi
         ?: refuse("bot share callback isn't initialized before the request")
     val index = initialize + 1
     shape((create + 1 until index).none { callback in body[it].writes() }, "bot share callback register changes before the request")
-    val run = tgClassDefByOrNull(callbackType)?.methods?.singleOrNull { it.origName == "run" && it.hasShape(listOf("Ljava/lang/Object;"), "V") }
+    // 13.2 names the callback's run as the build names its interface's, which the table only maps on the interface.
+    val run = tgClassDefByOrNull(callbackType)?.let { owner -> owner.methods.singleOrNull { m ->
+        m.hasShape(listOf("Ljava/lang/Object;"), "V") && (m.origName == "run" || owner.origInterfaces.any { face ->
+            tgClassDefByOrNull(face)?.methods?.any { it.origName == "run" && it.name == m.name && it.hasShape(listOf("Ljava/lang/Object;"), "V") } == true })
+    } }
     shape(run != null && !run.isStatic() && AccessFlags.PUBLIC.isSet(run.accessFlags) && run.instructions().take(2).let { first ->
         first.size == 2 && first[1].opcode == Opcode.CHECK_CAST && first[1].reference() == WEB_PAGE } == true,
         "bot share callback no longer takes the loaded preview")
@@ -373,7 +395,7 @@ private fun BytecodePatchContext.botShareHook(method: MutableMethod): DraftPrevi
         if-eqz v$answer, :hush_fetch
         move-object/from16 v$answer, v$callback
         const/4 v$empty, 0x0
-        invoke-virtual {v$answer, v$empty}, $callbackType->run(Ljava/lang/Object;)V
+        invoke-virtual {v$answer, v$empty}, $callbackType->${run!!.name}(Ljava/lang/Object;)V
         goto/16 :hush_done
         :hush_fetch
         nop
@@ -618,8 +640,8 @@ private fun shape(valid: Boolean, reason: String) {
     if (!valid) refuse(reason)
 }
 private fun Method.isStatic() = AccessFlags.STATIC.isSet(accessFlags)
-private fun Method.params(): List<String> = parameterTypes.map { it.toString() }
-private fun MethodReference.params(): List<String> = parameterTypes.map { it.toString() }
+private fun Method.params(): List<String> = origParameterTypes
+private fun MethodReference.params(): List<String> = origParameterTypes
 private fun Method.hasShape(parameters: List<String>, returns: String) = returnType == returns && params() == parameters
 private fun MethodReference.hasShape(parameters: List<String>, returns: String) = returnType == returns && params() == parameters
 private fun Method.sameSignature(other: Method) = name == other.name && returnType == other.returnType && params() == other.params()

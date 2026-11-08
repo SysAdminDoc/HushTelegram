@@ -4,6 +4,10 @@
  */
 package app.morphe.patches.telegram.misc.channelbar
 
+import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origDescriptor
+import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -119,13 +123,13 @@ internal fun BytecodePatchContext.resolveChannelBarButtons(): ChannelBarPlan {
         if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.filterTo(placers) { m ->
             !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" &&
-                m.parameterTypes.map { it.toString() } == listOf("I", "Z", "Z") &&
+                m.origParameterTypes == listOf("I", "Z", "Z") &&
                 m.controlBody().let { body -> (SIDE_LABELS + GIFT_LABEL).all { label -> body.any { it.controlRef() == label } } }
         }
     }
     shape(placers.size == 1, "the channel bar's button placer is missing or ambiguous (${placers.size})")
     val placer = placers.single()
-    val place = "${placer.definingClass}->${placer.name}(IZZ)V"
+    val place = "${placer.origDefiningClass}->${placer.origName}(IZZ)V"
     val numbers = SIDE_LABELS.map { label -> buttonNumber(placer, label) }
     shape(numbers.distinct().size == numbers.size && numbers.all { it in 0..14 } &&
         buttonNumber(placer, GIFT_LABEL) !in numbers, "the channel bar's side buttons no longer have numbers of their own")
@@ -182,7 +186,7 @@ private fun constantBefore(body: List<Instruction>, before: Int, register: Int, 
     }
 }
 
-private fun signature(m: Method) = "${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
+private fun signature(m: Method) = "${m.origName}${m.origDescriptor}"
 
 internal fun Instruction.writes(register: Int): Boolean {
     if (!opcode.setsRegister()) return false

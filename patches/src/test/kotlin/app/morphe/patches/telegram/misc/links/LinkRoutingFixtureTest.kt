@@ -16,6 +16,9 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
+import app.morphe.patches.telegram.misc.localcontrols.controlBody
+import app.morphe.patches.telegram.misc.paste.NORMAL_PASTE
+import app.morphe.patches.telegram.misc.paste.useNormalPastePatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -79,6 +82,28 @@ class LinkRoutingFixtureTest {
                 assertAutologinGated(build.name, plan.browser)
                 for (share in plan.shares) assertEquals("only the chooser target is passed to cleaning", 1,
                     share.method.instructions().count { it.ref()?.startsWith("$LINKS->cleanShareIntent(") == true })
+            }
+        }
+    }
+
+    @Test fun `Use normal paste still applies after Strip link tracking, and both reach the paste editors`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = PatchContexts.of(ExtensionDex.classes() + (hostClasses(build) + copyPasteHosts(build)).distinctBy { it.type })
+            val editors = context.resolveCopyPaste().pastes
+            assertEquals("${build.name}: the message box and caption editors", 2, editors.size)
+            val stock = editors.map { editor -> editor.controlBody().filter { it.opcode != Opcode.NOP }.map { it.opcode to it.ref() } }
+            // The patcher's order: Strip link tracking runs, then Use normal paste, then the patches' finalize blocks.
+            stripLinkTrackingPatch.execute(context)
+            useNormalPastePatch.execute(context)
+            stripLinkTrackingPatch.finalize(context)
+            assertFlag(context, "pastedLinkTracking", true)
+            editors.forEachIndexed { at, editor ->
+                val after = editor.controlBody().filter { it.opcode != Opcode.NOP }.map { it.opcode to it.ref() }
+                assertEquals("${build.name}: editor $at watches the paste first", Opcode.INVOKE_STATIC to WATCH_PASTE, after[0])
+                assertEquals("${build.name}: editor $at then asks Use normal paste", Opcode.INVOKE_STATIC to
+                    "$NORMAL_PASTE->contextMenuAction(Landroid/view/View;I)I", after[1])
+                assertEquals(Opcode.MOVE_RESULT, after[2].first)
+                assertEquals("${build.name}: editor $at keeps its stock body", stock[at], after.drop(3))
             }
         }
     }
@@ -257,7 +282,7 @@ class LinkRoutingFixtureTest {
 
     private fun hostClasses(build: File): List<ClassDef> {
         val sinks = FixtureDex.classesWhere(build, HOST_CENSUS, { true }) { method ->
-            (method.origReturnType == "V" && method.parameterTypes.size == 10 &&
+            (method.origReturnType == "V" && method.parameterTypes.size in 10..11 &&
                 method.parameterTypes.take(2) == listOf("Landroid/content/Context;", "Landroid/net/Uri;") &&
                 method.instructions().any { it.ref() == "autologin_token" }) ||
                 (method.instructions().any { it.ref() == "Lorg/telegram/messenger/R\$string;->ShareLink:I" } &&
@@ -272,10 +297,16 @@ class LinkRoutingFixtureTest {
         val before = original.instructions()
         val after = patched.instructions()
         val injected = mutableListOf<IntRange>()
+        // 13.2 keeps the classification's answer above v15, so a hook first copies it into a local.
+        fun carried(at: Int, call: Int, operand: Int) = after.getOrNull(at)?.let {
+            it.opcode == Opcode.MOVE_FROM16 && it.namedRegisters()[0] == after[call].namedRegisters()[operand]
+        } == true
         for (index in after.indices) {
             when {
-                after[index].ref()?.startsWith("$LINKS->tryOpenExternal(") == true -> injected += index - 1..index + 4
-                after[index].ref()?.startsWith("$LINKS->cleanOpenedUri(") == true -> injected += index..index + 3
+                after[index].ref()?.startsWith("$LINKS->tryOpenExternal(") == true ->
+                    injected += (if (carried(index - 2, index, 2)) index - 2 else index - 1)..index + 4
+                after[index].ref()?.startsWith("$LINKS->cleanOpenedUri(") == true ->
+                    injected += (if (carried(index - 1, index, 1)) index - 1 else index)..index + 3
                 after[index].ref()?.startsWith("$LINKS->cleanShareIntent(") == true -> injected += index..index + 1
                 after[index].ref() == AUTOLOGIN_GATE -> injected += index..index + 1
             }
@@ -295,11 +326,10 @@ class LinkRoutingFixtureTest {
             assertEquals("$where: stock exception handler $index", oldFlow.exceptional[index].toSet(), newFlow.exceptional[stock[index]].map(::oldTarget).toSet())
         }
         for (site in injected) {
-            if (after[site.first + 1].ref()?.startsWith("$LINKS->tryOpenExternal(") == true) {
-                assertEquals(Opcode.IF_EQZ, after[site.first + 3].opcode)
-                assertEquals(Opcode.RETURN_VOID, after[site.first + 4].opcode)
-                assertEquals("success returns; false resumes stock", setOf(site.first + 4, site.last), newFlow.normal[site.first + 3].toSet())
-            }
+            val call = site.firstOrNull { after[it].ref()?.startsWith("$LINKS->tryOpenExternal(") == true } ?: continue
+            assertEquals(Opcode.IF_EQZ, after[call + 2].opcode)
+            assertEquals(Opcode.RETURN_VOID, after[call + 3].opcode)
+            assertEquals("success returns; false resumes stock", setOf(call + 3, site.last), newFlow.normal[call + 2].toSet())
         }
     }
 
@@ -324,7 +354,11 @@ class LinkRoutingFixtureTest {
         val append = code.indices.single { code[it].ref()?.endsWith("->appendQueryParameter(Ljava/lang/String;Ljava/lang/String;)Landroid/net/Uri\$Builder;") == true &&
             code.subList(it - 2, it).any { instruction -> instruction.ref() == "autologin_token" } }
         val skip = flow.normal[gate + 2].single { it != gate + 3 }
-        assertEquals("$where: with the token or without, routing picks up in one place", listOf(skip), flow.normal[append + 4])
+        // 13.2 copies the signed-in link back first, and web 13.2.0 then jumps to the merge.
+        val copied = code[append + 4].opcode == Opcode.MOVE_OBJECT || code[append + 4].opcode == Opcode.MOVE_OBJECT_FROM16
+        val after = flow.normal[append + 4].single()
+        val rejoin = if (copied && code[after].opcode in setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)) flow.normal[after] else listOf(after)
+        assertEquals("$where: with the token or without, routing picks up in one place", listOf(skip), if (copied) rejoin else flow.normal[append + 4])
     }
 
     private fun operands(instruction: Instruction): List<Any?> = listOf(

@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.apps
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -88,7 +89,7 @@ private fun BytecodePatchContext.translit(): MutableMethod {
     fits(owner != null, "LocaleController is missing")
     val named = owner!!.methods.filter { it.origName == TRANSLIT }
     val full = named.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.origReturnType == STRING &&
-        it.parameterTypes.map(CharSequence::toString) == listOf(STRING, "Z", "Z") }
+        it.origParameterTypes == listOf(STRING, "Z", "Z") }
     fits(full.size == 1, "the transliteration is missing or ambiguous")
     val method = full.single()
     val others = named.filter { it !== method }

@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.channelpull
 
+import app.morphe.util.names.origString
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -36,6 +37,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import app.morphe.util.names.origRef
 import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origInterfaces
 import app.morphe.util.names.origName
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origReturnType
@@ -190,7 +192,7 @@ internal fun BytecodePatchContext.resolveChannelPullSites(): ChannelPullSites {
         val call = body[at].call() ?: refuse("ordinary scroll lost its target")
         shape(at < channelCall - 3, "bottom pull no longer follows ordinary scrolling")
         shape(call.origName == scroll.origName && call.origReturnType == "I" &&
-            call.parameterTypes.map(CharSequence::toString) == scroll.parameterTypes.map(CharSequence::toString) &&
+            call.origParameterTypes == scroll.origParameterTypes &&
             call.origDefiningClass == superOwner, "ordinary scroll target changed from the inherited callback")
         shape(body[at + 1].opcode == Opcode.MOVE_RESULT, "ordinary scroll result is no longer retained")
     }
@@ -225,14 +227,14 @@ internal fun BytecodePatchContext.resolveChannelPullSites(): ChannelPullSites {
     val drawBody = draw.instructions()
     val drawable = body.mapNotNull { it.field() }.filter { field -> field.origDefiningClass == owner.origType && field.origType != list.origType &&
         drawBody.any { it.opcode == Opcode.IPUT_OBJECT && it.field() == field } &&
-        tgClassDefByOrNull(field.type)?.methods?.any { method -> method.origName == "<init>" && method.parameterTypes.map(CharSequence::toString).let { params ->
+        tgClassDefByOrNull(field.type)?.methods?.any { method -> method.origName == "<init>" && method.origParameterTypes.let { params ->
             params.size == 7 && params.take(6) == listOf("I", VIEW, "J", "I", "I", "J") && params[6].startsWith("L") } } == true }
         .distinct().one("pull drawable field", ::refuse)
     // The constructor has seven declared parameters, with wide dialog/topic identifiers.
     val drawableOwner = tgMutableClassDefBy(drawable.type)
-    shape(drawableOwner.interfaces.contains("Lorg/telegram/messenger/NotificationCenter\$NotificationCenterDelegate;") &&
+    shape(drawableOwner.origInterfaces.contains("Lorg/telegram/messenger/NotificationCenter\$NotificationCenterDelegate;") &&
         drawBody.any { it.field() == offset } && drawBody.any { it.call()?.let { call -> call.origDefiningClass == drawable.origType &&
-            call.origParameterTypes == listOf(CANVAS, list.type, "F", "F") && call.origReturnType == "V" } == true },
+            call.origParameterTypes == listOf(CANVAS, list.origType, "F", "F") && call.origReturnType == "V" } == true },
         "the accumulated offset isn't the drawn channel pull")
     instanceField(owner, drawable)
     val touch = listOwner.methods.filter { it.origName == "onTouchEvent" && it.origParameterTypes == listOf(MOTION_EVENT) && it.origReturnType == "Z" }.one("channel list touch", ::refuse)
@@ -242,7 +244,7 @@ internal fun BytecodePatchContext.resolveChannelPullSites(): ChannelPullSites {
     shape(progress >= 7 && progress + 12 < touchBody.size &&
         touchBody[progress - 7].opcode == Opcode.IGET && touchBody[progress - 7].field() == offset &&
         touchBody[progress - 6].let { it is NarrowLiteralInstruction && it.narrowLiteral == 110f.toBits() } &&
-        touchBody[progress - 5].call()?.toString() == "Lorg/telegram/messenger/AndroidUtilities;->dp(F)I" &&
+        touchBody[progress - 5].call()?.origString() == "Lorg/telegram/messenger/AndroidUtilities;->dp(F)I" &&
         touchBody[progress - 2].opcode == Opcode.DIV_FLOAT_2ADDR &&
         touchBody[progress - 1].let { it is NarrowLiteralInstruction && it.narrowLiteral == 1f.toBits() } &&
         touchBody[progress + 1].opcode == Opcode.MOVE_RESULT && touchBody[progress + 2].call()?.toString() == "$MOTION_EVENT->getAction()I" &&
@@ -326,5 +328,5 @@ private fun shape(valid: Boolean, reason: String) { if (!valid) refuse(reason) }
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Instruction.reference() = origRef()
 private fun Instruction.field(): FieldReference? = (this as? ReferenceInstruction)?.reference as? FieldReference
-private fun Instruction.isChannelCall() = call()?.toString() == "$CHAT_OBJECT->isChannel($CHAT)Z"
-private fun Instruction.isBotForumCall() = call()?.toString() == "Lorg/telegram/messenger/UserObject;->isBotForum($USER)Z"
+private fun Instruction.isChannelCall() = call()?.origString() == "$CHAT_OBJECT->isChannel($CHAT)Z"
+private fun Instruction.isBotForumCall() = call()?.origString() == "Lorg/telegram/messenger/UserObject;->isBotForum($USER)Z"

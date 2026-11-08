@@ -165,7 +165,7 @@ private fun BytecodePatchContext.gates(): Map<LocationGate, MutableMethod> {
     need(manager.methods.count { "latitude" in it.strings() } == 1, "the bot location manager builds coordinates outside its answer")
     // A fix that comes in later reaches the Mini App through a listener the manager makes. It has to
     // go through the answer too: with the answer folded into it, the gate there would never run.
-    val answerRef = answers.single().let { "${it.definingClass}->${it.name}($LOCATION)$JSON" }
+    val answerRef = answers.single().let { "${it.origDefiningClass}->${it.origName}($LOCATION)$JSON" }
     val listeners = manager.methods.flatMap { m -> m.controlBody().filter { it.opcode == Opcode.NEW_INSTANCE }.mapNotNull { it.controlRef() } }
         .distinct().mapNotNull { tgClassDefByOrNull(it) }.filter { isLocationListener(it.type) }
     need(listeners.isNotEmpty(), "the bot location manager's listener for later fixes is missing")

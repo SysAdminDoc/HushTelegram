@@ -4,6 +4,9 @@
  */
 package app.morphe.patches.telegram.misc.spoilers
 
+import app.morphe.util.names.origDescriptor
+import app.morphe.util.names.origString
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.util.names.replaceInstruction
@@ -176,16 +179,16 @@ internal fun BytecodePatchContext.resolveRevealSpoilers(): RevealSpoilersSite {
     // Text.
     val blocks = tgMutableClassDefByOrNull(TEXT_BLOCKS)
     controlShape(blocks != null, "MessageObject.TextLayoutBlocks is missing")
-    val layout = blocks!!.methods.filter { it.origName == "<init>" && it.parameterTypes.firstOrNull()?.toString() == MESSAGE_OBJECT }
+    val layout = blocks!!.methods.filter { it.origName == "<init>" && it.origParameterTypes.firstOrNull() == MESSAGE_OBJECT }
         .controlSingle("text layout constructor").controlBody()
     val revealed = layout.indexOfFirst { it.controlRef() == SPOILERS_REVEALED }
     controlShape(revealed >= 0, "the text layout no longer checks whether spoilers are revealed")
     val add = layout.drop(revealed).mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
-        .firstOrNull { it.parameterTypes.map(CharSequence::toString) == ADD && it.origReturnType == "V" }
+        .firstOrNull { it.origParameterTypes == ADD && it.origReturnType == "V" }
     controlShape(add != null, "the text layout no longer covers spoilers after checking")
     val effect = tgMutableClassDefByOrNull(add!!.definingClass)
     controlShape(effect != null && AccessFlags.PUBLIC.isSet(effect.accessFlags), "SpoilerEffect ${add.definingClass} is missing")
-    val textCovers = effect!!.methods.filter { it.parameterTypes.map(CharSequence::toString) == ADD_CORE && it.origReturnType == "V" }
+    val textCovers = effect!!.methods.filter { it.origParameterTypes == ADD_CORE && it.origReturnType == "V" }
         .controlSingle("SpoilerEffect's text cover")
     controlShape(AccessFlags.STATIC.isSet(textCovers.accessFlags), "SpoilerEffect's text cover is no longer static")
     val covers = textCovers.controlBody()
@@ -199,7 +202,7 @@ internal fun BytecodePatchContext.resolveRevealSpoilers(): RevealSpoilersSite {
     controlShape(spanClass != null && AccessFlags.PUBLIC.isSet(spanClass.accessFlags) && spanMethod != null &&
         AccessFlags.PUBLIC.isSet(spanMethod.accessFlags) && !AccessFlags.STATIC.isSet(spanMethod.accessFlags),
         "the spoiler span check isn't public")
-    val handsOver = effect.methods.singleOrNull { key(it) == add.toString() }
+    val handsOver = effect.methods.singleOrNull { key(it) == add.origString() }
     controlShape(handsOver != null && handsOver.controlBody().any { it.controlRef() == key(textCovers) },
         "SpoilerEffect's spoiler cover no longer does its work in one place")
 
@@ -241,5 +244,5 @@ internal fun BytecodePatchContext.resolveRevealSpoilers(): RevealSpoilersSite {
     return RevealSpoilersSite(textCovers, span, media)
 }
 
-private fun signature(method: Method) = "${method.name}${method.parameterTypes.joinToString("", "(", ")")}${method.returnType}"
-private fun key(method: Method) = "${method.definingClass}->${signature(method)}"
+private fun signature(method: Method) = "${method.origName}${method.origDescriptor}"
+private fun key(method: Method) = "${method.origDefiningClass}->${signature(method)}"

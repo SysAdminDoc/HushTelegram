@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.messagemenu
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -76,6 +77,8 @@ internal class SelectBetweenSites(
     private val barGetter: String = "",
     private val menuRef: String = "",
     private val addRef: String = "",
+    /** The stub's registers (menu, ID, icon, label, width) in the add call's parameter order. */
+    private val addArgs: String = "p0, p1, p2, p3, p4",
 ) {
     /** The same edits on copies, so a smali problem refuses before the app is touched. */
     fun rehearse() = edit { MutableMethod(ImmutableMethod.of(it)) }
@@ -139,7 +142,7 @@ internal class SelectBetweenSites(
         """)
         writeStub(SELECT_BETWEEN, "addMenuItem", 5, """
             check-cast p0, ${menuRef.substringAfter(")")}
-            invoke-virtual {p0, p1, p2, p3, p4}, $addRef
+            invoke-virtual {$addArgs}, $addRef
             return-void
         """)
         writeStub(SELECT_BETWEEN, "icon", 1, "sget v0, $DRAWABLES->msg_select:I\nreturn v0")
@@ -209,12 +212,16 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
     val menuCall = if (barRead < 0) null else body.drop(barRead + 1).take(3).firstOrNull { it.opcode == Opcode.INVOKE_VIRTUAL }
     val menuMethod = menuCall?.call()
     controlShape(barRead >= 0 && menuCall?.opcode == Opcode.INVOKE_VIRTUAL && menuMethod != null &&
-        menuMethod.parameterTypes.map(CharSequence::toString) == listOf(STRING) && menuMethod.origReturnType.startsWith("L"),
+        menuMethod.origParameterTypes == listOf(STRING) && menuMethod.origReturnType.startsWith("L"),
         "the selection bar's menu is no longer taken from the action bar")
-    val adds = body.mapNotNull { it.call() }.filter {
-        it.origDefiningClass == menuMethod!!.origReturnType && it.parameterTypes.map(CharSequence::toString) == listOf("I", "I", STRING, "I")
-    }.map { it.toString() }.distinct()
+    // ID, icon, label, width; Play's 13.2 build takes the width before the label.
+    val addShapes = listOf(listOf("I", "I", STRING, "I"), listOf("I", "I", "I", STRING))
+    val addCalls = body.mapNotNull { it.call() }.filter {
+        it.origDefiningClass == menuMethod!!.origReturnType && it.origParameterTypes in addShapes
+    }.distinctBy { it.toString() }
+    val adds = addCalls.map { it.toString() }
     controlShape(adds.size == 1, "the selection bar's buttons are no longer added through one call")
+    val addArgs = if (addCalls.single().origParameterTypes[2] == STRING) "p0, p1, p2, p3, p4" else "p0, p1, p2, p4, p3"
     // The field is protected, so the extension goes through the screen's public getter.
     val barFieldRef = body[barRead].controlField()!!
     val barGetter = tgMutableClassDefBy(barFieldRef.definingClass).methods.filter { m ->
@@ -252,7 +259,7 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
     val handlerType = handlers.distinct().controlSingle("the selection bar's click handler")
     val handlerClass = tgMutableClassDefBy(handlerType)
     val click = handlerClass.methods.filter { m ->
-        m.instance() && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
+        m.instance() && m.origReturnType == "V" && m.origParameterTypes == listOf("I") &&
             m.controlBody().any { it.controlField()?.origType == chat }
     }.controlSingle("the selection bar's click method")
     val ownerFields = handlerClass.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.origType == chat }
@@ -266,10 +273,10 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
 
     // Selecting: the chat's (message, Z) wrapper over the three-argument method that records the selection.
     val wrappers = chatClass.methods.filter { m ->
-        m.instance() && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf(MESSAGE, "Z") &&
+        m.instance() && m.origReturnType == "V" && m.origParameterTypes == listOf(MESSAGE, "Z") &&
             m.controlBody().let { b ->
                 b.size <= 4 && b.count { it.opcode == Opcode.INVOKE_VIRTUAL } == 1 && b.first { it.opcode == Opcode.INVOKE_VIRTUAL }.call().let { c ->
-                    c != null && c.origDefiningClass == chat && c.parameterTypes.map(CharSequence::toString) == listOf(MESSAGE, "Z", "Z") && c.origReturnType == "V"
+                    c != null && c.origDefiningClass == chat && c.origParameterTypes == listOf(MESSAGE, "Z", "Z") && c.origReturnType == "V"
                 }
             }
     }
@@ -283,8 +290,8 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
     val firstArrayRead = selectBody.indexOfFirst { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.let { f -> f.origDefiningClass == chat && f.origType == SPARSE_ARRAYS } == true }
     controlShape(firstArrayRead >= 0 && selectBody.drop(firstArrayRead + 1).take(8).any { it.controlRef() == INDEX_OF_KEY },
         "the selection recorder no longer starts from the selected messages")
-    val selectedField = selectBody[firstArrayRead].controlField()!!.let { "$chat->${it.name}:${it.type}" }
-    controlShape(chatClass.fields.any { "$chat->${it.name}:${it.type}" == selectedField && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) },
+    val selectedField = selectBody[firstArrayRead].controlField()!!.let { "$chat->${it.origName}:${it.origType}" }
+    controlShape(chatClass.fields.any { "$chat->${it.origName}:${it.origType}" == selectedField && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) },
         "the selected messages field is inaccessible")
 
     // The list adapter's getter: frozen, filtered or the chat's own full list.
@@ -300,7 +307,7 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
     val adapterRef = "$chat->${adapterField.name}:${adapterField.type}"
     controlShape(adapterType == adapterField.origType, "the chat's list adapter changed")
     return SelectBetweenSites(null, chat, create, at, click, handlerType, ownerField, selectMethod, wrapper.toString(), selectedField,
-        adapterRef, getterRef, barGetter, menuMethod.toString(), adds.single())
+        adapterRef, getterRef, barGetter, menuMethod.toString(), adds.single(), addArgs)
 }
 
 /** Whether this is the adapter's getter: the frozen list, the filtered list, then the chat's full list. */

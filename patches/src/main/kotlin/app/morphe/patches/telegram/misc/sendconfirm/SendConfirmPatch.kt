@@ -4,6 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.sendconfirm
 
+import app.morphe.util.names.origString
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.util.names.replaceInstruction
@@ -83,12 +85,19 @@ private val STICKER_HOOK = listOf(OBJECT, OBJECT, OBJECT, OBJECT, OBJECT, "Z", "
 private val GIF_TARGET = listOf(VIEW, OBJECT, STRING, OBJECT, "Z", "I", "I", PHOTO_ENTRY, "Z")
 private val GIF_HOOK = listOf(OBJECT, OBJECT, OBJECT, OBJECT, OBJECT, "Z", "I", "I", OBJECT, "Z")
 private val VOICE_TARGET = listOf("I", "Z", "I", "Z", "J")
+/**
+ * 13.2's end of a recording: R8 drops the stars, which every caller passes as none, and puts the
+ * two ints first, so it takes send, scheduleDate, notify and once.
+ */
+internal val VOICE_TARGET_R8 = listOf("I", "I", "Z", "Z")
 private val VOICE_HOOK = listOf(OBJECT, "I", "Z", "I", "Z", "J")
 private val CALL_TARGET = listOf(USER, "Z", "Z", ACTIVITY, USER_FULL, ACCOUNT_INSTANCE)
 private val CALL_HOOK = listOf(OBJECT, "Z", "Z", OBJECT, OBJECT, OBJECT)
 
 /** The chat bar's send of what it holds: date, sound, a flag, whether its paid-message question may ask, stars. */
 private val BAR_SEND = listOf("I", "Z", "I", "Z", "J")
+/** The same send as 13.2 orders it: sound, date, flag, stars, then the paid-message question. */
+private val BAR_SEND_R8 = listOf("Z", "I", "I", "J", "Z")
 private val PREVIEW_HOOK = listOf(OBJECT, "I", "I", "I", "I", "J")
 
 /** How far after the chat bar's send reads a clip from its preview it tests the clip for null. */
@@ -136,7 +145,10 @@ internal class SendConfirmSite(
     fun insert(change: (MutableMethod, (MutableMethod) -> Unit) -> Unit) {
         change(sticker) { gate(it, "$SEND_CONFIRM->sticker(${STICKER_HOOK.joinToString("")})Z") }
         change(gif) { gate(it, "$SEND_CONFIRM->gif(${GIF_HOOK.joinToString("")})Z") }
-        change(voice) { gate(it, "$SEND_CONFIRM->voice(${VOICE_HOOK.joinToString("")})Z") }
+        change(voice) {
+            val hook = "$SEND_CONFIRM->voice(${VOICE_HOOK.joinToString("")})Z"
+            if (voice.origParameterTypes == VOICE_TARGET_R8) reorderedVoiceGate(it, hook) else gate(it, hook)
+        }
         change(video) { gate(it, "$SEND_CONFIRM->${shape.hook}(${listOf(OBJECT).plus(shape.target).joinToString("")})Z") }
         change(header) { replaceCall(it, headerCall) }
         change(profile) { replaceCall(it, profileCall) }
@@ -220,6 +232,30 @@ private fun gate(target: MutableMethod, hook: String) {
     )
 }
 
+/**
+ * [gate] for 13.2's end of a recording: this, send, notify, scheduleDate and once go to the
+ * extension in 13.1.1's order through the first seven locals, with no stars, which 13.2 never passes.
+ */
+private fun reorderedVoiceGate(target: MutableMethod, hook: String) {
+    val p = target.implementation!!.registerCount - 5
+    target.addInstructionsWithLabels(
+        0,
+        """
+            move-object/from16 v0, v$p
+            move/from16 v1, v${p + 1}
+            move/from16 v2, v${p + 3}
+            move/from16 v3, v${p + 2}
+            move/from16 v4, v${p + 4}
+            const-wide/16 v5, 0x0
+            invoke-static/range {v0 .. v6}, $hook
+            move-result v0
+            if-nez v0, :hush_stock
+            return-void
+        """,
+        ExternalLabel("hush_stock", target.getInstruction(0)),
+    )
+}
+
 /** The call to Telegram's start of a call, with the same registers, goes to the extension, which makes it or asks first. */
 private fun replaceCall(target: MutableMethod, index: Int) {
     val call = target.getInstruction(index) as RegisterRangeInstruction
@@ -271,7 +307,7 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     classDefForEach { cls ->
         if (cls.origType.startsWith("Lapp/hushtelegram/")) return@classDefForEach
         cls.methods.forEach { m ->
-            val params = m.parameterTypes.map(CharSequence::toString)
+            val params = m.origParameterTypes
             if (AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && params == CALL_TARGET) starts += cls.type to signature(m)
             if (!AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && params == GIF_TARGET) gifs += cls.type to signature(m)
         }
@@ -289,14 +325,17 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     val profiles = mutableListOf<Triple<String, String, List<Int>>>()
     val strips = mutableListOf<Triple<String, String, Int>>()
     val stripMention = Mention.member(SEND_HELPER, "sendSticker") and Mention.reference(SET_FIELD_TEXT)
+    // 13.2 names a callback's run as the build names the interface's, which the table maps on the interface only.
+    val callbackRun = tgMutableClassDefBy(CALLBACK).methods.filter { it.origName == "run" }.map { it.name }.toSet()
     forEachClassMentioning(stripMention or Mention.reference(CAMERA_ALLOWED) or Mention.reference(startRef)) { cls ->
         if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { m ->
-            val params = m.parameterTypes.map(CharSequence::toString)
+            val params = m.origParameterTypes
             val instance = !AccessFlags.STATIC.isSet(m.accessFlags)
             if (m.implementation == null) return@forEach
             val body = m.controlBody()
-            if (instance && m.origName == "run" && m.origReturnType == "V" && params == listOf(OBJECT) && CALLBACK in cls.origInterfaces) {
+            if (instance && (m.origName == "run" || m.name in callbackRun) && m.origReturnType == "V" && params == listOf(OBJECT) &&
+                CALLBACK in cls.origInterfaces) {
                 body.indices.filter { stripSend(m, body, it) }.forEach { strips += Triple(cls.type, signature(m), it) }
             }
             if (instance && m.origReturnType == "V") {
@@ -320,7 +359,7 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     val barClass = tgMutableClassDefBy(ENTER_VIEW)
     controlShape(AccessFlags.PUBLIC.isSet(barClass.accessFlags), "the chat bar is inaccessible")
     val sticker = barClass.methods.filter { m ->
-        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == STICKER_TARGET
+        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.origParameterTypes == STICKER_TARGET
     }.controlSingle("the chat bar's sticker send")
     requireGateable(sticker, "the chat bar's sticker send")
 
@@ -336,9 +375,12 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     controlShape(AccessFlags.PUBLIC.isSet(mediaClass.accessFlags), "the media controller is inaccessible")
     val voice = mediaClass.methods.filter { m ->
         m.origName == "stopRecording" && !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" &&
-            m.parameterTypes.map(CharSequence::toString) == VOICE_TARGET
+            (m.origParameterTypes == VOICE_TARGET || m.origParameterTypes == VOICE_TARGET_R8)
     }.controlSingle("Telegram's end of a recording")
     requireGateable(voice, "Telegram's end of a recording")
+    // The reordered end puts 13.1.1's order together in seven locals before anything else runs.
+    controlShape(voice.origParameterTypes == VOICE_TARGET || voice.implementation!!.registerCount - 5 >= 7,
+        "Telegram's end of a recording has no room to put its arguments in order")
 
     // The chat's handling of the round video recorder: the one that opens the camera and names the activity.
     val (videoType, videoWanted, shape) = videos.controlSingle("the chat's handling of the round video recorder")
@@ -374,13 +416,13 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     // Send from a question in front of a paused recording goes through it. The stubs that read the
     // two fields get them opened when the stubs are written.
     controlShape(!AccessFlags.STATIC.isSet(paidPause.accessFlags) && AccessFlags.PUBLIC.isSet(paidPause.accessFlags) &&
-        paidPause.origReturnType == "Z" && paidPause.parameterTypes.map(CharSequence::toString) == BAR_SEND,
+        paidPause.origReturnType == "Z" && paidPause.origParameterTypes in listOf(BAR_SEND, BAR_SEND_R8),
         "the chat bar's send no longer takes a date, sound, its paid-message question and stars")
     val (voiceClip, videoClip) = listOf(TL_DOCUMENT to "voice clip", VIDEO_INFO to "round video").map { (type, what) ->
         val field = barClass.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.origType == type }
             .controlSingle("the chat bar's paused $what")
-        val ref = "${field.definingClass}->${field.name}:${field.type}"
-        controlShape(pauseBody.any { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.toString() == ref },
+        val ref = field.origString()
+        controlShape(pauseBody.any { it.opcode == Opcode.IGET_OBJECT && it.controlRef() == ref },
             "the chat bar's send no longer sends its paused $what")
         ref
     }
@@ -417,18 +459,18 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     // The field LaunchActivity.onCreate sets to itself, which is the app's main window.
     val launchClass = tgMutableClassDefBy(LAUNCH_ACTIVITY)
     controlShape(AccessFlags.PUBLIC.isSet(launchClass.accessFlags), "the main window is inaccessible")
-    val onCreate = launchClass.methods.filter { it.origName == "onCreate" && it.parameterTypes.map(CharSequence::toString) == listOf("Landroid/os/Bundle;") }
+    val onCreate = launchClass.methods.filter { it.origName == "onCreate" && it.origParameterTypes == listOf("Landroid/os/Bundle;") }
         .controlSingle("the main window's start")
     val own = onCreate.controlBody().filter { it.opcode == Opcode.SPUT_OBJECT && it.controlField()?.let { f -> f.origDefiningClass == LAUNCH_ACTIVITY && f.origType == LAUNCH_ACTIVITY } == true }
-        .map { it.controlField().toString() }.distinct().controlSingle("the main window's own field")
-    val declared = launchClass.fields.filter { "${it.definingClass}->${it.name}:${it.type}" == own }.controlSingle("the main window's field")
+        .map { it.controlRef()!! }.distinct().controlSingle("the main window's own field")
+    val declared = launchClass.fields.filter { it.origString() == own }.controlSingle("the main window's field")
     controlShape(AccessFlags.PUBLIC.isSet(declared.accessFlags) && AccessFlags.STATIC.isSet(declared.accessFlags), "the main window's field is inaccessible")
 
     // The suggestion strip's sends, each a case of a merged callback that Telegram runs once its own
     // paid-message check has answered. Send runs the callback again through the interface.
     val callback = tgMutableClassDefBy(CALLBACK)
     controlShape(AccessFlags.PUBLIC.isSet(callback.accessFlags) && AccessFlags.INTERFACE.isSet(callback.accessFlags) &&
-        callback.methods.any { it.origName == "run" && it.origReturnType == "V" && it.parameterTypes.map(CharSequence::toString) == listOf(OBJECT) },
+        callback.methods.any { it.origName == "run" && it.origReturnType == "V" && it.origParameterTypes == listOf(OBJECT) },
         "Telegram's callback is no longer a public interface run with one argument")
     controlShape(strips.isNotEmpty(), "the sticker suggestion strip's send is gone")
     controlShape(strips.map { it.second }.distinct().size == strips.size, "a callback sends from the sticker strip more than once")
@@ -457,7 +499,7 @@ internal fun previewStarts(method: Method, field: String): List<Int> {
     val flow = ControlFlow.of(method)
     val into = Array(body.size) { mutableListOf<Int>() }
     body.indices.forEach { from -> (flow.normal[from] + flow.exceptional[from]).forEach { into[it] += from } }
-    return body.indices.filter { body[it].opcode == Opcode.IGET_OBJECT && body[it].controlField()?.toString() == field }
+    return body.indices.filter { body[it].opcode == Opcode.IGET_OBJECT && body[it].controlRef() == field }
         .mapNotNull { read -> nullTest(body, into, read) }
         .filter { test -> test + 1 < body.size && into[test + 1] == listOf(test) }
         .map { it + 1 }
@@ -534,9 +576,11 @@ internal fun BytecodePatchContext.writeSendConfirmStubs(site: SendConfirmSite) {
         invoke-virtual/range {p0 .. p9}, ${signature(site.gif)}
         return-void
     """)
+    // 13.2's reordered end is named as the build has it: no source descriptor matches its shape.
     writeStub(SEND_CONFIRM, "resumeVoice", 7, """
         check-cast p0, $MEDIA_CONTROLLER
-        invoke-virtual/range {p0 .. p6}, ${signature(site.voice)}
+        ${if (site.voice.origParameterTypes == VOICE_TARGET_R8) "invoke-virtual {p0, p1, p3, p2, p4}, ${site.voice}"
+            else "invoke-virtual/range {p0 .. p6}, ${signature(site.voice)}"}
         return-void
     """)
     writeStub(SEND_CONFIRM, site.shape.resume, 9, """
@@ -572,7 +616,7 @@ internal fun BytecodePatchContext.writeSendConfirmStubs(site: SendConfirmSite) {
     """)
     val barFields = tgMutableClassDefBy(bar).fields
     for ((name, clip) in listOf("voiceClip" to site.voiceClip, "videoClip" to site.videoClip)) {
-        barFields.single { "${it.definingClass}->${it.name}:${it.type}" == clip }.apply {
+        barFields.single { it.origString() == clip }.apply {
             accessFlags = accessFlags and (AccessFlags.PRIVATE.value or AccessFlags.PROTECTED.value).inv() or AccessFlags.PUBLIC.value
         }
         writeStub(SEND_CONFIRM, name, 2, """
@@ -582,14 +626,24 @@ internal fun BytecodePatchContext.writeSendConfirmStubs(site: SendConfirmSite) {
         """)
     }
     // Now, with sound, and with Telegram's own paid-message question free to ask, as the send button sends.
-    writeStub(SEND_CONFIRM, "sendFromBar", 8, """
-        check-cast p0, $bar
-        move-object v0, p0
+    // 13.2 takes the same five as sound, date, flag, stars and the question.
+    val words = if (site.barSendMethod.origParameterTypes == BAR_SEND_R8) """
+        const/4 v1, 0x1
+        const/4 v2, 0x0
+        const/4 v3, 0x0
+        const-wide/16 v4, 0x0
+        const/4 v6, 0x1
+    """.trimIndent() else """
         const/4 v1, 0x0
         const/4 v2, 0x1
         const/4 v3, 0x0
         const/4 v4, 0x1
         const-wide/16 v5, 0x0
+    """.trimIndent()
+    writeStub(SEND_CONFIRM, "sendFromBar", 8, """
+        check-cast p0, $bar
+        move-object v0, p0
+$words
         invoke-virtual/range {v0 .. v6}, ${site.barSend}
         return-void
     """)
@@ -608,4 +662,4 @@ internal fun BytecodePatchContext.writeSendConfirmStubs(site: SendConfirmSite) {
     """)
 }
 
-private fun signature(m: MethodReference) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
+private fun signature(m: MethodReference) = m.origString()

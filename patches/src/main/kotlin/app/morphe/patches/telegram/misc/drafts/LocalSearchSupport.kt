@@ -4,6 +4,8 @@
  */
 package app.morphe.patches.telegram.misc.drafts
 
+import app.morphe.util.names.origString
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.loadsInt
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -446,7 +448,7 @@ private fun BytecodePatchContext.listChanged(hooks: ChatSearchHooks, adapter: St
         body[1].opcode == Opcode.INVOKE_VIRTUAL && told?.origDefiningClass == observable.origType && told.parameterTypes.isEmpty() &&
         told.origReturnType == "V" && body[2].opcode == Opcode.RETURN_VOID,
         "the list adapter's redraw no longer just tells its observable")
-    return "${top.type}->${notify.name}()V"
+    return "${top.origType}->${notify.origName}()V"
 }
 
 /** The pager starts each tab's search for the page on screen, the Chats tab's chat search among them, and sets the line under "No results". */
@@ -524,7 +526,7 @@ private fun BytecodePatchContext.searches(field: FieldReference, flag: String): 
     tgClassDefByOrNull(field.definingClass)?.methods?.any { method -> method.instructions().let { body ->
         fun carries(target: String) = body.indices.any { at -> body[at].opcode == Opcode.IPUT_OBJECT && body[at].reference() == target &&
             (at - 1 downTo 0).firstOrNull { body[at].namedRegisters()[0] in body[it].writes() }?.let { load ->
-                body[load].opcode == Opcode.IGET_OBJECT && body[load].reference() == field.toString() } == true }
+                body[load].opcode == Opcode.IGET_OBJECT && body[load].reference() == field.origString() } == true }
         body.any { it.opcode == Opcode.IPUT_BOOLEAN && it.reference() == "$USERNAMES->$flag:Z" } &&
             carries("$GLOBAL_MESSAGES->q:$STRING") && carries("$USERNAMES->q:$STRING")
     } } == true
@@ -605,8 +607,8 @@ private fun reaches(method: Method, target: Int, avoiding: Int): Boolean {
 /** Every instruction that can run right before [index], by a fall-through, a branch or a throw. */
 private fun ControlFlow.into(index: Int): List<Int> = instructions.indices.filter { index in normal[it] || index in exceptional[it] }
 
-private fun Method.params(): List<String> = parameterTypes.map { it.toString() }
-private fun MethodReference.params(): List<String> = parameterTypes.map { it.toString() }
+private fun Method.params(): List<String> = origParameterTypes
+private fun MethodReference.params(): List<String> = origParameterTypes
 private fun Method.sameSignature(other: Method) = name == other.name && returnType == other.returnType && params() == other.params()
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Method.constructs(type: String) = instructions().any { it.opcode == Opcode.NEW_INSTANCE && it.reference() == type }

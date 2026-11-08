@@ -9,14 +9,21 @@ import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
+import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlString
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origDescriptor
+import app.morphe.util.names.origName
+import app.morphe.util.names.origType
 import app.morphe.util.names.tgMutableClassDefBy
 import app.morphe.util.names.tgMutableClassDefByOrNull
 
@@ -29,7 +36,10 @@ private const val PHOTO_VIEWER_TYPE = "Lorg/telegram/ui/PhotoViewer;"
 private const val MESSAGE_TYPE = "Lorg/telegram/messenger/MessageObject;"
 private const val MEDIA_CONTROLLER_TYPE = "Lorg/telegram/messenger/MediaController;"
 private const val MESSAGE_PROGRESS = "getVideoSavedProgress()F"
+private const val CACHED_PROGRESS = "$MESSAGE_TYPE->cachedSavedTimestamp:Ljava/lang/Float;"
 private const val PLAY_WITH_SOUND = "playMessage(${MESSAGE_TYPE}Z)Z"
+/** 13.2 folds playMessage(MessageObject, false), which nothing calls with true, into the one-argument play. */
+private const val PLAY_FOLDED = "playMessage($MESSAGE_TYPE)Z"
 private const val TWO_MINUTES = 120L
 private const val FIVE_MINUTES = 300L
 private const val FIVE_MINUTES_AS_DOUBLE = 0x4072c00000000000L
@@ -80,11 +90,11 @@ internal fun BytecodePatchContext.resolvePlaybackPosition(): PlaybackPositionSit
     val message = tgMutableClassDefByOrNull(MESSAGE_TYPE) ?: return missing("MessageObject is missing")
     val viewer = tgMutableClassDefByOrNull(PHOTO_VIEWER_TYPE) ?: return missing("the video viewer is missing")
     val player = tgMutableClassDefByOrNull(MEDIA_CONTROLLER_TYPE) ?: return missing("MediaController is missing")
-    fun MutableMethod.remembers() = controlBody().any { it.controlString() == SAVED_POSITIONS }
-    fun MutableMethod.shape() = "$name(${parameterTypes.joinToString("")})$returnType"
+    fun Method.remembers() = controlBody().any { it.controlString() == SAVED_POSITIONS }
+    fun MutableMethod.shape() = "$origName$origDescriptor"
 
     /** Indices of [literal] loads in [method], by one of [loads], that the very next instruction compares in the same register. */
-    fun sites(method: MutableMethod, literal: Long, loads: Set<Opcode>, compares: Set<Opcode>): List<Int> {
+    fun sites(method: Method, literal: Long, loads: Set<Opcode>, compares: Set<Opcode>): List<Int> {
         val body = method.controlBody()
         return body.indices.filter { i ->
             val load = body[i]
@@ -99,11 +109,22 @@ internal fun BytecodePatchContext.resolvePlaybackPosition(): PlaybackPositionSit
     val ints = setOf(Opcode.CONST_16, Opcode.CONST)
     val longs = setOf(Opcode.CONST_WIDE_16, Opcode.CONST_WIDE_32)
     val ifs = setOf(Opcode.IF_LT, Opcode.IF_GE)
-    val progress = message.methods.filter { it.shape() == MESSAGE_PROGRESS }
-    if (progress.size != 1 || !progress.single().remembers()) return missing("a video's saved position is no longer read in one place")
-    val read = sites(progress.single(), TWO_MINUTES, ints, ifs)
+    // MessageObject's own reader, which 13.2 inlines into the bubble that draws the bar: the one
+    // place that reads a saved position and caches it on the message.
+    fun Method.caches() = controlBody().any { it.opcode == Opcode.IPUT_OBJECT && it.controlRef() == CACHED_PROGRESS }
+    val progress = message.methods.filter { it.shape() == MESSAGE_PROGRESS }.map { message.type to it.toString() }.ifEmpty {
+        val inlined = mutableListOf<Pair<String, String>>()
+        forEachClassMentioning(Mention.string(SAVED_POSITIONS) and Mention.reference(CACHED_PROGRESS)) { cls ->
+            if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+            cls.methods.filter { it.remembers() && it.caches() && sites(it, TWO_MINUTES, ints, ifs).isNotEmpty() }.forEach { inlined += cls.type to it.toString() }
+        }
+        inlined
+    }
+    val reader = progress.singleOrNull()?.let { (type, signature) -> tgMutableClassDefBy(type).methods.single { it.toString() == signature } }
+    if (reader == null || !reader.remembers()) return missing("a video's saved position is no longer read in one place")
+    val read = sites(reader, TWO_MINUTES, ints, ifs)
     if (read.size != 1) return missing("a video's saved position no longer waits for two minutes in one place (${read.size})")
-    edits += PositionEdit(message.type, progress.single().toString(), read.single(), VIDEO_SECONDS, false)
+    edits += PositionEdit(progress.single().first, reader.toString(), read.single(), VIDEO_SECONDS, false)
 
     val viewerInts = mutableListOf<Pair<MutableMethod, Int>>()
     val viewerLongs = mutableListOf<Pair<MutableMethod, Int>>()
@@ -117,7 +138,7 @@ internal fun BytecodePatchContext.resolvePlaybackPosition(): PlaybackPositionSit
     edits += PositionEdit(viewer.type, viewerInts.single().first.toString(), viewerInts.single().second, VIDEO_SECONDS, false)
     edits += PositionEdit(viewer.type, viewerLongs.single().first.toString(), viewerLongs.single().second, VIDEO_SECONDS_LONG, true)
 
-    val play = player.methods.filter { it.shape() == PLAY_WITH_SOUND && it.remembers() }
+    val play = player.methods.filter { (it.shape() == PLAY_WITH_SOUND || it.shape() == PLAY_FOLDED) && it.remembers() }
     if (play.size != 1) return missing("MediaController no longer has one play method that saves positions (${play.size})")
     val doubles = setOf(Opcode.CMPL_DOUBLE, Opcode.CMPG_DOUBLE)
     for ((literal, minutes) in listOf(FIVE_MINUTES_AS_DOUBLE to "five", TEN_MINUTES_AS_DOUBLE to "ten")) {

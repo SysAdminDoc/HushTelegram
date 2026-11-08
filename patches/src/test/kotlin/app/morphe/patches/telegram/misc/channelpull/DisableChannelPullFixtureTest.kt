@@ -262,7 +262,7 @@ class DisableChannelPullFixtureTest {
                 }) 1 else 0
                 Opcode.IGET -> registers[regs[0]] = 0 // Normal chat mode.
                 Opcode.CONST_4, Opcode.CONST_16 -> registers[regs[0]] = (instruction as NarrowLiteralInstruction).narrowLiteral
-                Opcode.INVOKE_STATIC, Opcode.INVOKE_VIRTUAL -> answer = when (instruction.call()!!.name) {
+                Opcode.INVOKE_STATIC, Opcode.INVOKE_VIRTUAL -> answer = when (instruction.call()!!.origName) {
                     "isChannel" -> if (channel) 1 else 0
                     "isBotForum" -> if (bot) 1 else 0
                     "stopBottomPull" -> if (enabled) 1 else 0

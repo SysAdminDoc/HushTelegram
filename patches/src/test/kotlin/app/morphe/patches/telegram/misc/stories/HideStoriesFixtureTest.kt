@@ -265,10 +265,13 @@ class HideStoriesFixtureTest {
     fun `ambiguous chat list anchor refuses before any target is changed`() {
         for (build in Fixtures.declaredBuilds()) {
             val hosts = hosts(build)
-            val dialogs = hosts.single { it.methods.any { method -> method.instructions().any { instruction ->
-                instruction.reference() == STORY_CAMERA_ICON
-            } } }
-            val create = dialogs.methods.single { it.origName == "createView" }
+            // 13.2 loads the camera icon as a literal, which names its R field only by this build's table.
+            val (dialogs, create) = FixtureDex.namedBy(build) {
+                val dialogs = hosts.single { it.methods.any { method -> method.instructions().any { instruction ->
+                    instruction.reference() == STORY_CAMERA_ICON
+                } } }
+                dialogs to dialogs.methods.single { it.origName == "createView" }
+            }
             val duplicateType = "Lorg/telegram/ui/StoryAmbiguityFixture;"
             val duplicate = ImmutableMethod(duplicateType, create.name, create.parameters, create.returnType,
                 create.accessFlags, create.annotations, create.hiddenApiRestrictions, create.implementation)
@@ -302,12 +305,13 @@ class HideStoriesFixtureTest {
         val cell = anchors.single { classDef -> classDef.methods.any { it.origName == "getCurrentDialogFolderId" } }
         val touch = cell.methods.single { it.origName == "onInterceptTouchEvent" }.instructions()
         val callAt = touch.indexOfFirst { (it as? ReferenceInstruction)?.reference.let { ref -> ref is MethodReference &&
-            ref.parameterTypes.map { it.toString() } == listOf("Landroid/view/MotionEvent;", "Landroid/view/View;") } }
+            // 13.2 takes the cell before the event.
+            ref.parameterTypes.map { it.toString() }.sorted() == listOf("Landroid/view/MotionEvent;", "Landroid/view/View;") } }
         val base = ((touch[callAt] as ReferenceInstruction).reference as MethodReference).definingClass
         val params = ((touch[callAt - 1] as ReferenceInstruction).reference as FieldReference).type
         val utilities = cell.methods.single { it.origName == "onDraw" }.instructions().mapNotNull {
             (it as? ReferenceInstruction)?.reference as? MethodReference
-        }.single { it.parameterTypes.map { type -> type.toString() } == listOf("J", "Landroid/graphics/Canvas;",
+        }.single { it.origParameterTypes == listOf("J", "Landroid/graphics/Canvas;",
             "Lorg/telegram/messenger/ImageReceiver;", base) }.definingClass
         return (anchors + FixtureDex.classes(build, setOf(base, params, utilities)).values).distinctBy { it.type }
     }

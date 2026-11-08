@@ -4,6 +4,9 @@
  */
 package app.morphe.patches.telegram.misc.maintabs
 
+import app.morphe.util.names.origString
+import app.morphe.util.names.origDescriptor
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructions
 import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
@@ -31,6 +34,7 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import app.morphe.util.names.origName
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origType
+import app.morphe.util.names.TelegramNames
 import app.morphe.util.names.tgClassDefBy
 import app.morphe.util.names.tgClassDefByOrNull
 import app.morphe.util.names.tgMutableClassDefBy
@@ -159,7 +163,7 @@ internal fun BytecodePatchContext.resolveSideMenu(plan: MainTabsPlan): SideMenu 
 
     // The account switcher Telegram shows on a long press of the Profile tab.
     val switchers = screen.methods.filter { m ->
-        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf(VIEW) &&
+        !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "V" && m.origParameterTypes == listOf(VIEW) &&
             m.controlBody().let { body -> body.any { it.controlRef() == ADD_ACCOUNT } && body.any { it.controlRef() == CLIENT_ACTIVATED } }
     }
     if (switchers.size != 1) return missing("the main screen's account switcher is missing or ambiguous (${switchers.size})")
@@ -168,7 +172,7 @@ internal fun BytecodePatchContext.resolveSideMenu(plan: MainTabsPlan): SideMenu 
     // Back: the main screen's own answer, with a local free at its start for the menu's answer.
     val backs = tgMutableClassDefBy(plan.screen).methods.filter { m ->
         m.origName == "onBackPressed" && !AccessFlags.STATIC.isSet(m.accessFlags) && m.origReturnType == "Z" &&
-            m.parameterTypes.map(CharSequence::toString) == listOf("Z") && m.controlBody().isNotEmpty()
+            m.origParameterTypes == listOf("Z") && m.controlBody().isNotEmpty()
     }
     if (backs.size != 1) return missing("the main screen no longer answers Back itself (${backs.size})")
     val back = backs.single()
@@ -287,19 +291,20 @@ internal fun BytecodePatchContext.writeSideMenuStubs(menu: SideMenu) {
 
 /** Whether [reference], a method or a field, is public on a public class, and static or not as [static] says. */
 private fun BytecodePatchContext.reaches(reference: String, static: Boolean): Boolean {
+    // A resource id 13.2 inlined has no field left; the stub's read of it becomes that number.
+    if (static && TelegramNames.current().resourceOf(reference) != null) return true
     val owner = tgClassDefByOrNull(reference.substringBefore("->")) ?: return false
     val member = reference.substringAfter("->")
     if (!AccessFlags.PUBLIC.isSet(owner.accessFlags)) return false
     return if ('(' in member) {
         // A method may be inherited, so the whole chain counts.
         superclassChain(owner.type).mapNotNull { tgClassDefByOrNull(it) }.any { cls ->
-            cls.methods.any { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == member &&
+            cls.methods.any { "${it.origName}${it.origDescriptor}" == member &&
                 AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static }
         }
     } else {
-        owner.fields.any { "${it.name}:${it.type}" == member && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static }
+        owner.fields.any { "${it.origName}:${it.origType}" == member && AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static }
     }
 }
 
-private fun signatureOf(m: Method) =
-    "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
+private fun signatureOf(m: Method) = m.origString()

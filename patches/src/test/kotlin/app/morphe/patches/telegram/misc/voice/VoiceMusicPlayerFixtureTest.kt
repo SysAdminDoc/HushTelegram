@@ -85,7 +85,11 @@ class VoiceMusicPlayerFixtureTest {
             assertTrue(IS_MUSIC in stub("isMusic"))
             assertTrue("Lorg/telegram/messenger/MessageObject;->isVoice()Z" in stub("isVoice"))
             assertTrue("Lorg/telegram/messenger/MessageObject;->isVoiceOnce()Z" in stub("once"))
-            assertTrue("Lorg/telegram/messenger/MediaController;->getPlayingMessageObject()Lorg/telegram/messenger/MessageObject;" in stub("playing"))
+            // The getter, or on a build that inlines it everywhere (13.2), the field it read.
+            val getter = "Lorg/telegram/messenger/MediaController;->getPlayingMessageObject()Lorg/telegram/messenger/MessageObject;"
+            val inlined = context.tgMutableClassDefBy("Lorg/telegram/messenger/MediaController;").methods.none { it.origName == "getPlayingMessageObject" }
+            assertEquals("$name: the playing message", listOf("Lorg/telegram/messenger/MediaController;->getInstance()Lorg/telegram/messenger/MediaController;",
+                if (inlined) PLAYING_MESSAGE else getter), stub("playing").filterNotNull())
             val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "voiceMusicPlayer" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
         }

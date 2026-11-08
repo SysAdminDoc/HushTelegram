@@ -92,9 +92,10 @@ class DisableChatSwipeFixtureTest {
             assertTrue("${build.name}: Telegram resets its swipe state in the branch", writes.isNotEmpty())
             for (write in writes) {
                 assertEquals("${build.name}: write at $write", Opcode.IPUT_BOOLEAN, body[write].opcode)
-                assertEquals("${build.name}: write at $write is the controller's", self, body[write].namedRegisters()[1])
+                assertTrue("${build.name}: write at $write is the controller's",
+                    holdsThis(site.method, self, body[write].namedRegisters()[1], write))
                 assertTrue("${build.name}: write at $write is the controller's field",
-                    body[write].reference()!!.startsWith(site.method.definingClass + "->"))
+                    body[write].reference()!!.startsWith(site.method.origDefiningClass + "->"))
             }
         }
     }
@@ -164,6 +165,35 @@ class DisableChatSwipeFixtureTest {
         return found
     }
 
+    /**
+     * Whether [register] holds `this` at [at]: `this`'s own register [self], never rewritten, or a
+     * copy of it on every path that reaches [at] (13.2 moves `this` into a low local first).
+     */
+    private fun holdsThis(method: Method, self: Int, register: Int, at: Int): Boolean {
+        val body = method.instructions()
+        fun writesTo(index: Int, target: Int) = body[index].opcode.setsRegister() && body[index].namedRegisters().firstOrNull()
+            ?.let { first -> first == target || body[index].opcode.setsWideRegister() && first + 1 == target } == true
+        if (body.indices.any { writesTo(it, self) }) return false
+        if (register == self) return true
+        val flow = ControlFlow.of(method)
+        val predecessors = Array(body.size) { mutableSetOf<Int>() }
+        for (index in body.indices) for (next in flow.normal[index] + flow.exceptional[index]) predecessors[next] += index
+        val pending = ArrayDeque(predecessors[at])
+        val visited = mutableSetOf<Int>()
+        var copies = 0
+        if (pending.isEmpty()) return false
+        while (pending.isNotEmpty()) {
+            val index = pending.removeFirst()
+            if (!visited.add(index)) continue
+            if (writesTo(index, register)) {
+                val copy = body[index].opcode in setOf(Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16) &&
+                    body[index].namedRegisters() == listOf(register, self)
+                if (!copy) return false
+                copies++
+            } else if (predecessors[index].isEmpty()) return false else pending.addAll(predecessors[index])
+        }
+        return copies > 0
+    }
     private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
     private fun Instruction.reference() = origRef()
     private fun Instruction.call(): MethodReference? = (this as? ReferenceInstruction)?.reference as? MethodReference

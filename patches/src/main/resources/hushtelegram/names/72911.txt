@@ -5414,7 +5414,6 @@ f Lorg/telegram/messenger/NotificationCenter; uploadStoryEnd I Lorg/telegram/mes
 f Lorg/telegram/messenger/NotificationCenter; uploadStoryProgress I Lorg/telegram/messenger/ys; z5 I
 f Lorg/telegram/messenger/NotificationCenter; userEmojiStatusUpdated I Lorg/telegram/messenger/ys; l5 I
 f Lorg/telegram/messenger/NotificationCenter; userInfoDidLoad I Lorg/telegram/messenger/ys; D0 I
-f Lorg/telegram/messenger/NotificationCenter; userEmojiStatusUpdated I Lorg/telegram/messenger/ys; l5 I
 f Lorg/telegram/messenger/NotificationCenter; userIsPremiumBlockedUpadted I Lorg/telegram/messenger/ys; h3 I
 f Lorg/telegram/messenger/NotificationCenter; voiceTranscriptionUpdate I Lorg/telegram/messenger/ys; z1 I
 f Lorg/telegram/messenger/NotificationCenter; wallpapersDidLoad I Lorg/telegram/messenger/ys; d4 I
@@ -20845,10 +20844,68 @@ m Lorg/telegram/messenger/MessageObject; selectReaction (Lsf/o0;ZZ)Z Lorg/telegr
 # added by hand: pinned order
 m Lorg/telegram/messenger/MessagesController; reorderPinnedDialogs (ILjava/util/ArrayList;J)V Lorg/telegram/messenger/vp; m4 (IJLjava/util/ArrayList;)V
 # added by hand: DispatchQueue
-c Lorg/telegram/messenger/DispatchQueue; Lorg/telegram/messenger/l5; Ljava/lang/Thread; Ljava/lang/Thread;
-m Lorg/telegram/messenger/DispatchQueue; postRunnable (Ljava/lang/Runnable;)Z Lorg/telegram/messenger/l5; c (Ljava/lang/Runnable;)V
-m Lorg/telegram/messenger/DispatchQueue; postRunnable (Ljava/lang/Runnable;J)Z Lorg/telegram/messenger/l5; d (Ljava/lang/Runnable;J)Z
-m Lorg/telegram/messenger/DispatchQueue; cancelRunnable (Ljava/lang/Runnable;)V Lorg/telegram/messenger/l5; a (Ljava/lang/Runnable;)V
-m Lorg/telegram/messenger/DispatchQueue; getHandler ()Landroid/os/Handler; Lorg/telegram/messenger/l5; b ()Landroid/os/Handler;
-f Lorg/telegram/messenger/DispatchQueue; handler Landroid/os/Handler; Lorg/telegram/messenger/l5; a Landroid/os/Handler;
-f Lorg/telegram/messenger/DispatchQueue; syncLatch Ljava/util/concurrent/CountDownLatch; Lorg/telegram/messenger/l5; d Ljava/util/concurrent/CountDownLatch;
+# added by hand: exact numbers
+m Lorg/telegram/messenger/LocaleController; formatShortNumber (I[I)Ljava/lang/String; Lorg/telegram/messenger/hd; S ([II)Ljava/lang/String;
+
+# added by hand: forward hide sender
+f Lorg/telegram/messenger/MessagePreviewParams; hideForwardSendersName Z Lorg/telegram/messenger/pj; k Z
+
+# added by hand: getString(String, int), which 13.2 inlines getString(int) into with its parameters swapped
+m Lorg/telegram/messenger/LocaleController; getString (Ljava/lang/String;I)Ljava/lang/String; Lorg/telegram/messenger/hd; M0 (ILjava/lang/String;)Ljava/lang/String;
+
+# added by hand: secret chats
+c Lorg/telegram/messenger/SecretChatHelper; Lorg/telegram/messenger/mw; Lorg/telegram/messenger/BaseController; Lorg/telegram/messenger/d1;
+m Lorg/telegram/messenger/SecretChatHelper; getInstance (I)Lorg/telegram/messenger/SecretChatHelper; Lorg/telegram/messenger/mw; i (I)Lorg/telegram/messenger/mw;
+m Lorg/telegram/messenger/SecretChatHelper; processUpdateEncryption (Lorg/telegram/tgnet/tl/TL_update$TL_updateEncryption;Lj$/util/concurrent/ConcurrentHashMap;)V Lorg/telegram/messenger/mw; n (Lorg/telegram/tgnet/tl/TL_update$TL_updateEncryption;Lj$/util/concurrent/ConcurrentHashMap;)V
+
+# added by hand: locked voice
+f Lorg/telegram/messenger/MediaController; isPaused Z Lorg/telegram/messenger/MediaController; h0 Z
+m Lorg/telegram/messenger/MediaController; resumeAudio (Lorg/telegram/messenger/MessageObject;)Z Lorg/telegram/messenger/MediaController; b0 (Lorg/telegram/messenger/lj;)V
+
+# added by hand: hide keyboard on scroll
+f Lorg/telegram/messenger/NotificationCenter; startSpoilers I Lorg/telegram/messenger/ys; l1 I
+f Lorg/telegram/messenger/NotificationCenter; stopSpoilers I Lorg/telegram/messenger/ys; k1 I
+
+# added by hand: save downloads
+f Lorg/telegram/messenger/FileLoader; delegate Lorg/telegram/messenger/FileLoader$FileLoaderDelegate; Lorg/telegram/messenger/w7; F Lorg/telegram/messenger/pb;
+f Lorg/telegram/messenger/ImageLoader$5; val$currentAccount I Lorg/telegram/messenger/pb; a I
+m Lorg/telegram/messenger/FileLoader; getPathToAttach (Lorg/telegram/tgnet/TLObject;)Ljava/io/File; Lorg/telegram/messenger/w7; I (Lorg/telegram/tgnet/TLObject;)Ljava/io/File;
+m Lorg/telegram/messenger/FileLoader; getPathToAttach (Lorg/telegram/tgnet/TLObject;Ljava/lang/String;Ljava/lang/String;ZZ)Ljava/io/File; Lorg/telegram/messenger/w7; J (Lorg/telegram/tgnet/TLObject;Ljava/lang/String;ZZ)Ljava/io/File;
+m Lorg/telegram/messenger/FileLoader; getPathToAttach (Lorg/telegram/tgnet/TLObject;Z)Ljava/io/File; Lorg/telegram/messenger/w7; K (Lorg/telegram/tgnet/TLObject;Z)Ljava/io/File;
+m Lorg/telegram/messenger/FileLoader; getAttachFileName (Lorg/telegram/tgnet/TLObject;Ljava/lang/String;)Ljava/lang/String; Lorg/telegram/messenger/w7; r (Ljava/lang/String;Lorg/telegram/tgnet/TLObject;)Ljava/lang/String;
+m Lorg/telegram/messenger/FileLoadOperation; start ()Z Lorg/telegram/messenger/g7; q ()V
+m Lorg/telegram/messenger/FileLoadOperation; onFinishLoadingFile (ZIZ)V Lorg/telegram/messenger/g7; k (ZZ)V
+f Lorg/telegram/messenger/FileLoadOperation; storePath Ljava/io/File; Lorg/telegram/messenger/g7; T0 Ljava/io/File;
+f Lorg/telegram/messenger/FileLoadOperation; storeFileName Ljava/lang/String; Lorg/telegram/messenger/g7; s Ljava/lang/String;
+
+# added by hand: new chats block, where 13.2 inlines the short startShortPoll and swaps loadFullChat's first two parameters
+m Lorg/telegram/messenger/MessagesController; startShortPoll (Lorg/telegram/tgnet/TLRPC$Chat;IZLorg/telegram/ui/fg;)V Lorg/telegram/messenger/vp; W4 (Lorg/telegram/tgnet/TLRPC$Chat;IZLorg/telegram/ui/fg;)V
+m Lorg/telegram/messenger/MessagesController; loadFullChat (JIZ)V Lorg/telegram/messenger/vp; V2 (IJZ)V
+
+# added by hand: hide popular apps, where 13.2 moves the hashtag search's tag behind its numbers
+m Lorg/telegram/messenger/HashtagSearchController; searchHashtag (Ljava/lang/String;III)V Lorg/telegram/messenger/na; e (IIILjava/lang/String;)V
+
+# added by hand: reveal spoilers, the text layout of a message
+c Lorg/telegram/messenger/MessageObject$TextLayoutBlocks; Lorg/telegram/messenger/jj; Ljava/lang/Object; Ljava/lang/Object;
+
+# added by hand: playback position, the saved position a video bubble caches
+f Lorg/telegram/messenger/MessageObject; cachedSavedTimestamp Ljava/lang/Float; Lorg/telegram/messenger/lj; j3 Ljava/lang/Float;
+
+# added by hand: event ids matched by value and by who posts and observes them
+f Lorg/telegram/messenger/NotificationCenter; messageTranslated I Lorg/telegram/messenger/ys; L1 I
+
+# added by hand: Forward as copy sends, in the shape R8 left them (unused and constant parameters dropped)
+m Lorg/telegram/messenger/SendMessagesHelper; prepareSendingText (Lorg/telegram/messenger/AccountInstance;Ljava/lang/CharSequence;JJZII)V Lorg/telegram/messenger/qz; a0 (Lorg/telegram/messenger/a;Ljava/lang/CharSequence;JJZII)V
+m Lorg/telegram/messenger/SendMessagesHelper; prepareSendingPhoto (Lorg/telegram/messenger/AccountInstance;Ljava/lang/String;Ljava/lang/String;Landroid/net/Uri;JLorg/telegram/messenger/MessageObject;Lorg/telegram/messenger/MessageObject;Lorg/telegram/ui/ln;Ljava/util/ArrayList;Ljava/util/ArrayList;Lorg/telegram/ui/Components/ir0;ILorg/telegram/messenger/MessageObject;Lorg/telegram/messenger/VideoEditedInfo;ZIZLjava/lang/CharSequence;Lorg/telegram/messenger/SendMessageChatArguments;JJJLorg/telegram/messenger/MessageSuggestionParams;)V Lorg/telegram/messenger/qz; Z (Lorg/telegram/messenger/a;Ljava/lang/String;Ljava/lang/String;Landroid/net/Uri;JLorg/telegram/messenger/lj;Lorg/telegram/messenger/lj;Lorg/telegram/ui/ln;Ljava/util/ArrayList;Ljava/util/ArrayList;Lorg/telegram/ui/Components/ir0;ILorg/telegram/messenger/lj;Lorg/telegram/messenger/w20;ZIZLjava/lang/CharSequence;Lorg/telegram/messenger/qw;JJJLorg/telegram/messenger/qj;)V
+m Lorg/telegram/messenger/SendMessagesHelper; prepareSendingDocument (Lorg/telegram/messenger/AccountInstance;Ljava/lang/String;Ljava/lang/String;Landroid/net/Uri;Ljava/lang/String;Ljava/lang/String;JLorg/telegram/messenger/MessageObject;Lorg/telegram/messenger/MessageObject;Lorg/telegram/tgnet/tl/TL_stories$StoryItem;Lorg/telegram/ui/ln;ZLorg/telegram/ui/Components/ir0;Lorg/telegram/messenger/SendMessageChatArguments;)V Lorg/telegram/messenger/qz; T (Lorg/telegram/messenger/a;Ljava/lang/String;Ljava/lang/String;Landroid/net/Uri;Ljava/lang/String;Ljava/lang/String;JLorg/telegram/messenger/lj;Lorg/telegram/messenger/lj;Lorg/telegram/tgnet/tl/TL_stories$StoryItem;Lorg/telegram/ui/ln;ZLorg/telegram/ui/Components/ir0;Lorg/telegram/messenger/qw;)V
+# added by hand: the enabled reactions list the long-press menu reads directly (getter inlined)
+f Lorg/telegram/messenger/MediaDataController; enabledReactionsList Ljava/util/ArrayList; Lorg/telegram/messenger/vi; n Ljava/util/ArrayList;
+# added by hand: message menu, where 13.2 makes getPathToMessage static
+m Lorg/telegram/messenger/FileLoader; getPathToMessage (Lorg/telegram/tgnet/TLRPC$Message;)Ljava/io/File; Lorg/telegram/messenger/w7; L (Lorg/telegram/tgnet/TLRPC$Message;)Ljava/io/File;
+# added by hand: ask before sending, where 13.2 drops the stars from the end of a recording and puts its ints first
+m Lorg/telegram/messenger/MediaController; stopRecording (IZIZJ)V Lorg/telegram/messenger/MediaController; B0 (IIZZ)V
+# added by hand: hide stories, where the Play table lacks the stories controller getter
+m Lorg/telegram/messenger/MessagesController; getStoriesController ()Lug/s5; Lorg/telegram/messenger/vp; P1 ()Lwg/e5;
+# added by hand: ask before sending, where the sticker suggestion strip sends through sendSticker
+m Lorg/telegram/messenger/SendMessagesHelper; sendSticker (Lorg/telegram/tgnet/TLRPC$Document;Ljava/lang/String;JLorg/telegram/messenger/MessageObject;Lorg/telegram/messenger/MessageObject;Lorg/telegram/tgnet/tl/TL_stories$StoryItem;Lorg/telegram/ui/ln;Lorg/telegram/messenger/MessageObject$SendAnimationData;ZIIZLjava/lang/Object;Lorg/telegram/messenger/SendMessageChatArguments;JJLorg/telegram/messenger/MessageSuggestionParams;)V Lorg/telegram/messenger/qz; v0 (Lorg/telegram/tgnet/TLRPC$Document;Ljava/lang/String;JLorg/telegram/messenger/lj;Lorg/telegram/messenger/lj;Lorg/telegram/tgnet/tl/TL_stories$StoryItem;Lorg/telegram/ui/ln;Lorg/telegram/messenger/hj;ZIIZLjava/lang/Object;Lorg/telegram/messenger/qw;JJLorg/telegram/messenger/qj;)V
+m Lorg/telegram/messenger/SendMessagesHelper; sendSticker (Lorg/telegram/tgnet/TLRPC$Document;Ljava/lang/String;JLjava/lang/CharSequence;Lorg/telegram/messenger/VideoEditedInfo;Lorg/telegram/messenger/MessageObject;Lorg/telegram/messenger/MessageObject;Lorg/telegram/tgnet/tl/TL_stories$StoryItem;Lorg/telegram/ui/ln;Lorg/telegram/messenger/MessageObject$SendAnimationData;ZIIZLjava/lang/Object;Lorg/telegram/messenger/SendMessageChatArguments;JJLorg/telegram/messenger/MessageSuggestionParams;Z)V Lorg/telegram/messenger/qz; u0 (Lorg/telegram/tgnet/TLRPC$Document;Ljava/lang/String;JLjava/lang/CharSequence;Lorg/telegram/messenger/w20;Lorg/telegram/messenger/lj;Lorg/telegram/messenger/lj;Lorg/telegram/tgnet/tl/TL_stories$StoryItem;Lorg/telegram/ui/ln;Lorg/telegram/messenger/hj;ZIIZLjava/lang/Object;Lorg/telegram/messenger/qw;JJLorg/telegram/messenger/qj;Z)V

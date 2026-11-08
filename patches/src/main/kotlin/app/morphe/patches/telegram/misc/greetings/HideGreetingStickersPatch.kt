@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.greetings
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
@@ -44,6 +45,18 @@ import app.morphe.util.names.tgMutableClassDefBy
 
 internal const val GREETING_STICKERS = "$EXTENSION_PACKAGE/misc/GreetingStickers;"
 internal const val GREETINGS_STICKER = "Lorg/telegram/messenger/MediaDataController;->getGreetingsSticker()Lorg/telegram/tgnet/TLRPC\$Document;"
+private const val GREETINGS_FIELD = "Lorg/telegram/messenger/MediaDataController;->greetingsSticker:Lorg/telegram/tgnet/TLRPC\$Document;"
+private const val PRELOAD_NEXT = "Lorg/telegram/messenger/MediaDataController;->preloadNextGreetingsSticker()V"
+
+/**
+ * Whether this body asks for the greeting sticker: through getGreetingsSticker, or the copy of it
+ * 13.2 inlines, which reads the field and then preloads the next sticker.
+ */
+internal fun Method.asksGreetingsSticker(): Boolean {
+    val body = controlBody()
+    return body.indices.any { i -> body[i].controlRef() == GREETINGS_STICKER || body[i].opcode == Opcode.IGET_OBJECT &&
+        body[i].controlRef() == GREETINGS_FIELD && body.getOrNull(i + 1)?.controlRef() == PRELOAD_NEXT }
+}
 private const val LINEAR_LAYOUT = "Landroid/widget/LinearLayout;"
 private const val FRAME_LAYOUT = "Landroid/widget/FrameLayout;"
 private const val SUPER_MEASURE = "Landroid/widget/LinearLayout;->onMeasure(II)V"
@@ -103,7 +116,7 @@ internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite
     val owners = mutableListOf<ClassDef>()
     classDefForEach { cls ->
         if (cls.origType.startsWith("Lapp/hushtelegram/") || cls.origSuperclass != LINEAR_LAYOUT) return@classDefForEach
-        val asks = cls.methods.filter { m -> m.controlBody().any { it.controlRef() == GREETINGS_STICKER } }
+        val asks = cls.methods.filter { it.asksGreetingsSticker() }
         if (asks.any { it.origName == "<init>" && it.parameterTypes.getOrNull(2)?.toString() == "Lorg/telegram/tgnet/TLRPC\$Document;" } &&
             asks.any { it.origName == "onAttachedToWindow" && it.parameterTypes.isEmpty() }) owners += cls
     }
@@ -120,10 +133,10 @@ internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite
     // setSticker(Document), which dispatchDraw calls on the first draw, makes one of those views
     // send the sticker when tapped. Hiding the frame hides that view and its stand-in, nothing else.
     val setSticker = owner.methods.filter { !AccessFlags.STATIC.isSet(it.accessFlags) && it.origReturnType == "V" &&
-        it.parameterTypes.map(CharSequence::toString) == listOf(DOCUMENT) }.controlSingle("greeting setSticker")
-    val draw = owner.methods.filter { it.origName == "dispatchDraw" && it.parameterTypes.map(CharSequence::toString) == listOf("Landroid/graphics/Canvas;") }
+        it.origParameterTypes == listOf(DOCUMENT) }.controlSingle("greeting setSticker")
+    val draw = owner.methods.filter { it.origName == "dispatchDraw" && it.origParameterTypes == listOf("Landroid/graphics/Canvas;") }
         .controlSingle("greeting dispatchDraw")
-    val setStickerKey = "${owner.type}->${setSticker.name}($DOCUMENT)V"
+    val setStickerKey = "${setSticker.origDefiningClass}->${setSticker.origName}($DOCUMENT)V"
     controlShape(draw.controlBody().any { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef() == setStickerKey },
         "the greeting no longer loads its sticker when it first draws")
     val stickerBody = setSticker.controlBody()
@@ -144,7 +157,7 @@ internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite
         layoutBody.first().call()?.origName == "removeAllViews", "the greeting no longer lays the sticker frame out under its text")
 
     // onMeasure: stop layout requests, then measure twice with LinearLayout's own pass.
-    val measure = owner.methods.filter { it.origName == "onMeasure" && it.parameterTypes.map(CharSequence::toString) == listOf("I", "I") && it.origReturnType == "V" }
+    val measure = owner.methods.filter { it.origName == "onMeasure" && it.origParameterTypes == listOf("I", "I") && it.origReturnType == "V" }
         .controlSingle("greeting onMeasure")
     val body = measure.controlBody()
     val self = measure.localRegisterCount()
@@ -162,7 +175,7 @@ internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite
 
     // The introduction flag: set true by one (CharSequence, CharSequence) method, read only here.
     val introductions = owner.fields.filter { field -> field.origType == "Z" && !AccessFlags.STATIC.isSet(field.accessFlags) &&
-        "${owner.type}->${field.name}:Z".let { key -> owner.methods.any { m -> m.parameterTypes.map(CharSequence::toString) ==
+        "${owner.type}->${field.name}:Z".let { key -> owner.methods.any { m -> m.origParameterTypes ==
             listOf("Ljava/lang/CharSequence;", "Ljava/lang/CharSequence;") && m.controlBody().any { it.opcode == Opcode.IPUT_BOOLEAN && it.controlRef() == key } } &&
             body.any { it.opcode == Opcode.IGET_BOOLEAN && it.controlRef() == key } } }
     val introduction = introductions.controlSingle("greeting introduction flag")
@@ -184,7 +197,7 @@ internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite
                 val one = b.getOrNull(i - 1)
                 val raised = one?.opcode == Opcode.CONST_4 && (one as NarrowLiteralInstruction).narrowLiteral == 1 &&
                     one.namedRegisters().first() == b[i].namedRegisters().first()
-                if (raised && m.origDefiningClass == owner.origType && m.parameterTypes.map(CharSequence::toString) == TWO_TEXTS) {
+                if (raised && m.origDefiningClass == owner.origType && m.origParameterTypes == TWO_TEXTS) {
                     raisers += "${m.name}(${m.parameterTypes.joinToString("")})"
                 } else loweredOrElsewhere = true
             }
@@ -195,7 +208,7 @@ internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite
     classDefForEach { cls ->
         if (cls.origType.startsWith("Lapp/hushtelegram/") || cls.origSuperclass != owner.origType) return@classDefForEach
         cls.methods.forEach { m ->
-            if (m.origName == "onMeasure" && m.parameterTypes.map(CharSequence::toString) == listOf("I", "I") &&
+            if (m.origName == "onMeasure" && m.origParameterTypes == listOf("I", "I") &&
                 m.controlBody().none { it.opcode == Opcode.INVOKE_SUPER && it.controlRef() == ownMeasure }) measuresAlone = true
         }
     }

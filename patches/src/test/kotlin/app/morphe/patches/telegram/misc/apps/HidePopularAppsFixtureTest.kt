@@ -9,6 +9,7 @@ import app.morphe.FixtureDex
 import app.morphe.Fixtures
 import app.morphe.PatchContexts
 import app.morphe.util.names.origRef
+import app.morphe.util.names.loadsInt
 import app.morphe.util.names.addInstructions
 import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -69,16 +70,15 @@ class HidePopularAppsFixtureTest {
                 sectionFlow.normal[gate + 2].toSet())
             // In stock, that point is where an empty list that isn't loading and has nothing more goes.
             val stock = section.instructions()
-            val emptyBranch = stock.indices.single { stock[it].opcode == Opcode.IGET_BOOLEAN && it > sites.read + 3 &&
-                ControlFlow.of(section).normal[sites.read + 3].contains(it) }
+            val emptyBranch = stock.indices.single { stock[it].opcode == Opcode.IGET_BOOLEAN && it > sites.test &&
+                ControlFlow.of(section).normal[sites.test].contains(it) }
             assertTrue("$name: a finished, empty list reaches it in stock", sites.empty in ControlFlow.of(section).normal[emptyBranch + 3])
             // Skipping from the read to there skips no write but the reads Telegram makes on its way.
-            for (at in listOf(sites.read, sites.read + 1, sites.read + 2, sites.read + 3, emptyBranch, emptyBranch + 1, emptyBranch + 2, emptyBranch + 3)) {
+            for (at in (sites.read..sites.test) + listOf(emptyBranch, emptyBranch + 1, emptyBranch + 2, emptyBranch + 3)) {
                 assertFalse("$name: stock empty path at $at writes a field", stock[at].opcode.name.let { op -> op.startsWith("iput") || op.startsWith("sput") })
             }
             // No heading, bot row or placeholder can be added between the gate and that point unless the gate let it through.
-            val heading = stock.indexOfFirst { it.opcode == Opcode.SGET && (it as ReferenceInstruction).reference.let { ref ->
-                ref is FieldReference && ref.origName == "SearchAppsPopular" } }
+            val heading = stock.indexOfFirst { it.namesPopularApps() }
             assertTrue("$name: the heading is inside the gated section", heading in sites.read until sites.empty)
             assertFalse("$name: the heading is reached around the gate", moved.getValue(heading) in reachable(sectionFlow, 0, gate))
 
@@ -95,8 +95,7 @@ class HidePopularAppsFixtureTest {
             val builders = FixtureDex.methodsWhere(build, { true }) { method ->
                 method.instructions().any { it.opcode == Opcode.NEW_INSTANCE && it.reference() == GET_POPULAR_APP_BOTS } }
             assertEquals("${build.name}: one getPopularAppBots builder", 1, builders.size)
-            val headings = FixtureDex.methodsWhere(build, { true }) { method -> method.instructions().any { it.opcode == Opcode.SGET &&
-                (it as ReferenceInstruction).reference.let { ref -> ref is FieldReference && ref.origName == "SearchAppsPopular" } } }
+            val headings = FixtureDex.methodsWhere(build, { true }) { method -> method.instructions().any { it.namesPopularApps() } }
             assertEquals("${build.name}: one place draws the Popular apps heading", 1, headings.size)
         }
     }
@@ -110,7 +109,7 @@ class HidePopularAppsFixtureTest {
                     sites.section.replaceInstruction(sites.empty, "const/4 v$register, 0x1")
                 },
                 "empty list stops checking it is finished" to { _, sites ->
-                    val emptyBranch = ControlFlow.of(sites.section).normal[sites.read + 3].single { it != sites.read + 4 }
+                    val emptyBranch = ControlFlow.of(sites.section).normal[sites.test].single { it != sites.test + 1 }
                     sites.section.replaceInstruction(emptyBranch + 2, "nop")
                 },
                 "a second request builder" to { context, sites ->
@@ -168,16 +167,18 @@ class HidePopularAppsFixtureTest {
     }
 
     private fun owners(build: java.io.File) = FixtureDex.classesWhere(build, { true }) { method ->
-        method.instructions().any { (it.opcode == Opcode.NEW_INSTANCE && it.reference() == GET_POPULAR_APP_BOTS) ||
-            (it.opcode == Opcode.SGET && (it as ReferenceInstruction).reference.let { ref -> ref is FieldReference && ref.origName == "SearchAppsPopular" }) }
+        method.instructions().any { (it.opcode == Opcode.NEW_INSTANCE && it.reference() == GET_POPULAR_APP_BOTS) || it.namesPopularApps() }
     }
+
+    /** The Popular apps heading's string id: an sget of the R field, or the const 13.2 inlined it into. */
+    private fun Instruction.namesPopularApps() = loadsInt() && origRef() == "Lorg/telegram/messenger/R\$string;->SearchAppsPopular:I"
 
     private fun contextFor(build: java.io.File, runtime: Boolean = true): BytecodePatchContext {
         val owners = owners(build)
         assertEquals("${build.name}: the loader and the Apps tab", 2, owners.size)
         val extension = ExtensionDex.classes().filter { runtime || it.origType != POPULAR_APPS }
-        return PatchContexts.of((extension + owners + myChatsSearchHosts(build) + nameFoldHosts(build) + newChatsHosts(build))
-            .distinctBy { it.type })
+        return PatchContexts.of((extension + owners + myChatsSearchHosts(build) + nameFoldHosts(build) + newChatsHosts(build) +
+            FixtureDex.classes(build, setOf(SECRET_HELPER)).values).distinctBy { it.type })
     }
 
     private fun reachable(flow: ControlFlow, from: Int, blocked: Int): Set<Int> {

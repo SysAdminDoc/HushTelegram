@@ -233,7 +233,7 @@ class MiniAppLocationFixtureTest {
     /** The link patch's own hosts, so it runs whole, and the three classes the location switch gates. */
     private fun hostClasses(build: File): List<ClassDef> {
         val hosts = FixtureDex.classesWhere(build, HOST_CENSUS, { true }) { method ->
-            (method.origReturnType == "V" && method.parameterTypes.size == 10 &&
+            (method.origReturnType == "V" && method.parameterTypes.size in 10..11 &&
                 method.parameterTypes.take(2) == listOf("Landroid/content/Context;", "Landroid/net/Uri;") &&
                 method.instructions().any { it.ref() == "autologin_token" }) ||
                 (method.instructions().any { it.ref() == "Lorg/telegram/messenger/R\$string;->ShareLink:I" } &&

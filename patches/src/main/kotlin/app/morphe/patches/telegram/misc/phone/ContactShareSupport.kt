@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.phone
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -37,6 +38,8 @@ internal const val CONTACT_SHARE = "$EXTENSION_PACKAGE/misc/ContactShare;"
 internal const val STARTS_TICKED = "$CONTACT_SHARE->startsTicked(Ljava/lang/Object;ZZ)Z"
 internal const val ADD_CONTACT =
     "Lorg/telegram/messenger/ContactsController;->addContact(Lorg/telegram/tgnet/TLRPC\$User;Lorg/telegram/tgnet/TLRPC\$TL_textWithEntities;Z)V"
+/** Where addContact puts its share boolean; 13.2 inlines addContact, so the save stores it here itself. */
+internal const val PRIVACY_EXCEPTION = "Lorg/telegram/tgnet/TLRPC\$TL_contacts_addContact;->add_phone_privacy_exception:Z"
 /** The setting Telegram's add contact bar leaves behind when it offers to share your number. */
 internal const val EXCEPTION_KEY = "dialog_bar_exception"
 
@@ -66,11 +69,14 @@ internal class ContactShareSite(val offer: String, val box: String, val view: Mu
 internal fun BytecodePatchContext.resolveContactShare(): ContactShareSite {
     controlHook(CONTACT_SHARE, "startsTicked", listOf("Ljava/lang/Object;", "Z", "Z"), "Z")
     val saves = mutableListOf<Pair<FieldReference, FieldReference>>()
-    forEachClassMentioning(Mention.reference(ADD_CONTACT)) { cls ->
+    forEachClassMentioning(Mention.reference(ADD_CONTACT) or Mention.reference(PRIVACY_EXCEPTION)) { cls ->
         if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         for (method in cls.methods) {
             val body = method.controlBody()
-            body.indices.filter { body[it].controlRef() == ADD_CONTACT }.forEach { at -> shareOperand(method, at)?.let(saves::add) }
+            body.indices.filter { body[it].controlRef() == ADD_CONTACT }
+                .forEach { at -> shareOperand(method, at, body[at].namedRegisters().lastOrNull() ?: return@forEach)?.let(saves::add) }
+            body.indices.filter { body[it].opcode == Opcode.IPUT_BOOLEAN && body[it].controlRef() == PRIVACY_EXCEPTION }
+                .forEach { at -> inlinedShare(method, at)?.let(saves::add) }
         }
     }
     val (offer, box) = saves.controlSingle("add contact save that reads the share box")
@@ -94,7 +100,7 @@ internal fun BytecodePatchContext.resolveContactShare(): ContactShareSite {
         body.indices.filter { body[it].opcode == Opcode.IPUT_BOOLEAN && body[it].controlField() == box }.map { method to it }
     }
     val (view, tick) = ticks.controlSingle("share box tick")
-    controlShape(view.origName == "createView" && view.parameterTypes.map(CharSequence::toString) == listOf("Landroid/content/Context;"),
+    controlShape(view.origName == "createView" && view.origParameterTypes == listOf("Landroid/content/Context;"),
         "Telegram ticks the share box outside createView")
     val body = view.controlBody()
     val (value, owner) = body[tick].namedRegisters()
@@ -114,13 +120,12 @@ internal fun BytecodePatchContext.resolveContactShare(): ContactShareSite {
 }
 
 /**
- * The flags behind addContact's share boolean at [at]: `offer && box` read off one object, as
- * `iget offer; if-eqz; iget box; if-eqz; move b, yes; goto; move b, no`. Null for any other call.
+ * The flags behind the share boolean in [shared] as [at] starts: `offer && box` read off one object,
+ * as `iget offer; if-eqz; iget box; if-eqz; move b, yes; goto; move b, no`. Null for any other shape.
  */
-private fun shareOperand(method: Method, at: Int): Pair<FieldReference, FieldReference>? {
+private fun shareOperand(method: Method, at: Int, shared: Int): Pair<FieldReference, FieldReference>? {
     val body = method.controlBody()
     if (at < 7) return null
-    val shared = body[at].namedRegisters().lastOrNull() ?: return null
     val offer = body[at - 7]
     val box = body[at - 5]
     if (offer.opcode != Opcode.IGET_BOOLEAN || box.opcode != Opcode.IGET_BOOLEAN || body[at - 6].opcode != Opcode.IF_EQZ ||
@@ -134,6 +139,21 @@ private fun shareOperand(method: Method, at: Int): Pair<FieldReference, FieldRef
     if (flow.normal[at - 6].toSet() != setOf(at - 5, at - 1) || flow.normal[at - 4].toSet() != setOf(at - 3, at - 1) ||
         flow.normal[at - 2] != listOf(at)) return null
     return offer.controlField()!! to box.controlField()!!
+}
+
+/**
+ * The flags behind the privacy exception the inlined save stores at [store]: the boolean's last
+ * write is the `offer && box` choice, and straight-line code carries it to the store.
+ */
+private fun inlinedShare(method: Method, store: Int): Pair<FieldReference, FieldReference>? {
+    val body = method.controlBody()
+    val shared = body[store].namedRegisters().first()
+    val last = (store - 1 downTo 0).firstOrNull { body[it].opcode.setsRegister() && body[it].namedRegisters().firstOrNull() == shared }
+        ?: return null
+    val flow = ControlFlow.of(method)
+    val straight = (last + 1 until store).all { flow.normal[it] == listOf(it + 1) } &&
+        flow.normal.indices.none { from -> from !in last until store && flow.normal[from].any { it in last + 2..store } }
+    return if (straight) shareOperand(method, last + 1, shared) else null
 }
 
 private val GOTOS = setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)

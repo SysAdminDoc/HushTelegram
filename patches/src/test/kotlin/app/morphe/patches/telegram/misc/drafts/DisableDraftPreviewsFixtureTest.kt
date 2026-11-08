@@ -43,11 +43,13 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 import app.morphe.util.names.origDefiningClass
+import app.morphe.util.names.origInterfaces
 import app.morphe.util.names.origName
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.origType
 import app.morphe.util.names.tgMutableClassDefBy
+import app.morphe.util.names.tgMutableClassDefByOrNull
 
 private const val MEDIA_DATA = "Lorg/telegram/messenger/MediaDataController;"
 private val FLAGS = listOf("disableDraftPreviews", "localDrafts", "localSearch") + DraftPreviewTarget.entries.map { it.capability }
@@ -91,7 +93,11 @@ class DisableDraftPreviewsFixtureTest {
                     assertEquals("${build.name}: bot share guard", listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.IF_EQZ,
                         Opcode.MOVE_OBJECT_FROM16, Opcode.CONST_4, Opcode.INVOKE_VIRTUAL, Opcode.GOTO_16, Opcode.NOP), guard.map { it.opcode })
                     val callback = old.subList(0, hook.index).last { it.opcode == Opcode.NEW_INSTANCE }
-                    assertEquals("${build.name}: a skip hands the callback no preview", "${callback.reference()}->run(Ljava/lang/Object;)V", guard[5].reference())
+                    // 13.2's callback has its interface's build name for run, which the table maps on the interface only.
+                    val owner = context.tgMutableClassDefBy(callback.reference()!!)
+                    val run = owner.methods.single { m -> m.parameterTypes.map { it.toString() } == listOf("Ljava/lang/Object;") && m.returnType == "V" &&
+                        (m.origName == "run" || owner.origInterfaces.any { face -> context.tgMutableClassDefByOrNull(face)?.methods?.any { it.origName == "run" && it.name == m.name } == true }) }
+                    assertEquals("${build.name}: a skip hands the callback no preview", "${callback.reference()}->${run.origName}(Ljava/lang/Object;)V", guard[5].reference())
                     assertEquals("${build.name}: false fetches as before", listOf(hook.index + 7), newFlow.normal[hook.index + 2].filter { it != hook.index + 3 })
                     assertEquals("${build.name}: a skip leaves through the request's own exit", listOf(moved(hook.finish)), newFlow.normal[hook.index + 6])
                 } else if (target == DraftPreviewTarget.CHAT || target == DraftPreviewTarget.SHARE) {
@@ -249,14 +255,17 @@ class DisableDraftPreviewsFixtureTest {
     @Test
     fun `the story request runs only from the runnable its URL check posts`() {
         for (build in Fixtures.declaredBuilds()) {
-            val story = FixtureDex.methodsWhere(build, { true }) { it.constructs(WEB_PAGE_PREVIEW) &&
-                it.parameterTypes.map(CharSequence::toString) == listOf(it.definingClass) }.single()
-            val callers = FixtureDex.methodsWhere(build, { true }) { method -> method.instructions().any { it.call()?.let { call ->
-                call.origDefiningClass == story.origDefiningClass && call.origName == story.origName } == true } }
-            val runnable = callers.single().definingClass
-            assertEquals("${build.name}: only a run() calls the story request", "run", callers.single().name)
-            val check = FixtureDex.methodsWhere(build, { true }) { method -> method.origDefiningClass == story.origDefiningClass &&
-                method.parameterTypes.map(CharSequence::toString) == listOf(story.definingClass, "Ljava/lang/String;") &&
+            val story = FixtureDex.methodsWhere(build, { true }) { it.constructs(WEB_PAGE_PREVIEW) && it.storySheet() != null }.single()
+            val sheet = story.storySheet()!!
+            // 13.2 makes the request in the runnable itself, where 13.1.1 has the runnable call a static builder.
+            val runnable = if (story.name == "run") story.definingClass else {
+                val callers = FixtureDex.methodsWhere(build, { true }) { method -> method.instructions().any { it.call()?.let { call ->
+                    call.origDefiningClass == story.origDefiningClass && call.origName == story.origName } == true } }
+                assertEquals("${build.name}: only a run() calls the story request", "run", callers.single().name)
+                callers.single().definingClass
+            }
+            val check = FixtureDex.methodsWhere(build, { true }) { method -> method.definingClass == sheet &&
+                method.parameterTypes.map(CharSequence::toString) == listOf(sheet, "Ljava/lang/String;") &&
                 method.instructions().any { it.call()?.origName == "cancelRunOnUIThread" } }.single()
             val field = check.instructions().map { (it as? ReferenceInstruction)?.reference }.filterIsInstance<FieldReference>()
                 .single { it.origType == runnable }
@@ -283,7 +292,12 @@ class DisableDraftPreviewsFixtureTest {
             val hooks = context.resolveDraftPreviewHooks()
             val bot = hooks.getValue(DraftPreviewTarget.BOT_SHARE).method.instructions()
             val callback = bot.subList(0, hooks.getValue(DraftPreviewTarget.BOT_SHARE).index).last { it.opcode == Opcode.NEW_INSTANCE }.reference()!!
-            context.tgMutableClassDefBy(callback).methods.single { it.origName == "run" }.addInstructions(0, "new-instance v0, $WEB_PAGE_PREVIEW")
+            val owner = context.tgMutableClassDefBy(callback)
+            // 13.2 names the callback's run as its interface's.
+            owner.methods.single { m -> m.parameterTypes.map { it.toString() } == listOf("Ljava/lang/Object;") && m.returnType == "V" &&
+                (m.origName == "run" || owner.origInterfaces.any { face ->
+                    context.tgMutableClassDefByOrNull(face)?.methods?.any { it.origName == "run" && it.name == m.name } == true })
+            }.addInstructions(0, "new-instance v0, $WEB_PAGE_PREVIEW")
             assertRefusedUntouched(build.name, "unknown builder", context, hooks)
         }
     }
@@ -347,8 +361,10 @@ class DisableDraftPreviewsFixtureTest {
                 else -> null
             } } }
             .filter { it.startsWith("L") && it !in owners.map(ClassDef::getType) }.toSet()
-        return PatchContexts.of((ExtensionDex.classes() + owners +
-            FixtureDex.classes(build, helpers + SAVE_DRAFT + INPUT_REPLY_TO + MONO_FORUM_REPLY).values +
+        val helperClasses = FixtureDex.classes(build, helpers + SAVE_DRAFT + INPUT_REPLY_TO + MONO_FORUM_REPLY).values
+        // 13.2 names a callback's run as its interface's, so the interfaces come along.
+        val faces = FixtureDex.classes(build, helperClasses.flatMap { it.origInterfaces }.filter { it.startsWith("Lorg/telegram/") }.toSet()).values
+        return PatchContexts.of((ExtensionDex.classes() + owners + helperClasses + faces +
             localSearchHosts(build)).distinctBy(ClassDef::getType))
     }
 

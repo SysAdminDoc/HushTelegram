@@ -25,6 +25,7 @@ import app.morphe.util.ControlFlow
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import app.morphe.util.names.origString
 import app.morphe.util.names.tgMutableClassDefByOrNull
 
 internal const val VOICE_PLAYLIST = "$EXTENSION_PACKAGE/misc/VoicePlaylist;"
@@ -84,7 +85,7 @@ internal fun BytecodePatchContext.resolveVoiceOneAtATime(): MutableMethod {
     controlHook(VOICE_PLAYLIST, "queue", listOf("Ljava/util/ArrayList;"), "Ljava/util/ArrayList;")
     val controller = tgMutableClassDefByOrNull(MEDIA_CONTROLLER)
     controlShape(controller != null, "MediaController is missing")
-    val setter = controller!!.methods.filter { "${it.definingClass}->${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == SET_PLAYLIST &&
+    val setter = controller!!.methods.filter { it.origString() == SET_PLAYLIST &&
         !AccessFlags.STATIC.isSet(it.accessFlags) }.controlSingle("voice playlist setter")
     val body = setter.controlBody()
     controlShape(body.any { it.opcode == Opcode.IPUT_OBJECT && it.controlRef() == PLAYLIST }, "the voice playlist setter no longer stores the queue")

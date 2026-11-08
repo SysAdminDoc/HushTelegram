@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.apps
 
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -71,6 +72,7 @@ private const val TL_OBJECT = "Lorg/telegram/tgnet/TLObject;"
 private const val NOTIFICATIONS = "Lorg/telegram/messenger/NotificationCenter;"
 private const val TITLES = "Lorg/telegram/messenger/R\$string;"
 private const val ARRAY_LIST = "Ljava/util/ArrayList;"
+private const val OBJECT = "Ljava/lang/Object;"
 private const val STRING = "Ljava/lang/String;"
 /** An account search answer's lists, in the order the runtime's foundLists stub hands them over. */
 internal val FOUND_LISTS = listOf("my_results", "results", "users", "chats")
@@ -148,10 +150,11 @@ internal class MyChatsSearchSites(
 
         val update = into(tabs.update)
         val list = tabs.update.freeLocalsAt(PATCH, tabs.end, 1, highest = 15).single()
-        update.addInstructionsAtControlFlowLabel(tabs.end, """
-            iget-object v$list, v${tabs.update.localRegisterCount()}, ${tabs.list}
-            invoke-static {v$list}, $DROP_PUBLIC_TABS
-        """.trimIndent())
+        update.addInstructionsAtControlFlowLabel(tabs.end, listOfNotNull(
+            "iget-object v$list, v${tabs.update.localRegisterCount()}, ${tabs.list}",
+            "check-cast v$list, $ARRAY_LIST".takeIf { tabs.list.type != ARRAY_LIST },
+            "invoke-static {v$list}, $DROP_PUBLIC_TABS",
+        ).joinToString("\n"))
 
         into(downloads.method).addInstructionsAtControlFlowLabel(downloads.call, """
             invoke-static {v${downloads.pager}, v${downloads.position}}, $DOWNLOADS_AT
@@ -205,12 +208,13 @@ internal fun BytecodePatchContext.writeMyChatsSearchStubs(sites: MyChatsSearchSi
     sites.chat.lookUp?.let { writeStub(MY_CHATS_SEARCH, "lookUp", PHONE_MATCH_REGISTERS, it) }
     writeStub(MY_CHATS_SEARCH, "publicTab", 3, predicate(SearchTab.entries.filter { it.publicTab }))
     writeStub(MY_CHATS_SEARCH, "downloadsTab", 3, predicate(listOf(SearchTab.DOWNLOADS)))
-    writeStub(MY_CHATS_SEARCH, "tabs", 2, """
-        check-cast p0, ${tabs.pager}
-        iget-object v0, p0, ${tabs.adapter}
-        iget-object v0, v0, ${tabs.list}
-        return-object v0
-    """.trimIndent())
+    writeStub(MY_CHATS_SEARCH, "tabs", 2, listOfNotNull(
+        "check-cast p0, ${tabs.pager}",
+        "iget-object v0, p0, ${tabs.adapter}",
+        "iget-object v0, v0, ${tabs.list}",
+        "check-cast v0, $ARRAY_LIST".takeIf { tabs.list.type != ARRAY_LIST },
+        "return-object v0",
+    ).joinToString("\n"))
     // The hashtag search's results for that kind cleared, done, and the screens told: what Telegram
     // does for a channel name it can't find.
     writeStub(MY_CHATS_SEARCH, "finishPublicPosts", 5, """
@@ -352,21 +356,15 @@ private fun BytecodePatchContext.resolveTabRow(): TabRow {
     val titles = titled.one("search tab titles", ::refuse)
     val adapter = titles.definingClass
     val body = titles.instructions()
-    val found = SearchTab.entries.associateWith { tab ->
-        val read = body.indices.filter { body[it].readsTitle(tab.title) }.one("${tab.title} title", ::refuse)
-        // check-cast item; iget type; const number; if-ne type, number; then the title.
-        val branch = body.getOrNull(read - 1)
-        val number = body.getOrNull(read - 2)
-        val field = body.getOrNull(read - 3)
-        val cast = body.getOrNull(read - 4)
-        if (branch == null || number == null || field == null || cast == null || branch.opcode != Opcode.IF_NE ||
-            number.opcode !in CONSTS || number !is NarrowLiteralInstruction || field.opcode != Opcode.IGET ||
-            cast.opcode != Opcode.CHECK_CAST ||
-            branch.namedRegisters().toSet() != setOf(field.namedRegisters()[0], number.namedRegisters()[0]) ||
-            field.namedRegisters()[1] != cast.namedRegisters()[0]) refuse("the ${tab.title} tab is no longer told apart by its type")
-        Triple(cast.typeRef()!!, field.field()!!, number.narrowLiteral)
-    }
-    val item = found.values.map { it.first }.distinct().one("tab item class", ::refuse)
+    val flow = ControlFlow.of(titles)
+    // check-cast item; iget type; if-ne type, number; then the title. 13.2 loads the number, and
+    // sometimes the title, once up front for several branches, and its merged adapters title more
+    // than one row, so each tab is kept where its item class is every tab's.
+    val sites = SearchTab.entries.associateWith { tab -> body.indices.mapNotNull { body.typeCheck(flow, it, tab.title) } }
+    sites.forEach { (tab, checks) -> shape(checks.isNotEmpty(), "the ${tab.title} tab is no longer told apart by its type") }
+    val item = sites.values.map { checks -> checks.map { it.first }.toSet() }.reduce { left, right -> left intersect right }
+        .toList().one("tab item class", ::refuse)
+    val found = sites.mapValues { (tab, checks) -> checks.filter { it.first == item }.one("${tab.title} tab's type check", ::refuse) }
     val type = found.values.map { it.second }.distinct().one("tab type field", ::refuse)
     val types = found.mapValues { it.value.third }
     shape(type.origDefiningClass == item && type.origType == "I" && types.values.toSet().size == types.size,
@@ -376,12 +374,15 @@ private fun BytecodePatchContext.resolveTabRow(): TabRow {
         AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) },
         "a tab's type can't be read from outside its class")
 
-    // The row itself: the adapter's one ArrayList field, which the titles read.
-    val list = body.mapNotNull { instruction -> instruction.field()?.takeIf {
-        instruction.opcode == Opcode.IGET_OBJECT && it.origDefiningClass == adapter && it.origType == ARRAY_LIST } }.distinct()
-        .one("tab list", ::refuse)
+    // The row itself: the adapter's one ArrayList field, which the titles read. A merged adapter keeps
+    // it as an Object the titles cast to ArrayList.
+    val list = body.indices.mapNotNull { at -> body[at].field()?.takeIf { field ->
+        body[at].opcode == Opcode.IGET_OBJECT && field.origDefiningClass == adapter && (field.origType == ARRAY_LIST ||
+            field.origType == OBJECT && body.indices.any { cast -> body[cast].opcode == Opcode.CHECK_CAST &&
+                body[cast].typeRef() == ARRAY_LIST && flow.reachingWrite(cast, body[cast].namedRegisters()[0]) == at }) } }
+        .distinct().one("tab list", ::refuse)
     val adapterClass = tgMutableClassDefBy(adapter)
-    shape(adapterClass.isPublic() && adapterClass.fields.any { it.origName == list.origName && it.origType == ARRAY_LIST &&
+    shape(adapterClass.isPublic() && adapterClass.fields.any { it.origName == list.origName && it.origType == list.origType &&
         AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags) },
         "the tab list can't be read from outside its adapter")
     val update = adapterClass.methods.filter { method -> !AccessFlags.STATIC.isSet(method.accessFlags) &&
@@ -470,8 +471,9 @@ private fun BytecodePatchContext.resolveDownloadsShortcut(tabs: TabRow): Downloa
  */
 private fun BytecodePatchContext.resolveHashtagPosts(): HashtagPosts {
     val controller = tgClassDefByOrNull(HASHTAG_SEARCH) ?: refuse("no hashtag search")
+    // The tag and three numbers, in whatever order the build hands them over: 13.2 moves the tag behind them.
     val search = tgMutableClassDefBy(HASHTAG_SEARCH).methods.filter { it.origName == "searchHashtag" &&
-        it.params() == listOf(STRING, "I", "I", "I") && it.origReturnType == "V" && !AccessFlags.STATIC.isSet(it.accessFlags) }
+        it.params().sorted() == listOf(STRING, "I", "I", "I").sorted() && it.origReturnType == "V" && !AccessFlags.STATIC.isSet(it.accessFlags) }
         .one("hashtag search", ::refuse)
     shape(search.instructions().any { it.opcode == Opcode.NEW_INSTANCE && it.typeRef() == PUBLIC_POSTS_REQUEST },
         "the hashtag search no longer asks for public posts")
@@ -496,12 +498,15 @@ private fun BytecodePatchContext.resolveHashtagPosts(): HashtagPosts {
         "the hashtag result picker no longer keeps your messages apart from posts")
 
     val self = search.localRegisterCount()
-    val hashtag = search.parameterRegisterNumber(0)
-    val guid = search.parameterRegisterNumber(1)
-    val asked = search.parameterRegisterNumber(2)
+    val types = search.params()
+    val hashtag = search.parameterRegisterNumber(types.indexOf(STRING))
     val first = search.instructions().firstOrNull()
+    // The kind is the number the search picks its results by; the screen's is the one screens hand over from their classGuid.
+    val asked = first?.namedRegisters()?.getOrNull(1) ?: -1
+    val guid = search.parameterRegisterNumber(resolveSearchGuid(search))
     shape(first?.call()?.let { it.origDefiningClass == HASHTAG_SEARCH && it.origName == "getSearchResult" } == true &&
-        first.namedRegisters() == listOf(self, asked), "the hashtag search no longer starts by picking its results by kind")
+        first.namedRegisters() == listOf(self, asked) && asked != hashtag && asked != guid &&
+        (0 until types.size).any { search.parameterRegisterNumber(it) == asked }, "the hashtag search no longer starts by picking its results by kind")
     // The hook borrows v0, which holds nothing before the method's first instruction, and passes this,
     // the tag, the screen and the kind.
     shape(self >= 1 && listOf(hashtag, guid, asked).all { it <= 15 }, "the hashtag search keeps its registers where the hook can't use them")
@@ -532,6 +537,31 @@ private fun BytecodePatchContext.resolveHashtagPosts(): HashtagPosts {
             it.origReturnType == "V" && it.isCallable() },
         "the hashtag search can't be finished from outside it")
     return HashtagPosts(search, self, hashtag, guid, asked, myMessages)
+}
+
+/**
+ * Which of [search]'s arguments is the screen's number: the one every screen that starts a hashtag
+ * search hands over straight from its classGuid. The search's other numbers look just like it.
+ */
+private fun BytecodePatchContext.resolveSearchGuid(search: Method): Int {
+    val types = search.parameterTypes.map(CharSequence::toString)
+    shape(types.none { it == "J" || it == "D" }, "the hashtag search takes a wide argument")
+    val places = mutableSetOf<Int>()
+    classDefForEach { classDef ->
+        if (classDef.origType.startsWith("Lapp/hushtelegram/extension/")) return@classDefForEach
+        classDef.methods.forEach { method ->
+            val body = method.instructions()
+            val calls = body.indices.filter { at -> body[at].call()?.let { it.definingClass == search.definingClass &&
+                it.name == search.name && it.parameterTypes.map(CharSequence::toString) == types } == true }
+            if (calls.isEmpty()) return@forEach
+            val flow = ControlFlow.of(method)
+            for (at in calls) body[at].namedRegisters().drop(1).forEachIndexed { place, register ->
+                val write = flow.reachingWrite(at, register)?.let(body::get)
+                if (write?.opcode == Opcode.IGET && write.field()?.let { it.origName == "classGuid" && it.type == "I" } == true) places += place
+            }
+        }
+    }
+    return places.singleOrNull() ?: refuse("the hashtag search no longer gets the screen's number in one place (${places.size})")
 }
 
 /**
@@ -643,6 +673,45 @@ private fun List<Instruction>.builtTab(at: Int, item: String): Int? {
 private fun Instruction.isAdd() =
     call()?.let { it.origDefiningClass == ARRAY_LIST && it.origName == "add" && it.params() == listOf("Ljava/lang/Object;") } == true
 
+/**
+ * The item class, type field and number that the `if-ne` at [branch] tells [title]'s tab apart by:
+ * the branch compares a constant with a type read from a freshly cast item, and falls into loading
+ * the title, or into a call handed a title loaded earlier.
+ */
+private fun List<Instruction>.typeCheck(flow: ControlFlow, branch: Int, title: String): Triple<String, FieldReference, Int>? {
+    if (this[branch].opcode != Opcode.IF_NE) return null
+    val next = getOrNull(branch + 1) ?: return null
+    val titled = next.readsTitle(title) || next.call() != null && next.namedRegisters().firstOrNull()
+        ?.let { flow.reachingWrite(branch + 1, it) }?.let { this[it].readsTitle(title) } == true
+    if (!titled) return null
+    val writes = this[branch].namedRegisters().map { flow.reachingWrite(branch, it) ?: return null }
+    val read = writes.singleOrNull { this[it].opcode == Opcode.IGET } ?: return null
+    val number = writes.singleOrNull { this[it].opcode in CONSTS && this[it] is NarrowLiteralInstruction } ?: return null
+    val cast = flow.reachingWrite(read, this[read].namedRegisters()[1]) ?: return null
+    if (this[cast].opcode != Opcode.CHECK_CAST || read == number) return null
+    return Triple(this[cast].typeRef()!!, this[read].field()!!, (this[number] as NarrowLiteralInstruction).narrowLiteral)
+}
+
+/**
+ * The one write of [register] that reaches [use] on every path in, walking back past branches and
+ * handlers, or null when none or several do.
+ */
+private fun ControlFlow.reachingWrite(use: Int, register: Int): Int? {
+    val predecessors = Array(instructions.size) { mutableListOf<Int>() }
+    for (index in instructions.indices) for (next in normal[index] + exceptional[index]) predecessors[next] += index
+    val pending = ArrayDeque(predecessors[use])
+    val visited = mutableSetOf<Int>()
+    val found = mutableSetOf<Int>()
+    while (pending.isNotEmpty()) {
+        val index = pending.removeFirst()
+        if (!visited.add(index)) continue
+        if (register in instructions[index].writes()) found += index
+        else if (predecessors[index].isEmpty()) return null
+        else pending.addAll(predecessors[index])
+    }
+    return found.singleOrNull()
+}
+
 /** Every instruction that can run right before [index], by a fall-through, a branch or a throw. */
 private fun ControlFlow.into(index: Int): List<Int> = instructions.indices.filter { index in normal[it] || index in exceptional[it] }
 
@@ -657,8 +726,8 @@ private fun Method.isCallable() = AccessFlags.PUBLIC.isSet(accessFlags) && !Acce
 private fun Method.isPublicStatic() = AccessFlags.PUBLIC.isSet(accessFlags) && AccessFlags.STATIC.isSet(accessFlags)
 private fun ClassDef.hasField(name: String, type: String, static: Boolean) = fields.any { it.origName == name && it.origType == type &&
     AccessFlags.PUBLIC.isSet(it.accessFlags) && AccessFlags.STATIC.isSet(it.accessFlags) == static }
-private fun Method.params(): List<String> = parameterTypes.map { it.toString() }
-private fun MethodReference.params(): List<String> = parameterTypes.map { it.toString() }
+private fun Method.params(): List<String> = origParameterTypes
+private fun MethodReference.params(): List<String> = origParameterTypes
 private fun Method.sameSignature(other: Method) = name == other.name && returnType == other.returnType && params() == other.params()
 private fun Method.instructions(): List<Instruction> = implementation?.instructions?.toList().orEmpty()
 private fun Instruction.field(): FieldReference? = (this as? ReferenceInstruction)?.reference as? FieldReference

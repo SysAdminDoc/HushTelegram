@@ -28,7 +28,11 @@ val stripLinkTrackingPatch = bytecodePatch(
     category("Privacy")
     dependsOn(settingsPatch, telegramExtensionPatch)
     compatibleWith(*AppCompatibilities.telegram())
+    // The paste editors are also Use normal paste's, which runs later and refuses an editor that isn't
+    // stock. Found while they still are, they get their watch once every patch has run.
+    var pastes: CopyPasteSites? = null
     execute {
+        pastes = null
         listOf("stripLinkTracking", "openedLinkTracking", "sharedLinkTracking", "skipAutologin").forEach { requireStatusMethod(it) }
         val plan = resolveLinkHooks()
         requireRuntime("cleanOpenedUri", listOf(URI, "Z", "[Z"), URI)
@@ -55,13 +59,20 @@ val stripLinkTrackingPatch = bytecodePatch(
             }
         }
         copyPaste?.let { sites ->
-            sites.insert()
+            sites.insertCopy()
             enableCapability("copiedLinkTracking")
-            if (sites.pastes.isNotEmpty()) enableCapability("pastedLinkTracking")
         }
+        pastes = copyPaste?.takeIf { it.pastes.isNotEmpty() }
         enableCapability("openedLinkTracking")
         enableCapability("sharedLinkTracking")
         enableCapability("skipAutologin")
         enableStatus("stripLinkTracking")
+    }
+    finalize {
+        pastes?.let { sites ->
+            sites.insertPastes()
+            enableCapability("pastedLinkTracking")
+        }
+        pastes = null
     }
 }

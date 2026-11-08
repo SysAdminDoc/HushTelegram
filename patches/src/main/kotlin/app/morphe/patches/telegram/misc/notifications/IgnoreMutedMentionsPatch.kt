@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.telegram.misc.notifications
 
+import app.morphe.util.names.origDescriptor
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -23,7 +24,11 @@ import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import app.morphe.util.names.origName
 import app.morphe.util.names.origType
@@ -132,13 +137,15 @@ internal fun BytecodePatchContext.resolveIgnoreMutedMentions(): List<Pair<Mutabl
         }
         if (swaps.isEmpty()) null else method to swaps
     }
-    // NotificationsController's lambdas keep their names, so the new-message path can be told apart.
-    controlShape(sites.count { it.first.origName.contains("processNewMessages") } == 1 &&
-        sites.single { it.first.origName.contains("processNewMessages") }.second.size == 1, "new messages no longer swap a mention to its sender")
+    // A lambda's body runs under its maker's name, so the new-message path can be told apart.
+    val names = runsUnder(notifications)
+    fun newMessages(method: Method) = names(method).any { it.contains("processNewMessages") }
+    controlShape(sites.count { newMessages(it.first) } == 1 &&
+        sites.single { newMessages(it.first) }.second.size == 1, "new messages no longer swap a mention to its sender")
 
     val message = tgClassDefByOrNull(MESSAGE_OBJECT)
     controlShape(message != null && listOf("getFromChatId()J", "getDialogId()J").all { wanted -> message.methods.any { signature(it) == wanted && callable(it, false) } } &&
-        message.methods.any { "${it.name}(${it.parameterTypes.joinToString("")})${it.returnType}" == "getTopicId(I${TL_MESSAGE}Z)J" && callable(it, true) } &&
+        message.methods.any { "${it.origName}${it.origDescriptor}" == "getTopicId(I${TL_MESSAGE}Z)J" && callable(it, true) } &&
         message.fields.any { it.origName == "currentAccount" && it.origType == "I" && !AccessFlags.STATIC.isSet(it.accessFlags) } &&
         message.fields.any { it.origName == "messageOwner" && it.origType == TL_MESSAGE && !AccessFlags.STATIC.isSet(it.accessFlags) },
         "a message no longer says its sender, chat and topic")
@@ -150,5 +157,26 @@ internal fun BytecodePatchContext.resolveIgnoreMutedMentions(): List<Pair<Mutabl
     return sites
 }
 
-private fun signature(m: Method) = "${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
+/**
+ * The source names each method of [owner] runs under: its own, and for a lambda's body, the names
+ * of the methods making that lambda. 13.2 moves a lambda's body into an unnamed static method of
+ * the same class, which the lambda's run() calls, so the body no longer carries its maker's name.
+ */
+internal fun BytecodePatchContext.runsUnder(owner: ClassDef): (Method) -> Set<String> {
+    val makers = mutableMapOf<String, MutableSet<String>>()
+    for (maker in owner.methods) for (made in maker.implementation?.instructions ?: emptyList()) {
+        if (made.opcode != Opcode.NEW_INSTANCE) continue
+        val type = ((made as ReferenceInstruction).reference as TypeReference).type
+        val lambda = (if (type == owner.type) null else classDefByOrNull(type)) ?: continue
+        for (run in lambda.methods) for (call in run.implementation?.instructions ?: emptyList()) {
+            val body = (call as? ReferenceInstruction)?.reference as? MethodReference ?: continue
+            if (call.opcode in STATIC_CALLS && body.definingClass == owner.type) makers.getOrPut(body.toString()) { mutableSetOf() } += maker.origName
+        }
+    }
+    return { method -> setOf(method.origName) + makers[method.toString()].orEmpty() }
+}
+
+private val STATIC_CALLS = setOf(Opcode.INVOKE_STATIC, Opcode.INVOKE_STATIC_RANGE)
+
+private fun signature(m: Method) = "${m.origName}${m.origDescriptor}"
 private fun callable(m: Method, static: Boolean) = AccessFlags.PUBLIC.isSet(m.accessFlags) && AccessFlags.STATIC.isSet(m.accessFlags) == static
