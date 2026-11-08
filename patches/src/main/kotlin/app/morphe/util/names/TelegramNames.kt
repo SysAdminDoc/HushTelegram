@@ -11,6 +11,7 @@ import com.android.tools.smali.dexlib2.dexbacked.DexBackedClassDef
 import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile
 import com.android.tools.smali.dexlib2.dexbacked.DexBackedField
 import com.android.tools.smali.dexlib2.dexbacked.DexBackedMethod
+import com.android.tools.smali.dexlib2.dexbacked.instruction.DexBackedInstruction
 import com.android.tools.smali.dexlib2.dexbacked.reference.DexBackedFieldReference
 import com.android.tools.smali.dexlib2.dexbacked.reference.DexBackedMethodReference
 import com.android.tools.smali.dexlib2.dexbacked.reference.DexBackedTypeReference
@@ -323,6 +324,7 @@ object TelegramNames {
         is DexBackedMethodReference -> forDex(reference.dexFile)
         is DexBackedFieldReference -> forDex(reference.dexFile)
         is DexBackedTypeReference -> forDex(reference.dexFile)
+        is DexBackedInstruction -> forDex(reference.dexFile)
         else -> ambient ?: currentContext()?.let(::of) ?: IDENTITY
     }
 

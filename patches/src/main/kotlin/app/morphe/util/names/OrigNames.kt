@@ -63,7 +63,7 @@ fun Reference.origString(): String = when (this) {
 fun Instruction.origRef(): String? = when (this) {
     is ReferenceInstruction -> reference.origString()
     is NarrowLiteralInstruction ->
-        if (opcode == Opcode.CONST || opcode == Opcode.CONST_HIGH16) TelegramNames.current().resourceField(narrowLiteral) else null
+        if (opcode == Opcode.CONST || opcode == Opcode.CONST_HIGH16) TelegramNames.tableOf(this).resourceField(narrowLiteral) else null
     else -> null
 }
 
