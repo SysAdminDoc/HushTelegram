@@ -286,8 +286,13 @@ internal fun BytecodePatchContext.resolveFeaturesInvite(): FeaturesInviteSite {
     val onlyUsers = stored("I", Opcode.IPUT)
     val binder = adapter.methods.single { ref(it) == binderRef }
     val bound = binder.controlBody()
-    val inviteList = bound.indices.filter { bound[it].controlRef() == INVITE_LABEL }.flatMap { at ->
-        (maxOf(0, at - HEADING_REACH) until at).filter { bound[it].opcode == Opcode.IGET_BOOLEAN && bound[it].controlField()?.origDefiningClass == adapterType }
+    // A heading is where the label's text is fetched: 13.2 loads the id once at the top and fetches it further down.
+    val boundFlow = ControlFlow.of(binder)
+    val headings = bound.indices.filter { at -> bound[at].isGetString() &&
+        boundFlow.oneWrite(at, bound[at].namedRegisters().first())?.let { bound[it].controlRef() == INVITE_LABEL } == true }
+    val inviteList = headings.flatMap { at ->
+        (at - 1 downTo 0).filter { bound[it].controlRef() != INVITE_LABEL }.take(HEADING_REACH)
+            .filter { bound[it].opcode == Opcode.IGET_BOOLEAN && bound[it].controlField()?.origDefiningClass == adapterType }
             .map { bound[it].controlRef()!! }
     }.filter { it != phonebook }.distinct().controlSingle("the empty Contacts list's flag")
     controlShape(adapter.methods.any { it.origName == count.origName && shape(it, listOf("I"), "I") && it.controlBody().firstOrNull()?.controlRef() == inviteList },
@@ -314,6 +319,23 @@ private fun BytecodePatchContext.reachable(type: String, name: String): Boolean 
 private fun onlyEntry(method: Method, at: Int, from: Int): Boolean {
     val flow = ControlFlow.of(method)
     return flow.normal.indices.filter { at in flow.normal[it] } == listOf(from)
+}
+
+/** The one write of [register] that reaches [use] on every path in, or null when none or several do. */
+private fun ControlFlow.oneWrite(use: Int, register: Int): Int? {
+    val predecessors = Array(instructions.size) { mutableListOf<Int>() }
+    for (index in instructions.indices) for (next in normal[index] + exceptional[index]) predecessors[next] += index
+    val pending = ArrayDeque(predecessors[use])
+    val visited = mutableSetOf<Int>()
+    val found = mutableSetOf<Int>()
+    while (pending.isNotEmpty()) {
+        val index = pending.removeFirst()
+        if (!visited.add(index)) continue
+        if (instructions[index].writes(register)) found += index
+        else if (predecessors[index].isEmpty()) return null
+        else pending.addAll(predecessors[index])
+    }
+    return found.singleOrNull()
 }
 
 private fun Instruction.writes(register: Int): Boolean {
