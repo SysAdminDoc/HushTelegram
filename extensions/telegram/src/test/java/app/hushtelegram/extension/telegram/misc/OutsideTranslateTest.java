@@ -457,12 +457,14 @@ public class OutsideTranslateTest {
         assertFalse(HookStatus.missing(FamilyNames.OUTSIDE_TRANSLATE).isEmpty());
     }
 
-    /** Telegram doesn't know the chat item's number, so a tap on one left in an open menu stays ours. */
-    @Test public void theChatItemIsOursEvenAfterTheSwitchWentOff() {
+    /** Telegram doesn't know the chat items' numbers, so a tap on one left in an open menu stays ours. */
+    @Test public void theChatItemsAreOursEvenAfterTheSwitchWentOff() {
         assertFalse(Settings.OUTSIDE_TRANSLATE.get());
         assertTrue(OutsideTranslate.headerClick(new Object(), OutsideTranslate.HEADER_ITEM));
+        assertTrue(OutsideTranslate.headerClick(new Object(), OutsideTranslate.HEADER_LANGUAGE));
         assertFalse(OutsideTranslate.chatOn(OWNER, 0));
-        assertFalse(OutsideTranslate.headerClick(new Object(), OutsideTranslate.HEADER_ITEM + 1));
+        assertFalse(OutsideTranslate.headerClick(new Object(), OutsideTranslate.HEADER_LANGUAGE + 1));
+        assertFalse(OutsideTranslate.headerClick(new Object(), OutsideTranslate.HEADER_ITEM - 1));
     }
 
     @Test public void theChatMenuLabelFollowsSavedStateWithoutAddingDuplicates() {
