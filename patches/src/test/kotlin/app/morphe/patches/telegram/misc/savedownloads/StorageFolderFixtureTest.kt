@@ -27,7 +27,6 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
-import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.reandroid.apk.ApkModule
 import com.reandroid.arsc.chunk.xml.AndroidManifestBlock
@@ -53,9 +52,10 @@ class StorageFolderFixtureTest {
 
     private fun context(build: File): BytecodePatchContext {
         val images = FixtureDex.classes(build, setOf(IMAGE_LOADER)).values.single()
-        val host = FixtureDex.classes(build, hosts + images.delegateCandidates()).values.map(ImmutableClassDef::of)
-        assertTrue("${build.name}: Telegram's download and folder classes", host.map { it.type }.containsAll(hosts))
-        return PatchContexts.of(ExtensionDex.classes() + host)
+        // Keyed by source names, and kept as read, so the context takes this build's name table.
+        val host = FixtureDex.classes(build, hosts + images.delegateCandidates())
+        assertTrue("${build.name}: Telegram's download and folder classes", host.keys.containsAll(hosts))
+        return PatchContexts.of(ExtensionDex.classes() + host.values)
     }
 
     private fun Instruction.shape() = listOf(opcode, namedRegisters(), controlRef())

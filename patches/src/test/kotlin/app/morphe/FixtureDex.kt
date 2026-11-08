@@ -71,12 +71,20 @@ internal object FixtureDex {
         // table, which a context made earlier for another build would answer. The scan puts that
         // context aside, so what it reads goes by this build's table, and restores it after.
         val current = PatcherContext::class.java.getDeclaredField("current").apply { isAccessible = true }
+        val before = TelegramNames.currentContext()?.let(TelegramNames::of)
         val patcher = current.get(null)
         current.set(null, null)
+        var read: TelegramNames.Table? = null
         try {
-            readDex(build, visit)
+            readDex(build) { dex ->
+                if (read == null || read!!.isIdentity) read = TelegramNames.forDex(dex)
+                visit(dex)
+            }
         } finally {
-            current.set(null, patcher)
+            // A context for the other build is one an earlier test or loop left behind. Kept, it would
+            // name the R fields of the consts read here after the scan, so it goes until the next
+            // context is made, and the names go by this build's table meanwhile.
+            if (before == null || read == null || before == read) current.set(null, patcher)
         }
     }
 
