@@ -19,10 +19,13 @@ import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import org.w3c.dom.Element
+import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.tgMutableClassDefByOrNull
@@ -118,9 +121,10 @@ internal class OlderFilePlan(val method: MutableMethod?, val at: Int, val missin
  */
 internal fun BytecodePatchContext.resolveOlderFiles(): OlderFilePlan {
     val owner = tgMutableClassDefByOrNull(FILE_LOADER) ?: return OlderFilePlan.missing("FileLoader is missing")
-    val wanted = listOf(TL_OBJECT, "Ljava/lang/String;", "Ljava/lang/String;", "Z", "Z")
+    // The build drops the unused second String: (object, ext, ext, boolean, boolean) or (object, ext, boolean, boolean).
+    val wanted = listOf(listOf(TL_OBJECT, "Ljava/lang/String;", "Ljava/lang/String;", "Z", "Z"), listOf(TL_OBJECT, "Ljava/lang/String;", "Z", "Z"))
     val methods = owner.methods.filter {
-        it.origName == "getPathToAttach" && it.origReturnType == "Ljava/io/File;" && it.origParameterTypes == wanted
+        it.origName == "getPathToAttach" && it.origReturnType == "Ljava/io/File;" && it.origParameterTypes in wanted
     }
     val method = methods.singleOrNull() ?: return OlderFilePlan.missing("FileLoader.getPathToAttach changed")
     val body = method.controlBody()
@@ -130,11 +134,20 @@ internal fun BytecodePatchContext.resolveOlderFiles(): OlderFilePlan {
             body[at - 1].opcode == Opcode.INVOKE_DIRECT && body[at - 1].controlRef() == GALLERY_FILE_IN && made.size == 3 &&
             body[at].namedRegisters().single() == made[0] &&
             body[at - 2].opcode == Opcode.MOVE_RESULT_OBJECT && body[at - 2].namedRegisters().single() == made[2] &&
-            body[at - 3].controlRef() == STORAGE_ATTACH_NAME &&
+            body[at - 3].callsAttachName() &&
             body[at - 4].opcode == Opcode.NEW_INSTANCE && body[at - 4].namedRegisters().single() == made[0]
     }
     val at = sites.singleOrNull() ?: return OlderFilePlan.missing("Telegram's download path changed (${sites.size} places)")
     return OlderFilePlan(method, at, null)
+}
+
+/** A call of FileLoader.getAttachFileName(object, ext), which the build may take with its two parameters swapped. */
+internal fun Instruction.callsAttachName(): Boolean {
+    if (controlRef() == STORAGE_ATTACH_NAME) return true
+    val call = call() ?: return false
+    return call.origDefiningClass == FILE_LOADER && call.origName == "getAttachFileName" &&
+        call.origReturnType == "Ljava/lang/String;" && call.origParameterTypes.toSet() == setOf(TL_OBJECT, "Ljava/lang/String;") &&
+        call.parameterTypes.size == 2
 }
 
 /**
@@ -151,23 +164,26 @@ internal fun BytecodePatchContext.resolveOlderFiles(): OlderFilePlan {
 internal fun BytecodePatchContext.resolveOlderLoads(): OlderFilePlan {
     val owner = tgMutableClassDefByOrNull(LOAD_OPERATION) ?: return OlderFilePlan.missing("FileLoadOperation is missing")
     val wanted = listOf("Lorg/telegram/messenger/FileLoadOperationStream;", "J", "Z")
+    // The build merges start(stream, offset, priority) into the plain start() that calls it, and drops its unread result.
     val methods = owner.methods.filter {
-        it.origName == "start" && it.origReturnType == "Z" && it.origParameterTypes == wanted
+        it.origName == "start" && (it.origReturnType == "Z" && it.origParameterTypes == wanted || it.parameterTypes.isEmpty() && it.returnType == "V")
     }
-    val method = methods.singleOrNull() ?: return OlderFilePlan.missing("FileLoadOperation.start changed")
-    val body = method.controlBody()
-    val sites = (4 until body.size).filter { at ->
-        val made = body[at - 1].namedRegisters()
-        body[at].opcode == Opcode.IPUT_OBJECT && body[at].controlRef() == STORAGE_CACHE_FINAL &&
-            body[at - 1].opcode == Opcode.INVOKE_DIRECT && body[at - 1].controlRef() == GALLERY_FILE_IN && made.size == 3 &&
-            body[at].namedRegisters().first() == made[0] &&
-            body[at - 2].opcode == Opcode.IGET_OBJECT && body[at - 2].controlRef() == STORAGE_STORE_NAME &&
-            body[at - 2].namedRegisters().first() == made[2] &&
-            body[at - 3].opcode == Opcode.IGET_OBJECT && body[at - 3].controlRef() == STORAGE_STORE_PATH &&
-            body[at - 3].namedRegisters().first() == made[1] &&
-            body[at - 4].opcode == Opcode.NEW_INSTANCE && body[at - 4].namedRegisters().single() == made[0]
+    if (methods.isEmpty()) return OlderFilePlan.missing("FileLoadOperation.start changed")
+    val sites = methods.flatMap { method ->
+        val body = method.controlBody()
+        (4 until body.size).filter { at ->
+            val made = body[at - 1].namedRegisters()
+            body[at].opcode == Opcode.IPUT_OBJECT && body[at].controlRef() == STORAGE_CACHE_FINAL &&
+                body[at - 1].opcode == Opcode.INVOKE_DIRECT && body[at - 1].controlRef() == GALLERY_FILE_IN && made.size == 3 &&
+                body[at].namedRegisters().first() == made[0] &&
+                body[at - 2].opcode == Opcode.IGET_OBJECT && body[at - 2].controlRef() == STORAGE_STORE_NAME &&
+                body[at - 2].namedRegisters().first() == made[2] &&
+                body[at - 3].opcode == Opcode.IGET_OBJECT && body[at - 3].controlRef() == STORAGE_STORE_PATH &&
+                body[at - 3].namedRegisters().first() == made[1] &&
+                body[at - 4].opcode == Opcode.NEW_INSTANCE && body[at - 4].namedRegisters().single() == made[0]
+        }.map { method to it }
     }
-    val at = sites.singleOrNull() ?: return OlderFilePlan.missing("Telegram's file loader changed (${sites.size} places)")
+    val (method, at) = sites.singleOrNull() ?: return OlderFilePlan.missing("Telegram's file loader changed (${sites.size} places)")
     return OlderFilePlan(method, at, null)
 }
 
