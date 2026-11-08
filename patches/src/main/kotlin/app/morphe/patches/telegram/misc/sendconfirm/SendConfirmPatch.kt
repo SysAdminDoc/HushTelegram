@@ -99,6 +99,8 @@ private val BAR_SEND = listOf("I", "Z", "I", "Z", "J")
 /** The same send as 13.2 orders it: sound, date, flag, stars, then the paid-message question. */
 private val BAR_SEND_R8 = listOf("Z", "I", "I", "J", "Z")
 private val PREVIEW_HOOK = listOf(OBJECT, "I", "I", "I", "I", "J")
+/** The preview question for 13.2's order, its stars a wide pair before the last flag, as the send passes them. */
+private val PREVIEW_HOOK_R8 = listOf(OBJECT, "I", "I", "I", "J", "I")
 
 /** How far after the chat bar's send reads a clip from its preview it tests the clip for null. */
 private const val PREVIEW_TEST = 4
@@ -162,9 +164,13 @@ internal class SendConfirmSite(
 
 /**
  * The start of the chat bar's send of the clip waiting in its preview, right after its test that
- * the clip is there, with a local nothing reads from there on. [hook] is the extension's question.
+ * the clip is there, with a local nothing reads from there on. [hook] is the extension's question,
+ * which takes [params]: the send's own parameters in the send's order, so each register lands in a
+ * parameter of its own width.
  */
-internal class PreviewSite(val at: Int, val answer: Int, val hook: String)
+internal class PreviewSite(val at: Int, val answer: Int, val hook: String, val params: List<String>) {
+    val ref get() = "$SEND_CONFIRM->$hook(${params.joinToString("")})Z"
+}
 
 /**
  * Asks in front of the send of the clip in the preview, with `this` and every parameter, which sit
@@ -176,7 +182,7 @@ private fun previewGate(target: MutableMethod, preview: PreviewSite) {
     target.addInstructionsWithLabels(
         preview.at,
         """
-            invoke-static/range {v${top - 7} .. v${top - 1}}, $SEND_CONFIRM->${preview.hook}(${PREVIEW_HOOK.joinToString("")})Z
+            invoke-static/range {v${top - 7} .. v${top - 1}}, ${preview.ref}
             move-result v${preview.answer}
             if-nez v${preview.answer}, :hush_send
             return v${preview.answer}
@@ -295,6 +301,8 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     controlHook(SEND_CONFIRM, "sendFromBar", listOf(OBJECT), "V")
     controlHook(SEND_CONFIRM, "previewVoice", PREVIEW_HOOK, "Z")
     controlHook(SEND_CONFIRM, "previewVideo", PREVIEW_HOOK, "Z")
+    controlHook(SEND_CONFIRM, "previewVoiceReordered", PREVIEW_HOOK_R8, "Z")
+    controlHook(SEND_CONFIRM, "previewVideoReordered", PREVIEW_HOOK_R8, "Z")
     for (shape in VideoShape.values()) {
         controlHook(SEND_CONFIRM, shape.hook, listOf(OBJECT).plus(shape.target), "Z")
         controlHook(SEND_CONFIRM, shape.resume, listOf(OBJECT).plus(shape.target), "V")
@@ -431,14 +439,16 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     // null. Its own send button runs it there too, which never reaches the end of a recording.
     val barFlow = ControlFlow.of(paidPause)
     val barTop = paidPause.implementation!!.registerCount
-    val (voicePreview, videoPreview) = listOf(Triple(voiceClip, "voice clip", "previewVoice"), Triple(videoClip, "round video", "previewVideo"))
+    // 13.2's send passes its stars before the paid-message question, so its question takes them there.
+    val (suffix, previewParams) = if (paidPause.origParameterTypes == BAR_SEND_R8) "Reordered" to PREVIEW_HOOK_R8 else "" to PREVIEW_HOOK
+    val (voicePreview, videoPreview) = listOf(Triple(voiceClip, "voice clip", "previewVoice$suffix"), Triple(videoClip, "round video", "previewVideo$suffix"))
         .map { (field, what, hook) ->
             val at = previewStarts(paidPause, field).controlSingle("the chat bar's send of the $what in its preview")
             for (register in barTop - 7 until barTop) {
                 controlShape(!writes(pauseBody[0], register) && barFlow.definitionReaches(0, at, register),
                     "the chat bar's send changes its arguments before it sends the $what in its preview")
             }
-            PreviewSite(at, paidPause.freeLocalsAt(NAME, at, 1, highest = 255).single(), hook)
+            PreviewSite(at, paidPause.freeLocalsAt(NAME, at, 1, highest = 255).single(), hook, previewParams)
         }
 
     // The header menu's call item, and the profile's call button, each calling once.

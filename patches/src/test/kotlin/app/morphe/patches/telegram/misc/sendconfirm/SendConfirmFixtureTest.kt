@@ -154,10 +154,17 @@ class SendConfirmFixtureTest {
             val barGated = site.barSendMethod.controlBody()
             val barTop = site.barSendMethod.implementation!!.registerCount
             val barFlow = ControlFlow.of(site.barSendMethod)
+            val r8Send = site.barSend.endsWith("(ZIIJZ)Z")
             val asks = listOf(site.voicePreview to site.voiceClip, site.videoPreview to site.videoClip).map { (preview, field) ->
                 val key = "$name ${preview.hook}"
-                val at = barGated.indexOfFirst { it.controlRef() == "$SEND_CONFIRM->${preview.hook}(Ljava/lang/Object;IIIIJ)Z" }
+                val at = barGated.indexOfFirst { it.controlRef() == preview.ref }
                 assertTrue("$key: in the chat bar's send", at > 0)
+                // The range passes the send's own registers, so a long has to meet a long: 13.2 moved
+                // the stars ahead of the question, and a narrow parameter there fails verification.
+                val wide = { types: List<String> -> types.map { it == "J" || it == "D" } }
+                assertEquals("$key: each register in a parameter of its width", wide(site.barSendMethod.origParameterTypes.map { it.toString() }),
+                    wide(preview.params.drop(1)))
+                assertEquals("$key: the hook for this build's order", if (r8Send) "Reordered" else "", preview.hook.removePrefix("previewVoice").removePrefix("previewVideo"))
                 assertEquals("$key: this and every parameter", (barTop - 7 until barTop).toList(), barGated[at].namedRegisters())
                 assertEquals(listOf(Opcode.MOVE_RESULT, Opcode.IF_NEZ, Opcode.RETURN), barGated.subList(at + 1, at + 4).map { it.opcode })
                 assertEquals("$key: the answer in a free local, and returned as the send returns", List(3) { listOf(preview.answer) },
