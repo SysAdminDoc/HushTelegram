@@ -59,6 +59,15 @@ internal fun BytecodePatchContext.controlHook(type: String, name: String, parame
 
 /** Throws unless [reference], a method or a field, is public on a public class, and static or not as [static] says. */
 internal fun BytecodePatchContext.requireReachable(reference: String, static: Boolean) {
+    val table = TelegramNames.of(this)
+    val resources = "${TelegramNames.RENAMED_PACKAGE}R\$"
+    if (static && reference.startsWith(resources) && !table.isIdentity) {
+        // 13.2 inlined its R classes: a stub's sget of one goes in as the id, which the build has to carry.
+        val kind = reference.removePrefix(resources).substringBefore(';')
+        val name = reference.substringAfter("->").substringBefore(':')
+        controlShape(table.resourceId(kind, name) != null, "$reference isn't reachable from the extension")
+        return
+    }
     val owner = tgMutableClassDefByOrNull(reference.substringBefore("->"))
     val member = reference.substringAfter("->")
     val reachable = owner != null && AccessFlags.PUBLIC.isSet(owner.accessFlags) && if ('(' in member) {
