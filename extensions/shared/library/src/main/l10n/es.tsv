@@ -1399,3 +1399,84 @@ Ghost mode off	Modo fantasma desactivado
 Test server sign-in	Inicio de sesión en servidores de prueba
 # context: that switch's summary. "Test Backend" is the checkbox under the phone number field on Telegram's sign-in screen, written with Telegram's applied label for this language (key DebugTestBackend on translations.telegram.org; Bulgarian has none applied, so Telegram shows the English "Test Backend" there).
 Signing in or adding an account shows Telegram's Test Backend box on the phone number screen. Tick it to sign that account in on Telegram's test servers, kept apart from your other accounts.	Al iniciar sesión o añadir una cuenta, la pantalla del número de teléfono muestra la casilla Test Backend de Telegram. Márcala para iniciar sesión con esa cuenta en los servidores de prueba de Telegram, separada de tus otras cuentas.
+# context: a switch on the Look and feel page under Show user and chat IDs (#53). With it on, a person's profile menu offers Track this user, and the people tracked get a history.
+Special contacts	Contactos especiales
+# context: that switch's summary. Track this user is the profile menu row it adds, translated the same as that row.
+A person's profile menu gets Track this user. For anyone you track, a history builds up from what Telegram already shows you: coming online and going offline, typing, and changes to their name, username, phone number, photo or contacts. Nothing extra is asked of Telegram, and the history stays on this phone.	El menú del perfil de una persona incluye Rastrear a este usuario. Para cada persona que rastrees se va formando un historial con lo que Telegram ya te muestra: cuándo se conecta y se desconecta, cuándo escribe y los cambios en su nombre, nombre de usuario, número de teléfono, foto o contactos. No se le pide nada extra a Telegram y el historial se queda en este teléfono.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Special contacts part of Show user and chat IDs.
+special contacts	contactos especiales
+# context: a row in a person's profile menu (the three dots on their profile) with Special contacts on. A tap starts keeping a history of that person.
+Track this user	Rastrear a este usuario
+# context: the same profile menu row for someone already tracked, and the button in that person's history that stops tracking them
+Stop tracking	Dejar de rastrear
+# context: short message after Stop tracking
+Stopped tracking	Ya no se rastrea
+# context: short message after Track this user
+Tracking this user	Rastreando a este usuario
+# context: short message when Track this user is tapped with 50 people already tracked on this account
+You can track up to 50 people	Puedes rastrear hasta 50 personas
+# context: short message when Track this user couldn't write to the phone's storage
+Couldn't start tracking	No se pudo empezar a rastrear
+# context: summary of the Tracked people row when nobody is tracked on the account shown
+Nobody yet. Track someone from their profile's menu.	Nadie todavía. Rastrea a alguien desde el menú de su perfil.
+# context: summary of the Tracked people row; %1$d is how many people are tracked on the account shown
+%1$d person tracked	%1$d persona rastreada
+%1$d people tracked	%1$d personas rastreadas
+# context: the Tracked people row on the Look and feel page, and the title of the list it opens
+Tracked people	Personas rastreadas
+# context: short message when the tracked people couldn't be read from the phone's storage
+Couldn't read the list.	No se pudo leer la lista.
+# context: short message when Tracked people is tapped with nobody tracked
+Nobody tracked yet	Aún no rastreas a nadie
+# context: button in a tracked person's history that empties it and keeps tracking them
+Clear history	Borrar historial
+# context: short message after Clear history
+History cleared	Historial borrado
+# context: a tracked person's history with nothing in it
+No history yet	Aún no hay historial
+# context: history line, after a date and time: tracking this person began
+Started tracking	Empezó el rastreo
+# context: history line, after a date and time: the tracked person came online. Every history line has the person as its unspoken subject.
+Came online	Se conectó
+# context: history line: the person went offline; %1$s is the date and time Telegram gives as their last seen
+Went offline, last seen %1$s	Se desconectó, última conexión %1$s
+# context: history line: the person went offline, with no last seen time to show
+Went offline	Se desconectó
+# context: history line: Telegram now shows the person's last seen only as recently, the way it does when they hide the exact time
+Last seen recently	Última conexión: recientemente
+# context: history line: Telegram now shows the person's last seen as within a week
+Last seen within a week	Última conexión: en la última semana
+# context: history line: Telegram now shows the person's last seen as within a month
+Last seen within a month	Última conexión: en el último mes
+# context: history line: Telegram now shows the person's last seen as a long time ago
+Last seen a long time ago	Última conexión: hace mucho tiempo
+# context: history line: the person was typing in your chat with them
+Typing	Escribiendo
+# context: history line: the person was typing in a group or channel; %1$s is its name
+Typing in %1$s	Escribiendo en %1$s
+# context: history line; %1$s is the old name and %2$s the new one (or the word none)
+Changed name from %1$s to %2$s	Cambió el nombre de %1$s a %2$s
+# context: history line; %1$s is the old @username and %2$s the new one (or the word none)
+Changed username from %1$s to %2$s	Cambió el nombre de usuario de %1$s a %2$s
+# context: history line; %1$s is the old phone number and %2$s the new one
+Changed phone number from %1$s to %2$s	Cambió el número de teléfono de %1$s a %2$s
+# context: history line: the person set a profile photo where they had none
+Added a profile photo	Añadió una foto de perfil
+# context: history line
+Removed their profile photo	Quitó su foto de perfil
+# context: history line
+Changed their profile photo	Cambió su foto de perfil
+# context: history line: you (the phone's owner) saved the tracked person as a contact
+You saved them to your contacts	Guardaste a esta persona en tus contactos
+# context: history line: you removed the tracked person from your contacts
+You removed them from your contacts	Quitaste a esta persona de tus contactos
+# context: history line: the tracked person saved you as a contact (Telegram shows this as a mutual contact)
+Added you to their contacts	Te añadió a sus contactos
+# context: history line
+Removed you from their contacts	Te quitó de sus contactos
+# context: history line. Telegram never says who blocked you, so this is a guess from the profile photo and last seen both disappearing at once.
+May have blocked you. A guess: their photo and last seen went away together.	Puede que te haya bloqueado. Es una suposición: su foto y su última conexión desaparecieron a la vez.
+# context: history line after a May have blocked you line, when the photo or last seen shows again
+May have unblocked you. A guess: their photo or last seen came back.	Puede que te haya desbloqueado. Es una suposición: su foto o su última conexión volvieron.
+# context: history line: Telegram now shows the person as Deleted Account
+Deleted their account	Eliminó su cuenta

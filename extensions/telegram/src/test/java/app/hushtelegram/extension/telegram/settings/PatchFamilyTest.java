@@ -81,6 +81,8 @@ public class PatchFamilyTest {
         Settings.NORMAL_PASTE.resetToDefault();
         Settings.MENTION_BY_ID.resetToDefault();
         Settings.SHOW_LOCAL_IDS.resetToDefault();
+        Settings.PROFILE_DATA_CENTER.resetToDefault();
+        Settings.SPECIAL_CONTACTS.resetToDefault();
         Settings.DISABLE_DOUBLE_TAP_REACTIONS.resetToDefault();
         Settings.HIDE_REACTION_ROWS.resetToDefault();
         Settings.HIDE_REACTION_PICKER.resetToDefault();
@@ -981,14 +983,14 @@ public class PatchFamilyTest {
     public void localControlsHaveIndependentOffByDefaultSwitchesAndExactCoverageWhilePaused() {
         Map<PatchFamily, Set<PatchFamily.Capability>> expected = new LinkedHashMap<>();
         expected.put(PatchFamily.NORMAL_PASTE, EnumSet.of(PatchFamily.Capability.COMPOSE_PLAIN_PASTE, PatchFamily.Capability.CAPTION_PLAIN_PASTE, PatchFamily.Capability.MENTION_BY_ID));
-        expected.put(PatchFamily.SHOW_LOCAL_IDS, EnumSet.of(PatchFamily.Capability.PROFILE_LOCAL_IDS));
+        expected.put(PatchFamily.SHOW_LOCAL_IDS, EnumSet.of(PatchFamily.Capability.PROFILE_LOCAL_IDS, PatchFamily.Capability.SPECIAL_CONTACTS));
         expected.put(PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS, EnumSet.of(PatchFamily.Capability.CHAT_DOUBLE_TAP_REACTION, PatchFamily.Capability.PREVIEW_DOUBLE_TAP_REACTION, PatchFamily.Capability.REACTION_ROWS, PatchFamily.Capability.REACTION_PICKER, PatchFamily.Capability.REACTION_SELECTION, PatchFamily.Capability.EMOJI_PACK_NOTE));
         PatchFamily.inBuildForTests = expected.keySet();
         for (Map.Entry<PatchFamily, Set<PatchFamily.Capability>> entry : expected.entrySet()) {
             PatchFamily family = entry.getKey();
             assertEquals(entry.getValue(), family.expectedCapabilities());
-            // Show user and chat IDs carries a second switch, for the profile's data center, and Use normal paste one for mentions.
-            assertEquals(family == PatchFamily.SHOW_LOCAL_IDS || family == PatchFamily.NORMAL_PASTE ? 2 : family == PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS ? 4 : 1, family.switches.size());
+            // Show user and chat IDs carries switches for the profile's data center and Special contacts, and Use normal paste one for mentions.
+            assertEquals(family == PatchFamily.SHOW_LOCAL_IDS ? 3 : family == PatchFamily.NORMAL_PASTE ? 2 : family == PatchFamily.DISABLE_DOUBLE_TAP_REACTIONS ? 4 : 1, family.switches.size());
             // Double-tap reactions also carries the reaction row and picker switches.
             for (BooleanSetting setting : family.switches) assertFalse(setting.key, setting.defaultValue);
             for (PatchFamily.Capability only : entry.getValue()) {

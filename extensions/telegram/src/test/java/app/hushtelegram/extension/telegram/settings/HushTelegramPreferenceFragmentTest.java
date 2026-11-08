@@ -68,6 +68,7 @@ import app.hushtelegram.extension.telegram.misc.LaunchFolderForTests;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests;
+import app.hushtelegram.extension.telegram.misc.SpecialContactsForTests;
 
 import org.json.JSONObject;
 import org.junit.After;
@@ -1736,6 +1737,87 @@ public class HushTelegramPreferenceFragmentTest {
             HiddenAccountsForTests.restore();
             Settings.HIDDEN_ACCOUNTS_LOCK.resetToDefault();
             Settings.HIDE_ACCOUNTS.resetToDefault();
+            PatchFamily.capabilitiesForTests = null;
+        }
+    }
+
+    /**
+     * Special contacts sits under Show user and chat IDs when the build has its hooks: a switch, and
+     * a Tracked people row that lists the account's people. A person's history clears or stops
+     * tracking at once and says so.
+     */
+    @Test
+    public void trackedPeopleListsEveryoneAndOpensTheirHistory() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SHOW_LOCAL_IDS);
+        SpecialContactsForTests.fresh();
+        try {
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.PROFILE_LOCAL_IDS);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                HushTelegramPreferenceFragment page = pageOf(controller);
+                assertNotNull(page.findPreference(Settings.PROFILE_DATA_CENTER.key));
+                assertNull("a build without the hooks has no switch", page.findPreference(Settings.SPECIAL_CONTACTS.key));
+                assertNull("and no list", page.findPreference(HushTelegramPreferenceFragment.SPECIAL_CONTACTS_ROW));
+            }
+
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.PROFILE_LOCAL_IDS, PatchFamily.Capability.SPECIAL_CONTACTS);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                HushTelegramPreferenceFragment page = pageOf(controller);
+                SwitchPreference toggle = (SwitchPreference) page.findPreference(Settings.SPECIAL_CONTACTS.key);
+                assertEquals("Special contacts", String.valueOf(toggle.getTitle()));
+                assertFalse("off until turned on", toggle.isChecked());
+                String summary = String.valueOf(toggle.getSummary());
+                assertTrue(summary, summary.contains("Track this user") && summary.contains("stays on this phone"));
+                Preference row = page.findPreference(HushTelegramPreferenceFragment.SPECIAL_CONTACTS_ROW);
+                assertEquals("Tracked people", String.valueOf(row.getTitle()));
+                assertEquals("Nobody yet. Track someone from their profile's menu.", String.valueOf(row.getSummary()));
+
+                ShadowAlertDialog.reset();
+                ShadowToast.reset();
+                assertNull("nobody to list", dialogOf(row));
+                assertEquals("Nobody tracked yet", ShadowToast.getTextOfLatestToast());
+
+                // Tracked from a profile while the page waited behind it: back on the page, the row counts them.
+                SpecialContactsForTests.track(42, "Ann Lee", "@ann");
+                SpecialContactsForTests.track(43, null, null);
+                controller.pause().resume();
+                assertEquals("2 people tracked", String.valueOf(row.getSummary()));
+                AlertDialog list = dialogOf(row);
+                assertEquals("Tracked people", String.valueOf(shadowOf(list).getTitle()));
+                assertEquals("Close", String.valueOf(list.getButton(AlertDialog.BUTTON_NEGATIVE).getText()));
+                ListView choices = list.getListView();
+                assertEquals(2, choices.getCount());
+                assertEquals("Ann Lee\n@ann · User ID 42", String.valueOf(choices.getAdapter().getItem(0)));
+                assertEquals("User ID 43", String.valueOf(choices.getAdapter().getItem(1)));
+
+                shadowOf(list).clickOnItem(0);
+                ShadowLooper.idleMainLooper();
+                AlertDialog history = ShadowAlertDialog.getLatestAlertDialog();
+                assertEquals("Ann Lee", String.valueOf(shadowOf(history).getTitle()));
+                String lines = String.valueOf(shadowOf(history).getMessage());
+                assertTrue(lines, lines.endsWith("  Started tracking"));
+                assertEquals("Close", String.valueOf(history.getButton(AlertDialog.BUTTON_POSITIVE).getText()));
+                assertEquals("Clear history", String.valueOf(history.getButton(AlertDialog.BUTTON_NEUTRAL).getText()));
+                assertEquals("Stop tracking", String.valueOf(history.getButton(AlertDialog.BUTTON_NEGATIVE).getText()));
+                history.getButton(AlertDialog.BUTTON_NEUTRAL).performClick();
+                ShadowLooper.idleMainLooper();
+                assertEquals("History cleared", ShadowToast.getTextOfLatestToast());
+                assertEquals(0, SpecialContactsForTests.events(42));
+                assertTrue("still tracked", SpecialContactsForTests.tracked(42));
+
+                shadowOf(dialogOf(row)).clickOnItem(0);
+                ShadowLooper.idleMainLooper();
+                history = ShadowAlertDialog.getLatestAlertDialog();
+                assertEquals("No history yet", String.valueOf(shadowOf(history).getMessage()));
+                history.getButton(AlertDialog.BUTTON_NEGATIVE).performClick();
+                ShadowLooper.idleMainLooper();
+                assertEquals("Stopped tracking", ShadowToast.getTextOfLatestToast());
+                assertFalse(SpecialContactsForTests.tracked(42));
+                assertEquals("1 person tracked", String.valueOf(row.getSummary()));
+                assertEquals(1, dialogOf(row).getListView().getCount());
+            }
+        } finally {
+            SpecialContactsForTests.restore();
+            Settings.SPECIAL_CONTACTS.resetToDefault();
             PatchFamily.capabilitiesForTests = null;
         }
     }

@@ -99,6 +99,7 @@ import app.hushtelegram.extension.telegram.misc.KeepEdits;
 import app.hushtelegram.extension.telegram.misc.LaunchFolder;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 import app.hushtelegram.extension.telegram.misc.SaveDownloads;
+import app.hushtelegram.extension.telegram.misc.SpecialContacts;
 import app.hushtelegram.extension.telegram.misc.StickerSize;
 import app.hushtelegram.extension.telegram.misc.StorageFolder;
 import app.hushtelegram.extension.telegram.misc.TabFit;
@@ -146,6 +147,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String FOLDER_ICON_ROW = "action_folder_icons";
     static final String HIDDEN_CHATS_ROW = "action_hidden_chats";
     static final String HIDDEN_ACCOUNTS_ROW = "action_hidden_accounts";
+    /** The Tracked people row's key. The people themselves are kept by {@link SpecialContacts}, one list for each account. */
+    static final String SPECIAL_CONTACTS_ROW = "action_special_contacts";
 
     /** Thrown by the next initialize() and then cleared: how a test reaches the recovery page. */
     static volatile RuntimeException failNextInitialization;
@@ -239,6 +242,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         // Back from All files access, the row says what Android gives now.
         Preference storage = findPreference(Settings.STORAGE_FOLDER.key);
         if (storage != null) storage.setSummary(storageFolderSummary(StorageFolder.allFilesAccess()));
+        // Back from a profile where someone was tracked, the row counts them.
+        Preference tracked = findPreference(SPECIAL_CONTACTS_ROW);
+        if (tracked != null) tracked.setSummary(SpecialContacts.summary());
     }
 
     @Override
@@ -1158,6 +1164,14 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(toggle(context, Settings.PROFILE_DATA_CENTER, L10n.t("Show where a profile photo is stored"),
                     L10n.t("A profile's menu also shows which of Telegram's five data centers (its server "
                             + "locations) stores the profile photo. No photo, no number.")));
+            if (PatchFamily.Capability.SPECIAL_CONTACTS.installed()) {
+                on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(toggle(context, Settings.SPECIAL_CONTACTS, L10n.t("Special contacts"),
+                        L10n.t("A person's profile menu gets Track this user. For anyone you track, a history builds up from what "
+                                + "Telegram already shows you: coming online and going offline, typing, and changes to their name, "
+                                + "username, phone number, photo or contacts. Nothing extra is asked of Telegram, and the history "
+                                + "stays on this phone.")));
+                on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(specialContactsRow(context));
+            }
         }
         if (build.contains(PatchFamily.HOLIDAY_LOOK)) {
             on(pages, PatchFamily.HOLIDAY_LOOK).addPreference(toggle(context, Settings.HOLIDAY_LOOK, L10n.t("New Year look all year"),
@@ -2309,6 +2323,56 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             return true;
         });
         return row;
+    }
+
+    /** The people Special contacts tracks for the account shown now: the row counts them, and a tap lists them. */
+    private Preference specialContactsRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(SPECIAL_CONTACTS_ROW);
+        row.setTitle(L10n.t("Tracked people"));
+        row.setPersistent(false);
+        row.setSummary(SpecialContacts.summary());
+        row.setOnPreferenceClickListener(p -> {
+            showSpecialContacts(context, p);
+            return true;
+        });
+        return row;
+    }
+
+    /** Everyone tracked, the most recently active first. A tap opens that person's history. */
+    void showSpecialContacts(Context context, Preference row) {
+        if (SettingsLock.refuses()) return;
+        List<SpecialContacts.Tracked> people = SpecialContacts.people(context);
+        if (people == null) {
+            Utils.showToastLong(L10n.t("Couldn't read the list."));
+            return;
+        }
+        row.setSummary(SpecialContacts.summary());
+        if (people.isEmpty()) {
+            Utils.showToastLong(L10n.t("Nobody tracked yet"));
+            return;
+        }
+        CharSequence[] labels = new CharSequence[people.size()];
+        for (int i = 0; i < labels.length; i++) labels[i] = people.get(i).label;
+        show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("Tracked people"))
+                .setItems(labels, (dialog, which) -> showSpecialHistory(context, row, people.get(which)))
+                .setNegativeButton(L10n.t("Close"), null));
+    }
+
+    /** One person's history, newest first. Clear history and Stop tracking act at once and say so in a toast. */
+    void showSpecialHistory(Context context, Preference row, SpecialContacts.Tracked person) {
+        show(new AlertDialog.Builder(context)
+                .setTitle(person.title)
+                .setMessage(SpecialContacts.history(context, person.id))
+                .setPositiveButton(L10n.t("Close"), null)
+                .setNeutralButton(L10n.t("Clear history"), (dialog, which) -> Utils.showToastShort(
+                        SpecialContacts.clearHistory(person.id) ? L10n.t("History cleared") : L10n.t("Couldn't save that. Try again.")))
+                .setNegativeButton(L10n.t("Stop tracking"), (dialog, which) -> {
+                    boolean done = SpecialContacts.stopTracking(person.id);
+                    Utils.showToastShort(done ? L10n.t("Stopped tracking") : L10n.t("Couldn't save that. Try again."));
+                    row.setSummary(SpecialContacts.summary());
+                }));
     }
 
     /** Whether the hidden accounts are behind Telegram's passcode: the switch is on and there is a passcode to ask for. */

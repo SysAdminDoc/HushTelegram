@@ -1399,3 +1399,84 @@ Ghost mode off	Mode hantu nonaktif
 Test server sign-in	Masuk ke server uji
 # context: that switch's summary. "Test Backend" is the checkbox under the phone number field on Telegram's sign-in screen, written with Telegram's applied label for this language (key DebugTestBackend on translations.telegram.org; Bulgarian has none applied, so Telegram shows the English "Test Backend" there).
 Signing in or adding an account shows Telegram's Test Backend box on the phone number screen. Tick it to sign that account in on Telegram's test servers, kept apart from your other accounts.	Saat masuk atau menambahkan akun, layar nomor telepon menampilkan kotak Uji Backend milik Telegram. Centang kotak itu untuk memasukkan akun tersebut ke server uji Telegram, terpisah dari akun Anda yang lain.
+# context: a switch on the Look and feel page under Show user and chat IDs (#53). With it on, a person's profile menu offers Track this user, and the people tracked get a history.
+Special contacts	Kontak khusus
+# context: that switch's summary. Track this user is the profile menu row it adds, translated the same as that row.
+A person's profile menu gets Track this user. For anyone you track, a history builds up from what Telegram already shows you: coming online and going offline, typing, and changes to their name, username, phone number, photo or contacts. Nothing extra is asked of Telegram, and the history stays on this phone.	Menu profil seseorang mendapat Lacak pengguna ini. Untuk setiap orang yang Anda lacak, riwayat terbentuk dari apa yang sudah ditampilkan Telegram: saat online dan offline, saat mengetik, serta perubahan nama, nama pengguna, nomor telepon, foto, atau kontaknya. Tidak ada permintaan tambahan ke Telegram, dan riwayatnya tetap di ponsel ini.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Special contacts part of Show user and chat IDs.
+special contacts	kontak khusus
+# context: a row in a person's profile menu (the three dots on their profile) with Special contacts on. A tap starts keeping a history of that person.
+Track this user	Lacak pengguna ini
+# context: the same profile menu row for someone already tracked, and the button in that person's history that stops tracking them
+Stop tracking	Berhenti melacak
+# context: short message after Stop tracking
+Stopped tracking	Tidak dilacak lagi
+# context: short message after Track this user
+Tracking this user	Pengguna ini dilacak
+# context: short message when Track this user is tapped with 50 people already tracked on this account
+You can track up to 50 people	Anda bisa melacak hingga 50 orang
+# context: short message when Track this user couldn't write to the phone's storage
+Couldn't start tracking	Tidak bisa mulai melacak
+# context: summary of the Tracked people row when nobody is tracked on the account shown
+Nobody yet. Track someone from their profile's menu.	Belum ada. Lacak seseorang dari menu profilnya.
+# context: summary of the Tracked people row; %1$d is how many people are tracked on the account shown
+%1$d person tracked	%1$d orang dilacak
+%1$d people tracked	%1$d orang dilacak
+# context: the Tracked people row on the Look and feel page, and the title of the list it opens
+Tracked people	Orang yang dilacak
+# context: short message when the tracked people couldn't be read from the phone's storage
+Couldn't read the list.	Daftar tidak bisa dibaca.
+# context: short message when Tracked people is tapped with nobody tracked
+Nobody tracked yet	Belum ada yang dilacak
+# context: button in a tracked person's history that empties it and keeps tracking them
+Clear history	Hapus riwayat
+# context: short message after Clear history
+History cleared	Riwayat dihapus
+# context: a tracked person's history with nothing in it
+No history yet	Belum ada riwayat
+# context: history line, after a date and time: tracking this person began
+Started tracking	Mulai dilacak
+# context: history line, after a date and time: the tracked person came online. Every history line has the person as its unspoken subject.
+Came online	Menjadi online
+# context: history line: the person went offline; %1$s is the date and time Telegram gives as their last seen
+Went offline, last seen %1$s	Menjadi offline, terakhir dilihat %1$s
+# context: history line: the person went offline, with no last seen time to show
+Went offline	Menjadi offline
+# context: history line: Telegram now shows the person's last seen only as recently, the way it does when they hide the exact time
+Last seen recently	Terakhir dilihat baru-baru ini
+# context: history line: Telegram now shows the person's last seen as within a week
+Last seen within a week	Terakhir dilihat dalam seminggu
+# context: history line: Telegram now shows the person's last seen as within a month
+Last seen within a month	Terakhir dilihat dalam sebulan
+# context: history line: Telegram now shows the person's last seen as a long time ago
+Last seen a long time ago	Terakhir dilihat sudah lama
+# context: history line: the person was typing in your chat with them
+Typing	Mengetik
+# context: history line: the person was typing in a group or channel; %1$s is its name
+Typing in %1$s	Mengetik di %1$s
+# context: history line; %1$s is the old name and %2$s the new one (or the word none)
+Changed name from %1$s to %2$s	Mengubah nama dari %1$s menjadi %2$s
+# context: history line; %1$s is the old @username and %2$s the new one (or the word none)
+Changed username from %1$s to %2$s	Mengubah nama pengguna dari %1$s menjadi %2$s
+# context: history line; %1$s is the old phone number and %2$s the new one
+Changed phone number from %1$s to %2$s	Mengubah nomor telepon dari %1$s menjadi %2$s
+# context: history line: the person set a profile photo where they had none
+Added a profile photo	Menambahkan foto profil
+# context: history line
+Removed their profile photo	Menghapus foto profilnya
+# context: history line
+Changed their profile photo	Mengganti foto profilnya
+# context: history line: you (the phone's owner) saved the tracked person as a contact
+You saved them to your contacts	Anda menyimpannya ke kontak Anda
+# context: history line: you removed the tracked person from your contacts
+You removed them from your contacts	Anda menghapusnya dari kontak Anda
+# context: history line: the tracked person saved you as a contact (Telegram shows this as a mutual contact)
+Added you to their contacts	Menambahkan Anda ke kontaknya
+# context: history line
+Removed you from their contacts	Menghapus Anda dari kontaknya
+# context: history line. Telegram never says who blocked you, so this is a guess from the profile photo and last seen both disappearing at once.
+May have blocked you. A guess: their photo and last seen went away together.	Mungkin memblokir Anda. Hanya dugaan: foto dan status terakhir dilihat hilang bersamaan.
+# context: history line after a May have blocked you line, when the photo or last seen shows again
+May have unblocked you. A guess: their photo or last seen came back.	Mungkin membuka blokir Anda. Hanya dugaan: foto atau status terakhir dilihat muncul lagi.
+# context: history line: Telegram now shows the person as Deleted Account
+Deleted their account	Menghapus akunnya

@@ -9,7 +9,9 @@ public final class TLRPC {
     private TLRPC() { }
 
     /** A group, as Telegram keeps a basic one. */
-    public static class Chat { }
+    public static class Chat {
+        public String title;
+    }
 
     /** A channel or supergroup. */
     public static class TL_channel extends Chat { }
@@ -119,6 +121,70 @@ public final class TLRPC {
 
     /** The same status in a secret chat. */
     public static class TL_messages_setEncryptedTyping { }
+
+    /** A person, with the fields Special contacts compares. */
+    public static class User {
+        public long id;
+        public String first_name;
+        public String last_name;
+        public String username;
+        public java.util.ArrayList<TL_username> usernames = new java.util.ArrayList<>();
+        public String phone;
+        public UserProfilePhoto photo;
+        public UserStatus status;
+        public boolean self;
+        public boolean contact;
+        public boolean mutual_contact;
+        public boolean deleted;
+        public boolean bot;
+        public boolean min;
+    }
+
+    public static class TL_user extends User { }
+
+    public static class TL_userEmpty extends User { }
+
+    public static class TL_username {
+        public boolean editable;
+        public boolean active;
+        public String username;
+    }
+
+    /** Telegram keeps the last seen time of an offline status in expires too. */
+    public static class UserStatus {
+        public int expires;
+    }
+
+    public static class TL_userStatusOnline extends UserStatus { }
+
+    public static class TL_userStatusOffline extends UserStatus { }
+
+    public static class TL_userStatusRecently extends UserStatus { }
+
+    public static class TL_userStatusLastWeek extends UserStatus { }
+
+    public static class TL_userStatusLastMonth extends UserStatus { }
+
+    public static class TL_userStatusEmpty extends UserStatus { }
+
+    public static class UserProfilePhoto {
+        public long photo_id;
+        public boolean personal;
+        public int dc_id;
+    }
+
+    public static class TL_userProfilePhoto extends UserProfilePhoto { }
+
+    public static class TL_userProfilePhotoEmpty extends UserProfilePhoto { }
+
+    /** What a chat's typing line says someone is doing. */
+    public static class SendMessageAction { }
+
+    public static class TL_sendMessageTypingAction extends SendMessageAction { }
+
+    public static class TL_sendMessageCancelAction extends SendMessageAction { }
+
+    public static class TL_sendMessageRecordAudioAction extends SendMessageAction { }
 
     public static class TL_error {
         public int code;

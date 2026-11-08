@@ -43,12 +43,14 @@ public final class Accounts {
 
     /**
      * The account a connection manager belongs to: the {@code currentAccount} Telegram's controllers
-     * share, or -1 when it can't be read.
+     * share, or -1 when it can't be read. Any controller works; one whose field lives elsewhere
+     * resolves it again.
      */
     static int indexOf(Object connectionsManager) {
         try {
             Field field = currentAccount;
-            if (field == null) {
+            if (field == null || !field.getDeclaringClass().isInstance(connectionsManager)) {
+                field = null;
                 for (Class<?> type = connectionsManager.getClass(); type != null && field == null; type = type.getSuperclass()) {
                     try {
                         field = HostNames.declaredField(type, "currentAccount");

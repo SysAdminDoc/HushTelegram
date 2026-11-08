@@ -153,6 +153,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting PROFILE_DATA_CENTER =
             new BooleanSetting("hushtelegram_profile_data_center", FALSE);
 
+    /** A profile menu offers Track this user, and the people tracked get a history of what Telegram shows of them. */
+    public static final BooleanSetting SPECIAL_CONTACTS =
+            new BooleanSetting("hushtelegram_special_contacts", FALSE);
+
     public static final BooleanSetting DISABLE_DOUBLE_TAP_REACTIONS =
             new BooleanSetting("hushtelegram_disable_double_tap_reactions", FALSE);
 
