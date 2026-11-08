@@ -92,11 +92,12 @@ val repairFirebasePushPatch = bytecodePatch(
     description = "Tries to help a patched Telegram sign up for push notifications, by giving Google's Firebase service" +
         " Telegram's original certificate. If Telegram's server still turns the sign-up down, as it does with your own" +
         " API ID, it turns on Telegram's own Keep-Alive Service and Background Connection instead, unless you've set" +
-        " either one yourself. On by default. Turn it off in HushTelegram settings > Notifications.",
+        " either one yourself. While Keep-Alive Service is on, it runs with a quiet notification so Android doesn't stop" +
+        " it in the background. On by default. Turn it off in HushTelegram settings > Notifications.",
     default = true,
 ) {
     category("Fixes")
-    dependsOn(settingsPatch, telegramExtensionPatch)
+    dependsOn(settingsPatch, telegramExtensionPatch, keepAliveServicePatch)
     compatibleWith(*AppCompatibilities.telegram())
 
     execute {

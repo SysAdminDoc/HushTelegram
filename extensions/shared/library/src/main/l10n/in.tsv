@@ -546,6 +546,14 @@ Pulling up at the bottom of a forum topic only scrolls. Open the next topic from
 # context: Read-only local notification facts, independent of repair and Pause.
 Notification status on this phone	Status notifikasi di ponsel ini
 local notification status	status notifikasi lokal
+# context: A switch on the Notifications page and its summary, then the ongoing notification it shows and that notification's channel name. Keep-Alive Service is Telegram's own switch: use exactly the label Telegram shows in this language (translations.telegram.org key NotificationsService), and the same Settings > Notifications, under Other path as the notification status lines.
+Keep the Keep-Alive Service running	Jaga Biarkan Layanan Tetap Menyala terus berjalan
+Android stops Telegram's Keep-Alive Service soon after you leave the app, so messages wait until you open it again. With this on, the service shows a quiet notification and keeps running. It only does something while Keep-Alive Service is on in Telegram's own Settings > Notifications, under Other.	Android menghentikan Biarkan Layanan Tetap Menyala milik Telegram tak lama setelah Anda keluar dari aplikasi, jadi pesan baru masuk saat Anda membukanya lagi. Jika ini aktif, layanan itu menampilkan notifikasi senyap dan terus berjalan. Ini hanya bekerja selama Biarkan Layanan Tetap Menyala aktif di Pengaturan Telegram sendiri > Notifikasi, di bagian Lainnya.
+Keeping Telegram connected	Menjaga Telegram tetap terhubung
+So messages arrive on time. Tap to hide this notification.	Agar pesan masuk tepat waktu. Ketuk untuk menyembunyikan notifikasi ini.
+Keep-Alive Service	Biarkan Layanan Tetap Menyala
+# context: Noun phrase naming the part of Repair Firebase push registration that starts the Keep-Alive Service, listed in coverage lines with "local notification status".
+Keep-Alive Service start	mulai Biarkan Layanan Tetap Menyala
 Notification permission: %1$s	Izin notifikasi: %1$s
 Notification ID saved on this phone: %1$s	ID notifikasi tersimpan di ponsel ini: %1$s
 Signed-in accounts: %1$s	Akun yang masuk: %1$s

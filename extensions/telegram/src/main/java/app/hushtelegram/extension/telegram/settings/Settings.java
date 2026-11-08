@@ -868,6 +868,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting REPAIR_FIREBASE_PUSH =
             new BooleanSetting("hushtelegram_repair_firebase_push", TRUE, true);
 
+    /**
+     * Telegram's Keep-Alive Service runs in front with a quiet notification, so Android stops
+     * freezing it in the background (#50, #54). Only matters while Telegram's own Keep-Alive Service
+     * switch is on.
+     */
+    public static final BooleanSetting KEEP_ALIVE_RUNNING =
+            new BooleanSetting("hushtelegram_keep_alive_running", TRUE);
+
     /** Telegram signs up a UnifiedPush app's address for its wake-ups instead of Firebase's token. */
     public static final BooleanSetting UNIFIED_PUSH =
             new BooleanSetting("hushtelegram_unified_push", FALSE);

@@ -546,6 +546,14 @@ Pulling up at the bottom of a forum topic only scrolls. Open the next topic from
 # context: Read-only local notification facts, independent of repair and Pause.
 Notification status on this phone	Estado de las notificaciones en este teléfono
 local notification status	estado local de notificaciones
+# context: A switch on the Notifications page and its summary, then the ongoing notification it shows and that notification's channel name. Keep-Alive Service is Telegram's own switch: use exactly the label Telegram shows in this language (translations.telegram.org key NotificationsService), and the same Settings > Notifications, under Other path as the notification status lines.
+Keep the Keep-Alive Service running	Mantener activo el Servicio keep-alive
+Android stops Telegram's Keep-Alive Service soon after you leave the app, so messages wait until you open it again. With this on, the service shows a quiet notification and keeps running. It only does something while Keep-Alive Service is on in Telegram's own Settings > Notifications, under Other.	Android detiene el Servicio keep-alive de Telegram poco después de salir de la app, y los mensajes esperan hasta que vuelves a abrirla. Con esto activado, el servicio muestra una notificación silenciosa y sigue funcionando. Solo hace algo mientras el Servicio keep-alive está activado en los propios Ajustes de Telegram > Notificaciones, en Otros.
+Keeping Telegram connected	Telegram sigue conectado
+So messages arrive on time. Tap to hide this notification.	Para que los mensajes lleguen a tiempo. Toca para ocultar esta notificación.
+Keep-Alive Service	Servicio keep-alive
+# context: Noun phrase naming the part of Repair Firebase push registration that starts the Keep-Alive Service, listed in coverage lines with "local notification status".
+Keep-Alive Service start	inicio del Servicio keep-alive
 Notification permission: %1$s	Permiso de notificaciones: %1$s
 Notification ID saved on this phone: %1$s	ID de notificaciones guardado en este teléfono: %1$s
 Signed-in accounts: %1$s	Cuentas con sesión iniciada: %1$s

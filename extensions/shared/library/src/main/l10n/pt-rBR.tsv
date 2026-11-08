@@ -543,6 +543,14 @@ Pulling up at the bottom of a forum topic only scrolls. Open the next topic from
 # context: Read-only local notification facts, independent of repair and Pause.
 Notification status on this phone	Status das notificações neste celular
 local notification status	estado local das notificações
+# context: A switch on the Notifications page and its summary, then the ongoing notification it shows and that notification's channel name. Keep-Alive Service is Telegram's own switch: use exactly the label Telegram shows in this language (translations.telegram.org key NotificationsService), and the same Settings > Notifications, under Other path as the notification status lines.
+Keep the Keep-Alive Service running	Deixar o Manter Serviço Ativo sempre rodando
+Android stops Telegram's Keep-Alive Service soon after you leave the app, so messages wait until you open it again. With this on, the service shows a quiet notification and keeps running. It only does something while Keep-Alive Service is on in Telegram's own Settings > Notifications, under Other.	O Android para o Manter Serviço Ativo do Telegram pouco depois que você sai do app, e as mensagens esperam até você abrir de novo. Com isso ligado, o serviço mostra uma notificação silenciosa e continua rodando. Só faz efeito enquanto o Manter Serviço Ativo estiver ligado nas próprias Configurações do Telegram > Notificações, em Outro.
+Keeping Telegram connected	Mantendo o Telegram conectado
+So messages arrive on time. Tap to hide this notification.	Para as mensagens chegarem na hora. Toque para ocultar esta notificação.
+Keep-Alive Service	Manter Serviço Ativo
+# context: Noun phrase naming the part of Repair Firebase push registration that starts the Keep-Alive Service, listed in coverage lines with "local notification status".
+Keep-Alive Service start	início do Manter Serviço Ativo
 Notification permission: %1$s	Permissão de notificações: %1$s
 Notification ID saved on this phone: %1$s	ID de notificação salvo neste celular: %1$s
 Signed-in accounts: %1$s	Contas conectadas: %1$s

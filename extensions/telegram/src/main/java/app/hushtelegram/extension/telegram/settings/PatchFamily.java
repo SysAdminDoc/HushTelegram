@@ -134,7 +134,7 @@ public enum PatchFamily {
     DISABLE_UPDATE_CHECKS(FamilyNames.DISABLE_UPDATE_CHECKS, "disableUpdateChecks", null,
             Settings.DISABLE_UPDATE_CHECKS),
     REPAIR_FIREBASE_PUSH(FamilyNames.REPAIR_FIREBASE_PUSH, "repairFirebasePush", null,
-            Settings.REPAIR_FIREBASE_PUSH),
+            Settings.REPAIR_FIREBASE_PUSH, Settings.KEEP_ALIVE_RUNNING),
     UNIFIED_PUSH(FamilyNames.UNIFIED_PUSH, "unifiedPush", null, Settings.UNIFIED_PUSH, Settings.REACTION_ALERTS,
             Settings.REACTION_SOUND);
 
@@ -419,6 +419,7 @@ public enum PatchFamily {
         HIDE_CHANNEL_SHARE(HIDE_CHANNEL_BUTTONS, "hideChannelShare", "share button beside channel posts", true),
         FIREBASE_CERTIFICATE_HEADER(REPAIR_FIREBASE_PUSH, "firebaseCertificateHeader", "Firebase certificate header"),
         FIREBASE_LOCAL_STATUS(REPAIR_FIREBASE_PUSH, "firebaseLocalStatus", "local notification status"),
+        KEEP_ALIVE_RUNNING(REPAIR_FIREBASE_PUSH, "keepAliveRunning", "Keep-Alive Service start", true),
         REACTION_ALERTS(UNIFIED_PUSH, "reactionAlerts", "reaction notifications without push", true),
         REACTION_SOUND(UNIFIED_PUSH, "reactionSound", "sound for reaction notifications", true);
 

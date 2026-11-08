@@ -237,7 +237,8 @@ public final class SettingsBackup {
             Settings.SKIP_AUTOLOGIN,
             Settings.STRIP_LINK_COPY_PASTE,
             Settings.DISABLE_UPDATE_CHECKS,
-            Settings.REPAIR_FIREBASE_PUSH));
+            Settings.REPAIR_FIREBASE_PUSH,
+            Settings.KEEP_ALIVE_RUNNING));
 
     /**
      * The text a file carries besides the switches: the message filters, each list as a JSON array

@@ -93,6 +93,7 @@ import app.hushtelegram.extension.telegram.misc.FolderIcons;
 import app.hushtelegram.extension.telegram.misc.GalleryFolder;
 import app.hushtelegram.extension.telegram.misc.HiddenAccounts;
 import app.hushtelegram.extension.telegram.misc.HiddenChats;
+import app.hushtelegram.extension.telegram.misc.KeepAlive;
 import app.hushtelegram.extension.telegram.misc.KeepDeleted;
 import app.hushtelegram.extension.telegram.misc.KeepEdits;
 import app.hushtelegram.extension.telegram.misc.LaunchFolder;
@@ -1052,6 +1053,19 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             + "Google's notification service, using Telegram's original certificate. Notification "
                             + "permission and battery settings still apply.") + " "
                             + L10n.t("A change here applies after Telegram restarts."))));
+            if (PatchFamily.Capability.KEEP_ALIVE_RUNNING.installed()) {
+                SwitchPreference keepAlive = toggle(context, Settings.KEEP_ALIVE_RUNNING, L10n.t("Keep the Keep-Alive Service running"),
+                        L10n.t("Android stops Telegram's Keep-Alive Service soon after you leave the app, so messages wait "
+                                + "until you open it again. With this on, the service shows a quiet notification and keeps "
+                                + "running. It only does something while Keep-Alive Service is on in Telegram's own "
+                                + "Settings > Notifications, under Other."));
+                keepAlive.setOnPreferenceChangeListener((row, value) -> {
+                    // Once the switch is saved, so Telegram's own start reads what it says.
+                    Utils.runOnMainThreadDelayed(KeepAlive::switched, 0);
+                    return true;
+                });
+                notifications.addPreference(keepAlive);
+            }
         }
         if (build.contains(PatchFamily.UNIFIED_PUSH)) {
             SwitchPreference push = toggle(context, Settings.UNIFIED_PUSH, L10n.t("UnifiedPush notifications"),

@@ -323,6 +323,7 @@ public final class SelectionCheck {
         hook(calls, flags, "mentionById", "misc/MentionById", "add");
         hook(calls, flags, "firebaseCertificateHeader", "misc/FirebasePush", "certificateHeader");
         hook(calls, flags, "repairFirebasePush", "misc/FirebasePush", "registerDeviceAnswer");
+        hook(calls, flags, "keepAliveRunning", "misc/KeepAlive", "start", "started");
         hook(calls, flags, "hidePopularApps", "misc/PopularApps", "skipLoad", "hideSection");
         hook(calls, flags, "myChatsSearch", "misc/MyChatsSearch", "keep", "sent", "phones", "dropPublicTabs", "downloadsAt",
                 "keepHashtag", "endPublicPosts", "dropPublicResults");

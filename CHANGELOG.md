@@ -5,6 +5,7 @@ Every HushTelegram release, newest first.
 ## Unreleased
 
 * **Telegram:** Moved telegram.org's build to Telegram 13.1.1 (version code 72379). Every patch carried over without a change.
+
 ### Added
 
 * **Telegram:** **Ghost mode button**, under Ghost mode in Privacy and off by default. It puts a ghost at the top of the chat list, next to Telegram's own buttons, and one tap turns Ghost mode on or off with a short message saying which. The ghost is filled while Ghost mode is on and just an outline while it's off. It steps aside while search is open.
@@ -12,23 +13,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** **Save downloaded files** has a **What to copy** row right under its switch. Tick documents, music, photos, videos or voice messages, and only those kinds get a copy in Download/Telegram. Everything is ticked to start, so nothing changes until you untick something.
 * **Telegram:** **Keep videos muted on volume keys** has a new switch, **Start videos without sound**, off by default. A video you open plays muted, so it won't blast out in public or cut over your music. Press a volume key and that video gets its sound. The next one you open starts quiet again. Round videos keep their sound. (#61)
 * **Telegram:** **Disable double-tap reactions** has a new switch, **Hide the emoji pack line**, off by default. It takes the line that says a message contains emoji from some pack off the bottom of the long-press menu, along with the gap above it.
-
-### Changed
-
-* **Telegram:** **Hide the reaction picker** now covers the bubble of reactions that pops up over a selected message too, so tapping a post to pick it for a reply or a forward can't land on a reaction.
-### Changed
-
-- `Hide picked chats` now takes hidden chats out of the lists you forward and share to as well: the forward picker, the share sheet and quick share. Saved Messages always stays in those lists.
-
-### Fixed
-
-* **Telegram:** **Import settings** no longer says nothing will change for a file that only picks other folder icons. It lists the change and offers to import it.
-* **Telegram:** **Hide Premium, gifts and Stars** now takes Send a Gift out of the three-dot menu on profiles and channels too. It was still sitting there with the switch on.
-- If you hide a pinned chat and unpin it on another device, the unpin now sticks. Hidden pins also count toward your pin limit here, so you see Telegram's limit message instead of a pin the server would turn down.
-- `Move All Chats`, under the folder tabs settings. It starts off. With it on, an account without Premium can drag All Chats to another place among its folder tabs, and it stays there after a restart. The place is kept on this phone for this account, so your other devices still show All Chats first.
-### Fixed
-
-- When Google sign-in fails on Telegram's login email screen, a short message now points at the email box. Telegram used to just stay on the screen after you picked an account, and a patched copy can't get past Google there.
+* **Telegram:** **Move All Chats**, under the folder tabs settings. It starts off. With it on, an account without Premium can drag All Chats to another place among its folder tabs, and it stays there after a restart. The place is kept on this phone for this account, so your other devices still show All Chats first.
 * **Telegram:** **Keep Telegram's files in internal storage** has a **Folder in internal storage** row under it, so Telegram's files can go in a folder you name, like Internal storage/Plus, instead of Internal storage/Telegram. Changing the name takes a restart, and files in the folder you used before stay there and still open. Leave it empty for Telegram. (#7)
 * **Telegram:** **Add Repeat to the message menu** has a new switch, **Add Clear from cache to the message menu**, off by default. A video or file message gets a Clear from cache item. It stops a running download, deletes what Telegram kept of it and brings the download arrow back. A toast says how much was cleared, and copies you saved to Downloads or Pictures stay.
 * **Telegram:** **Add Repeat to the message menu** has a new switch, **Add Save album art to the message menu**, off by default. A song with art, inside the file or on Telegram, gets a Save album art item that puts the picture in Pictures.
@@ -48,6 +33,19 @@ Every HushTelegram release, newest first.
 * **Telegram:** **Voice messages in the music player** has a new switch, **Remember where playback stopped**, off by default. Videos, voice messages and music pick up where you left off, even short ones. Telegram only does that for long ones. Turn it off and everything plays as Telegram plays it. (#53)
 * **Telegram:** **Add Repeat to the message menu** has a new switch, **Select between**, off by default. It adds a button to the bar that shows while you pick messages. Tap it and everything between the first and last message you picked gets selected. Pick one past the end and the gap fills in. It stops at Telegram's 100 message limit. (#53)
 * **Telegram:** **Folder icons** is a new row with the folder tab settings. Pick Regular, Bold or Filled and HushTelegram draws a small icon beside each folder in its own lists, like Folder to open. A folder called Work gets a briefcase, Friends a group, and a name it doesn't know gets a plain folder. Telegram 13.1 doesn't draw folder icons at all, so its own tabs stay as they are. The icons are from Phosphor Icons (MIT). Off by default. (#53)
+
+### Changed
+
+* **Telegram:** **Hide the reaction picker** now covers the bubble of reactions that pops up over a selected message too, so tapping a post to pick it for a reply or a forward can't land on a reaction.
+* **Telegram:** **Hide picked chats** now takes hidden chats out of the lists you forward and share to as well: the forward picker, the share sheet and quick share. Saved Messages always stays in those lists.
+
+### Fixed
+
+* **Telegram:** **Import settings** no longer says nothing will change for a file that only picks other folder icons. It lists the change and offers to import it.
+* **Telegram:** **Hide Premium, gifts and Stars** now takes Send a Gift out of the three-dot menu on profiles and channels too. It was still sitting there with the switch on.
+* **Telegram:** If you hide a pinned chat and unpin it on another device, the unpin now sticks. Hidden pins also count toward your pin limit here, so you see Telegram's limit message instead of a pin the server would turn down.
+* **Telegram:** When Google sign-in fails on Telegram's login email screen, a short message now points at the email box. Telegram used to just stay on the screen after you picked an account, and a patched copy can't get past Google there.
+* **Telegram:** If you use Telegram's Keep-Alive Service instead of push, messages no longer wait until you open the app. Android stopped that service about a minute after you left Telegram. Now it runs with a quiet notification and keeps going. A new switch under **Repair Firebase push registration**, **Keep the Keep-Alive Service running**, is on by default and only matters while Keep-Alive Service is on in Telegram's own settings. (#50, #54)
 
 ## 0.0.23 (2026-10-31)
 

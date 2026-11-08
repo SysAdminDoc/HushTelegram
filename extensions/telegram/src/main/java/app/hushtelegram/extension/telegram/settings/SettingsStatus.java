@@ -196,6 +196,7 @@ public final class SettingsStatus {
     public static boolean repairFirebasePush() { return false; }
     public static boolean firebaseCertificateHeader() { return false; }
     public static boolean firebaseLocalStatus() { return false; }
+    public static boolean keepAliveRunning() { return false; }
     public static boolean unifiedPush() { return false; }
     public static boolean reactionAlerts() { return false; }
     public static boolean reactionSound() { return false; }

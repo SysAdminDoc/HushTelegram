@@ -389,7 +389,13 @@ public class HushTelegramPreferenceFragmentTest {
                     + "notification service, using Telegram's original certificate. Notification permission and "
                     + "battery settings still apply. A change here applies after Telegram restarts.",
                     String.valueOf(page.findPreference(Settings.REPAIR_FIREBASE_PUSH.key).getSummary()));
-            assertEquals("UnifiedPush notifications", String.valueOf(page.findPreference(Settings.UNIFIED_PUSH.key).getTitle()));
+            assertEquals("Keep the Keep-Alive Service running", String.valueOf(page.findPreference(Settings.KEEP_ALIVE_RUNNING.key).getTitle()));
+            assertEquals("Android stops Telegram's Keep-Alive Service soon after you leave the app, so messages wait "
+                    + "until you open it again. With this on, the service shows a quiet notification and keeps running. "
+                    + "It only does something while Keep-Alive Service is on in Telegram's own Settings > Notifications, "
+                    + "under Other.",
+                    String.valueOf(page.findPreference(Settings.KEEP_ALIVE_RUNNING.key).getSummary()));
+            assertEquals("UnifiedPush notifications",String.valueOf(page.findPreference(Settings.UNIFIED_PUSH.key).getTitle()));
             assertEquals("For phones where Firebase notifications don't arrive. Telegram signs up an address from a "
                     + "UnifiedPush app like ntfy, and Telegram's servers call it to wake Telegram when something "
                     + "arrives. The messages still come from Telegram itself. It also turns on Telegram's own Keep-Alive "
@@ -415,7 +421,7 @@ public class HushTelegramPreferenceFragmentTest {
             for (BooleanSetting setting : Arrays.asList(Settings.HIDE_ADS, Settings.DISABLE_ANALYTICS,
                     Settings.DISABLE_UPDATE_CHECKS, Settings.HIDE_PROMOTIONAL_BANNERS, Settings.HIDE_SPONSORED_PROXY,
                     Settings.HIDE_POPULAR_APPS, Settings.OPEN_EXTERNAL_LINKS, Settings.DISABLE_CHANNEL_PULL,
-                    Settings.REPAIR_FIREBASE_PUSH)) {
+                    Settings.REPAIR_FIREBASE_PUSH, Settings.KEEP_ALIVE_RUNNING)) {
                 assertTrue(setting.key, ((SwitchPreference) page.findPreference(setting.key)).isChecked());
             }
             assertFalse(Settings.STRIP_LINK_TRACKING.key,
@@ -2265,7 +2271,24 @@ public class HushTelegramPreferenceFragmentTest {
             HushTelegramPreferenceFragment page = pageOf(controller);
             assertEquals(null, page.findPreference("local_notification_status"));
             assertEquals(null, page.findPreference(Settings.REPAIR_FIREBASE_PUSH.key));
+            assertEquals(null, page.findPreference(Settings.KEEP_ALIVE_RUNNING.key));
             assertFalse(sections(page).contains("Notifications"));
+        }
+    }
+
+    @Test
+    public void theKeepAliveSwitchShowsOnlyWhenItsStartWasPatchedIn() {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.REPAIR_FIREBASE_PUSH);
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.FIREBASE_CERTIFICATE_HEADER,
+                PatchFamily.Capability.FIREBASE_LOCAL_STATUS);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            assertNotNull(page.findPreference(Settings.REPAIR_FIREBASE_PUSH.key));
+            assertEquals(null, page.findPreference(Settings.KEEP_ALIVE_RUNNING.key));
+        }
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.KEEP_ALIVE_RUNNING);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            assertNotNull(pageOf(controller).findPreference(Settings.KEEP_ALIVE_RUNNING.key));
         }
     }
 
