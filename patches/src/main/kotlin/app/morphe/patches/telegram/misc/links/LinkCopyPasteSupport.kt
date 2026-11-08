@@ -35,9 +35,14 @@ internal const val WATCH_PASTE = "$LINKS->watchPaste(Landroid/view/View;I)V"
 /** Where a copied or pasted link is cleaned: Telegram's one-argument clipboard copy, and the two message box editors. */
 internal class CopyPasteSites(val copy: MutableMethod, val pastes: List<MutableMethod>) {
     fun insert() {
-        copy.addInstructionsAtControlFlowLabel(0, "invoke-static {p0}, $COPIED_LINK\nmove-result-object p0")
-        pastes.forEach { it.addInstructionsAtControlFlowLabel(0, "invoke-static {p0, p1}, $WATCH_PASTE") }
+        insertCopy()
+        insertPastes()
     }
+
+    fun insertCopy() = copy.addInstructionsAtControlFlowLabel(0, "invoke-static {p0}, $COPIED_LINK\nmove-result-object p0")
+
+    /** Use normal paste checks the stock editors as it runs, so the patch puts these in once every patch has run. */
+    fun insertPastes() = pastes.forEach { it.addInstructionsAtControlFlowLabel(0, "invoke-static {p0, p1}, $WATCH_PASTE") }
 
     /** The same edits on copies, so a register or smali problem shows before the app is touched. */
     fun rehearse() {

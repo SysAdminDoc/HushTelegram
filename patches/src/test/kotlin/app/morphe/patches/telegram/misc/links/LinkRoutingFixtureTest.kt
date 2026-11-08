@@ -16,6 +16,9 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
+import app.morphe.patches.telegram.misc.localcontrols.controlBody
+import app.morphe.patches.telegram.misc.paste.NORMAL_PASTE
+import app.morphe.patches.telegram.misc.paste.useNormalPastePatch
 import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -79,6 +82,28 @@ class LinkRoutingFixtureTest {
                 assertAutologinGated(build.name, plan.browser)
                 for (share in plan.shares) assertEquals("only the chooser target is passed to cleaning", 1,
                     share.method.instructions().count { it.ref()?.startsWith("$LINKS->cleanShareIntent(") == true })
+            }
+        }
+    }
+
+    @Test fun `Use normal paste still applies after Strip link tracking, and both reach the paste editors`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = PatchContexts.of(ExtensionDex.classes() + (hostClasses(build) + copyPasteHosts(build)).distinctBy { it.type })
+            val editors = context.resolveCopyPaste().pastes
+            assertEquals("${build.name}: the message box and caption editors", 2, editors.size)
+            val stock = editors.map { editor -> editor.controlBody().filter { it.opcode != Opcode.NOP }.map { it.opcode to it.ref() } }
+            // The patcher's order: Strip link tracking runs, then Use normal paste, then the patches' finalize blocks.
+            stripLinkTrackingPatch.execute(context)
+            useNormalPastePatch.execute(context)
+            stripLinkTrackingPatch.finalize(context)
+            assertFlag(context, "pastedLinkTracking", true)
+            editors.forEachIndexed { at, editor ->
+                val after = editor.controlBody().filter { it.opcode != Opcode.NOP }.map { it.opcode to it.ref() }
+                assertEquals("${build.name}: editor $at watches the paste first", Opcode.INVOKE_STATIC to WATCH_PASTE, after[0])
+                assertEquals("${build.name}: editor $at then asks Use normal paste", Opcode.INVOKE_STATIC to
+                    "$NORMAL_PASTE->contextMenuAction(Landroid/view/View;I)I", after[1])
+                assertEquals(Opcode.MOVE_RESULT, after[2].first)
+                assertEquals("${build.name}: editor $at keeps its stock body", stock[at], after.drop(3))
             }
         }
     }
