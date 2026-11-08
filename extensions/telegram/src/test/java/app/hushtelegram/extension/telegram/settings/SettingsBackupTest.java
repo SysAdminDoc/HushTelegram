@@ -209,7 +209,8 @@ public class SettingsBackupTest {
                 Collections.emptyList(), notSwitches);
         assertEquals(Arrays.asList(Settings.MESSAGE_FILTERS_GROUPS, Settings.MESSAGE_FILTERS_CHANNELS), SettingsBackup.FILTER_LISTS);
         assertEquals(Collections.singletonList(Settings.STICKER_SIZE), SettingsBackup.NUMBERS);
-        assertEquals(Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET, Settings.FOLDER_ICON_PACK, Settings.STORAGE_FOLDER_NAME), SettingsBackup.TEXTS);
+        assertEquals(Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET, Settings.FOLDER_ICON_PACK, Settings.STORAGE_FOLDER_NAME,
+                Settings.SAVE_KINDS_LEFT_OUT), SettingsBackup.TEXTS);
         assertEquals(Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_STORIES, Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_KEYBOARD_FEATURED, Settings.HIDE_COMMERCE, Settings.HIDE_EMOJI_STATUS, Settings.UNLOCK_PREMIUM_ICONS, Settings.LOCAL_EMOJI_STATUS,
                         Settings.HIDE_PROMOTIONAL_BANNERS, Settings.HIDE_SPONSORED_PROXY, Settings.HIDE_POPULAR_APPS, Settings.SEARCH_ONLY_MY_CHATS, Settings.SEARCH_STYLED_NAMES, Settings.BLOCK_NEW_CHATS, Settings.DISABLE_SECRET_CHATS, Settings.HIDE_CONTACTS_BLOCK,
                         Settings.HIDE_GREETING_STICKERS, Settings.DISABLE_CHAT_SWIPE, Settings.DISABLE_CHANNEL_PULL, Settings.DISABLE_TOPIC_PULL, Settings.NORMAL_PASTE, Settings.MENTION_BY_ID, Settings.SHOW_LOCAL_IDS, Settings.PROFILE_DATA_CENTER,
@@ -724,7 +725,8 @@ public class SettingsBackupTest {
         // the file's other texts, the gallery folder, the translation language and the storage folder, come back.
         Bundle state = snapshot.toBundle();
         state.getBundle("texts").putString(Settings.TITLE_EMOJI.key, tooLong.toString());
-        Set<StringSetting> others = new java.util.HashSet<>(Arrays.asList(Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET, Settings.STORAGE_FOLDER_NAME, Settings.FOLDER_ICON_PACK));
+        Set<StringSetting> others = new java.util.HashSet<>(Arrays.asList(Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET, Settings.STORAGE_FOLDER_NAME, Settings.FOLDER_ICON_PACK,
+                Settings.SAVE_KINDS_LEFT_OUT));
         assertEquals(others, SettingsBackup.Snapshot.fromBundle(state).texts.keySet());
         state.getBundle("texts").putInt(Settings.TITLE_EMOJI.key, 1);
         assertEquals(others, SettingsBackup.Snapshot.fromBundle(state).texts.keySet());
@@ -750,6 +752,26 @@ public class SettingsBackupTest {
             assertTrue("a file that only moves the folder says so", SettingsBackup.parse(file.toString()).storageFolderNameChanges());
         } finally {
             Settings.STORAGE_FOLDER_NAME.resetToDefault();
+        }
+    }
+
+    /** What to copy goes out as the kinds left out and only comes back as a list the row could save (#57). */
+    @Test
+    public void whatToCopyRoundTripsOnlyAsAListTheRowWouldSave() throws Exception {
+        try {
+            Settings.SAVE_KINDS_LEFT_OUT.save("MUSIC,VOICE");
+            JSONObject file = new JSONObject(SettingsBackup.create());
+            assertEquals("MUSIC,VOICE", file.getJSONObject("settings").get(Settings.SAVE_KINDS_LEFT_OUT.key));
+
+            Settings.SAVE_KINDS_LEFT_OUT.resetToDefault();
+            assertEquals("MUSIC,VOICE", SettingsBackup.parse(file.toString()).texts.get(Settings.SAVE_KINDS_LEFT_OUT));
+
+            for (String bad : new String[] {"ALL", "VOICE,MUSIC", "DOCUMENTS,MUSIC,PHOTOS,VIDEOS,VOICE", "../x", "MUSIC,"}) {
+                file.getJSONObject("settings").put(Settings.SAVE_KINDS_LEFT_OUT.key, bad);
+                assertEquals(bad, SettingsBackup.Reason.VALUE, reasonFor(file.toString()));
+            }
+        } finally {
+            Settings.SAVE_KINDS_LEFT_OUT.resetToDefault();
         }
     }
 
@@ -1233,6 +1255,51 @@ public class SettingsBackupTest {
                     HushTelegramPreferenceFragment.GALLERY_FOLDER_ROW).getSummary()).contains("DCIM/Telegram/Photos"));
             // Each save reads the choice, so nothing waits for a restart.
             assertTrue(AbstractPreferenceFragment.restartPending.isEmpty());
+        }
+    }
+
+    @Test
+    public void aFileThatChangesOnlyWhatToCopySaysSoAndImportsIt() throws Exception {
+        Settings.SAVE_KINDS_LEFT_OUT.save("MUSIC,VIDEOS,VOICE");
+        String file = SettingsBackup.create();
+        Settings.SAVE_KINDS_LEFT_OUT.resetToDefault();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
+            deliver(activity, tap(activity, page, IMPORT_ROW), file);
+            AlertDialog preview = shownPreview();
+            assertEquals("What to copy: Every kind to Documents and Photos", String.valueOf(shadowOf(preview).getMessage()));
+            assertEquals("Import", String.valueOf(preview.getButton(AlertDialog.BUTTON_POSITIVE).getText()));
+            preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertEquals("Settings imported.", ShadowToast.getTextOfLatestToast());
+            assertEquals("MUSIC,VIDEOS,VOICE", Settings.SAVE_KINDS_LEFT_OUT.savedValue());
+            assertEquals("the row shows the imported kinds", "Only Documents and Photos. The rest stay in Telegram.",
+                    String.valueOf(page.findPreference(HushTelegramPreferenceFragment.SAVE_KINDS_ROW).getSummary()));
+            assertTrue(AbstractPreferenceFragment.restartPending.isEmpty());
+        } finally {
+            Settings.SAVE_KINDS_LEFT_OUT.resetToDefault();
+        }
+    }
+
+    /** A file that only picks other folder icons used to say nothing would change and offer no import. */
+    @Test
+    public void aFileThatChangesOnlyTheFolderIconsOffersTheImport() throws Exception {
+        Settings.FOLDER_ICON_PACK.save(app.hushtelegram.extension.telegram.misc.FolderIcons.BOLD);
+        String file = SettingsBackup.create();
+        Settings.FOLDER_ICON_PACK.resetToDefault();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
+            deliver(activity, tap(activity, page, IMPORT_ROW), file);
+            AlertDialog preview = shownPreview();
+            assertTrue(String.valueOf(shadowOf(preview).getMessage()), String.valueOf(shadowOf(preview).getMessage()).startsWith("Folder icons: "));
+            assertEquals("Import", String.valueOf(preview.getButton(AlertDialog.BUTTON_POSITIVE).getText()));
+            preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertEquals(app.hushtelegram.extension.telegram.misc.FolderIcons.BOLD, Settings.FOLDER_ICON_PACK.savedValue());
+        } finally {
+            Settings.FOLDER_ICON_PACK.resetToDefault();
         }
     }
 

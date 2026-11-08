@@ -1351,6 +1351,61 @@ public class HushTelegramPreferenceFragmentTest {
     }
 
     /**
+     * Save downloaded files brings What to copy right under its switch (#57). Every kind starts
+     * ticked; unticking some and saving keeps the rest, the summary names what is still copied,
+     * and Save with nothing ticked says so and keeps the list open.
+     */
+    @Test
+    public void theWhatToCopyRowTicksTheKindsAndSavesThePick() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SAVE_DOWNLOADS);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            List<Preference> rows = new ArrayList<>();
+            collect(pageOf(controller).getPreferenceScreen(), rows);
+            Preference kinds = rows.get(indexOfKey(rows, Settings.SAVE_DOWNLOADS.key) + 1);
+            assertEquals(HushTelegramPreferenceFragment.SAVE_KINDS_ROW, kinds.getKey());
+            assertFalse("it stores nothing itself", kinds.isPersistent());
+            assertEquals("What to copy", String.valueOf(kinds.getTitle()));
+            assertEquals("Every kind of file.", String.valueOf(kinds.getSummary()));
+
+            AlertDialog list = dialogOf(kinds);
+            assertTrue(list.isShowing());
+            assertEquals("What to copy", String.valueOf(shadowOf(list).getTitle()));
+            ListView choices = list.getListView();
+            List<String> labels = new ArrayList<>();
+            for (int i = 0; i < choices.getCount(); i++) {
+                labels.add(String.valueOf(choices.getAdapter().getItem(i)));
+                assertTrue("every kind starts ticked", choices.isItemChecked(i));
+            }
+            assertEquals(Arrays.asList("Documents", "Music", "Photos", "Videos", "Voice messages"), labels);
+
+            shadowOf(list).clickOnItem(1);
+            shadowOf(list).clickOnItem(3);
+            shadowOf(list).clickOnItem(4);
+            assertEquals("a tick alone saves nothing", "", Settings.SAVE_KINDS_LEFT_OUT.savedValue());
+            list.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertFalse(list.isShowing());
+            assertEquals("MUSIC,VIDEOS,VOICE", Settings.SAVE_KINDS_LEFT_OUT.savedValue());
+            assertEquals("Only Documents and Photos. The rest stay in Telegram.", String.valueOf(kinds.getSummary()));
+            assertFalse("ticking kinds leaves the switch alone", Settings.SAVE_DOWNLOADS.savedValue());
+            assertTrue("and owes no restart", AbstractPreferenceFragment.restartPending.isEmpty());
+
+            list = dialogOf(kinds);
+            assertTrue("the saved kinds come back ticked", list.getListView().isItemChecked(0) && list.getListView().isItemChecked(2));
+            assertFalse(list.getListView().isItemChecked(1));
+            shadowOf(list).clickOnItem(0);
+            shadowOf(list).clickOnItem(2);
+            list.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertEquals("Tick at least one kind of file.", ShadowToast.getTextOfLatestToast());
+            assertTrue("nothing ticked keeps the list open", list.isShowing());
+            assertEquals("and saves nothing", "MUSIC,VIDEOS,VOICE", Settings.SAVE_KINDS_LEFT_OUT.savedValue());
+        } finally {
+            Settings.SAVE_KINDS_LEFT_OUT.resetToDefault();
+        }
+    }
+
+    /**
      * The Folder icons row sits with the folder tab rows, says what is picked, lists None and the
      * three packs with the saved one checked, and a pick saves at once and closes the list (#53).
      */

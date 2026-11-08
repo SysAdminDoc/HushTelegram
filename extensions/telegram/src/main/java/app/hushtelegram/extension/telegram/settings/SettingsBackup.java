@@ -47,6 +47,7 @@ import app.hushtelegram.extension.shared.settings.StringSetting;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.FolderIcons;
 import app.hushtelegram.extension.telegram.misc.GalleryFolder;
+import app.hushtelegram.extension.telegram.misc.SaveDownloads;
 import app.hushtelegram.extension.telegram.misc.StorageFolder;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
@@ -252,11 +253,12 @@ public final class SettingsBackup {
 
     /**
      * The short texts a file carries as they're saved: the emoji beside the chat list's title, the
-     * gallery folder choice, the translation language and the name of Telegram's own folder. A build
-     * from before them counts the name as unknown and leaves it out.
+     * gallery folder choice, the translation language, the folder icon pack, the name of Telegram's
+     * own folder and the kinds What to copy leaves out. A build from before them counts the name as
+     * unknown and leaves it out.
      */
     static final List<StringSetting> TEXTS = Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER,
-            Settings.TRANSLATE_TARGET, Settings.FOLDER_ICON_PACK, Settings.STORAGE_FOLDER_NAME);
+            Settings.TRANSLATE_TARGET, Settings.FOLDER_ICON_PACK, Settings.STORAGE_FOLDER_NAME, Settings.SAVE_KINDS_LEFT_OUT);
 
     /**
      * Bounds for the parser, well past anything this class writes, so a file built to be
@@ -687,6 +689,7 @@ public final class SettingsBackup {
         if (setting == Settings.TRANSLATE_TARGET) return TranslateTarget.allowed(value);
         if (setting == Settings.STORAGE_FOLDER_NAME) return StorageFolder.allowedName(value);
         if (setting == Settings.FOLDER_ICON_PACK) return FolderIcons.allowed(value);
+        if (setting == Settings.SAVE_KINDS_LEFT_OUT) return SaveDownloads.allowedLeftOut(value);
         return setting == Settings.TITLE_EMOJI && TitleEmoji.allowed(value);
     }
 

@@ -8,6 +8,7 @@ Every HushTelegram release, newest first.
 ### Added
 
 * **Telegram:** **Add Repeat to the message menu** has a new switch, **Add Save to Gallery to stories**, off by default. A story's three-dot menu gets Telegram's own Save to Gallery without Premium, on stories that don't allow saving too. It saves only the ones you pick.
+* **Telegram:** **Save downloaded files** has a **What to copy** row right under its switch. Tick documents, music, photos, videos or voice messages, and only those kinds get a copy in Download/Telegram. Everything is ticked to start, so nothing changes until you untick something.
 * **Telegram:** **Disable double-tap reactions** has a new switch, **Hide the emoji pack line**, off by default. It takes the line that says a message contains emoji from some pack off the bottom of the long-press menu, along with the gap above it.
 
 ### Changed
@@ -19,6 +20,7 @@ Every HushTelegram release, newest first.
 
 ### Fixed
 
+* **Telegram:** **Import settings** no longer says nothing will change for a file that only picks other folder icons. It lists the change and offers to import it.
 * **Telegram:** **Hide Premium, gifts and Stars** now takes Send a Gift out of the three-dot menu on profiles and channels too. It was still sitting there with the switch on.
 - If you hide a pinned chat and unpin it on another device, the unpin now sticks. Hidden pins also count toward your pin limit here, so you see Telegram's limit message instead of a pin the server would turn down.
 - `Move All Chats`, under the folder tabs settings. It starts off. With it on, an account without Premium can drag All Chats to another place among its folder tabs, and it stays there after a restart. The place is kept on this phone for this account, so your other devices still show All Chats first.

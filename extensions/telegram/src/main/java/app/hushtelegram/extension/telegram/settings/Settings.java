@@ -612,6 +612,16 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_save_timed_media", FALSE);
 
     /**
+     * What to copy: with {@link #SAVE_DOWNLOADS} on, the kinds of files left in Telegram, as
+     * comma-separated {@link app.hushtelegram.extension.telegram.misc.SaveDownloads.Kind} names
+     * (#57). Empty copies every kind, so a kind added later starts ticked. Documents are whatever
+     * isn't a picture, video or sound file. Photos, videos and voice messages only come through the
+     * switches above, and Save to Downloads in the message menu copies any kind.
+     */
+    public static final StringSetting SAVE_KINDS_LEFT_OUT =
+            new StringSetting("hushtelegram_save_kinds_left_out", "");
+
+    /**
      * On Android 11 and up with All files access, Telegram's own Telegram Images, Video, Documents
      * and the rest live in Internal storage/Telegram instead of Android/data (#7). Read once when
      * Telegram sets up its folders, so it needs a restart.

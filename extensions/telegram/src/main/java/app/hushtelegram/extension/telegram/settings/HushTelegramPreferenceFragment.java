@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +97,7 @@ import app.hushtelegram.extension.telegram.misc.KeepDeleted;
 import app.hushtelegram.extension.telegram.misc.KeepEdits;
 import app.hushtelegram.extension.telegram.misc.LaunchFolder;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
+import app.hushtelegram.extension.telegram.misc.SaveDownloads;
 import app.hushtelegram.extension.telegram.misc.StickerSize;
 import app.hushtelegram.extension.telegram.misc.StorageFolder;
 import app.hushtelegram.extension.telegram.misc.TabFit;
@@ -135,6 +137,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String STICKER_SIZE_ROW = "action_sticker_size";
     /** The Gallery folder row's key. The choice itself is saved under {@link Settings#GALLERY_FOLDER}. */
     static final String GALLERY_FOLDER_ROW = "action_gallery_folder";
+    /** The What to copy row's key. The kinds left out are saved under {@link Settings#SAVE_KINDS_LEFT_OUT}. */
+    static final String SAVE_KINDS_ROW = "action_save_kinds";
     /** The Folder to open row's key. The picks are kept by {@link LaunchFolder}, one for each account. */
     static final String LAUNCH_FOLDER_ROW = "action_launch_folder";
     /** The Folder icons row's key. The choice itself is saved under {@link Settings#FOLDER_ICON_PACK}. */
@@ -296,6 +300,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (emoji != null) emoji.setSummary(TitleEmojiEditor.summary(Settings.TITLE_EMOJI.savedValue()));
         Preference gallery = findPreference(GALLERY_FOLDER_ROW);
         if (gallery != null) gallery.setSummary(galleryFolderSummary());
+        Preference kinds = findPreference(SAVE_KINDS_ROW);
+        if (kinds != null) kinds.setSummary(saveKindsSummary());
         Preference storageName = findPreference(StorageFolderEditor.KEY);
         if (storageName != null) storageName.setSummary(StorageFolderEditor.summary(Settings.STORAGE_FOLDER_NAME.savedValue()));
         Preference icons = findPreference(FOLDER_ICON_ROW);
@@ -897,6 +903,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.SAVE_DOWNLOADS.coverageSummary(L10n.t("Each file or song you download also goes to Download/Telegram on your"
                             + " phone, where file managers and other apps can open it. Files from secret chats and chats that don't"
                             + " allow saving stay in Telegram."))));
+            on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(saveKindsRow(context));
             on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(toggle(context, Settings.SAVE_RESTRICTED_DOWNLOADS,
                     L10n.t("Also save from chats that don't allow saving"),
                     L10n.t("With Save downloaded files on, files from chats whose owner turned off saving get copied too. Only use"
@@ -1915,6 +1922,82 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     private void storageFolderNameSaved(Context context, String before) {
         if (noteRestartPending(Settings.STORAGE_FOLDER_NAME, before)) showRestartDialog(context);
         else Utils.showToastShort(L10n.t("Saved."));
+    }
+
+    private static String saveKindLabel(SaveDownloads.Kind kind) {
+        switch (kind) {
+            case DOCUMENTS: return L10n.t("Documents");
+            case MUSIC: return L10n.t("Music");
+            case PHOTOS: return L10n.t("Photos");
+            case VIDEOS: return L10n.t("Videos");
+            default: return L10n.t("Voice messages");
+        }
+    }
+
+    /** The kinds a What to copy value still copies, by name, or every kind when it leaves none out. */
+    static String saveKindsLabel(String leftOut) {
+        Set<SaveDownloads.Kind> out = SaveDownloads.leftOut(leftOut);
+        if (out.isEmpty()) return L10n.t("Every kind");
+        List<String> ticked = new ArrayList<>();
+        for (SaveDownloads.Kind kind : SaveDownloads.Kind.values()) if (!out.contains(kind)) ticked.add(saveKindLabel(kind));
+        return L10n.join(ticked);
+    }
+
+    /** What the What to copy row says: every kind, or the ticked ones by name. */
+    static String saveKindsSummary() {
+        String leftOut = Settings.SAVE_KINDS_LEFT_OUT.savedValue();
+        if (SaveDownloads.leftOut(leftOut).isEmpty()) return L10n.t("Every kind of file.");
+        return L10n.f("Only %1$s. The rest stay in Telegram.", saveKindsLabel(leftOut));
+    }
+
+    /** Which kinds of files Save downloaded files copies (#57): the row names them, and a tap lists them to tick. */
+    private Preference saveKindsRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(SAVE_KINDS_ROW);
+        row.setTitle(L10n.t("What to copy"));
+        row.setPersistent(false);
+        row.setSummary(saveKindsSummary());
+        row.setOnPreferenceClickListener(p -> {
+            showSaveKinds(context, p);
+            return true;
+        });
+        return row;
+    }
+
+    /** The kinds with the copied ones ticked. Save writes the ticks; leaving none ticked is refused. */
+    void showSaveKinds(Context context, Preference row) {
+        if (SettingsLock.refuses()) return;
+        SaveDownloads.Kind[] kinds = SaveDownloads.Kind.values();
+        Set<SaveDownloads.Kind> out = SaveDownloads.leftOut(Settings.SAVE_KINDS_LEFT_OUT.savedValue());
+        CharSequence[] labels = new CharSequence[kinds.length];
+        boolean[] ticked = new boolean[kinds.length];
+        for (int i = 0; i < kinds.length; i++) {
+            labels[i] = saveKindLabel(kinds[i]);
+            ticked[i] = !out.contains(kinds[i]);
+        }
+        AlertDialog dialog = show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("What to copy"))
+                .setMultiChoiceItems(labels, ticked, (d, which, checked) -> ticked[which] = checked)
+                .setPositiveButton(L10n.t("Save"), null)
+                .setNegativeButton(L10n.t("Cancel"), null));
+        if (dialog == null) return;
+        // Set here rather than on the builder, so a tap waits for the save instead of closing the list.
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            boolean any = false;
+            for (boolean tick : ticked) any |= tick;
+            if (!any) {
+                Utils.showToastLong(L10n.t("Tick at least one kind of file."));
+                return;
+            }
+            Set<SaveDownloads.Kind> leftOut = EnumSet.noneOf(SaveDownloads.Kind.class);
+            for (int i = 0; i < kinds.length; i++) if (!ticked[i]) leftOut.add(kinds[i]);
+            String value = SaveDownloads.leftOutValue(leftOut);
+            save(dialog, () -> Settings.SAVE_KINDS_LEFT_OUT.saveCommitted(value), landed -> {
+                row.setSummary(saveKindsSummary());
+                if (landed) dialog.dismiss();
+                else Utils.showToastLong(L10n.t("Couldn't save the kinds. Try again in a moment."));
+            });
+        });
     }
 
     /** Where Save to gallery puts photos and videos: the row names the folders, and a tap lists the others. */

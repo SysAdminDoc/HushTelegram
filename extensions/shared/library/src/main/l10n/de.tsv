@@ -1351,3 +1351,25 @@ Finished	Fertig
 No downloads yet	Noch keine Downloads
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Download manager part of Faster downloads: running downloads one at a time with a list in the side menu
 download manager	der Download-Manager
+# context: Title of the Save downloads row and list that pick which kinds of files get copied to Download/Telegram
+What to copy	Was kopiert wird
+# context: Kind of file in the What to copy list: any file that isn't a picture, video or sound file
+Documents	Dokumente
+# context: Kind of file in the What to copy list: songs and other sound files
+Music	Musik
+# context: Kind of file in the What to copy list
+Photos	Fotos
+# context: Kind of file in the What to copy list
+Videos	Videos
+# context: Kind of file in the What to copy list: view-once and timed voice messages
+Voice messages	Sprachnachrichten
+# context: What to copy row summary when every kind is ticked
+Every kind of file.	Jede Art von Datei.
+# context: What to copy row summary; %1$s is the ticked kinds joined into a list, like "Documents and Music"
+Only %1$s. The rest stay in Telegram.	Nur %1$s. Der Rest bleibt in Telegram.
+# context: Toast when Save is tapped in What to copy with nothing ticked
+Tick at least one kind of file.	Wähle mindestens eine Dateiart aus.
+# context: Toast when the ticked kinds couldn't be written to the phone's storage
+Couldn't save the kinds. Try again in a moment.	Die Dateiarten ließen sich nicht speichern. Versuch es gleich noch einmal.
+# context: In the settings import preview, What to copy leaving no kind of file out, as in "What to copy: Every kind to Documents and Photos"
+Every kind	Alle Arten
