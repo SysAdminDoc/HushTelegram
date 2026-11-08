@@ -34,8 +34,11 @@ import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableFieldReference
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
 import app.morphe.util.names.origReturnType
@@ -64,7 +67,6 @@ private const val ADD_VIEW = "Landroid/view/ViewGroup;->addView(Landroid/view/Vi
 private const val FRAME_INIT = "Landroid/widget/FrameLayout;-><init>(Landroid/content/Context;)V"
 private const val SET_ON_CLICK = "Landroid/view/View;->setOnClickListener(Landroid/view/View\$OnClickListener;)V"
 private const val DOCUMENT = "Lorg/telegram/tgnet/TLRPC\$Document;"
-private val TWO_TEXTS = listOf("Ljava/lang/CharSequence;", "Ljava/lang/CharSequence;")
 
 @Suppress("unused")
 val hideGreetingStickersPatch = bytecodePatch(
@@ -86,16 +88,16 @@ val hideGreetingStickersPatch = bytecodePatch(
 
 /**
  * The greeting's onMeasure, just after it starts ignoring layout requests: [stickers] is the frame
- * the greeting sticker sits in and [introduction] the flag a business introduction or preview sets.
+ * the greeting sticker sits in and [listener] what a tap on that sticker sends it through.
  */
 internal class GreetingStickerSite(val method: MutableMethod, val index: Int, val self: Int,
-    val stickers: FieldReference, val introduction: FieldReference) {
+    val stickers: FieldReference, val listener: FieldReference) {
     fun insert(target: MutableMethod) {
-        val (frame, flag) = target.freeLocalsAt("Hide greeting stickers", index, 2)
+        val (frame, sends) = target.freeLocalsAt("Hide greeting stickers", index, 2)
         target.addInstructions(index, """
             iget-object v$frame, v$self, $stickers
-            iget-boolean v$flag, v$self, $introduction
-            invoke-static {v$frame, v$flag}, $GREETING_STICKERS->measure(Landroid/view/View;Z)V
+            iget-object v$sends, v$self, $listener
+            invoke-static {v$frame, v$sends}, $GREETING_STICKERS->measure(Landroid/view/View;Ljava/lang/Object;)V
         """)
     }
 }
@@ -104,14 +106,15 @@ internal class GreetingStickerSite(val method: MutableMethod, val index: Int, va
  * Telegram's empty-chat greeting (ChatGreetingsView, renamed in every build) is the one
  * LinearLayout that asks MediaDataController for the greeting sticker both when it is made and when
  * it is attached. Its sticker frame is written once, in the constructor, and read once, where the
- * plain greeting adds it under its text; the Premium and paid-message notice adds other views
- * instead. The frame holds only the view setSticker loads and makes tappable, plus its stand-in of
- * the same kind. Its introduction flag is raised only by the method that shows a business
- * introduction or a preview, and read only by onMeasure, which every greeting subclass runs.
+ * greeting adds it under its text, a business introduction's included; the Premium and
+ * paid-message notice adds other views instead. The frame holds only the view setSticker loads and
+ * makes tappable, plus its stand-in of the same kind. A tap hands the sticker to the greeting's
+ * listener, which a chat sets as soon as it makes the greeting and the business introduction
+ * editor's own preview never does.
  */
 internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite {
     requireStatusMethod("hideGreetingStickers")
-    controlHook(GREETING_STICKERS, "measure", listOf("Landroid/view/View;", "Z"), "V")
+    controlHook(GREETING_STICKERS, "measure", listOf("Landroid/view/View;", "Ljava/lang/Object;"), "V")
 
     val owners = mutableListOf<ClassDef>()
     classDefForEach { cls ->
@@ -173,38 +176,33 @@ internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite
     val requestLayout = owner.methods.filter { it.origName == "requestLayout" && it.parameterTypes.isEmpty() }.controlSingle("greeting requestLayout")
     controlShape(requestLayout.controlBody().firstOrNull()?.controlRef() == quietKey, "the greeting no longer ignores layout requests while measuring")
 
-    // The introduction flag: set true by one (CharSequence, CharSequence) method, read only here.
-    val introductions = owner.fields.filter { field -> field.origType == "Z" && !AccessFlags.STATIC.isSet(field.accessFlags) &&
-        "${owner.type}->${field.name}:Z".let { key -> owner.methods.any { m -> m.origParameterTypes ==
-            listOf("Ljava/lang/CharSequence;", "Ljava/lang/CharSequence;") && m.controlBody().any { it.opcode == Opcode.IPUT_BOOLEAN && it.controlRef() == key } } &&
-            body.any { it.opcode == Opcode.IGET_BOOLEAN && it.controlRef() == key } } }
-    val introduction = introductions.controlSingle("greeting introduction flag")
-    val introductionKey = "${owner.type}->${introduction.name}:Z"
-    controlShape(readers(introductionKey).keys.all { it.origDefiningClass == owner.origType && it.origName == "onMeasure" },
-        "the introduction flag is read outside the greeting's onMeasure")
-
-    // Every write raises the flag to true in that one setter, and every greeting subclass that
-    // measures itself runs the greeting's own pass, so the hook sees every measure.
-    val raisers = mutableSetOf<String>()
-    var loweredOrElsewhere = false
-    var measuresAlone = false
-    val ownMeasure = "${owner.type}->onMeasure(II)V"
-    forEachClassMentioning(Mention.reference(introductionKey)) { cls ->
+    // The listener: the one field a tap reads and hands the sticker to. Telegram's chat sets it right
+    // after making the greeting, for the plain greeting and a business introduction alike, while the
+    // introduction editor's preview of your own greeting never does. A preview flag can't tell those
+    // apart: a business introduction in a chat raises it too.
+    val listeners = owner.fields.filter { field -> !AccessFlags.STATIC.isSet(field.accessFlags) && field.type.startsWith("L") &&
+        !field.origType.startsWith("Landroid/") && !field.origType.startsWith("Ljava/") && field.origType != DOCUMENT &&
+        readers("${owner.type}->${field.name}:${field.type}").any { (m, reads) -> val b = m.controlBody(); reads.any { b.handsTheSticker(it, field.type) } } }
+    val listener = listeners.controlSingle("greeting sticker listener")
+    val listenerKey = "${owner.type}->${listener.name}:${listener.type}"
+    // Set only by the greeting's one setter that takes it, so a set listener is the chat's.
+    val setters = mutableListOf<Method>()
+    var setElsewhere = false
+    forEachClassMentioning(Mention.reference(listenerKey)) { cls ->
         if (cls.origType.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
         cls.methods.forEach { m ->
-            val b = m.controlBody()
-            b.indices.filter { b[it].opcode == Opcode.IPUT_BOOLEAN && b[it].controlRef() == introductionKey }.forEach { i ->
-                val one = b.getOrNull(i - 1)
-                val raised = one?.opcode == Opcode.CONST_4 && (one as NarrowLiteralInstruction).narrowLiteral == 1 &&
-                    one.namedRegisters().first() == b[i].namedRegisters().first()
-                if (raised && m.origDefiningClass == owner.origType && m.origParameterTypes == TWO_TEXTS) {
-                    raisers += "${m.name}(${m.parameterTypes.joinToString("")})"
-                } else loweredOrElsewhere = true
-            }
+            if (m.controlBody().none { it.opcode == Opcode.IPUT_OBJECT && it.controlRef() == listenerKey }) return@forEach
+            if (m.origDefiningClass == owner.origType && !AccessFlags.STATIC.isSet(m.accessFlags) &&
+                m.parameterTypes.map { it.toString() } == listOf(listener.type)) setters += m else setElsewhere = true
         }
     }
-    // A subclass that skips the greeting's pass names nothing to search for, so every class is
+    controlShape(!setElsewhere && setters.size == 1, "the greeting's sticker listener is set somewhere new")
+
+    // Every greeting subclass that measures itself runs the greeting's own pass, so the hook sees
+    // every measure. A subclass that skips that pass names nothing to search for, so every class is
     // checked by its superclass and only the subclasses' code is read.
+    var measuresAlone = false
+    val ownMeasure = "${owner.type}->onMeasure(II)V"
     classDefForEach { cls ->
         if (cls.origType.startsWith("Lapp/hushtelegram/") || cls.origSuperclass != owner.origType) return@classDefForEach
         cls.methods.forEach { m ->
@@ -212,15 +210,30 @@ internal fun BytecodePatchContext.resolveGreetingStickers(): GreetingStickerSite
                 m.controlBody().none { it.opcode == Opcode.INVOKE_SUPER && it.controlRef() == ownMeasure }) measuresAlone = true
         }
     }
-    controlShape(!loweredOrElsewhere && raisers.size == 1, "the introduction flag is set somewhere new or to another value")
     controlShape(!measuresAlone, "a greeting subclass measures without the greeting's own pass")
     val flow = ControlFlow.of(measure)
     controlShape(flow.normal.indices.none { it != 1 && 2 in flow.normal[it] } && flow.exceptional.none { 2 in it },
         "a jump lands where the hook goes")
 
     val frameRef = layoutBody[frameRead].controlField()!!
-    val flagRef = body.first { it.opcode == Opcode.IGET_BOOLEAN && it.controlRef() == introductionKey }.controlField()!!
-    return GreetingStickerSite(measure, 2, self, frameRef, flagRef)
+    return GreetingStickerSite(measure, 2, self, frameRef, ImmutableFieldReference(owner.type, listener.name, listener.type))
+}
+
+/**
+ * Whether the read at [at] fetches a [type] listener that, within the next few instructions, is
+ * handed a sticker through its one (Document) method: the tap's "if (listener != null)
+ * listener.onGreetings(sticker)".
+ */
+private fun List<Instruction>.handsTheSticker(at: Int, type: String): Boolean {
+    if (this[at].opcode != Opcode.IGET_OBJECT) return false
+    val held = this[at].namedRegisters().first()
+    for (next in at + 1 until minOf(size, at + 5)) {
+        val call = (this[next] as? ReferenceInstruction)?.reference as? MethodReference
+        if (this[next].opcode == Opcode.INVOKE_INTERFACE && call != null && call.definingClass == type &&
+            call.controlShape(listOf(DOCUMENT), "V") && this[next].namedRegisters().first() == held) return true
+        if (this[next].opcode.setsRegister() && this[next].namedRegisters().first() == held) return false
+    }
+    return false
 }
 
 private fun BytecodePatchContext.readers(key: String): Map<Method, List<Int>> {

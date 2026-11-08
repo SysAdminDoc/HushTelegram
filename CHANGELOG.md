@@ -53,6 +53,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** **Keep deleted messages** now saves a kept photo, and any kept file or video up to 20 MB, the moment the sender deletes it. Before, a photo you hadn't opened yet just spun forever, because Telegram can't fetch a deleted message's file later. (#2)
 * **Telegram:** **Disable update checks** now hides the Update Telegram bar even when Telegram found the update before you turned the switch on. The bar used to stay, since Telegram only forgets an update when a later check comes back empty. (#60)
 * **Telegram:** With **Keep Telegram's files in internal storage** on, the photos and videos Telegram downloads no longer fill up the phone's gallery. The folder now gets a .nomedia file, so the gallery only shows what you save to it yourself. (#60)
+* **Telegram:** **Hide greeting stickers** now also hides the custom sticker a Premium or Business user picks for their intro, the one you see when you open an empty chat with them. Only the preview of your own intro, while you edit it, keeps its sticker. (#56)
 
 ## 0.0.23 (2026-10-31)
 

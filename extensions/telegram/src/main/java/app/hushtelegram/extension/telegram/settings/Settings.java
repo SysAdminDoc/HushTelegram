@@ -117,8 +117,9 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_hide_contacts_block", FALSE);
 
     /**
-     * The sticker an empty private chat offers to send as a greeting only; the empty chat's text,
-     * business introductions, Premium and paid-message notices and the sticker picker stay stock.
+     * The sticker an empty private chat offers to send as a greeting only, a business
+     * introduction's included; the empty chat's text, the introduction editor's preview, Premium
+     * and paid-message notices and the sticker picker stay stock.
      */
     public static final BooleanSetting HIDE_GREETING_STICKERS =
             new BooleanSetting("hushtelegram_hide_greeting_stickers", FALSE);
