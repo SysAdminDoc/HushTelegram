@@ -3050,7 +3050,7 @@
     },
     {
       "name": "Show user and chat IDs",
-      "description": "Adds a copyable ID number for a user or chat to the profile menu. A second switch also shows where the profile photo is stored. Both start off. Turn them on in HushTelegram settings > Look and feel.",
+      "description": "Adds a copyable ID number for a user or chat to the profile menu. A second switch also shows where the profile photo is stored. A third, Special contacts, adds Track this user to a person's profile menu and keeps a history of their status and profile changes on this phone. All three start off. Turn them on in HushTelegram settings > Look and feel.",
       "category": "Interface",
       "use": true,
       "dependencies": [

@@ -43,7 +43,9 @@ internal const val LOCAL_ID_ROW = 0x48544944
 val showLocalIdsPatch = bytecodePatch(
     name = "Show user and chat IDs",
     description = "Adds a copyable ID number for a user or chat to the profile menu. A second switch also shows where " +
-        "the profile photo is stored. Both start off. Turn them on in HushTelegram settings > Look and feel.",
+        "the profile photo is stored. A third, Special contacts, adds Track this user to a person's profile menu and keeps " +
+        "a history of their status and profile changes on this phone. All three start off. Turn them on in HushTelegram " +
+        "settings > Look and feel.",
     default = true,
 ) {
     category("Interface")
@@ -52,6 +54,8 @@ val showLocalIdsPatch = bytecodePatch(
     execute {
         val plan = resolveLocalIds()
         resolveProfileDc()
+        // Special contacts is optional: found before anything changes, put in after the rest.
+        val (special, specialMissing) = resolveSpecialContacts()
         plan.insert(MutableMethod(ImmutableMethod.of(plan.method)))
         val runtime = tgMutableClassDefBy(LOCAL_IDS)
         // Compile both bridges before changing any host method, runtime body or build flag.
@@ -67,6 +71,12 @@ val showLocalIdsPatch = bytecodePatch(
         writeProfileDc()
         plan.insert(plan.method)
         enableCapability("profileLocalIds")
+        if (special != null) {
+            special.applyTo()
+            enableCapability("specialContacts")
+        } else {
+            patchLog.warning("Show user and chat IDs: $specialMissing. The patch goes on without Special contacts.")
+        }
         enableStatus("showLocalIds")
     }
 }

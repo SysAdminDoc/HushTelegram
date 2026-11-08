@@ -112,8 +112,11 @@ class LocalControlsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val context = context(build)
             val plan = context.resolveLocalIds()
+            // Special contacts' two hooks go in with the IDs; SpecialContactsFixtureTest holds them to the stock code.
+            val special = context.resolveSpecialContacts().first!!
+            val hooked = setOf(plan.method, special.putUser, special.updates)
             val stock = ImmutableMethod.of(plan.method)
-            val untouched = hostState(build, context, setOf(plan.method))
+            val untouched = hostState(build, context, hooked)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { showLocalIdsPatch.execute(context) })
             assertStock(build.name, stock, plan.method, plan.index, 5)
             val inserted = plan.method.controlBody().subList(plan.index, plan.index + 5)
@@ -132,9 +135,26 @@ class LocalControlsFixtureTest {
             assertEquals(plan.dismiss.toString(), dismiss[1].controlRef())
             assertFalse((inserted + add + dismiss).any { it.controlRef()?.contains("access_hash") == true || it.call()?.origName == "sendRequest" })
             assertEquals("${build.name}: local row leaves all server, opening and stock menu methods intact", untouched,
-                hostState(build, context, setOf(plan.method)))
-            flags(context, ID_FLAGS, true)
+                hostState(build, context, hooked))
+            assertEquals("$SPECIAL_CONTACTS->user(Ljava/lang/Object;Ljava/lang/Object;I)V", special.putUser.controlBody().first().controlRef())
+            assertEquals("$SPECIAL_CONTACTS->updates(Ljava/lang/Object;Ljava/lang/Object;)V", special.updates.controlBody().first().controlRef())
+            flags(context, ID_FLAGS + "specialContacts", true)
             flags(context, PASTE_FLAGS + REACTION_FLAGS, false)
+        }
+    }
+
+    @Test fun `profile IDs go in without Special contacts when its hooks have nowhere to go`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = context(build)
+            val putUser = context.resolveSpecialContacts().first!!.putUser
+            val stock = putUser.controlBody().map { it.operand() }
+            context.tgMutableClassDefBy(SC_CONTROLLER).methods.removeAll { it.origName == "processUpdateArray" }
+            val warnings = PatchLogCapture.warnings { showLocalIdsPatch.execute(context) }
+            assertEquals("${build.name}: $warnings", 1, warnings.size)
+            assertTrue("${build.name}: $warnings", "processUpdateArray" in warnings.single() && "without Special contacts" in warnings.single())
+            assertEquals("${build.name}: putUser keeps its stock code", stock, putUser.controlBody().map { it.operand() })
+            flags(context, ID_FLAGS, true)
+            flags(context, listOf("specialContacts"), false)
         }
     }
 
@@ -158,7 +178,7 @@ class LocalControlsFixtureTest {
             assertEquals(1, after.count { it.controlRef() == "$LOCAL_IDS->addToProfile(Landroid/view/View;JJ)V" })
             assertEquals("${build.name}: the stock visibility refresh still ends the builder", stock.takeLast(3).map { it.opcode },
                 after.takeLast(3).map { it.opcode })
-            flags(context, ID_FLAGS + "commerceProfileSendGram", true)
+            flags(context, ID_FLAGS + "specialContacts" + "commerceProfileSendGram", true)
         }
     }
 
