@@ -77,6 +77,8 @@ internal class SelectBetweenSites(
     private val barGetter: String = "",
     private val menuRef: String = "",
     private val addRef: String = "",
+    /** The stub's registers (menu, ID, icon, label, width) in the add call's parameter order. */
+    private val addArgs: String = "p0, p1, p2, p3, p4",
 ) {
     /** The same edits on copies, so a smali problem refuses before the app is touched. */
     fun rehearse() = edit { MutableMethod(ImmutableMethod.of(it)) }
@@ -140,7 +142,7 @@ internal class SelectBetweenSites(
         """)
         writeStub(SELECT_BETWEEN, "addMenuItem", 5, """
             check-cast p0, ${menuRef.substringAfter(")")}
-            invoke-virtual {p0, p1, p2, p3, p4}, $addRef
+            invoke-virtual {$addArgs}, $addRef
             return-void
         """)
         writeStub(SELECT_BETWEEN, "icon", 1, "sget v0, $DRAWABLES->msg_select:I\nreturn v0")
@@ -212,10 +214,14 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
     controlShape(barRead >= 0 && menuCall?.opcode == Opcode.INVOKE_VIRTUAL && menuMethod != null &&
         menuMethod.origParameterTypes == listOf(STRING) && menuMethod.origReturnType.startsWith("L"),
         "the selection bar's menu is no longer taken from the action bar")
-    val adds = body.mapNotNull { it.call() }.filter {
-        it.origDefiningClass == menuMethod!!.origReturnType && it.origParameterTypes == listOf("I", "I", STRING, "I")
-    }.map { it.toString() }.distinct()
+    // ID, icon, label, width; Play's 13.2 build takes the width before the label.
+    val addShapes = listOf(listOf("I", "I", STRING, "I"), listOf("I", "I", "I", STRING))
+    val addCalls = body.mapNotNull { it.call() }.filter {
+        it.origDefiningClass == menuMethod!!.origReturnType && it.origParameterTypes in addShapes
+    }.distinctBy { it.toString() }
+    val adds = addCalls.map { it.toString() }
     controlShape(adds.size == 1, "the selection bar's buttons are no longer added through one call")
+    val addArgs = if (addCalls.single().origParameterTypes[2] == STRING) "p0, p1, p2, p3, p4" else "p0, p1, p2, p4, p3"
     // The field is protected, so the extension goes through the screen's public getter.
     val barFieldRef = body[barRead].controlField()!!
     val barGetter = tgMutableClassDefBy(barFieldRef.definingClass).methods.filter { m ->
@@ -301,7 +307,7 @@ private fun BytecodePatchContext.selectBetween(chat: String): SelectBetweenSites
     val adapterRef = "$chat->${adapterField.name}:${adapterField.type}"
     controlShape(adapterType == adapterField.origType, "the chat's list adapter changed")
     return SelectBetweenSites(null, chat, create, at, click, handlerType, ownerField, selectMethod, wrapper.toString(), selectedField,
-        adapterRef, getterRef, barGetter, menuMethod.toString(), adds.single())
+        adapterRef, getterRef, barGetter, menuMethod.toString(), adds.single(), addArgs)
 }
 
 /** Whether this is the adapter's getter: the frozen list, the filtered list, then the chat's full list. */

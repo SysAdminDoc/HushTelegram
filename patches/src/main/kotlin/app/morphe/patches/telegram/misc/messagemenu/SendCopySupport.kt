@@ -25,6 +25,29 @@ internal class CopySend(val method: Method, val sources: Map<Int, String>, val l
 private fun Method.types() = origParameterTypes
 private fun Method.callable() = AccessFlags.PUBLIC.isSet(accessFlags) && AccessFlags.STATIC.isSet(accessFlags)
 
+/** A send's parameter count, the types at the positions it's checked by, and what the stub fills in. */
+private class CopyShape(val size: Int, val types: Map<Int, String>, val sources: Map<Int, String>, val literals: Map<Int, Int>)
+
+// Stub registers: p0 account, p1/p2 chat, then the strings in order. Each send lists the 13.1 shape,
+// then 13.2's, where R8 dropped the parameters every caller filled the same way (the text send's
+// overload without a topic is folded into the one with it, and the photo send goes to the full one).
+private val TEXT_SHAPES = listOf(
+    CopyShape(7, mapOf(1 to COPY_TEXT_TYPE, 2 to "J", 3 to "Z", 4 to "I", 5 to "I", 6 to "J"), mapOf(1 to "p3", 2 to "p1"), mapOf(3 to 1)),
+    CopyShape(7, mapOf(1 to COPY_TEXT_TYPE, 2 to "J", 3 to "J", 4 to "Z", 5 to "I", 6 to "I"), mapOf(1 to "p3", 2 to "p1"), mapOf(4 to 1)),
+)
+private val PHOTO_SHAPES = listOf(
+    CopyShape(17, mapOf(1 to COPY_STRING, 3 to "J", 7 to COPY_TEXT_TYPE, 11 to "I", 13 to "Z", 14 to "I", 15 to "I"),
+        mapOf(1 to "p3", 3 to "p1", 7 to "p4"), mapOf(13 to 1)),
+    CopyShape(23, mapOf(1 to COPY_STRING, 2 to COPY_STRING, 4 to "J", 11 to "I", 14 to "Z", 15 to "I", 16 to "Z", 17 to COPY_TEXT_TYPE),
+        mapOf(1 to "p3", 4 to "p1", 17 to "p4"), mapOf(14 to 1)),
+)
+private val DOCUMENT_SHAPES = listOf(
+    CopyShape(17, mapOf(1 to COPY_STRING, 2 to COPY_STRING, 4 to COPY_STRING, 5 to COPY_STRING, 6 to "J", 12 to "Z", 13 to "I"),
+        mapOf(1 to "p3", 2 to "p3", 4 to "p5", 5 to "p4", 6 to "p1"), mapOf(12 to 1)),
+    CopyShape(14, mapOf(1 to COPY_STRING, 2 to COPY_STRING, 4 to COPY_STRING, 5 to COPY_STRING, 6 to "J", 11 to "Z"),
+        mapOf(1 to "p3", 2 to "p3", 4 to "p5", 5 to "p4", 6 to "p1"), mapOf(11 to 1)),
+)
+
 /**
  * The three sends Forward as copy makes (text, a photo and a document), found by name and by the
  * types at the positions the call fills, so a renamed or reshaped send leaves the item out instead
@@ -32,25 +55,21 @@ private fun Method.callable() = AccessFlags.PUBLIC.isSet(accessFlags) && AccessF
  */
 internal fun BytecodePatchContext.resolveCopySends(): Triple<CopySend, CopySend, CopySend>? {
     val methods = tgClassDefByOrNull(COPY_SEND_HELPER)?.methods?.toList() ?: return null
-    fun find(name: String, size: Int, shape: Map<Int, String>) = methods.filter { m ->
-        m.origName == name && m.callable() && m.types().size == size && shape.all { (i, t) -> m.types()[i] == t }
+    fun find(name: String, shapes: List<CopyShape>) = methods.flatMap { m ->
+        shapes.filter { s -> m.origName == name && m.callable() && m.types().size == s.size && s.types.all { (i, t) -> m.types()[i] == t } }
+            .map { s -> CopySend(m, s.sources, s.literals) }
     }.singleOrNull()
-    val text = find("prepareSendingText", 7, mapOf(1 to COPY_TEXT_TYPE, 2 to "J", 3 to "Z", 4 to "I", 5 to "I", 6 to "J"))
-    val photo = find("prepareSendingPhoto", 17, mapOf(1 to COPY_STRING, 3 to "J", 7 to COPY_TEXT_TYPE, 11 to "I", 13 to "Z", 14 to "I", 15 to "I"))
-    val document = find("prepareSendingDocument", 17, mapOf(1 to COPY_STRING, 2 to COPY_STRING, 4 to COPY_STRING, 5 to COPY_STRING, 6 to "J", 12 to "Z", 13 to "I"))
+    val text = find("prepareSendingText", TEXT_SHAPES)
+    val photo = find("prepareSendingPhoto", PHOTO_SHAPES)
+    val document = find("prepareSendingDocument", DOCUMENT_SHAPES)
     if (text == null || photo == null || document == null) return null
     // The first argument is the account's holder, made with its own getInstance(I).
-    val holder = listOf(text, photo, document).map { it.types()[0] }.toSet().singleOrNull() ?: return null
+    val holder = listOf(text, photo, document).map { it.method.types()[0] }.toSet().singleOrNull() ?: return null
     val made = tgClassDefByOrNull(holder)?.methods?.any {
         it.origName == "getInstance" && AccessFlags.STATIC.isSet(it.accessFlags) && it.types() == listOf("I") && it.origReturnType == holder
     } ?: false
     if (!made) return null
-    // Stub registers: p0 account, p1/p2 chat, then the strings in order.
-    return Triple(
-        CopySend(text, mapOf(1 to "p3", 2 to "p1"), mapOf(3 to 1)),
-        CopySend(photo, mapOf(1 to "p3", 3 to "p1", 7 to "p4"), mapOf(13 to 1)),
-        CopySend(document, mapOf(1 to "p3", 2 to "p3", 4 to "p5", 5 to "p4", 6 to "p1"), mapOf(12 to 1)),
-    )
+    return Triple(text, photo, document)
 }
 
 /** The call's smali and the register count it needs, with the account's holder as argument 0. */

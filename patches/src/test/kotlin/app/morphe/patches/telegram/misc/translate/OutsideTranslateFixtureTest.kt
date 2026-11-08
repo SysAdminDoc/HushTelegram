@@ -23,7 +23,7 @@ import app.morphe.patches.telegram.misc.messagemenu.CHOSEN
 import app.morphe.patches.telegram.misc.messagemenu.FILL
 import app.morphe.patches.telegram.misc.messagemenu.isSelectionCanCopy
 import app.morphe.patches.telegram.misc.messagemenu.messageMenuPatch
-import app.morphe.patches.telegram.misc.messagemenu.selectBetweenHosts
+import app.morphe.patches.telegram.misc.messagemenu.MessageMenuFixtureTest
 import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
 import app.morphe.util.superclassChain
@@ -44,6 +44,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import app.morphe.util.names.origName
+import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origReturnType
 import app.morphe.util.names.tgClassDefByOrNull
 import app.morphe.util.names.tgMutableClassDefBy
@@ -76,11 +77,12 @@ class OutsideTranslateFixtureTest {
     private fun hosts(build: File, neighbours: Boolean = false): List<ClassDef> {
         val found = FixtureDex.classesWhere(build, { true }) { m ->
             val params = m.parameterTypes.map(CharSequence::toString)
-            params == listOf("Lorg/telegram/messenger/MessageObject;", list, list, list) && m.controlBody().any { it.controlRef() == "Lorg/telegram/messenger/R\$string;->Forward:I" } ||
+            m.origParameterTypes == listOf("Lorg/telegram/messenger/MessageObject;", list, list, list) && m.controlBody().any { it.controlRef() == "Lorg/telegram/messenger/R\$string;->Forward:I" } ||
                 params == listOf("I") && m.origReturnType == "V" && m.controlBody().any { it.controlRef() == "Lorg/telegram/messenger/TranslateController;->toggleTranslatingDialog(JZ)Z" } ||
                 params.size == 3 && params[0] == "I" && params[1] == "I" && params[2] in setOf("Ljava/lang/String;", "Ljava/lang/CharSequence;") &&
                 m.origReturnType.startsWith("Lorg/telegram/ui/ActionBar/") ||
                 neighbours && (AccessFlags.STATIC.isSet(m.accessFlags) && params == listOf("I", "I", list, list) && m.origReturnType == "V" ||
+                    AccessFlags.STATIC.isSet(m.accessFlags) && params == listOf("I", list, "I", list, "I") && m.origReturnType == "Ljava/lang/Integer;" ||
                     m.origName == "getParentActivity" && params.isEmpty() || m.isSelectionCanCopy() ||
                     m.controlBody().map { it.controlRef() }.let { IS_PREMIUM in it && FORWARDS in it && NAME_HIDE in it })
         }
@@ -98,7 +100,8 @@ class OutsideTranslateFixtureTest {
             next = loaded.mapNotNull { it.superclass }.filter { it.startsWith("Lorg/telegram/") }.toSet() - bases.map { it.type }.toSet()
         }
         val base = (FixtureDex.classes(build, types).values + found + bases).distinctBy { it.type }.map(ImmutableClassDef::of)
-        return if (neighbours) base + selectBetweenHosts(build, base) else base
+        // The message menu reads its tools' and story save's classes too, so the neighbours take its whole slice.
+        return if (neighbours) (base + MessageMenuFixtureTest().hosts(build)).distinctBy { it.type } else base
     }
 
     @Test fun `each site calls the extension first and Telegram's own code follows unchanged`() {
@@ -106,10 +109,13 @@ class OutsideTranslateFixtureTest {
             val name = build.name
             val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
             val site = context.resolveOutsideTranslate()
-            // 13.1.0's R8 gave both builds the same wrapper and menu names (13.0.3's web build had w0 and y0).
-            val itemType = "Lorg/telegram/ui/ActionBar/v0;"
-            val menuType = "Lorg/telegram/ui/ActionBar/x0;"
-            assertEquals("$name: the stock lazy item adder", "$menuType->u(IILjava/lang/String;)$itemType", site.lazyAdd.toString())
+            // 13.1's R8 gave both builds the same wrapper and menu names (v0, x0 and u); 13.2's builds differ.
+            val (itemType, menuType, adder) = when {
+                name.contains("-72809") -> Triple("Lorg/telegram/ui/ActionBar/p0;", "Lorg/telegram/ui/ActionBar/r0;", "z")
+                name.contains("-72911") -> Triple("Lorg/telegram/ui/ActionBar/r0;", "Lorg/telegram/ui/ActionBar/t0;", "z")
+                else -> Triple("Lorg/telegram/ui/ActionBar/v0;", "Lorg/telegram/ui/ActionBar/x0;", "u")
+            }
+            assertEquals("$name: the stock lazy item adder", "$menuType->$adder(IILjava/lang/String;)$itemType", site.lazyAdd.toString())
             assertEquals("$name: the wrapper's renamed text setter", "$itemType->d(Ljava/lang/CharSequence;)V", site.setHeaderText.toString())
             assertEquals("$name: the stock Translate item uses the same wrapper", itemType, site.translateItem.type)
             val oldUpdate = ImmutableMethod.of(site.update)
@@ -182,7 +188,8 @@ class OutsideTranslateFixtureTest {
                 .flatMap { stub(it) }.mapNotNull { it.controlRef() }
             assertFalse("$name: Telegram's Premium and availability stay untouched",
                 everything.any { it.contains("isFeatureAvailable") || it.contains("isPremium") || it.contains("setHideTranslateDialog") || it.contains("toggleTranslatingDialog") })
-            assertTrue("$name: the selected message", stub("selected").any { it.controlRef() == site.selected.toString() })
+            // Build names on both sides: the site holds the build's own field reference.
+            assertTrue("$name: the selected message", stub("selected").any { (it as? ReferenceInstruction)?.reference?.toString() == site.selected.toString() })
             assertTrue("$name: Telegram's content check", stub("translatable").any { it.controlRef() == "Lorg/telegram/messenger/TranslateController;->isTranslatable(Lorg/telegram/messenger/MessageObject;)Z" })
             assertTrue("$name: the translation goes in Telegram's fields", stub("applyTranslated").any { it.controlRef() == "Lorg/telegram/tgnet/TLRPC\$Message;->translatedText:Lorg/telegram/tgnet/TLRPC\$TL_textWithEntities;" })
             assertTrue("$name: the flag is set", stub("applyTranslated").any { it.opcode == Opcode.IPUT_BOOLEAN && it.controlRef() == "Lorg/telegram/messenger/MessageObject;->translated:Z" })

@@ -40,10 +40,12 @@ class StorySaveFixtureTest {
                 val invoke = after[at] as RegisterRangeInstruction
                 assertEquals(build.name, Opcode.INVOKE_STATIC_RANGE, after[at].opcode)
                 assertEquals(build.name, 1, invoke.registerCount)
+                // 13.2 loads the item's label between the Premium answer and its branch.
+                val branch = at + if (after[at + 2].controlRef() == "Lorg/telegram/messenger/R\$string;->SaveToGallery:I") 3 else 2
                 assertEquals(build.name, Opcode.MOVE_RESULT, after[at + 1].opcode)
-                assertEquals(build.name, Opcode.IF_EQZ, after[at + 2].opcode)
+                assertEquals(build.name, Opcode.IF_EQZ, after[branch].opcode)
                 assertEquals(build.name, invoke.startRegister, (after[at + 1] as OneRegisterInstruction).registerA)
-                assertEquals(build.name, invoke.startRegister, (after[at + 2] as OneRegisterInstruction).registerA)
+                assertEquals(build.name, invoke.startRegister, (after[branch] as OneRegisterInstruction).registerA)
                 assertEquals(build.name, invoke.startRegister, (after[at - 1] as OneRegisterInstruction).registerA)
             }
             val without = after.indices.filter { it !in hooks && (it - 1) !in hooks }.map { operand(after[it]) }

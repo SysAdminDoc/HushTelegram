@@ -86,9 +86,14 @@ class SelectBetweenFixtureTest {
             val stub = { n: String -> context.tgMutableClassDefBy(SELECT_BETWEEN).methods.single { it.origName == n }.controlBody() }
             assertTrue("$name: the selected messages", stub("selected").any { it.opcode == Opcode.IGET_OBJECT && it.controlField()?.origType == "[Landroid/util/SparseArray;" })
             assertTrue("$name: Telegram's list getter", stub("messages").any { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef()?.endsWith(")Ljava/util/ArrayList;") == true })
-            assertEquals("$name: the chat's select method", wrapper.toString(), stub("pick").single { it.opcode == Opcode.INVOKE_VIRTUAL }.controlRef())
+            assertEquals("$name: the chat's select method", wrapper.origString(), stub("pick").single { it.opcode == Opcode.INVOKE_VIRTUAL }.controlRef())
             assertTrue("$name: the bar's menu", stub("menu").any { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef()?.contains("(Ljava/lang/String;)") == true })
-            assertTrue("$name: the add call", stub("addMenuItem").any { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef()?.contains("(IILjava/lang/String;I)") == true })
+            // The label and the width land in their own slots whichever order the build takes them in (Play's 13.2 has the width first).
+            val add = stub("addMenuItem").single { it.opcode == Opcode.INVOKE_VIRTUAL }
+            val addDesc = add.controlRef()!!.substringAfter("(").substringBefore(")")
+            assertTrue("$name: the add call $addDesc", addDesc in setOf("IILjava/lang/String;I", "IIILjava/lang/String;"))
+            assertEquals("$name: menu, ID, icon, label, width", if (addDesc == "IILjava/lang/String;I") listOf(0, 1, 2, 3, 4) else listOf(0, 1, 2, 4, 3),
+                add.namedRegisters())
             assertEquals("Lorg/telegram/messenger/R\$drawable;->msg_select:I", stub("icon").first().controlRef())
             assertEquals("Lorg/telegram/messenger/MessageObject;->getId()I", stub("messageId").single { it.opcode == Opcode.INVOKE_VIRTUAL }.controlRef())
             assertEquals("Lorg/telegram/messenger/MessageObject;->contentType:I", stub("contentType").single { it.opcode == Opcode.IGET }.controlRef())

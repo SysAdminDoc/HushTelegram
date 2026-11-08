@@ -57,27 +57,37 @@ private fun MutableMethod.ask(read: Int, hook: String) {
 private fun Method.storySaveChecks(): StorySaveChecks? {
     val code = implementation?.instructions?.toList() ?: return null
     // The locked copy of the item has the same icon and label, so the reads in front tell them apart.
-    return code.indices.filter { at ->
-        code[at].controlRef() == SAVE_ICON && code.getOrNull(at + 1)?.controlRef() == SAVE_LABEL
-    }.mapNotNull { code.storySaveChecksAt(it) }.singleOrNull()
+    // 13.1.1 loads the icon and the label right after the Premium branch. 13.2 loads the label once,
+    // between the Premium answer and its branch, for both copies, and the icon after the branch.
+    return code.indices.filter { code[it].controlRef() == SAVE_LABEL }.mapNotNull { at ->
+        when {
+            code.getOrNull(at - 1)?.controlRef() == SAVE_ICON -> code.storySaveChecksAt(at - 2, at - 3)
+            code.getOrNull(at + 1)?.opcode == Opcode.IF_EQZ && code.drop(at + 2).any { it.controlRef() == SAVE_ICON } &&
+                (code[at] as? OneRegisterInstruction)?.registerA != (code[at + 1] as OneRegisterInstruction).registerA ->
+                code.storySaveChecksAt(at + 1, at - 1)
+            else -> null
+        }
+    }.singleOrNull()
 }
 
-private fun List<Instruction>.storySaveChecksAt(at: Int): StorySaveChecks? {
-    if (at < 10) return null
+/** The Premium branch at [branch] tests the answer moved in at [answered], with the share and live checks before it. */
+private fun List<Instruction>.storySaveChecksAt(branch: Int, answered: Int): StorySaveChecks? {
+    val at = answered
+    if (at < 8) return null
     val code = this
-    val answer = (code[at - 2] as? OneRegisterInstruction)?.registerA ?: return null
-    val shared = (code[at - 10] as? OneRegisterInstruction)?.registerA ?: return null
-    val shape = code[at - 1].opcode == Opcode.IF_EQZ && (code[at - 1] as OneRegisterInstruction).registerA == answer &&
-        code[at - 2].opcode == Opcode.MOVE_RESULT &&
-        code[at - 3].controlRef() == IS_PREMIUM &&
-        code[at - 4].opcode == Opcode.MOVE_RESULT_OBJECT &&
-        code[at - 5].controlRef() == ACCOUNT_OF &&
-        code[at - 6].opcode == Opcode.IGET &&
-        code[at - 7].opcode == Opcode.IF_NEZ &&
-        code[at - 8].opcode == Opcode.IGET_BOOLEAN &&
-        code[at - 9].opcode == Opcode.IF_EQZ && (code[at - 9] as OneRegisterInstruction).registerA == shared &&
-        code[at - 10].opcode == Opcode.IGET_BOOLEAN
-    return if (shape) StorySaveChecks(at - 10, at - 2) else null
+    val answer = (code[at] as? OneRegisterInstruction)?.registerA ?: return null
+    val shared = (code[at - 8] as? OneRegisterInstruction)?.registerA ?: return null
+    val shape = code[branch].opcode == Opcode.IF_EQZ && (code[branch] as OneRegisterInstruction).registerA == answer &&
+        code[at].opcode == Opcode.MOVE_RESULT &&
+        code[at - 1].controlRef() == IS_PREMIUM &&
+        code[at - 2].opcode == Opcode.MOVE_RESULT_OBJECT &&
+        code[at - 3].controlRef() == ACCOUNT_OF &&
+        code[at - 4].opcode == Opcode.IGET &&
+        code[at - 5].opcode == Opcode.IF_NEZ &&
+        code[at - 6].opcode == Opcode.IGET_BOOLEAN &&
+        code[at - 7].opcode == Opcode.IF_EQZ && (code[at - 7] as OneRegisterInstruction).registerA == shared &&
+        code[at - 8].opcode == Opcode.IGET_BOOLEAN
+    return if (shape) StorySaveChecks(at - 8, at) else null
 }
 
 internal fun Method.isStorySaveMenu(): Boolean = storySaveChecks() != null &&
