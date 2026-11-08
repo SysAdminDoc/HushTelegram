@@ -7,6 +7,7 @@ package app.morphe.patches.telegram.misc.drafts
 import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
+import app.morphe.hostsOf
 import app.morphe.PatchContexts
 import app.morphe.util.names.origRef
 import app.morphe.util.names.addInstructions
@@ -384,7 +385,7 @@ private val HOSTS = ConcurrentHashMap<String, List<ClassDef>>()
  * classes whose text it reads (the Channels and Apps tabs among them), the filtered search view and
  * the runnables that view's search posts.
  */
-internal fun localSearchHosts(build: File): List<ClassDef> = HOSTS.getOrPut(build.path) {
+internal fun localSearchHosts(build: File): List<ClassDef> = HOSTS.hostsOf(build.path) {
     val adapter = FixtureDex.classesWhere(build, { true }) { it.builds(GET_SPONSORED_PEERS) }.single()
     val search = adapter.methods.single { it.builds(GET_SPONSORED_PEERS) }
     val messages = adapter.methods.single { it.builds(GLOBAL_MESSAGES) }

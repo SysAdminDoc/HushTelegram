@@ -7,6 +7,7 @@ package app.morphe.patches.telegram.misc.analytics
 import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
+import app.morphe.hostsOf
 import app.morphe.PatchContexts
 import app.morphe.util.names.origRef
 import app.morphe.util.names.addInstructionsWithLabels
@@ -58,7 +59,7 @@ private val GHOST_MODE_HOST_CACHE = ConcurrentHashMap<String, List<ClassDef>>()
  * analytics over a build's classes and expects nothing to warn about adds these, or the patch says it
  * goes on without Ghost mode.
  */
-internal fun ghostModeHosts(build: File): List<ClassDef> = GHOST_MODE_HOST_CACHE.getOrPut(build.path) {
+internal fun ghostModeHosts(build: File): List<ClassDef> = GHOST_MODE_HOST_CACHE.hostsOf(build.path) {
     FixtureDex.classes(build, setOf(CONNECTIONS_MANAGER)).values.toList()
 }
 

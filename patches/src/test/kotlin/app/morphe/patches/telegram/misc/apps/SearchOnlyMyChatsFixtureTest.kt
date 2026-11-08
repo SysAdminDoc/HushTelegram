@@ -7,6 +7,7 @@ package app.morphe.patches.telegram.misc.apps
 import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
+import app.morphe.hostsOf
 import app.morphe.PatchContexts
 import app.morphe.util.names.origRef
 import app.morphe.util.names.addInstructions
@@ -404,7 +405,7 @@ private val HOSTS = ConcurrentHashMap<String, List<ClassDef>>()
 private val OWNERS = ConcurrentHashMap<String, List<ClassDef>>()
 
 /** Hide popular apps' own loader and Apps tab. */
-internal fun popularAppsOwners(build: File): List<ClassDef> = OWNERS.getOrPut(build.path) {
+internal fun popularAppsOwners(build: File): List<ClassDef> = OWNERS.hostsOf(build.path) {
     FixtureDex.classesWhere(build, { true }) { method ->
         method.body().any { (it.opcode == Opcode.NEW_INSTANCE && it.ref() == GET_POPULAR_APP_BOTS) ||
             (it.opcode == Opcode.SGET && it.ref() == "$TITLES->SearchAppsPopular:I") }
@@ -420,7 +421,7 @@ private fun Method.namesEveryTab() = body().let { body ->
  * with its results and the notification center it posts to, the account search answer with the
  * accounts, chats and peers it lists, the lookup that tells your chats apart, and the public stories search.
  */
-internal fun myChatsSearchHosts(build: File): List<ClassDef> = HOSTS.getOrPut(build.path) {
+internal fun myChatsSearchHosts(build: File): List<ClassDef> = HOSTS.hostsOf(build.path) {
     val found = FixtureDex.classesWhere(build, { true }) { method -> method.namesEveryTab() || method.body().let { body ->
         body.indices.any { at -> at + 2 < body.size && body[at].opcode == Opcode.IGET_BOOLEAN &&
             body[at + 1].opcode == Opcode.ADD_INT_LIT8 && body[at + 2].call()?.origName == "setPosition" } ||

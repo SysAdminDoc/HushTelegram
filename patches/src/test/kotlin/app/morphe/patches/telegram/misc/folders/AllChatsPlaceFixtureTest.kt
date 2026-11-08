@@ -6,6 +6,7 @@ package app.morphe.patches.telegram.misc.folders
 
 import app.morphe.ExtensionDex
 import app.morphe.Fixtures
+import app.morphe.hostsOf
 import app.morphe.FixtureDex
 import app.morphe.PatchContexts
 import app.morphe.patches.telegram.misc.chattypefolders.LOCAL_FILTER
@@ -39,7 +40,7 @@ private fun Instruction.placeRef() = origRef()
  * Every class a place hook goes in, with the classes the stubs and the drag resets read. 13.2 loads
  * the drag id as a const and its merged drag callback casts the runners it was handed.
  */
-internal fun allChatsPlaceHosts(build: File): List<ClassDef> = PLACE_HOSTS.getOrPut(build.path) {
+internal fun allChatsPlaceHosts(build: File): List<ClassDef> = PLACE_HOSTS.hostsOf(build.path) {
     val sites = FixtureDex.classesWhere(build, { true }) { m ->
         m.placeBody().any { (it.opcode == Opcode.NEW_INSTANCE && it.placeRef() == PLACE_REQUEST) || (it.loadsInt() && it.placeRef() == PLACE_DRAGGING) } ||
             m.placeBody().let { body -> body.any { it.placeRef() == PLACE_SORT } && body.any { it.placeRef() == PLACE_FILTERS } }

@@ -7,6 +7,7 @@ package app.morphe.patches.telegram.misc.apps
 import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
+import app.morphe.hostsOf
 import app.morphe.PatchContexts
 import app.morphe.util.names.origRef
 import app.morphe.util.names.addInstructionsWithLabels
@@ -171,7 +172,7 @@ class NameFoldFixtureTest {
 private val NAME_FOLD_HOSTS = ConcurrentHashMap<String, List<ClassDef>>()
 
 /** LocaleController, whose transliteration takes the fold. */
-internal fun nameFoldHosts(build: File): List<ClassDef> = NAME_FOLD_HOSTS.getOrPut(build.path) {
+internal fun nameFoldHosts(build: File): List<ClassDef> = NAME_FOLD_HOSTS.hostsOf(build.path) {
     FixtureDex.classes(build, setOf(LOCALE_CONTROLLER)).values.toList().also {
         assertEquals("${build.name}: LocaleController", 1, it.size)
     }

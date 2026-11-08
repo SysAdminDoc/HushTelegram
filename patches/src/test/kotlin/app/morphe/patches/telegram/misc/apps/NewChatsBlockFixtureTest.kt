@@ -7,6 +7,7 @@ package app.morphe.patches.telegram.misc.apps
 import app.morphe.ExtensionDex
 import app.morphe.FixtureDex
 import app.morphe.Fixtures
+import app.morphe.hostsOf
 import app.morphe.PatchContexts
 import app.morphe.util.names.origRef
 import app.morphe.util.names.addInstructions
@@ -377,7 +378,7 @@ private val NEW_CHATS_HOSTS = ConcurrentHashMap<String, List<ClassDef>>()
  * that watch a chat as they open (the chat screen and the topic list among them), and the
  * MessagesController and ChatObject they ask.
  */
-internal fun newChatsHosts(build: File): List<ClassDef> = NEW_CHATS_HOSTS.getOrPut(build.path) {
+internal fun newChatsHosts(build: File): List<ClassDef> = NEW_CHATS_HOSTS.hostsOf(build.path) {
     val screens = FixtureDex.classesWhere(build, { true }) { method -> method.origName == "onFragmentCreate" &&
         method.body().any { it.ref()?.startsWith("$MESSAGES_CONTROLLER->startShortPoll(") == true } }
     (ghostModeHosts(build) + screens + FixtureDex.classes(build, setOf(CHAT_OBJECT, MESSAGES_CONTROLLER)).values).distinctBy { it.type }

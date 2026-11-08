@@ -26,6 +26,18 @@ import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
 
 /**
+ * [getOrPut] for one build's slice of fixture classes. A cached slice comes back without its dex
+ * being read again, which is what points the ambient names at a build, so they're pointed at the
+ * slice's build here: a test reading source names off it before it makes a context would otherwise
+ * read them through whichever build an earlier test or loop left behind.
+ */
+internal inline fun <K> MutableMap<K, List<ClassDef>>.hostsOf(key: K, read: () -> List<ClassDef>): List<ClassDef> =
+    getOrPut(key, read).also { slice ->
+        slice.firstNotNullOfOrNull { (it as? FixtureDex.FixtureClassDef)?.versionCode }
+            ?.let(TelegramNames::forVersionCode)?.let { TelegramNames.ambient = it }
+    }
+
+/**
  * Reads the classes a fixture test needs out of a Telegram build, one dex at a time, so no APK lands
  * on disk and no more than one dex is held at once. A build is an .apkm or .xapk, whose base APK is
  * read from inside it, or a merged .apk. What it hands back are immutable copies, which keep none
