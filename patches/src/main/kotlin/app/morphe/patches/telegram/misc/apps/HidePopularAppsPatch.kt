@@ -120,9 +120,12 @@ val hidePopularAppsPatch = bytecodePatch(
 /**
  * [load] is the popular-apps loader, the only code that builds getPopularAppBots. [section] is the
  * Apps tab's fill, where [read] loads the loader's list and [empty] is where Telegram goes when
- * that list is empty, not loading and fully loaded: the section adds nothing from there.
+ * that list is empty, not loading and fully loaded: the section adds nothing from there. [test] is
+ * the isEmpty branch.
  */
-internal class PopularAppsSites(val load: MutableMethod, val section: MutableMethod, val read: Int, val empty: Int)
+private val HOISTED_CONSTS = setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST)
+
+internal class PopularAppsSites(val load: MutableMethod, val section: MutableMethod, val read: Int, val empty: Int, val test: Int)
 
 internal fun BytecodePatchContext.resolvePopularAppsSites(): PopularAppsSites {
     requireRuntimeHooks()
@@ -166,12 +169,14 @@ internal fun BytecodePatchContext.resolvePopularAppsSites(): PopularAppsSites {
     val read = body.indices.filter { body[it].opcode == Opcode.IGET_OBJECT && body[it].field() == list }.one("list read in the Apps tab", ::refuse)
     val listRegister = body[read].namedRegisters()[0]
     val owner = body[read].namedRegisters()[1]
-    // isEmpty() on the list, and its true branch.
+    // isEmpty() on the list, and its true branch. 13.2 Play loads a constant for later between the two.
+    val test = read + 3 + if (body.getOrNull(read + 3)?.let { it.opcode in HOISTED_CONSTS &&
+            it.namedRegisters() != body[read + 2].namedRegisters() } == true) 1 else 0
     shape(body.getOrNull(read + 1)?.call()?.let { it.origDefiningClass == ARRAY_LIST && it.origName == "isEmpty" } == true &&
         body[read + 1].namedRegisters() == listOf(listRegister) && body[read + 2].opcode == Opcode.MOVE_RESULT &&
-        body[read + 3].opcode == Opcode.IF_NEZ && body[read + 3].namedRegisters() == body[read + 2].namedRegisters(),
+        body.getOrNull(test)?.opcode == Opcode.IF_NEZ && body[test].namedRegisters() == body[read + 2].namedRegisters(),
         "the Apps tab no longer checks whether the popular list is empty")
-    val emptyBranch = body.branchTarget(read + 3, ::refuse)
+    val emptyBranch = body.branchTarget(test, ::refuse)
     // Empty: loading shows placeholders, a list with more to load shows them too, a finished list adds nothing.
     shape(body[emptyBranch].isFieldRead(Opcode.IGET_BOOLEAN, loading, owner) && body[emptyBranch + 1].opcode == Opcode.IF_NEZ &&
         body[emptyBranch + 2].isFieldRead(Opcode.IGET_BOOLEAN, finished, owner) && body[emptyBranch + 3].opcode == Opcode.IF_NEZ,
@@ -183,7 +188,7 @@ internal fun BytecodePatchContext.resolvePopularAppsSites(): PopularAppsSites {
     shape(body.getOrNull(empty + 1)?.let { it.opcode == Opcode.IF_EQZ && it.namedRegisters() == listOf(footerFlag) } == true,
         "the section's footer no longer depends on what the popular list added")
     shape(read < emptyBranch && emptyBranch < empty, "the popular section is no longer laid out in order")
-    return PopularAppsSites(load, section, read, empty)
+    return PopularAppsSites(load, section, read, empty, test)
 }
 
 private fun PopularAppsSites.apply() {

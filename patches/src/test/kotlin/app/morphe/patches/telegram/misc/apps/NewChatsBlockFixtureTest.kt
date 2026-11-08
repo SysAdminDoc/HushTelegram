@@ -36,6 +36,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import org.junit.Assert.assertEquals
@@ -118,7 +119,7 @@ class NewChatsBlockFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val where = build.name
             val context = PatchContexts.of((ExtensionDex.classes() + popularAppsOwners(build) + myChatsSearchHosts(build) +
-                nameFoldHosts(build) + newChatsHosts(build)).distinctBy { it.type })
+                nameFoldHosts(build) + newChatsHosts(build) + FixtureDex.classes(build, setOf(SECRET_HELPER)).values).distinctBy { it.type })
             val sendStock = ImmutableMethod.of(send(context))
             assertEquals(where, emptyList<String>(), PatchLogCapture.warnings { hidePopularAppsPatch.execute(context) })
             assertGate(where, sendStock, send(context), listOf(NEW_CHATS_BLOCK_DROP))
@@ -178,7 +179,8 @@ class NewChatsBlockFixtureTest {
             Case("a member stops watching", "a member's way through the chat screen no longer watches the chat", change = { _, plan ->
                 val method = plan.sites[0].method
                 val visitor = method.body().indexOfFirst { it.isVisitorPoll() }
-                method.replaceInstruction(method.body().indices.first { it > visitor && method.body()[it].ref() == PLAIN_POLL }, "nop")
+                // 13.2 inlined the short form, so a member's watch is the next one in any form.
+                method.replaceInstruction(method.body().indices.first { it > visitor && method.body()[it].isPoll() }, "nop")
             }),
             // A branch onto the visitor's setup would skip the check, since its label stays on Telegram's instruction.
             Case("a jump to the visitor's setup", "something else jumps to where the chat screen sets up a chat you aren't in", change = { _, plan ->
@@ -192,8 +194,11 @@ class NewChatsBlockFixtureTest {
             }),
             Case("the forum's id overwritten", "the topic list no longer loads its forum by the id it keeps", change = { _, plan ->
                 val method = plan.sites[1].method
-                val load = method.body().indexOfFirst { it.ref() == LOAD_FULL_CHAT }
-                method.addInstructions(load, "const-wide/16 v${method.body()[load].namedRegisters()[1]}, 0x0")
+                val load = method.body().indexOfFirst { it.isLoadFullChat() }
+                // The id is the call's one long, wherever the build put it: 13.2 hands the account over first.
+                val types = ((method.body()[load] as ReferenceInstruction).reference as MethodReference).parameterTypes.map(CharSequence::toString)
+                val id = method.body()[load].namedRegisters()[1 + types.take(types.indexOf("J")).sumOf { if (it == "J" || it == "D") 2L else 1L }.toInt()]
+                method.addInstructions(load, "const-wide/16 v$id, 0x0")
             }),
         )
         for (build in Fixtures.declaredBuilds()) for (case in cases) {
@@ -344,7 +349,7 @@ class NewChatsBlockFixtureTest {
         val controller = stock.first { it.opcode == Opcode.INVOKE_VIRTUAL && it.namedRegisters() == listOf(self) &&
             it.ref()?.contains("->getMessagesController()$MESSAGES_CONTROLLER") == true }.ref()
         assertEquals("$where: through the screen's own controller", controller, after[1].ref())
-        val load = stock.indexOfFirst { it.ref() == LOAD_FULL_CHAT }
+        val load = stock.indexOfFirst { it.isLoadFullChat() }
         val kept = stock.subList(0, load).last { it.opcode == Opcode.IGET_WIDE }
         assertEquals("$where: by the id the screen loads", (kept as ReferenceInstruction).reference.origString(), after[3].ref())
         assertEquals("$where: its own field", patched.definingClass, ((after[3] as ReferenceInstruction).reference as FieldReference).definingClass)
@@ -365,6 +370,9 @@ class NewChatsBlockFixtureTest {
     }
 
     private fun Instruction.isVisitorPoll() = ref()?.let { it.startsWith("$MESSAGES_CONTROLLER->startShortPoll(${TL_CHAT}IZ") && it != PLAIN_POLL } == true
+    private fun Instruction.isPoll() = ref()?.startsWith("$MESSAGES_CONTROLLER->startShortPoll(") == true
+    // 13.2 hands loadFullChat its account before the id, so its descriptor reads (IJZ)V.
+    private fun Instruction.isLoadFullChat() = ref()?.startsWith("$MESSAGES_CONTROLLER->loadFullChat(") == true
     private fun Method.operations() = body().filter { it.opcode != Opcode.NOP }.map(::operation)
     private fun operation(instruction: Instruction): List<Any?> = listOf(instruction.opcode, instruction.ref(), instruction.namedRegisters(),
         (instruction as? NarrowLiteralInstruction)?.narrowLiteral)

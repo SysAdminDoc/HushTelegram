@@ -97,7 +97,7 @@ class NameFoldFixtureTest {
         )
         for (build in Fixtures.declaredBuilds()) for (case in cases) {
             val where = "${build.name} ${case.name}"
-            val context = PatchContexts.of(ExtensionDex.classes() + case.hosts(nameFoldHosts(build)))
+            val context = PatchContexts.of(ExtensionDex.classes() + FixtureDex.namedBy(build) { case.hosts(nameFoldHosts(build)) })
             case.context(context)
             val before = context.translits()
             val plan = context.resolveNameFold()
@@ -135,10 +135,11 @@ class NameFoldFixtureTest {
 
     @Test fun `without the shape the rest of Hide popular apps goes in with a warning`() {
         for (build in Fixtures.declaredBuilds()) {
-            val hosts = popularAppsOwners(build) + myChatsSearchHosts(build) + newChatsHosts(build)
+            val hosts = popularAppsOwners(build) + myChatsSearchHosts(build) + newChatsHosts(build) +
+                FixtureDex.classes(build, setOf(SECRET_HELPER)).values
             val context = PatchContexts.of((ExtensionDex.classes() + hosts).distinctBy { it.type })
             val warnings = PatchLogCapture.warnings { hidePopularAppsPatch.execute(context) }
-            assertEquals(build.name, 1, warnings.size)
+            assertEquals("${build.name}: $warnings", 1, warnings.size)
             assertTrue(warnings.single(), warnings.single().contains("LocaleController is missing") &&
                 warnings.single().contains("without finding names in styled letters"))
             assertEquals(1, statusOf(context, "hidePopularApps"))

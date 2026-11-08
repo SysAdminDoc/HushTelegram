@@ -70,11 +70,11 @@ class HidePopularAppsFixtureTest {
                 sectionFlow.normal[gate + 2].toSet())
             // In stock, that point is where an empty list that isn't loading and has nothing more goes.
             val stock = section.instructions()
-            val emptyBranch = stock.indices.single { stock[it].opcode == Opcode.IGET_BOOLEAN && it > sites.read + 3 &&
-                ControlFlow.of(section).normal[sites.read + 3].contains(it) }
+            val emptyBranch = stock.indices.single { stock[it].opcode == Opcode.IGET_BOOLEAN && it > sites.test &&
+                ControlFlow.of(section).normal[sites.test].contains(it) }
             assertTrue("$name: a finished, empty list reaches it in stock", sites.empty in ControlFlow.of(section).normal[emptyBranch + 3])
             // Skipping from the read to there skips no write but the reads Telegram makes on its way.
-            for (at in listOf(sites.read, sites.read + 1, sites.read + 2, sites.read + 3, emptyBranch, emptyBranch + 1, emptyBranch + 2, emptyBranch + 3)) {
+            for (at in (sites.read..sites.test) + listOf(emptyBranch, emptyBranch + 1, emptyBranch + 2, emptyBranch + 3)) {
                 assertFalse("$name: stock empty path at $at writes a field", stock[at].opcode.name.let { op -> op.startsWith("iput") || op.startsWith("sput") })
             }
             // No heading, bot row or placeholder can be added between the gate and that point unless the gate let it through.
@@ -109,7 +109,7 @@ class HidePopularAppsFixtureTest {
                     sites.section.replaceInstruction(sites.empty, "const/4 v$register, 0x1")
                 },
                 "empty list stops checking it is finished" to { _, sites ->
-                    val emptyBranch = ControlFlow.of(sites.section).normal[sites.read + 3].single { it != sites.read + 4 }
+                    val emptyBranch = ControlFlow.of(sites.section).normal[sites.test].single { it != sites.test + 1 }
                     sites.section.replaceInstruction(emptyBranch + 2, "nop")
                 },
                 "a second request builder" to { context, sites ->
@@ -177,8 +177,8 @@ class HidePopularAppsFixtureTest {
         val owners = owners(build)
         assertEquals("${build.name}: the loader and the Apps tab", 2, owners.size)
         val extension = ExtensionDex.classes().filter { runtime || it.origType != POPULAR_APPS }
-        return PatchContexts.of((extension + owners + myChatsSearchHosts(build) + nameFoldHosts(build) + newChatsHosts(build))
-            .distinctBy { it.type })
+        return PatchContexts.of((extension + owners + myChatsSearchHosts(build) + nameFoldHosts(build) + newChatsHosts(build) +
+            FixtureDex.classes(build, setOf(SECRET_HELPER)).values).distinctBy { it.type })
     }
 
     private fun reachable(flow: ControlFlow, from: Int, blocked: Int): Set<Int> {
