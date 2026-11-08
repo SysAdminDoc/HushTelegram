@@ -1,5 +1,5 @@
 {
-  "version": "v0.0.23",
+  "version": "v0.0.24",
   "appNames": {
     "org.telegram.messenger": "Telegram",
     "org.telegram.messenger.web": "Telegram (telegram.org)"
@@ -16,10 +16,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -33,10 +33,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -51,10 +51,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -73,10 +73,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -90,10 +90,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -108,10 +108,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -130,10 +130,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -147,10 +147,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -165,10 +165,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -187,10 +187,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -204,10 +204,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -222,10 +222,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -243,10 +243,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -260,10 +260,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -278,10 +278,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -300,10 +300,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -317,10 +317,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -335,10 +335,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -357,10 +357,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -374,10 +374,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -392,10 +392,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -414,10 +414,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -431,10 +431,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -449,10 +449,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -471,10 +471,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -488,10 +488,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -506,10 +506,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -528,10 +528,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -545,10 +545,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -563,10 +563,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -585,10 +585,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -602,10 +602,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -620,10 +620,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -642,10 +642,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -659,10 +659,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -677,10 +677,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -699,10 +699,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -716,10 +716,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -734,10 +734,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -756,10 +756,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -773,10 +773,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -791,10 +791,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -813,10 +813,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -830,10 +830,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -848,10 +848,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -870,10 +870,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -887,10 +887,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -905,10 +905,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -927,10 +927,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -944,10 +944,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -962,10 +962,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -984,10 +984,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -1001,10 +1001,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -1019,10 +1019,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -1041,10 +1041,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -1058,10 +1058,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -1076,10 +1076,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -1098,10 +1098,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -1115,10 +1115,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -1133,10 +1133,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -1155,10 +1155,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -1172,10 +1172,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -1190,10 +1190,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -1212,10 +1212,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -1229,10 +1229,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -1247,10 +1247,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -1269,10 +1269,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -1286,10 +1286,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -1304,10 +1304,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -1326,10 +1326,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -1343,10 +1343,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -1361,10 +1361,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -1383,10 +1383,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -1400,10 +1400,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -1418,10 +1418,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -1440,10 +1440,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -1457,10 +1457,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -1475,10 +1475,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -1497,10 +1497,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -1514,10 +1514,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -1532,10 +1532,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -1554,10 +1554,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -1571,10 +1571,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -1589,10 +1589,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -1611,10 +1611,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -1628,10 +1628,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -1646,10 +1646,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -1668,10 +1668,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -1685,10 +1685,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -1703,10 +1703,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -1725,10 +1725,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -1742,10 +1742,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -1760,10 +1760,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -1782,10 +1782,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -1799,10 +1799,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -1817,10 +1817,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -1839,10 +1839,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -1856,10 +1856,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -1874,10 +1874,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -1896,10 +1896,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -1913,10 +1913,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -1931,10 +1931,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -1953,10 +1953,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -1970,10 +1970,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -1988,10 +1988,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -2010,10 +2010,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -2027,10 +2027,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -2045,10 +2045,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -2067,10 +2067,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -2084,10 +2084,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -2102,10 +2102,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -2124,10 +2124,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -2141,10 +2141,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -2159,10 +2159,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -2181,10 +2181,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -2198,10 +2198,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -2216,10 +2216,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -2238,10 +2238,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -2255,10 +2255,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -2273,10 +2273,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -2295,10 +2295,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -2312,10 +2312,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -2330,10 +2330,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -2352,10 +2352,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -2369,10 +2369,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -2387,10 +2387,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -2406,10 +2406,10 @@
       "dependencies": [],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -2423,10 +2423,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -2441,10 +2441,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -2487,10 +2487,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -2504,10 +2504,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -2522,10 +2522,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -2544,10 +2544,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -2561,10 +2561,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -2579,10 +2579,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -2601,10 +2601,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -2618,10 +2618,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -2636,10 +2636,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -2658,10 +2658,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -2675,10 +2675,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -2693,10 +2693,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -2715,10 +2715,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -2732,10 +2732,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -2750,10 +2750,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -2773,10 +2773,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -2790,10 +2790,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -2808,10 +2808,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -2830,10 +2830,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -2847,10 +2847,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -2865,10 +2865,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -2887,10 +2887,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -2904,10 +2904,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -2922,10 +2922,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -2944,10 +2944,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -2961,10 +2961,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -2979,10 +2979,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -3001,10 +3001,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -3018,10 +3018,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -3036,10 +3036,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -3059,10 +3059,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -3076,10 +3076,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -3094,10 +3094,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -3116,10 +3116,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -3133,10 +3133,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -3151,10 +3151,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -3173,10 +3173,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -3190,10 +3190,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -3208,10 +3208,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -3230,10 +3230,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -3247,10 +3247,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -3265,10 +3265,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -3287,10 +3287,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -3304,10 +3304,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -3322,10 +3322,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -3344,10 +3344,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -3361,10 +3361,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -3379,10 +3379,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -3401,10 +3401,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -3418,10 +3418,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -3436,10 +3436,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -3458,10 +3458,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -3475,10 +3475,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -3493,10 +3493,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -3515,10 +3515,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -3532,10 +3532,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -3550,10 +3550,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -3572,10 +3572,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -3589,10 +3589,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -3607,10 +3607,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -3630,10 +3630,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -3647,10 +3647,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -3665,10 +3665,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -3687,10 +3687,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -3704,10 +3704,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -3722,10 +3722,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -3741,10 +3741,10 @@
       "dependencies": [],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -3758,10 +3758,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -3776,10 +3776,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -3805,10 +3805,10 @@
       "dependencies": [],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -3822,10 +3822,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -3840,10 +3840,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -3881,10 +3881,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -3898,10 +3898,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -3916,10 +3916,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]
@@ -3938,10 +3938,10 @@
       ],
       "compatiblePackages": {
         "org.telegram.messenger": [
-          "13.1.1"
+          "13.2.1"
         ],
         "org.telegram.messenger.web": [
-          "13.1.0"
+          "13.2.0"
         ]
       },
       "compatibility": [
@@ -3955,10 +3955,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.1",
+              "version": "13.2.1",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72371
+                "ARM64_V8A": 72911
               }
             }
           ]
@@ -3973,10 +3973,10 @@
           ],
           "targets": [
             {
-              "version": "13.1.0",
+              "version": "13.2.0",
               "experimental": false,
               "versionCodes": {
-                "ARM64_V8A": 72299
+                "ARM64_V8A": 72809
               }
             }
           ]

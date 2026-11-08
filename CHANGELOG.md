@@ -2,9 +2,9 @@
 
 Every HushTelegram release, newest first.
 
-## Unreleased
+## 0.0.24 (2026-11-08)
 
-* **Telegram:** Moved to Telegram 13.2. telegram.org's build is 13.2.0 (version code 72809) and the Google Play build is 13.2.1 (version code 72911). The 13.1 builds aren't supported anymore, so update Telegram before you patch.
+The fifteenth release moves to Telegram 13.2.1 from Google Play and 13.2.0 from telegram.org, so update Telegram before you patch. It's on Morphe patcher 2.3.0 now and needs Morphe Manager 2.5.0 or newer. There are 69 patches, two more than last time, and both new ones (Test server sign-in and Bot token sign-in) work from the phone number screen. Most of the rest came from your reports again. Special contacts keeps a history of the people you choose to track, and a new switch lets screenshots work in chats that don't allow saving.
 
 ### Added
 
@@ -35,7 +35,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** **Faster downloads** has a third switch, **Download manager**, off by default. Files download one at a time, in the order you asked for them, instead of several at once. A **Downloads** row in the side menu (turn on **Side menu** too) lists what's downloading, what's waiting and what's finished, with a Cancel for each file still going. A file you open or play still jumps the line. Refs #53.
 * **Telegram:** **Voice messages in the music player** has a new switch, **Remember where playback stopped**, off by default. Videos, voice messages and music pick up where you left off, even short ones. Telegram only does that for long ones. Turn it off and everything plays as Telegram plays it. (#53)
 * **Telegram:** **Add Repeat to the message menu** has a new switch, **Select between**, off by default. It adds a button to the bar that shows while you pick messages. Tap it and everything between the first and last message you picked gets selected. Pick one past the end and the gap fills in. It stops at Telegram's 100 message limit. (#53)
-* **Telegram:** **Folder icons** is a new row with the folder tab settings. Pick Regular, Bold or Filled and HushTelegram draws a small icon beside each folder in its own lists, like Folder to open. A folder called Work gets a briefcase, Friends a group, and a name it doesn't know gets a plain folder. Telegram 13.1 doesn't draw folder icons at all, so its own tabs stay as they are. The icons are from Phosphor Icons (MIT). Off by default. (#53)
+* **Telegram:** **Folder icons** is a new row with the folder tab settings. Pick Regular, Bold or Filled and HushTelegram draws a small icon beside each folder in its own lists, like Folder to open. A folder called Work gets a briefcase, Friends a group, and a name it doesn't know gets a plain folder. Telegram's own folder tabs stay as they are. The icons are from Phosphor Icons (MIT). Off by default. (#53)
 * **Telegram:** **HushTelegram icon and name** has a fourth **Icon style**, **Telegram's own icon**. Pick it with an **App name** and Telegram keeps its usual icon, with only the name under it changed. (#37)
 * **Telegram:** **Test server sign-in**, under Chat list and off by default. When you sign in or add an account, the phone number screen shows Telegram's own Test Backend box. Tick it to sign that account in on Telegram's test servers, kept apart from your other accounts. Untick it to go back. With the box ticked, the phone screen also takes Telegram's test numbers (+999 66 X YYYY), which the regular app turns away as an unknown country code. (#59)
 * **Telegram:** **Translate with an outside service** adds **Translate into** to a chat's three-dot menu, right under Translate this chat. It opens the same language list as the settings row, so you can switch between your language and English without leaving the chat. Pick one and the chat is written again in it. (#35)
@@ -43,8 +43,9 @@ Every HushTelegram release, newest first.
 
 ### Changed
 
+* **Telegram:** Moved to Telegram 13.2. telegram.org's build is 13.2.0 (version code 72809) and the Google Play build is 13.2.1 (version code 72911). The 13.1 builds aren't supported anymore, so update Telegram before you patch.
 * **Telegram:** **Hide the reaction picker** now covers the bubble of reactions that pops up over a selected message too, so tapping a post to pick it for a reply or a forward can't land on a reaction.
-* **Telegram:** **Hide picked chats** now takes hidden chats out of the lists you forward and share to as well: the forward picker, the share sheet and quick share. Saved Messages always stays in those lists.
+* **Telegram:** **Hide picked chats** now also takes hidden chats out of the forward picker, the share sheet and quick share. Saved Messages always stays in those lists.
 
 ### Fixed
 
