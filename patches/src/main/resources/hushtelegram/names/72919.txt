@@ -50,7 +50,7 @@ c Lorg/telegram/messenger/ContactsController$1; Lorg/telegram/messenger/x4; Ljav
 c Lorg/telegram/messenger/ContactsController$Contact; Lorg/telegram/messenger/y4; Ljava/lang/Object; Ljava/lang/Object;
 c Lorg/telegram/messenger/ContactsController$PhoneBookContact; Lorg/telegram/messenger/a5; Ljava/lang/Object; Ljava/lang/Object;
 c Lorg/telegram/messenger/ContactsController; Lorg/telegram/messenger/b5; Lorg/telegram/messenger/BaseController; Lorg/telegram/messenger/f1;
-c Lorg/telegram/messenger/ContactsSyncAdapterService; Lorg/telegram/messenger/e5; Landroid/app/Service; Landroid/content/AbstractThreadedSyncAdapter;
+c Lorg/telegram/messenger/ContactsSyncAdapterService; Lorg/telegram/messenger/ContactsSyncAdapterService; Landroid/app/Service; Landroid/app/Service;
 c Lorg/telegram/messenger/ContactsWidgetProvider; Lorg/telegram/messenger/ContactsWidgetProvider; Landroid/appwidget/AppWidgetProvider; Landroid/appwidget/AppWidgetProvider;
 c Lorg/telegram/messenger/ContactsWidgetService; Lorg/telegram/messenger/ContactsWidgetService; Landroid/widget/RemoteViewsService; Landroid/widget/RemoteViewsService;
 c Lorg/telegram/messenger/CopyCodeReceiver; Lorg/telegram/messenger/CopyCodeReceiver; Landroid/content/BroadcastReceiver; Landroid/content/BroadcastReceiver;
@@ -322,7 +322,7 @@ c Lorg/telegram/messenger/VideoEditedInfo$MediaEntity; Lorg/telegram/messenger/t
 c Lorg/telegram/messenger/VideoEditedInfo$Part; Lorg/telegram/messenger/u20; Lorg/telegram/tgnet/TLObject; Lorg/telegram/tgnet/TLObject;
 c Lorg/telegram/messenger/VideoEditedInfo; Lorg/telegram/messenger/v20; Ljava/lang/Object; Ljava/lang/Object;
 c Lorg/telegram/messenger/VideoEncodingService; Lorg/telegram/messenger/VideoEncodingService; Landroid/app/Service; Landroid/app/Service;
-c Lorg/telegram/messenger/WearAuthListenerService; Lorg/telegram/messenger/e00; Lt8/k; Ljava/lang/Object;
+c Lorg/telegram/messenger/WearAuthListenerService; Lorg/telegram/messenger/WearAuthListenerService; Lt8/k; Landroid/app/Service;
 c Lorg/telegram/messenger/WearReplyReceiver; Lorg/telegram/messenger/WearReplyReceiver; Landroid/content/BroadcastReceiver; Landroid/content/BroadcastReceiver;
 c Lorg/telegram/messenger/WebFile; Lorg/telegram/messenger/y20; Lorg/telegram/tgnet/TLObject; Lorg/telegram/tgnet/TLObject;
 m Lorg/telegram/messenger/AccountInstance; getInstance (I)Lorg/telegram/messenger/AccountInstance; Lorg/telegram/messenger/a; a (I)Lorg/telegram/messenger/a;

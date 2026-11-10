@@ -6,7 +6,7 @@ Every HushTelegram release, newest first.
 
 ### Changed
 
-* Retarget the telegram.org web build from 13.2.0 (72809) to 13.2.1 (72919). Both builds now track Telegram 13.2.1.
+* **Telegram:** The telegram.org web build moves from 13.2.0 (72809) to 13.2.1 (72919). Both builds now track Telegram 13.2.1.
 
 ### Added
 
