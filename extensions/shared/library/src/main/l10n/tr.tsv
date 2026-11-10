@@ -1511,3 +1511,14 @@ That bot token was revoked.	Bu bot jetonu iptal edilmiş.
 Wait %1$s seconds, then try again.	%1$s saniye bekleyin, sonra tekrar deneyin.
 # context: short message when Telegram refuses the sign-in with an error code of its own. %1$s is that code, in capitals, as Telegram sends it.
 Telegram refused it: %1$s	Telegram reddetti: %1$s
+# context: Five experimental patches added in the 72919 retarget. All off by default.
+Suppress screenshot notification	Ekran görüntüsü bildirimini engelle
+Telegram no longer tells the other person in a secret chat when you take a screenshot.	Telegram, ekran görüntüsü aldığında gizli sohbetteki diğer kişiye artık haber vermez.
+Unlock Premium features	Premium özelliklerinin kilidini aç
+Premium-only features like animated emoji, sticker sets and upload limits become available without a subscription. Server-enforced limits still apply.	Animasyonlu emojiler, çıkartma setleri ve yükleme sınırları gibi yalnızca Premium'a özel özellikler abonelik olmadan kullanılabilir. Sunucunun uyguladığı sınırlar geçerli kalır.
+Bypass channel restrictions	Kanal kısıtlamalarını aş
+Channels and chats that block forwarding and saving let you forward messages and save media.	İletmeyi ve kaydetmeyi engelleyen kanallarda ve sohbetlerde mesajları iletebilir ve medyayı kaydedebilirsin.
+Bypass integrity check	Bütünlük denetimini aş
+Play Integrity and SafetyNet checks are answered locally so Telegram doesn't detect a re-signed build.	Play Integrity ve SafetyNet denetimleri yerel olarak yanıtlanır, böylece Telegram yeniden imzalanmış bir sürümü fark etmez.
+Auto-forwarding rules	Otomatik iletme kuralları
+New messages in a chat you pick are forwarded to another chat automatically.	Seçtiğin bir sohbetteki yeni mesajlar otomatik olarak başka bir sohbete iletilir.

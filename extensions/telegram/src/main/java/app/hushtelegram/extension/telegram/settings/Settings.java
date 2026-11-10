@@ -927,4 +927,44 @@ public class Settings extends BaseSettings {
      */
     public static final BooleanSetting CHECK_FOR_RELEASES =
             new BooleanSetting("hushtelegram_check_releases", FALSE);
+
+    /**
+     * The screenshot notification Telegram sends to the other party in a secret chat is dropped
+     * before it leaves the phone ({@link app.hushtelegram.extension.telegram.misc.ScreenshotNotification}).
+     */
+    public static final BooleanSetting SUPPRESS_SCREENSHOT_NOTIFICATION =
+            new BooleanSetting("hushtelegram_suppress_screenshot_notification", FALSE);
+
+    /**
+     * The app behaves as if the account has Telegram Premium, locally only. The server still knows
+     * the real status, so server-enforced limits stay. Unlocks client-side Premium features like
+     * doubled limits, extra reactions, no ads and faster downloads
+     * ({@link app.hushtelegram.extension.telegram.misc.PremiumUnlock}).
+     */
+    public static final BooleanSetting UNLOCK_PREMIUM =
+            new BooleanSetting("hushtelegram_unlock_premium", FALSE);
+
+    /**
+     * Content restrictions on channels and chats (no forwards, no saving) are bypassed locally.
+     * Forwarding, copying and saving work as if the restriction was never set
+     * ({@link app.hushtelegram.extension.telegram.misc.ChannelRestrictions}).
+     */
+    public static final BooleanSetting BYPASS_CHANNEL_RESTRICTIONS =
+            new BooleanSetting("hushtelegram_bypass_channel_restrictions", FALSE);
+
+    /**
+     * Play Integrity, SafetyNet and certificate verification checks are answered with a passing
+     * result so the app doesn't detect it has been re-signed
+     * ({@link app.hushtelegram.extension.telegram.misc.IntegrityBypass}).
+     */
+    public static final BooleanSetting BYPASS_INTEGRITY_CHECK =
+            new BooleanSetting("hushtelegram_bypass_integrity_check", FALSE);
+
+    /**
+     * Messages matching a set of rules are automatically forwarded to a chosen chat. Rules are
+     * managed from the settings screen
+     * ({@link app.hushtelegram.extension.telegram.misc.AutoForwarding}).
+     */
+    public static final BooleanSetting AUTO_FORWARDING =
+            new BooleanSetting("hushtelegram_auto_forwarding", FALSE);
 }

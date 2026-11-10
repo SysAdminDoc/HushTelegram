@@ -242,7 +242,12 @@ public final class SettingsBackup {
             Settings.STRIP_LINK_COPY_PASTE,
             Settings.DISABLE_UPDATE_CHECKS,
             Settings.REPAIR_FIREBASE_PUSH,
-            Settings.KEEP_ALIVE_RUNNING));
+            Settings.KEEP_ALIVE_RUNNING,
+            Settings.SUPPRESS_SCREENSHOT_NOTIFICATION,
+            Settings.UNLOCK_PREMIUM,
+            Settings.BYPASS_CHANNEL_RESTRICTIONS,
+            Settings.BYPASS_INTEGRITY_CHECK,
+            Settings.AUTO_FORWARDING));
 
     /**
      * The text a file carries besides the switches: the message filters, each list as a JSON array

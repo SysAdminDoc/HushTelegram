@@ -139,7 +139,15 @@ public enum PatchFamily {
     UNIFIED_PUSH(FamilyNames.UNIFIED_PUSH, "unifiedPush", null, Settings.UNIFIED_PUSH, Settings.REACTION_ALERTS,
             Settings.REACTION_SOUND),
     TEST_SERVER_SIGN_IN(FamilyNames.TEST_SERVER_SIGN_IN, "testServerSignIn", null, Settings.TEST_SERVER_SIGN_IN),
-    BOT_TOKEN_SIGN_IN(FamilyNames.BOT_TOKEN_SIGN_IN, "botTokenSignIn", null, Settings.BOT_TOKEN_SIGN_IN);
+    BOT_TOKEN_SIGN_IN(FamilyNames.BOT_TOKEN_SIGN_IN, "botTokenSignIn", null, Settings.BOT_TOKEN_SIGN_IN),
+    SUPPRESS_SCREENSHOT_NOTIFICATION(FamilyNames.SUPPRESS_SCREENSHOT_NOTIFICATION, "suppressScreenshotNotification", null,
+            Settings.SUPPRESS_SCREENSHOT_NOTIFICATION),
+    UNLOCK_PREMIUM(FamilyNames.UNLOCK_PREMIUM, "unlockPremium", null, Settings.UNLOCK_PREMIUM),
+    BYPASS_CHANNEL_RESTRICTIONS(FamilyNames.BYPASS_CHANNEL_RESTRICTIONS, "bypassChannelRestrictions", null,
+            Settings.BYPASS_CHANNEL_RESTRICTIONS),
+    BYPASS_INTEGRITY_CHECK(FamilyNames.BYPASS_INTEGRITY_CHECK, "bypassIntegrityCheck", null,
+            Settings.BYPASS_INTEGRITY_CHECK),
+    AUTO_FORWARDING(FamilyNames.AUTO_FORWARDING, "autoForwarding", null, Settings.AUTO_FORWARDING);
 
     /** The patch's name in Morphe Manager. */
     public final String patchName;
@@ -207,7 +215,8 @@ public enum PatchFamily {
                 ALLOW_CHAT_BLUR, NO_HAPTICS, REACTION_EFFECTS_OFF, HIDE_STICKER_TIME, CHANGE_STICKER_SIZE, HIDE_FEATURES_AND_INVITE,
                 HIDE_CHANNEL_BUTTONS, HIDE_SEND_AS),
         PRIVACY("Privacy", DISABLE_ANALYTICS, DISABLE_CALL_DEBUG, DISABLE_DRAFT_PREVIEWS, GALLERY_CAMERA_ON_TAP,
-                HIDE_PHONE_NUMBER);
+                HIDE_PHONE_NUMBER, SUPPRESS_SCREENSHOT_NOTIFICATION, UNLOCK_PREMIUM,
+                BYPASS_CHANNEL_RESTRICTIONS, BYPASS_INTEGRITY_CHECK, AUTO_FORWARDING);
 
         /** The English title, which is also the page's route and its translation key. */
         final String title;

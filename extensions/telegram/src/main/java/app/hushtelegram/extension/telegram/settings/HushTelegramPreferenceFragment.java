@@ -1377,6 +1377,38 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "number with them. With this on, the box starts clear and your number goes only if you tick it.")));
             }
         }
+        if (build.contains(PatchFamily.SUPPRESS_SCREENSHOT_NOTIFICATION)) {
+            on(pages, PatchFamily.SUPPRESS_SCREENSHOT_NOTIFICATION).addPreference(toggle(context,
+                    Settings.SUPPRESS_SCREENSHOT_NOTIFICATION, L10n.t("Suppress screenshot notification"),
+                    PatchFamily.SUPPRESS_SCREENSHOT_NOTIFICATION.coverageSummary(L10n.t(
+                            "Telegram no longer tells the other person in a secret chat when you take a screenshot."))));
+        }
+        if (build.contains(PatchFamily.UNLOCK_PREMIUM)) {
+            on(pages, PatchFamily.UNLOCK_PREMIUM).addPreference(toggle(context, Settings.UNLOCK_PREMIUM,
+                    L10n.t("Unlock Premium features"),
+                    PatchFamily.UNLOCK_PREMIUM.coverageSummary(L10n.t(
+                            "Premium-only features like animated emoji, sticker sets and upload limits become available "
+                                    + "without a subscription. Server-enforced limits still apply."))));
+        }
+        if (build.contains(PatchFamily.BYPASS_CHANNEL_RESTRICTIONS)) {
+            on(pages, PatchFamily.BYPASS_CHANNEL_RESTRICTIONS).addPreference(toggle(context,
+                    Settings.BYPASS_CHANNEL_RESTRICTIONS, L10n.t("Bypass channel restrictions"),
+                    PatchFamily.BYPASS_CHANNEL_RESTRICTIONS.coverageSummary(L10n.t(
+                            "Channels and chats that block forwarding and saving let you forward messages and save media."))));
+        }
+        if (build.contains(PatchFamily.BYPASS_INTEGRITY_CHECK)) {
+            on(pages, PatchFamily.BYPASS_INTEGRITY_CHECK).addPreference(toggle(context,
+                    Settings.BYPASS_INTEGRITY_CHECK, L10n.t("Bypass integrity check"),
+                    PatchFamily.BYPASS_INTEGRITY_CHECK.coverageSummary(L10n.t(
+                            "Play Integrity and SafetyNet checks are answered locally so Telegram doesn't detect a "
+                                    + "re-signed build."))));
+        }
+        if (build.contains(PatchFamily.AUTO_FORWARDING)) {
+            on(pages, PatchFamily.AUTO_FORWARDING).addPreference(toggle(context, Settings.AUTO_FORWARDING,
+                    L10n.t("Auto-forwarding rules"),
+                    PatchFamily.AUTO_FORWARDING.coverageSummary(L10n.t(
+                            "New messages in a chat you pick are forwarded to another chat automatically."))));
+        }
     }
 
     /** Links, in every build: the link switches, Supported links and how t.me links get here. */
