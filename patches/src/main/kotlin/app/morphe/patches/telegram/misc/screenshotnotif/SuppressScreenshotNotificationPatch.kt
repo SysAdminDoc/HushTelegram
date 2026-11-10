@@ -50,8 +50,7 @@ private const val SCREENSHOT_SECRET = "Lorg/telegram/tgnet/TLRPC\$TL_decryptedMe
 val suppressScreenshotNotificationPatch = bytecodePatch(
     name = PATCH,
     description = "Stops Telegram from telling the other person you took a screenshot, in regular and " +
-        "secret chats. The screenshot stays on your phone and the local service message still appears " +
-        "in the chat. Off by default. Turn it on in HushTelegram settings > Privacy.",
+        "secret chats. Starts off. Turn it on in HushTelegram settings > Privacy.",
     default = true,
 ) {
     category("Privacy")

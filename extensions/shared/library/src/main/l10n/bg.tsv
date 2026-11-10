@@ -1511,10 +1511,10 @@ Telegram refused it: %1$s	Telegram отказа: %1$s
 Suppress screenshot notification	Потискане на известието за екранна снимка
 Telegram no longer tells the other person in a secret chat when you take a screenshot.	Telegram вече не казва на другия човек в тайния чат, когато направите екранна снимка.
 Unlock Premium features	Отключване на функциите на Premium
-Premium-only features like animated emoji, sticker sets and upload limits become available without a subscription. Server-enforced limits still apply.	Функции само за Premium, като анимирани емоджита, комплекти стикери и лимити за качване, стават достъпни без абонамент. Лимитите, наложени от сървъра, продължават да важат.
+Telegram on this phone treats your account as Premium, so the parts the app itself locks open up. Telegram's servers still know your real plan, so their limits stay the same.	Telegram на този телефон смята акаунта ти за Premium, така че частите, които самото приложение заключва, се отключват. Сървърите на Telegram пак знаят истинския ти план, така че техните ограничения остават същите.
 Bypass channel restrictions	Заобикаляне на ограниченията на каналите
 Channels and chats that block forwarding and saving let you forward messages and save media.	Канали и чатове, които блокират препращането и запазването, ви позволяват да препращате съобщения и да запазвате медия.
 Bypass integrity check	Заобикаляне на проверката за цялост
-Play Integrity and SafetyNet checks are answered locally so Telegram doesn't detect a re-signed build.	Проверките на Play Integrity и SafetyNet се отговарят локално, така че Telegram да не засече преподписана версия.
+Telegram's two emulator checks always say this phone isn't an emulator.	Двете проверки за емулатор на Telegram винаги казват, че този телефон не е емулатор.
 Auto-forwarding rules	Правила за автоматично препращане
 New messages in a chat you pick are forwarded to another chat automatically.	Новите съобщения в избран от вас чат се препращат автоматично към друг чат.

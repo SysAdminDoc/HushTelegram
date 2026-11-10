@@ -1512,10 +1512,10 @@ Telegram refused it: %1$s	O Telegram recusou: %1$s
 Suppress screenshot notification	Suprimir aviso de captura de tela
 Telegram no longer tells the other person in a secret chat when you take a screenshot.	O Telegram deixa de avisar a outra pessoa em um chat secreto quando você faz uma captura de tela.
 Unlock Premium features	Desbloquear recursos Premium
-Premium-only features like animated emoji, sticker sets and upload limits become available without a subscription. Server-enforced limits still apply.	Recursos exclusivos do Premium, como emojis animados, pacotes de figurinhas e limites de upload, ficam disponíveis sem assinatura. Os limites impostos pelo servidor continuam valendo.
+Telegram on this phone treats your account as Premium, so the parts the app itself locks open up. Telegram's servers still know your real plan, so their limits stay the same.	O Telegram neste celular trata sua conta como Premium, então as partes que o próprio app bloqueia ficam liberadas. Os servidores do Telegram ainda sabem o seu plano real, então os limites deles continuam os mesmos.
 Bypass channel restrictions	Ignorar restrições de canais
 Channels and chats that block forwarding and saving let you forward messages and save media.	Canais e chats que bloqueiam o encaminhamento e o salvamento permitem encaminhar mensagens e salvar mídia.
 Bypass integrity check	Ignorar verificação de integridade
-Play Integrity and SafetyNet checks are answered locally so Telegram doesn't detect a re-signed build.	As verificações do Play Integrity e do SafetyNet são respondidas localmente para que o Telegram não detecte uma versão assinada novamente.
+Telegram's two emulator checks always say this phone isn't an emulator.	As duas verificações de emulador do Telegram sempre dizem que este celular não é um emulador.
 Auto-forwarding rules	Regras de encaminhamento automático
 New messages in a chat you pick are forwarded to another chat automatically.	Novas mensagens em um chat que você escolher são encaminhadas automaticamente para outro chat.

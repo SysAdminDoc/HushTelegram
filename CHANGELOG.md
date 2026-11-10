@@ -10,11 +10,10 @@ Every HushTelegram release, newest first.
 
 ### Added
 
-* **Suppress screenshot notifications**, off by default. Telegram no longer tells the other person in a secret chat when you take a screenshot.
-* **Unlock Premium features**, off by default. Premium-only features like animated emoji, sticker sets and upload limits become available without a subscription.
-* **Bypass channel restrictions**, off by default. Channels that block forwarding and saving let you forward messages and save media.
-* **Bypass integrity check**, off by default. Telegram's SafetyNet and Play Integrity checks are answered locally, so a patched build won't trigger them.
-* **Auto-forwarding rules**, off by default. New messages in a chat you pick are forwarded to another chat automatically.
+* **Telegram:** **Suppress screenshot notification**, a new patch with its switch in HushTelegram settings > Privacy, off by default. Telegram stops telling the other person you took a screenshot, in regular and secret chats.
+* **Telegram:** **Unlock Premium features**, in Privacy and off by default. Telegram on your phone treats your account as Premium, so the parts the app itself locks open up. Telegram's servers still know your real plan, so their limits stay the same.
+* **Telegram:** **Bypass channel restrictions**, in Privacy and off by default. Channels and chats that turn off forwarding, copying and saving let you do all three.
+* **Telegram:** **Bypass integrity check**, in Privacy and off by default. Telegram's two emulator checks always say your phone isn't an emulator.
 
 ### Fixed
 

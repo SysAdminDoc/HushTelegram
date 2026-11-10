@@ -53,6 +53,7 @@ import app.hushtelegram.extension.telegram.misc.Suggestions;
 import app.hushtelegram.extension.telegram.misc.LinkRouting;
 import app.hushtelegram.extension.telegram.ads.ProxyPromotions;
 import app.hushtelegram.extension.shared.SettingsContextRule;
+import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.shared.settings.BaseSettings;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
@@ -453,6 +454,24 @@ public class PausedHooksTest {
         // The phone number screen offers a bot token sign-in.
         probes.put(PatchFamily.BOT_TOKEN_SIGN_IN, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.BotSignIn.offered(0)));
+        // A screenshot in a secret chat sends no notice.
+        probes.put(PatchFamily.SUPPRESS_SCREENSHOT_NOTIFICATION, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.ScreenshotNotification.suppress(1)));
+        probes.put(PatchFamily.UNLOCK_PREMIUM, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.PremiumUnlock.isPremium(1) == 1));
+        // A chat and a message that forbid forwarding allow it.
+        probes.put(PatchFamily.BYPASS_CHANNEL_RESTRICTIONS, Arrays.asList(
+                () -> app.hushtelegram.extension.telegram.misc.ChannelRestrictions.isChatNoForwards(1) == 0,
+                () -> app.hushtelegram.extension.telegram.misc.ChannelRestrictions.noForwards(1) == 0));
+        probes.put(PatchFamily.BYPASS_INTEGRITY_CHECK, Arrays.asList(
+                () -> app.hushtelegram.extension.telegram.misc.IntegrityBypass.skipIntegrityCheck(1),
+                () -> app.hushtelegram.extension.telegram.misc.IntegrityBypass.spoofSignature(1)));
+        // New messages are looked at for forwarding.
+        probes.put(PatchFamily.AUTO_FORWARDING, Collections.singletonList(() -> {
+            List<String> before = HookStatus.report();
+            app.hushtelegram.extension.telegram.misc.AutoForwarding.onNewMessages(new ArrayList<>(), null);
+            return !before.equals(HookStatus.report());
+        }));
         return probes;
     }
 

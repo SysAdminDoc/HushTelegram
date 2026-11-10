@@ -31,9 +31,8 @@ private const val EMU_INPUT_DETECTOR = "Lorg/telegram/messenger/EmuInputDevicesD
 @Suppress("unused")
 val bypassIntegrityCheckPatch = bytecodePatch(
     name = PATCH,
-    description = "Stops the app from detecting it runs on a modified build or an emulator. " +
-        "Hooks the emulator detector to always answer no and skips any SafetyNet attestation " +
-        "the server asks for. Off by default.",
+    description = "Makes Telegram's two emulator checks always say your phone isn't an emulator. " +
+        "Starts off. Turn it on in HushTelegram settings > Privacy.",
     default = true,
 ) {
     category("Privacy")

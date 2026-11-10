@@ -1387,8 +1387,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.UNLOCK_PREMIUM).addPreference(toggle(context, Settings.UNLOCK_PREMIUM,
                     L10n.t("Unlock Premium features"),
                     PatchFamily.UNLOCK_PREMIUM.coverageSummary(L10n.t(
-                            "Premium-only features like animated emoji, sticker sets and upload limits become available "
-                                    + "without a subscription. Server-enforced limits still apply."))));
+                            "Telegram on this phone treats your account as Premium, so the parts the app itself locks "
+                                    + "open up. Telegram's servers still know your real plan, so their limits stay the same."))));
         }
         if (build.contains(PatchFamily.BYPASS_CHANNEL_RESTRICTIONS)) {
             on(pages, PatchFamily.BYPASS_CHANNEL_RESTRICTIONS).addPreference(toggle(context,
@@ -1400,14 +1400,14 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.BYPASS_INTEGRITY_CHECK).addPreference(toggle(context,
                     Settings.BYPASS_INTEGRITY_CHECK, L10n.t("Bypass integrity check"),
                     PatchFamily.BYPASS_INTEGRITY_CHECK.coverageSummary(L10n.t(
-                            "Play Integrity and SafetyNet checks are answered locally so Telegram doesn't detect a "
-                                    + "re-signed build."))));
+                            "Telegram's two emulator checks always say this phone isn't an emulator."))));
         }
         if (build.contains(PatchFamily.AUTO_FORWARDING)) {
             on(pages, PatchFamily.AUTO_FORWARDING).addPreference(toggle(context, Settings.AUTO_FORWARDING,
                     L10n.t("Auto-forwarding rules"),
                     PatchFamily.AUTO_FORWARDING.coverageSummary(L10n.t(
-                            "New messages in a chat you pick are forwarded to another chat automatically."))));
+                            "Nothing is forwarded yet. For now this only counts the new messages a forwarding rule "
+                                    + "would look at."))));
         }
     }
 

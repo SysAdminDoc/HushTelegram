@@ -28,9 +28,9 @@ private const val ON_NEW_MESSAGE_HOOK = "$AUTO_FORWARDING->onNewMessages(Ljava/l
 @Suppress("unused")
 val autoForwardingPatch = bytecodePatch(
     name = PATCH,
-    description = "Automatically forwards incoming messages to a chosen chat when they match a " +
-        "configured rule. Rules name a source chat and a destination; manage them from the " +
-        "Hush settings screen. Off by default.",
+    description = "Groundwork for forwarding new messages from one chat to another by rules you set. It " +
+        "doesn't forward anything yet, it only counts the new messages a rule would look at. Starts off. " +
+        "Turn it on in HushTelegram settings > Privacy.",
     default = true,
 ) {
     category("Privacy")

@@ -29,9 +29,9 @@ private const val IS_PREMIUM_HOOK = "$PREMIUM_UNLOCK->isPremium(I)I"
 @Suppress("unused")
 val unlockPremiumPatch = bytecodePatch(
     name = PATCH,
-    description = "Makes the app act as if the account has Telegram Premium. Only changes " +
-        "client-side checks; the server still knows the real status. Unlocks doubled limits, " +
-        "extra reactions, no ads and faster downloads. Off by default.",
+    description = "Makes Telegram on your phone treat your account as Premium, so the parts the app itself " +
+        "locks behind Premium open up. Telegram's servers still know your real plan, so their limits, like " +
+        "upload size, stay the same. Starts off. Turn it on in HushTelegram settings > Privacy.",
     default = true,
 ) {
     category("Privacy")
