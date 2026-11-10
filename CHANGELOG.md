@@ -16,6 +16,11 @@ Every HushTelegram release, newest first.
 * **Bypass integrity check**, off by default. Telegram's SafetyNet and Play Integrity checks are answered locally, so a patched build won't trigger them.
 * **Auto-forwarding rules**, off by default. New messages in a chat you pick are forwarded to another chat automatically.
 
+### Fixed
+
+* **Telegram:** With **Turn videos only from the full screen button** on, a video you put in full screen with the button stays sideways on 13.2 instead of standing back up as soon as you turn the phone (#27).
+* **Telegram:** **Save to Downloads** in the message menu saves every photo of an album, not just the one you long-pressed (#46).
+
 ## 0.0.24 (2026-11-08)
 
 The fifteenth release moves to Telegram 13.2.1 from Google Play and 13.2.0 from telegram.org, so update Telegram before you patch. It's on Morphe patcher 2.3.0 now and needs Morphe Manager 2.5.0 or newer. There are 69 patches, two more than last time, and both new ones (Test server sign-in and Bot token sign-in) work from the phone number screen. Most of the rest came from your reports again. Special contacts keeps a history of the people you choose to track, and a new switch lets screenshots work in chats that don't allow saving.
