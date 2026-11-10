@@ -26,7 +26,7 @@ class ExtensionHostNamesFixtureTest {
         "72919" to listOf(
             "m org.telegram.messenger.rp getInstance (I) s1",
             "f org.telegram.messenger.c20 selectedAccount t0",
-            "r string PushReactText 7f0fdee2",
+            "r string PushReactText 7f0fded5",
         ),
         "72911" to listOf(
             "m org.telegram.messenger.vp getInstance (I) s1",
