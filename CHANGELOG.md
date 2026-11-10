@@ -7,6 +7,7 @@ Every HushTelegram release, newest first.
 ### Changed
 
 * **Telegram:** The telegram.org web build moves from 13.2.0 (72809) to 13.2.1 (72919). Both builds now track Telegram 13.2.1.
+* **Telegram:** **Ghost mode** lets channel reads go out now, so a channel you read on this phone shows as read on your other devices too. Nobody in a channel can see who read what, so they learn nothing. Groups and private chats stay unread everywhere else, since there the read is what people would see (#65).
 
 ### Added
 
