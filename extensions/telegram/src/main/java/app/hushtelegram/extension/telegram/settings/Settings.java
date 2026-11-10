@@ -953,6 +953,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_bypass_channel_restrictions", FALSE);
 
     /**
+     * Channels, chats and messages Telegram restricts for copyright or local law open and show as
+     * they would anywhere else (#58,
+     * {@link app.hushtelegram.extension.telegram.misc.ChannelRestrictions#ignoreRestrictionReason}).
+     */
+    public static final BooleanSetting OPEN_RESTRICTED_CHATS =
+            new BooleanSetting("hushtelegram_open_restricted_chats", FALSE);
+
+    /**
      * Play Integrity, SafetyNet and certificate verification checks are answered with a passing
      * result so the app doesn't detect it has been re-signed
      * ({@link app.hushtelegram.extension.telegram.misc.IntegrityBypass}).

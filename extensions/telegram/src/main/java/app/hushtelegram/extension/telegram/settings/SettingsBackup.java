@@ -246,6 +246,7 @@ public final class SettingsBackup {
             Settings.SUPPRESS_SCREENSHOT_NOTIFICATION,
             Settings.UNLOCK_PREMIUM,
             Settings.BYPASS_CHANNEL_RESTRICTIONS,
+            Settings.OPEN_RESTRICTED_CHATS,
             Settings.BYPASS_INTEGRITY_CHECK,
             Settings.AUTO_FORWARDING));
 

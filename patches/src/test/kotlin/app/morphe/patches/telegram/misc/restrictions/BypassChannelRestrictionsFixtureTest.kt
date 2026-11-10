@@ -23,10 +23,11 @@ import app.morphe.util.names.tgMutableClassDefBy
 private const val MESSAGES_CONTROLLER = "Lorg/telegram/messenger/MessagesController;"
 private const val CHAT_HOOK = "Lapp/hushtelegram/extension/telegram/misc/ChannelRestrictions;->isChatNoForwards(I)I"
 private const val PEER_HOOK = "Lapp/hushtelegram/extension/telegram/misc/ChannelRestrictions;->noForwards(I)I"
+private const val REASON_HOOK = "Lapp/hushtelegram/extension/telegram/misc/ChannelRestrictions;->ignoreRestrictionReason()Z"
 
 class BypassChannelRestrictionsFixtureTest {
     @Test
-    fun `both restriction checks ask the extension first in every declared build`() {
+    fun `every restriction check asks the extension first in every declared build`() {
         for (build in Fixtures.declaredBuilds()) {
             val hosts = FixtureDex.classes(build, setOf(MESSAGES_CONTROLLER)).values
             val context = PatchContexts.of(ExtensionDex.classes() + hosts)
@@ -46,11 +47,20 @@ class BypassChannelRestrictionsFixtureTest {
                 assertEquals("${build.name}: $methodName move-result", Opcode.MOVE_RESULT, body[2].opcode)
                 assertEquals("${build.name}: $methodName branch", Opcode.IF_NEZ, body[3].opcode)
             }
-            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods
-                .single { it.origName == "bypassChannelRestrictions" }
-                .implementation!!.instructions.toList()
-            assertEquals("${build.name}: status flag set", 1, (status[0] as NarrowLiteralInstruction).narrowLiteral)
-            assertEquals(Opcode.RETURN, status[1].opcode)
+            val reason = controller.methods.single { m ->
+                m.origName == "getRestrictionReason" && m.origReturnType == "Ljava/lang/String;"
+            }.implementation!!.instructions.toList()
+            assertEquals("${build.name}: getRestrictionReason invoke-static", REASON_HOOK, reason[0].origRef())
+            assertEquals("${build.name}: getRestrictionReason move-result", Opcode.MOVE_RESULT, reason[1].opcode)
+            assertEquals("${build.name}: getRestrictionReason branch", Opcode.IF_EQZ, reason[2].opcode)
+            assertEquals("${build.name}: getRestrictionReason answers null", Opcode.RETURN_OBJECT, reason[4].opcode)
+            for (flag in listOf("bypassChannelRestrictions", "openRestrictedChats")) {
+                val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods
+                    .single { it.origName == flag }
+                    .implementation!!.instructions.toList()
+                assertEquals("${build.name}: $flag set", 1, (status[0] as NarrowLiteralInstruction).narrowLiteral)
+                assertEquals(Opcode.RETURN, status[1].opcode)
+            }
         }
     }
 }

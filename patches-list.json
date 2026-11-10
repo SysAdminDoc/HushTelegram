@@ -405,7 +405,7 @@
     },
     {
       "name": "Bypass channel restrictions",
-      "description": "Bypasses content restrictions (no forwards, no saving, no copying) on channels and chats. Forwarding, copying and saving work as if the restriction was never set. The existing Allow screenshots patch handles screen capture separately. Off by default.",
+      "description": "Lets you forward, copy and save from channels and chats that turn those off. A second switch, Open restricted channels, opens channels, groups and messages Telegram marks unavailable for copyright or local law, as long as Telegram still sends them. Both start off. Turn them on in HushTelegram settings > Privacy.",
       "category": "Privacy",
       "use": true,
       "dependencies": [

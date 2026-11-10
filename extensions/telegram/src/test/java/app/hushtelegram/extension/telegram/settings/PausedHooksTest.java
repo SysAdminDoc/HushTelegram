@@ -459,10 +459,11 @@ public class PausedHooksTest {
                 () -> app.hushtelegram.extension.telegram.misc.ScreenshotNotification.suppress(1)));
         probes.put(PatchFamily.UNLOCK_PREMIUM, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.PremiumUnlock.isPremium(1) == 1));
-        // A chat and a message that forbid forwarding allow it.
+        // A chat and a message that forbid forwarding allow it, and a chat restricted for copyright or local law opens.
         probes.put(PatchFamily.BYPASS_CHANNEL_RESTRICTIONS, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.ChannelRestrictions.isChatNoForwards(1) == 0,
-                () -> app.hushtelegram.extension.telegram.misc.ChannelRestrictions.noForwards(1) == 0));
+                () -> app.hushtelegram.extension.telegram.misc.ChannelRestrictions.noForwards(1) == 0,
+                app.hushtelegram.extension.telegram.misc.ChannelRestrictions::ignoreRestrictionReason));
         probes.put(PatchFamily.BYPASS_INTEGRITY_CHECK, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.IntegrityBypass.skipIntegrityCheck(1),
                 () -> app.hushtelegram.extension.telegram.misc.IntegrityBypass.spoofSignature(1)));

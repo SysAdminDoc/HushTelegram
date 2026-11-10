@@ -15,7 +15,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * {@code MessagesController.isPeerNoForwards} and the {@code noforwards} field on messages.
  * When the switch is on, all three answer false so forwarding, copying and saving work as if
  * the restriction was never set. The existing Allow screenshots patch handles FLAG_SECURE
- * separately.
+ * separately. Its Open restricted channels switch also drops the restriction reason Telegram
+ * shows for copyright or local law blocks.
  */
 public final class ChannelRestrictions {
     private ChannelRestrictions() {
@@ -51,5 +52,25 @@ public final class ChannelRestrictions {
         }
         HookStatus.counted(FamilyNames.BYPASS_CHANNEL_RESTRICTIONS, "message restriction bypassed");
         return 0;
+    }
+
+    /**
+     * Called first in {@code MessagesController.getRestrictionReason}, which every check of a chat,
+     * user or message restricted for copyright or local law goes through (#58): opening a channel,
+     * its profile, a message's text and media. With the switch on the answer is no reason at all,
+     * so Telegram opens and shows them as it would anywhere they aren't restricted. Telegram skips
+     * its "sensitive" reason by itself and keeps doing so.
+     *
+     * @return whether to answer that nothing is restricted
+     */
+    public static boolean ignoreRestrictionReason() {
+        try {
+            if (!Utils.settingsReady() || !Settings.OPEN_RESTRICTED_CHATS.get()) return false;
+        } catch (Throwable t) {
+            HookStatus.threw(FamilyNames.BYPASS_CHANNEL_RESTRICTIONS, "switch read", t);
+            return false;
+        }
+        HookStatus.counted(FamilyNames.BYPASS_CHANNEL_RESTRICTIONS, "restriction reason ignored");
+        return true;
     }
 }

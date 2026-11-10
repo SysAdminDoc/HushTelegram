@@ -232,6 +232,7 @@ public final class SettingsStatus {
     public static boolean suppressScreenshotNotification() { return false; }
     public static boolean unlockPremium() { return false; }
     public static boolean bypassChannelRestrictions() { return false; }
+    public static boolean openRestrictedChats() { return false; }
     public static boolean bypassIntegrityCheck() { return false; }
     public static boolean autoForwarding() { return false; }
 }

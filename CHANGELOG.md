@@ -12,7 +12,7 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** **Suppress screenshot notification**, a new patch with its switch in HushTelegram settings > Privacy, off by default. Telegram stops telling the other person you took a screenshot, in regular and secret chats.
 * **Telegram:** **Unlock Premium features**, in Privacy and off by default. Telegram on your phone treats your account as Premium, so the parts the app itself locks open up. Telegram's servers still know your real plan, so their limits stay the same.
-* **Telegram:** **Bypass channel restrictions**, in Privacy and off by default. Channels and chats that turn off forwarding, copying and saving let you do all three.
+* **Telegram:** **Bypass channel restrictions**, in Privacy and off by default. Channels and chats that turn off forwarding, copying and saving let you do all three. Its second switch, **Open restricted channels**, opens channels, groups and messages Telegram marks unavailable for copyright or local law, as long as Telegram still sends them (#58).
 * **Telegram:** **Bypass integrity check**, in Privacy and off by default. Telegram's two emulator checks always say your phone isn't an emulator.
 
 ### Fixed
