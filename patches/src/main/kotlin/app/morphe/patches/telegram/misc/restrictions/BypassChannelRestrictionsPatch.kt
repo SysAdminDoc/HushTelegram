@@ -29,7 +29,7 @@ private const val MESSAGES_CONTROLLER = "Lorg/telegram/messenger/MessagesControl
 private const val CHANNEL_RESTRICTIONS = "$EXTENSION_PACKAGE/misc/ChannelRestrictions;"
 private const val IS_CHAT_NO_FORWARDS_HOOK = "$CHANNEL_RESTRICTIONS->isChatNoForwards(I)I"
 private const val NO_FORWARDS_HOOK = "$CHANNEL_RESTRICTIONS->noForwards(I)I"
-private const val IGNORE_REASON_HOOK = "$CHANNEL_RESTRICTIONS->ignoreRestrictionReason()Z"
+private const val IGNORE_REASON_HOOK = "$CHANNEL_RESTRICTIONS->ignoreRestrictionReason(Ljava/util/ArrayList;)Z"
 
 @Suppress("unused")
 val bypassChannelRestrictionsPatch = bytecodePatch(
@@ -97,7 +97,7 @@ val bypassChannelRestrictionsPatch = bytecodePatch(
         }
         if (restrictionReason != null) {
             restrictionReason.addInstructionsWithLabels(0, """
-                invoke-static {}, $IGNORE_REASON_HOOK
+                invoke-static {p1}, $IGNORE_REASON_HOOK
                 move-result v0
                 if-eqz v0, :stock
                 const/4 v0, 0x0

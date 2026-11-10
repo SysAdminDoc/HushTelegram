@@ -11,6 +11,7 @@ import app.morphe.PatchContexts
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -23,7 +24,7 @@ import app.morphe.util.names.tgMutableClassDefBy
 private const val MESSAGES_CONTROLLER = "Lorg/telegram/messenger/MessagesController;"
 private const val CHAT_HOOK = "Lapp/hushtelegram/extension/telegram/misc/ChannelRestrictions;->isChatNoForwards(I)I"
 private const val PEER_HOOK = "Lapp/hushtelegram/extension/telegram/misc/ChannelRestrictions;->noForwards(I)I"
-private const val REASON_HOOK = "Lapp/hushtelegram/extension/telegram/misc/ChannelRestrictions;->ignoreRestrictionReason()Z"
+private const val REASON_HOOK = "Lapp/hushtelegram/extension/telegram/misc/ChannelRestrictions;->ignoreRestrictionReason(Ljava/util/ArrayList;)Z"
 
 class BypassChannelRestrictionsFixtureTest {
     @Test
@@ -47,10 +48,13 @@ class BypassChannelRestrictionsFixtureTest {
                 assertEquals("${build.name}: $methodName move-result", Opcode.MOVE_RESULT, body[2].opcode)
                 assertEquals("${build.name}: $methodName branch", Opcode.IF_NEZ, body[3].opcode)
             }
-            val reason = controller.methods.single { m ->
+            val reasonCode = controller.methods.single { m ->
                 m.origName == "getRestrictionReason" && m.origReturnType == "Ljava/lang/String;"
-            }.implementation!!.instructions.toList()
+            }.implementation!!
+            val reason = reasonCode.instructions.toList()
             assertEquals("${build.name}: getRestrictionReason invoke-static", REASON_HOOK, reason[0].origRef())
+            assertEquals("${build.name}: getRestrictionReason hands over its list (p1)",
+                reasonCode.registerCount - 1, (reason[0] as FiveRegisterInstruction).registerC)
             assertEquals("${build.name}: getRestrictionReason move-result", Opcode.MOVE_RESULT, reason[1].opcode)
             assertEquals("${build.name}: getRestrictionReason branch", Opcode.IF_EQZ, reason[2].opcode)
             assertEquals("${build.name}: getRestrictionReason answers null", Opcode.RETURN_OBJECT, reason[4].opcode)

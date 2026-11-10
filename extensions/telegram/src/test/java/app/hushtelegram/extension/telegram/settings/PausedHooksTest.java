@@ -466,7 +466,8 @@ public class PausedHooksTest {
         probes.put(PatchFamily.BYPASS_CHANNEL_RESTRICTIONS, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.ChannelRestrictions.isChatNoForwards(1) == 0,
                 () -> app.hushtelegram.extension.telegram.misc.ChannelRestrictions.noForwards(1) == 0,
-                app.hushtelegram.extension.telegram.misc.ChannelRestrictions::ignoreRestrictionReason));
+                () -> app.hushtelegram.extension.telegram.misc.ChannelRestrictions.ignoreRestrictionReason(
+                        new ArrayList<>(Collections.singletonList("copyright")))));
         probes.put(PatchFamily.BYPASS_INTEGRITY_CHECK, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.IntegrityBypass.skipIntegrityCheck(1),
                 () -> app.hushtelegram.extension.telegram.misc.IntegrityBypass.spoofSignature(1)));

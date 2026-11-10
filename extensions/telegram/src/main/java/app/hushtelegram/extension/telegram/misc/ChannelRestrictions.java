@@ -9,6 +9,8 @@ import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
 
+import java.util.ArrayList;
+
 /**
  * Bypasses content restrictions (no forwards, no saving, no copying) on channels and chats.
  * Hooks the three places Telegram checks: {@code MessagesController.isChatNoForwards},
@@ -59,11 +61,14 @@ public final class ChannelRestrictions {
      * user or message restricted for copyright or local law goes through (#58): opening a channel,
      * its profile, a message's text and media. With the switch on the answer is no reason at all,
      * so Telegram opens and shows them as it would anywhere they aren't restricted. Telegram skips
-     * its "sensitive" reason by itself and keeps doing so.
+     * its "sensitive" reason by itself and keeps doing so. An empty list is every ordinary chat,
+     * so it goes to Telegram's own answer uncounted.
      *
+     * @param reasons the chat's, user's or message's restriction reasons
      * @return whether to answer that nothing is restricted
      */
-    public static boolean ignoreRestrictionReason() {
+    public static boolean ignoreRestrictionReason(ArrayList<?> reasons) {
+        if (reasons == null || reasons.isEmpty()) return false;
         try {
             if (!Utils.settingsReady() || !Settings.OPEN_RESTRICTED_CHATS.get()) return false;
         } catch (Throwable t) {
