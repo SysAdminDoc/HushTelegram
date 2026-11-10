@@ -2,6 +2,20 @@
 
 Every HushTelegram release, newest first.
 
+## Unreleased
+
+### Changed
+
+* Retarget the telegram.org web build from 13.2.0 (72809) to 13.2.1 (72919). Both builds now track Telegram 13.2.1.
+
+### Added
+
+* **Suppress screenshot notifications**, off by default. Telegram no longer tells the other person in a secret chat when you take a screenshot.
+* **Unlock Premium features**, off by default. Premium-only features like animated emoji, sticker sets and upload limits become available without a subscription.
+* **Bypass channel restrictions**, off by default. Channels that block forwarding and saving let you forward messages and save media.
+* **Bypass integrity check**, off by default. Telegram's SafetyNet and Play Integrity checks are answered locally, so a patched build won't trigger them.
+* **Auto-forwarding rules**, off by default. New messages in a chat you pick are forwarded to another chat automatically.
+
 ## 0.0.24 (2026-11-08)
 
 The fifteenth release moves to Telegram 13.2.1 from Google Play and 13.2.0 from telegram.org, so update Telegram before you patch. It's on Morphe patcher 2.3.0 now and needs Morphe Manager 2.5.0 or newer. There are 69 patches, two more than last time, and both new ones (Test server sign-in and Bot token sign-in) work from the phone number screen. Most of the rest came from your reports again. Special contacts keeps a history of the people you choose to track, and a new switch lets screenshots work in chats that don't allow saving.

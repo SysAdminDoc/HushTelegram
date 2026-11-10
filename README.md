@@ -33,7 +33,7 @@ The latest release is [v0.0.24](https://github.com/SysAdminDoc/HushTelegram/rele
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 2.5.0 or newer.
 2. Open the [add-source link](https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram) on your phone to add HushTelegram as a patch source.
-3. Get Telegram 13.2.1 from [Google Play](https://play.google.com/store/apps/details?id=org.telegram.messenger) (version code 72911), or Telegram 13.2.0 from telegram.org (version code 72809) from its [Download button](https://telegram.org/android) or a mirror such as [APKMirror](https://www.apkmirror.com/apk/telegram-fz-llc/telegram/). telegram.org hands out whatever is newest, so check the [checksum](#supported-telegram-builds) before you patch.
+3. Get Telegram 13.2.1 from [Google Play](https://play.google.com/store/apps/details?id=org.telegram.messenger) (version code 72911), or Telegram 13.2.1 from telegram.org (version code 72919) from its [Download button](https://telegram.org/android) or a mirror such as [APKMirror](https://www.apkmirror.com/apk/telegram-fz-llc/telegram/). telegram.org hands out whatever is newest, so check the [checksum](#supported-telegram-builds) before you patch.
 4. Pick the file in Morphe Manager, keep the default selection and patch. It has every patch that comes with a switch.
 5. Four patches start unselected: Use registered Telegram API credentials, Use registered Maps API key, HushTelegram icon and name, and Black and white launch logo. To add one, turn on **Settings > Advanced > Expert mode** in Morphe Manager and fill in its options before you patch.
 
@@ -176,12 +176,12 @@ The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.o
 
 ## Supported Telegram builds
 
-The current release patches two Telegram builds, and the patched app needs Android 9 or newer. telegram.org's build is Telegram 13.2.0, `org.telegram.messenger.web` with version code 72809, and its APK carries every phone architecture. The Google Play build is Telegram 13.2.1, `org.telegram.messenger` with version code 72911, the one most people already have on their phone. The two don't always share a version, since telegram.org updates its download on its own schedule. Morphe Manager warns about any other build, the public beta included.
+The current release patches two Telegram builds, and the patched app needs Android 9 or newer. telegram.org's build is Telegram 13.2.1, `org.telegram.messenger.web` with version code 72919, and its APK carries every phone architecture. The Google Play build is Telegram 13.2.1, `org.telegram.messenger` with version code 72911, the one most people already have on their phone. The two don't always share a version, since telegram.org updates its download on its own schedule. Morphe Manager warns about any other build, the public beta included.
 
 SHA-256 of the stock APKs the release was checked against:
 
 ```text
-web    2d1fe6650578aa4e3437c9e775a7e849837f604a7294c6bd66f971d6ba13470e
+web    2b73067f429a5cc20cf060e84c9296a18a04b77f1aa02739fa6457c6b5a508d2
 play   1d444a7ee2579257b4a86530e5014ee066c5690c4ff505e3a43b3658af2aea22
 ```
 
