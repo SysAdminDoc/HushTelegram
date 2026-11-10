@@ -199,6 +199,7 @@ public final class SettingsBackup {
             Settings.DATA_SAVER_DOWNLOADS,
             Settings.FASTER_UPLOADS,
             Settings.DOWNLOAD_MANAGER,
+            Settings.BEST_QUALITY_MEDIA,
             Settings.SAVE_DOWNLOADS,
             Settings.SAVE_RESTRICTED_DOWNLOADS,
             Settings.SAVE_TIMED_MEDIA,

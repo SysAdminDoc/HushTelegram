@@ -934,6 +934,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("Download manager"), L10n.t("Files download one at a time, in the order you asked for them."
                                 + " Adds a Downloads row to the side menu, which needs Side menu on too.")));
             }
+            if (PatchFamily.Capability.BEST_QUALITY_MEDIA.installed()) {
+                on(pages, PatchFamily.FASTER_DOWNLOADS).addPreference(toggle(context, Settings.BEST_QUALITY_MEDIA,
+                        L10n.t("Send photos and videos in the best quality"), L10n.t("Photos go out in HD and videos at their own"
+                                + " size and quality, without touching the quality button first. You can still lower one before"
+                                + " sending. Only sending as a file keeps a photo exactly as it is.")));
+            }
         }
         if (build.contains(PatchFamily.SAVE_DOWNLOADS)) {
             on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(toggle(context, Settings.SAVE_DOWNLOADS, L10n.t("Save downloaded files"),

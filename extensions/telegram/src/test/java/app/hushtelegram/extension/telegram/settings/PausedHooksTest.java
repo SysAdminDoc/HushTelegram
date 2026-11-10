@@ -323,12 +323,15 @@ public class PausedHooksTest {
         // A voice message opens the full player.
         probes.put(PatchFamily.VOICE_MUSIC_PLAYER, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.VoicePlayerForTests.voiceOpensThePlayer()));
-        // A download the server didn't flag keeps Telegram's small pieces, and Data Saver on a
-        // metered network holds neither automatic downloads nor the download mask.
+        // A download the server didn't flag keeps Telegram's small pieces, Data Saver on a metered
+        // network holds neither automatic downloads nor the download mask, and a photo nobody pressed
+        // HD on and a video under 1000 MB go out at Telegram's usual quality.
         probes.put(PatchFamily.FASTER_DOWNLOADS, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.DownloadSpeed.fast(false),
                 () -> app.hushtelegram.extension.telegram.misc.DataSaverDownloadsForTests.holdsOnMeteredDataSaver(),
-                () -> app.hushtelegram.extension.telegram.misc.DataSaverDownloadsForTests.holdsMaskOnMeteredDataSaver()));
+                () -> app.hushtelegram.extension.telegram.misc.DataSaverDownloadsForTests.holdsMaskOnMeteredDataSaver(),
+                () -> app.hushtelegram.extension.telegram.misc.MediaQuality.hdPhoto(false),
+                () -> app.hushtelegram.extension.telegram.misc.MediaQuality.videoLimit(0x3e800000L) < 0));
         // A finished file from a message is queued for a copy in Download/Telegram, and so are one from
         // a chat that doesn't allow saving and a view-once photo.
         probes.put(PatchFamily.SAVE_DOWNLOADS, Arrays.asList(

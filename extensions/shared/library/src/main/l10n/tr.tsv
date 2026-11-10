@@ -1521,4 +1521,10 @@ Channels and chats that block forwarding and saving let you forward messages and
 Bypass integrity check	Bütünlük denetimini aş
 Telegram's two emulator checks always say this phone isn't an emulator.	Telegram'ın iki emülatör denetimi bu telefonun emülatör olmadığını her zaman söyler.
 Auto-forwarding rules	Otomatik iletme kuralları
-New messages in a chat you pick are forwarded to another chat automatically.	Seçtiğin bir sohbetteki yeni mesajlar otomatik olarak başka bir sohbete iletilir.
+Nothing is forwarded yet. For now this only counts the new messages a forwarding rule would look at.	Henüz hiçbir şey iletilmiyor. Şimdilik bu yalnızca bir iletme kuralının bakacağı yeni mesajları sayar.
+Open restricted channels	Kısıtlanmış kanalları aç
+Channels, groups and messages Telegram says are unavailable for copyright or local law open anyway, as long as Telegram still sends them.	Telegram'ın telif hakkı veya yerel yasalar nedeniyle kullanılamıyor dediği kanallar, gruplar ve mesajlar, Telegram onları göndermeye devam ettiği sürece yine de açılır.
+channels restricted for copyright or local law	telif hakkı veya yerel yasalar nedeniyle kısıtlanmış kanallar
+Send photos and videos in the best quality	Fotoğraf ve videoları en iyi kalitede gönder
+Photos go out in HD and videos at their own size and quality, without touching the quality button first. You can still lower one before sending. Only sending as a file keeps a photo exactly as it is.	Fotoğraflar HD, videolar kendi boyutu ve kalitesiyle gider, önce kalite düğmesine dokunmana gerek kalmaz. Göndermeden önce birinin kalitesini yine düşürebilirsin. Bir fotoğrafı tam olduğu gibi yalnızca dosya olarak göndermek korur.
+photos and videos in their best quality	en iyi kalitede fotoğraf ve videolar

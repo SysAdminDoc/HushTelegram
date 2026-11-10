@@ -14,6 +14,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** **Unlock Premium features**, in Privacy and off by default. Telegram on your phone treats your account as Premium, so the parts the app itself locks open up. Telegram's servers still know your real plan, so their limits stay the same.
 * **Telegram:** **Bypass channel restrictions**, in Privacy and off by default. Channels and chats that turn off forwarding, copying and saving let you do all three. Its second switch, **Open restricted channels**, opens channels, groups and messages Telegram marks unavailable for copyright or local law, as long as Telegram still sends them (#58).
 * **Telegram:** **Bypass integrity check**, in Privacy and off by default. Telegram's two emulator checks always say your phone isn't an emulator.
+* **Telegram:** **Send photos and videos in the best quality**, a fifth switch under **Faster downloads** in HushTelegram settings > Playback, off by default. Photos go out in HD and videos at their own size and quality without a trip to the quality button, and you can still lower one before you send it (#63).
 
 ### Fixed
 

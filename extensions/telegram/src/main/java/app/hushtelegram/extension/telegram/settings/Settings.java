@@ -601,6 +601,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting DOWNLOAD_MANAGER =
             new BooleanSetting("hushtelegram_download_manager", FALSE);
 
+    /** Photos go out in HD and videos at their own size unless one is changed before sending (#63). */
+    public static final BooleanSetting BEST_QUALITY_MEDIA =
+            new BooleanSetting("hushtelegram_best_quality_media", FALSE);
+
     /** A file or song that finishes downloading gets a copy in Download/Telegram, unless saving it isn't allowed. */
     public static final BooleanSetting SAVE_DOWNLOADS =
             new BooleanSetting("hushtelegram_save_downloads", FALSE);

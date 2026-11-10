@@ -1517,4 +1517,10 @@ Channels and chats that block forwarding and saving let you forward messages and
 Bypass integrity check	Заобикаляне на проверката за цялост
 Telegram's two emulator checks always say this phone isn't an emulator.	Двете проверки за емулатор на Telegram винаги казват, че този телефон не е емулатор.
 Auto-forwarding rules	Правила за автоматично препращане
-New messages in a chat you pick are forwarded to another chat automatically.	Новите съобщения в избран от вас чат се препращат автоматично към друг чат.
+Nothing is forwarded yet. For now this only counts the new messages a forwarding rule would look at.	Засега нищо не се препраща. Това само брои новите съобщения, които едно правило за препращане би проверило.
+Open restricted channels	Отваряне на ограничени канали
+Channels, groups and messages Telegram says are unavailable for copyright or local law open anyway, as long as Telegram still sends them.	Канали, групи и съобщения, за които Telegram казва, че са недостъпни заради авторски права или местен закон, се отварят въпреки това, стига Telegram все още да ги изпраща.
+channels restricted for copyright or local law	канали, ограничени заради авторски права или местен закон
+Send photos and videos in the best quality	Изпращай снимки и видеа в най-добро качество
+Photos go out in HD and videos at their own size and quality, without touching the quality button first. You can still lower one before sending. Only sending as a file keeps a photo exactly as it is.	Снимките се изпращат в HD, а видеата в собствения си размер и качество, без първо да пипаш бутона за качество. Пак можеш да намалиш качеството на някое преди изпращане. Само изпращането като файл запазва снимката точно такава, каквато е.
+photos and videos in their best quality	снимки и видеа в най-добро качество
