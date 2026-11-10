@@ -33,7 +33,7 @@ val bypassChannelRestrictionsPatch = bytecodePatch(
     description = "Bypasses content restrictions (no forwards, no saving, no copying) on channels " +
         "and chats. Forwarding, copying and saving work as if the restriction was never set. " +
         "The existing Allow screenshots patch handles screen capture separately. Off by default.",
-    default = false,
+    default = true,
 ) {
     category("Privacy")
     dependsOn(settingsPatch, telegramExtensionPatch)

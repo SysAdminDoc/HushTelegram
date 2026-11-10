@@ -31,7 +31,7 @@ val autoForwardingPatch = bytecodePatch(
     description = "Automatically forwards incoming messages to a chosen chat when they match a " +
         "configured rule. Rules name a source chat and a destination; manage them from the " +
         "Hush settings screen. Off by default.",
-    default = false,
+    default = true,
 ) {
     category("Privacy")
     dependsOn(settingsPatch, telegramExtensionPatch)

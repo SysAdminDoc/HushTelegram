@@ -34,7 +34,7 @@ val bypassIntegrityCheckPatch = bytecodePatch(
     description = "Stops the app from detecting it runs on a modified build or an emulator. " +
         "Hooks the emulator detector to always answer no and skips any SafetyNet attestation " +
         "the server asks for. Off by default.",
-    default = false,
+    default = true,
 ) {
     category("Privacy")
     dependsOn(settingsPatch, telegramExtensionPatch)

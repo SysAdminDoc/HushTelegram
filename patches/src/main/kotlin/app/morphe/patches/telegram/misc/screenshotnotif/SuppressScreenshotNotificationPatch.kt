@@ -52,7 +52,7 @@ val suppressScreenshotNotificationPatch = bytecodePatch(
     description = "Stops Telegram from telling the other person you took a screenshot, in regular and " +
         "secret chats. The screenshot stays on your phone and the local service message still appears " +
         "in the chat. Off by default. Turn it on in HushTelegram settings > Privacy.",
-    default = false,
+    default = true,
 ) {
     category("Privacy")
     dependsOn(settingsPatch, telegramExtensionPatch)
