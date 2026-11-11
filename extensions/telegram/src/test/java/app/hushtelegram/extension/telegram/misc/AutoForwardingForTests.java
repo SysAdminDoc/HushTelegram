@@ -51,14 +51,17 @@ public final class AutoForwardingForTests {
         public long storyPeer;
         /** Its game, or 0. */
         public long gameId;
-        /** A giveaway's end and how many win, or 0 and 0. */
+        /** A giveaway's end, how many win and what each gets, or 0s. */
         public int giveawayEnd;
         public int giveawayCount;
+        public int giveawayMonths;
+        public long giveawayStars;
         /** A checklist's title, or null. */
         public String checklist;
-        /** An invoice or venue's title, or null, and what an invoice asks for. */
+        /** An invoice or venue's title, or null, and what an invoice asks for and in which currency. */
         public String title;
         public long amount;
+        public String currency;
         /** Its text, or null. */
         public String text;
         public boolean service;
@@ -121,9 +124,12 @@ public final class AutoForwardingForTests {
         @Override public long gameId(Object message) { return ((Message) message).gameId; }
         @Override public int giveawayEnd(Object message) { return ((Message) message).giveawayEnd; }
         @Override public int giveawayCount(Object message) { return ((Message) message).giveawayCount; }
+        @Override public int giveawayMonths(Object message) { return ((Message) message).giveawayMonths; }
+        @Override public long giveawayStars(Object message) { return ((Message) message).giveawayStars; }
         @Override public String checklist(Object message) { return ((Message) message).checklist; }
         @Override public String title(Object message) { return ((Message) message).title; }
         @Override public long amount(Object message) { return ((Message) message).amount; }
+        @Override public String currency(Object message) { return ((Message) message).currency; }
         @Override public String text(Object message) { return ((Message) message).text; }
         @Override public boolean service(Object message) { return ((Message) message).service; }
         @Override public boolean media(Object message) { return ((Message) message).media; }

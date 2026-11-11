@@ -99,15 +99,17 @@ val autoForwardingPatch = bytecodePatch(
 internal fun BytecodePatchContext.resolveAutoForwarding(): MutableMethod {
     requireStatusMethod("autoForwarding")
     controlHook(AUTO_FORWARDING, "onNewMessages", listOf(OBJECT, "I"), "V")
-    for (name in listOf("account", "id", "date", "originDate", "diceValue", "storyId", "giveawayEnd", "giveawayCount")) {
+    for (name in listOf("account", "id", "date", "originDate", "diceValue", "storyId", "giveawayEnd", "giveawayCount",
+        "giveawayMonths")) {
         controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "I")
     }
     for (name in listOf("out", "forwarded", "service", "media")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "Z")
-    for (name in listOf("dialog", "dialogId", "sender", "origin", "mediaId", "pollId", "storyPeer", "gameId", "amount")) {
+    for (name in listOf("dialog", "dialogId", "sender", "origin", "mediaId", "pollId", "storyPeer", "gameId", "amount",
+        "giveawayStars")) {
         controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "J")
     }
     for (name in listOf("latitude", "longitude")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "D")
-    for (name in listOf("originName", "text", "phone", "emoticon", "checklist", "title")) {
+    for (name in listOf("originName", "text", "phone", "emoticon", "checklist", "title", "currency")) {
         controlHook(AUTO_FORWARDING, name, listOf(OBJECT), STRING)
     }
     controlHook(AUTO_FORWARDING, "selectedAccount", emptyList(), "I")
@@ -123,7 +125,7 @@ internal fun BytecodePatchContext.resolveAutoForwarding(): MutableMethod {
     controlMembers(TL_MESSAGE, "action:$ACTION", "fwd_from:$FWD_HEADER", "date:I", "media:$MEDIA", "message:$STRING")
     controlMembers(FWD_HEADER, "from_id:$PEER", "date:I", "from_name:$STRING")
     controlMembers(MEDIA, "photo:$PHOTO", "document:$DOCUMENT", "geo:$GEO", "phone_number:$STRING", "id:I", "peer:$PEER",
-        "user_id:J", "game:$TL_GAME", "title:$STRING", "total_amount:J")
+        "user_id:J", "game:$TL_GAME", "title:$STRING", "total_amount:J", "currency:$STRING")
     controlMembers(PHOTO, "id:J")
     controlMembers(DOCUMENT, "id:J")
     controlMembers(MEDIA_POLL, "poll:$POLL")
@@ -131,8 +133,8 @@ internal fun BytecodePatchContext.resolveAutoForwarding(): MutableMethod {
     controlMembers(GEO, "lat:D", "_long:D")
     controlMembers(MEDIA_DICE, "emoticon:$STRING", "value:I")
     controlMembers(TL_GAME, "id:J")
-    controlMembers(MEDIA_GIVEAWAY, "until_date:I", "quantity:I")
-    controlMembers(MEDIA_GIVEAWAY_RESULTS, "until_date:I", "winners_count:I")
+    controlMembers(MEDIA_GIVEAWAY, "until_date:I", "quantity:I", "months:I", "stars:J")
+    controlMembers(MEDIA_GIVEAWAY_RESULTS, "until_date:I", "winners_count:I", "months:I", "stars:J")
     controlMembers(MEDIA_TODO, "todo:$TODO_LIST")
     controlMembers(TODO_LIST, "title:$TEXT_WITH_ENTITIES")
     controlMembers(TEXT_WITH_ENTITIES, "text:$STRING")
@@ -296,8 +298,8 @@ internal fun BytecodePatchContext.writeAutoForwardingStubs() {
             return-wide v0
         """)
     }
-    // Of what reaches the server, only a venue and an invoice fill the shared title.
-    for ((name, field) in listOf("phone" to "phone_number", "title" to "title")) {
+    // Of what reaches the server, only a venue and an invoice fill the shared title, and only an invoice its currency.
+    for ((name, field) in listOf("phone" to "phone_number", "title" to "title", "currency" to "currency")) {
         writeStub(AUTO_FORWARDING, name, 2, """
             check-cast p0, $MESSAGE
             iget-object v0, p0, $MESSAGE->messageOwner:$TL_MESSAGE
@@ -386,7 +388,8 @@ internal fun BytecodePatchContext.writeAutoForwardingStubs() {
         return-wide v0
     """)
     // The giveaway's layer classes extend these two, so instance-of takes them too.
-    for ((name, fields) in listOf("giveawayEnd" to ("until_date" to "until_date"), "giveawayCount" to ("quantity" to "winners_count"))) {
+    for ((name, fields) in listOf("giveawayEnd" to ("until_date" to "until_date"), "giveawayCount" to ("quantity" to "winners_count"),
+            "giveawayMonths" to ("months" to "months"))) {
         writeStub(AUTO_FORWARDING, name, 3, """
             check-cast p0, $MESSAGE
             iget-object v0, p0, $MESSAGE->messageOwner:$TL_MESSAGE
@@ -408,6 +411,26 @@ internal fun BytecodePatchContext.writeAutoForwardingStubs() {
             return v0
         """)
     }
+    writeStub(AUTO_FORWARDING, "giveawayStars", 4, """
+        check-cast p0, $MESSAGE
+        iget-object v2, p0, $MESSAGE->messageOwner:$TL_MESSAGE
+        if-eqz v2, :hush_none
+        iget-object v2, v2, $TL_MESSAGE->media:$MEDIA
+        instance-of v0, v2, $MEDIA_GIVEAWAY
+        if-eqz v0, :hush_results
+        check-cast v2, $MEDIA_GIVEAWAY
+        iget-wide v0, v2, $MEDIA_GIVEAWAY->stars:J
+        return-wide v0
+        :hush_results
+        instance-of v0, v2, $MEDIA_GIVEAWAY_RESULTS
+        if-eqz v0, :hush_none
+        check-cast v2, $MEDIA_GIVEAWAY_RESULTS
+        iget-wide v0, v2, $MEDIA_GIVEAWAY_RESULTS->stars:J
+        return-wide v0
+        :hush_none
+        const-wide/16 v0, 0x0
+        return-wide v0
+    """)
     writeStub(AUTO_FORWARDING, "checklist", 3, """
         check-cast p0, $MESSAGE
         iget-object v0, p0, $MESSAGE->messageOwner:$TL_MESSAGE

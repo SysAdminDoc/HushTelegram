@@ -381,56 +381,68 @@ public class AutoForwardingTest {
     }
 
     /**
-     * The [i]th story, game, giveaway, checklist, invoice and place person 8000 sent at second 70,
-     * forwarded into A by [sender] as messages [firstId] on. Each pair differs only in the part of
-     * its key that's checked: the story's chat, the giveaway's winner count, the invoice's amount,
-     * and a venue's name on a plain location's spot.
+     * Person 8000's story, game, giveaway, checklist, invoice and place from second 70, forwarded
+     * into A by [sender] as messages [firstId] on. Variant 0 has one of each. Each later variant has,
+     * for every kind with a part left, one that differs from variant 0 only in that part of its key:
+     * a story's id, then its chat; a giveaway's end, winners, months and Stars; an invoice's title,
+     * amount and currency; and a venue's name on a plain location's spot.
      */
-    private static List<Object> heldMore(int firstId, long sender, int i) {
-        List<Object> six = new ArrayList<>();
+    private static List<Object> heldMore(int firstId, long sender, int variant) {
+        List<Object> held = new ArrayList<>();
+        // How many parts of its key each kind has, one per later variant.
+        int[] parts = {2, 1, 4, 1, 3, 1};
         for (int kind = 0; kind < 6; kind++) {
-            AutoForwardingForTests.Message message = message(A, firstId + kind);
+            if (variant > parts[kind]) continue;
+            AutoForwardingForTests.Message message = message(A, firstId + held.size());
             message.forwarded = true;
             message.sender = sender;
             message.origin = 8000;
             message.originDate = 70;
             message.media = true;
             if (kind == 0) {
-                message.storyId = 5;
-                message.storyPeer = 300 + i;
+                message.storyId = variant == 1 ? 6 : 5;
+                message.storyPeer = variant == 2 ? 301 : 300;
             }
-            if (kind == 1) message.gameId = 600 + i;
+            if (kind == 1) message.gameId = 600 + variant;
             if (kind == 2) {
-                message.giveawayEnd = 1_800_000_000;
-                message.giveawayCount = 10 + i;
+                message.giveawayEnd = variant == 1 ? 1_800_000_060 : 1_800_000_000;
+                message.giveawayCount = variant == 2 ? 11 : 10;
+                message.giveawayMonths = variant == 3 ? 6 : 3;
+                message.giveawayStars = variant == 4 ? 500 : 0;
             }
-            if (kind == 3) message.checklist = "Groceries " + i;
+            if (kind == 3) message.checklist = variant == 1 ? "Chores" : "Groceries";
             if (kind == 4) {
-                message.title = "Ticket";
-                message.amount = 500 + i;
+                message.title = variant == 1 ? "Pass" : "Ticket";
+                message.amount = variant == 2 ? 501 : 500;
+                message.currency = variant == 3 ? "EUR" : "USD";
             }
             if (kind == 5) {
                 message.latitude = 51.5;
                 message.longitude = -0.12;
-                if (i == 1) message.title = "Cafe";
+                if (variant == 1) message.title = "Cafe";
             }
-            six.add(message);
+            held.add(message);
         }
-        return six;
+        return held;
     }
 
     @Test public void differentStoriesGamesGiveawaysChecklistsInvoicesAndVenuesFromOneSecondEachGoOnce() {
         Settings.AUTO_FORWARDING.save(true);
         assertTrue(AutoForwarding.add(new AutoForwarding.Rule(1000, A, B, false)));
-        arrive(heldMore(1, 7000, 0).toArray());
-        arrive(heldMore(7, 7000, 1).toArray());
+        // Each later batch differs from the first only in one part of each key, so none passes for a copy of it.
+        for (int variant = 0, id = 1; variant <= 4; variant++) {
+            List<Object> held = heldMore(id, 7000, variant);
+            arrive(held.toArray());
+            id += held.size();
+        }
         assertEquals(Arrays.asList("0: [11/1, 11/2, 11/3, 11/4, 11/5, 11/6] to 12",
-                "0: [11/7, 11/8, 11/9, 11/10, 11/11, 11/12] to 12"), telegram.sent);
-        // B's copies of all twelve, coming back into A, stay.
-        List<Object> back = new ArrayList<>(heldMore(21, B, 0));
-        back.addAll(heldMore(27, B, 1));
+                "0: [11/7, 11/8, 11/9, 11/10, 11/11, 11/12] to 12", "0: [11/13, 11/14, 11/15] to 12",
+                "0: [11/16, 11/17] to 12", "0: [11/18] to 12"), telegram.sent);
+        // B's copies of all eighteen, coming back into A, stay.
+        List<Object> back = new ArrayList<>();
+        for (int variant = 0; variant <= 4; variant++) back.addAll(heldMore(21 + back.size(), B, variant));
         arrive(back.toArray());
-        assertEquals(2, telegram.sent.size());
+        assertEquals(5, telegram.sent.size());
         // A hidden author's own story from that second goes, and a hidden author's copy of one stays.
         AutoForwardingForTests.Message other = message(A, 41);
         other.forwarded = true;
@@ -441,7 +453,7 @@ public class AutoForwardingTest {
         other.storyId = 5;
         other.storyPeer = 399;
         arrive(other);
-        assertEquals("0: [11/41] to 12", telegram.sent.get(2));
+        assertEquals("0: [11/41] to 12", telegram.sent.get(5));
         AutoForwardingForTests.Message copy = message(A, 42);
         copy.forwarded = true;
         copy.sender = 7001;
@@ -451,7 +463,7 @@ public class AutoForwardingTest {
         copy.storyId = 5;
         copy.storyPeer = 300;
         arrive(copy);
-        assertEquals(3, telegram.sent.size());
+        assertEquals(6, telegram.sent.size());
     }
 
     @Test public void aRuleAddedWhilePausedKeepsTheOthers() {

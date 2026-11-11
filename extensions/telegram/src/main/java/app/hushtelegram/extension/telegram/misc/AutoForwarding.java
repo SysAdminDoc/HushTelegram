@@ -384,8 +384,9 @@ public final class AutoForwarding {
     /**
      * The poll, dice roll, contact, place, story, game, giveaway, checklist or invoice [message]
      * holds, each of which a forward keeps, or null. Two same-face rolls, or the same contact,
-     * place, checklist title or invoice, from one author's second still look alike, and a live
-     * location is known by the fix it carries.
+     * place, checklist title or invoice, from one author's second still look alike, as do two
+     * giveaways with the same end, winners and prize, and a live location is known by the fix it
+     * carries.
      */
     @Nullable
     private static String held(Object message) {
@@ -406,11 +407,13 @@ public final class AutoForwarding {
         long game = telegram.gameId(message);
         if (game != 0) return "m" + game;
         int end = telegram.giveawayEnd(message);
-        if (end != 0) return "v" + end + "x" + telegram.giveawayCount(message);
+        // A Premium and a Stars giveaway can end together with as many winners.
+        if (end != 0) return "v" + end + "x" + telegram.giveawayCount(message)
+                + "/" + telegram.giveawayMonths(message) + "/" + telegram.giveawayStars(message);
         String checklist = telegram.checklist(message);
         if (checklist != null) return "k" + checklist;
         // Only an invoice is left with a title.
-        if (title != null) return "i" + title + "/" + telegram.amount(message);
+        if (title != null) return "i" + title + "/" + telegram.amount(message) + "/" + telegram.currency(message);
         return null;
     }
 
@@ -493,6 +496,10 @@ public final class AutoForwarding {
 
         int giveawayCount(Object message);
 
+        int giveawayMonths(Object message);
+
+        long giveawayStars(Object message);
+
         @Nullable
         String checklist(Object message);
 
@@ -500,6 +507,9 @@ public final class AutoForwarding {
         String title(Object message);
 
         long amount(Object message);
+
+        @Nullable
+        String currency(Object message);
 
         @Nullable
         String text(Object message);
@@ -554,9 +564,12 @@ public final class AutoForwarding {
         @Override public long gameId(Object message) { return AutoForwarding.gameId(message); }
         @Override public int giveawayEnd(Object message) { return AutoForwarding.giveawayEnd(message); }
         @Override public int giveawayCount(Object message) { return AutoForwarding.giveawayCount(message); }
+        @Override public int giveawayMonths(Object message) { return AutoForwarding.giveawayMonths(message); }
+        @Override public long giveawayStars(Object message) { return AutoForwarding.giveawayStars(message); }
         @Override public String checklist(Object message) { return AutoForwarding.checklist(message); }
         @Override public String title(Object message) { return AutoForwarding.title(message); }
         @Override public long amount(Object message) { return AutoForwarding.amount(message); }
+        @Override public String currency(Object message) { return AutoForwarding.currency(message); }
         @Override public String text(Object message) { return AutoForwarding.text(message); }
         @Override public boolean service(Object message) { return AutoForwarding.service(message); }
         @Override public boolean media(Object message) { return AutoForwarding.media(message); }
@@ -645,6 +658,12 @@ public final class AutoForwarding {
     /** A giveaway's {@code quantity}, or its results' {@code winners_count}, or 0. */
     public static int giveawayCount(Object message) { return 0; }
 
+    /** {@code months} of a giveaway or its results: how much Premium each winner gets, or 0. */
+    public static int giveawayMonths(Object message) { return 0; }
+
+    /** {@code stars} of a giveaway or its results: how many Stars it gives away, or 0. */
+    public static long giveawayStars(Object message) { return 0L; }
+
     /** {@code TL_messageMediaToDo.todo.title.text}: a checklist's title, or null when it isn't one. */
     @Nullable
     public static String checklist(Object message) { return null; }
@@ -655,6 +674,10 @@ public final class AutoForwarding {
 
     /** {@code media.total_amount}: what an invoice asks for, or 0. */
     public static long amount(Object message) { return 0L; }
+
+    /** {@code media.currency}: the currency an invoice's amount is in, or null. */
+    @Nullable
+    public static String currency(Object message) { return null; }
 
     /** {@code message.messageOwner.message}: its text, or a photo or file's caption, or null. */
     @Nullable
