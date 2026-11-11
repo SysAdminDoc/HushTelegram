@@ -36,6 +36,8 @@ public final class AutoForwardingForTests {
         public String originName;
         /** Its photo or file, or 0. */
         public long mediaId;
+        /** Its text, or null. */
+        public String text;
         public boolean service;
         public boolean media;
 
@@ -85,6 +87,7 @@ public final class AutoForwardingForTests {
         @Override public int originDate(Object message) { return ((Message) message).originDate; }
         @Override public String originName(Object message) { return ((Message) message).originName; }
         @Override public long mediaId(Object message) { return ((Message) message).mediaId; }
+        @Override public String text(Object message) { return ((Message) message).text; }
         @Override public boolean service(Object message) { return ((Message) message).service; }
         @Override public boolean media(Object message) { return ((Message) message).media; }
         @Override public int selectedAccount() { return selected; }

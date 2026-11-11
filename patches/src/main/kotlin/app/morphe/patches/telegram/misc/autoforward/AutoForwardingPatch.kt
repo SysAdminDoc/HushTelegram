@@ -92,7 +92,7 @@ internal fun BytecodePatchContext.resolveAutoForwarding(): MutableMethod {
     for (name in listOf("account", "id", "date", "originDate")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "I")
     for (name in listOf("out", "forwarded", "service", "media")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "Z")
     for (name in listOf("dialog", "dialogId", "sender", "origin", "mediaId")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "J")
-    controlHook(AUTO_FORWARDING, "originName", listOf(OBJECT), STRING)
+    for (name in listOf("originName", "text")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), STRING)
     controlHook(AUTO_FORWARDING, "selectedAccount", emptyList(), "I")
     controlHook(AUTO_FORWARDING, "userId", listOf("I"), "J")
     controlHook(AUTO_FORWARDING, "dialogs", listOf("I", "I"), LIST)
@@ -103,7 +103,7 @@ internal fun BytecodePatchContext.resolveAutoForwarding(): MutableMethod {
 
     controlMembers(MESSAGE, "currentAccount:I", "messageOwner:$TL_MESSAGE", "getDialogId()J", "getId()I", "isOut()Z",
         "isForwarded()Z", "isMediaEmpty()Z", "getFromChatId()J", "static getPeerId($PEER)J")
-    controlMembers(TL_MESSAGE, "action:$ACTION", "fwd_from:$FWD_HEADER", "date:I", "media:$MEDIA")
+    controlMembers(TL_MESSAGE, "action:$ACTION", "fwd_from:$FWD_HEADER", "date:I", "media:$MEDIA", "message:$STRING")
     controlMembers(FWD_HEADER, "from_id:$PEER", "date:I", "from_name:$STRING")
     controlMembers(MEDIA, "photo:$PHOTO", "document:$DOCUMENT")
     controlMembers(PHOTO, "id:J")
@@ -198,6 +198,17 @@ internal fun BytecodePatchContext.writeAutoForwardingStubs() {
         iget-object v0, v0, $TL_MESSAGE->fwd_from:$FWD_HEADER
         if-eqz v0, :hush_none
         iget-object v0, v0, $FWD_HEADER->from_name:$STRING
+        return-object v0
+        :hush_none
+        const/4 v0, 0x0
+        return-object v0
+    """)
+    // A forward keeps the text, so a copy of a text message is known by it.
+    writeStub(AUTO_FORWARDING, "text", 2, """
+        check-cast p0, $MESSAGE
+        iget-object v0, p0, $MESSAGE->messageOwner:$TL_MESSAGE
+        if-eqz v0, :hush_none
+        iget-object v0, v0, $TL_MESSAGE->message:$STRING
         return-object v0
         :hush_none
         const/4 v0, 0x0

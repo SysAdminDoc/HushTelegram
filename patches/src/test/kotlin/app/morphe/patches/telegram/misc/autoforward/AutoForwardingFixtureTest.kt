@@ -84,6 +84,7 @@ class AutoForwardingFixtureTest {
             assertTrue("$name: originName", refs("originName").containsAll(listOf(
                 "Lorg/telegram/tgnet/TLRPC\$Message;->fwd_from:Lorg/telegram/tgnet/TLRPC\$MessageFwdHeader;",
                 "Lorg/telegram/tgnet/TLRPC\$MessageFwdHeader;->from_name:Ljava/lang/String;")))
+            assertTrue("$name: text", "Lorg/telegram/tgnet/TLRPC\$Message;->message:Ljava/lang/String;" in refs("text"))
             assertTrue("$name: mediaId", refs("mediaId").containsAll(listOf(
                 "Lorg/telegram/tgnet/TLRPC\$Message;->media:Lorg/telegram/tgnet/TLRPC\$MessageMedia;",
                 "Lorg/telegram/tgnet/TLRPC\$MessageMedia;->photo:Lorg/telegram/tgnet/TLRPC\$Photo;",

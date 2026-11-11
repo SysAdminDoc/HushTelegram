@@ -261,6 +261,7 @@ public class AutoForwardingTest {
         AutoForwardingForTests.Message written = message(A, 1);
         written.sender = 7000;
         written.date = 40;
+        written.text = "see you at 6";
         arrive(written);
         assertEquals(1, telegram.sent.size());
         // The author hides who they are, so the copy that comes back has only their name.
@@ -269,8 +270,28 @@ public class AutoForwardingTest {
         copy.sender = B;
         copy.originName = "Pat";
         copy.originDate = 40;
+        copy.text = "see you at 6";
         arrive(copy);
         assertEquals(1, telegram.sent.size());
+    }
+
+    @Test public void aHiddenAuthorsOtherTextFromTheSameSecondGoes() {
+        Settings.AUTO_FORWARDING.save(true);
+        assertTrue(AutoForwarding.add(new AutoForwarding.Rule(1000, A, B, false)));
+        AutoForwardingForTests.Message written = message(A, 1);
+        written.sender = 7000;
+        written.date = 1000;
+        written.text = "lunch?";
+        arrive(written);
+        // Somebody else's text, first sent by a hidden author in that same second, isn't a copy of it.
+        AutoForwardingForTests.Message other = message(A, 2);
+        other.forwarded = true;
+        other.sender = 7001;
+        other.originName = "Pat";
+        other.originDate = 1000;
+        other.text = "the train is late";
+        arrive(other);
+        assertEquals(Arrays.asList("0: [11/1] to 12", "0: [11/2] to 12"), telegram.sent);
     }
 
     @Test public void twoHiddenAuthorsInOneSecondBothGo() {

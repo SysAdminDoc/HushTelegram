@@ -55,13 +55,14 @@ public final class AutoForwarding {
      * Each original a rule forwarded, with the chat it went to, on any account. A forward keeps
      * its original's author, date and photo or file through every copy, so a copy coming round
      * again is known by them even when its sender is a channel and its header names a third chat.
-     * Unless the original was a forward from a hidden author, its date and photo or file are kept
-     * on their own too: a copy that comes back naming its author by a hidden name is known by those.
+     * Unless the original was a forward from a hidden author, its date and photo, file or text are
+     * kept on their own too: a copy that comes back naming its author by a hidden name is known by
+     * those. That's two for each forward, so twice as many are kept.
      */
     private static final Map<String, Boolean> copies = new LinkedHashMap<String, Boolean>() {
         @Override
         protected boolean removeEldestEntry(Map.Entry<String, Boolean> eldest) {
-            return size() > REMEMBERED;
+            return size() > 2 * REMEMBERED;
         }
     };
     private static final Map<Integer, ArrayDeque<Long>> sentAt = new HashMap<>();
@@ -365,10 +366,16 @@ public final class AutoForwarding {
         return (origin != 0 ? String.valueOf(origin) : "~" + telegram.originName(message)) + "/" + moment(message);
     }
 
-    /** When [message]'s original was first sent, and its photo or file, without who sent it. */
+    /**
+     * When [message]'s original was first sent, and its photo or file, without who sent it. Without
+     * either, its text stands in, or every text message sent in that second would look the same.
+     */
     private static String moment(Object message) {
         int date = telegram.forwarded(message) ? telegram.originDate(message) : telegram.date(message);
-        return date + "/" + telegram.mediaId(message);
+        long media = telegram.mediaId(message);
+        if (media != 0) return date + "/" + media;
+        String text = telegram.text(message);
+        return date + "/t" + (text == null ? 0 : text.hashCode());
     }
 
     /** Whether [account] may send one more forward this minute, and if so, counts it. */
@@ -426,6 +433,9 @@ public final class AutoForwarding {
 
         long mediaId(Object message);
 
+        @Nullable
+        String text(Object message);
+
         boolean service(Object message);
 
         boolean media(Object message);
@@ -465,6 +475,7 @@ public final class AutoForwarding {
         @Override public int originDate(Object message) { return AutoForwarding.originDate(message); }
         @Override public String originName(Object message) { return AutoForwarding.originName(message); }
         @Override public long mediaId(Object message) { return AutoForwarding.mediaId(message); }
+        @Override public String text(Object message) { return AutoForwarding.text(message); }
         @Override public boolean service(Object message) { return AutoForwarding.service(message); }
         @Override public boolean media(Object message) { return AutoForwarding.media(message); }
         @Override public int selectedAccount() { return AutoForwarding.selectedAccount(); }
@@ -516,6 +527,10 @@ public final class AutoForwarding {
 
     /** The id of the message's photo or file, which a forward keeps, or 0 when it has neither. */
     public static long mediaId(Object message) { return 0L; }
+
+    /** {@code message.messageOwner.message}: its text, or a photo or file's caption, or null. */
+    @Nullable
+    public static String text(Object message) { return null; }
 
     /** Whether the message is a service message: an action other than TL_messageActionEmpty. */
     public static boolean service(Object message) { return false; }
