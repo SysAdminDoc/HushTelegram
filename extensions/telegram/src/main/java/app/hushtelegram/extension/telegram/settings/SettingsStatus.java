@@ -239,4 +239,5 @@ public final class SettingsStatus {
     public static boolean autoForwarding() { return false; }
     public static boolean cropGuard() { return false; }
     public static boolean captionOrder() { return false; }
+    public static boolean proxyMenu() { return false; }
 }

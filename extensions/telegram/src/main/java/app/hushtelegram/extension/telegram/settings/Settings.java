@@ -548,6 +548,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_caption_order", TRUE);
 
     /**
+     * The chat list's menu always has Proxy, not just while a proxy is on or Telegram is blocked
+     * where you are. Off by default.
+     */
+    public static final BooleanSetting PROXY_MENU =
+            new BooleanSetting("hushtelegram_proxy_menu", FALSE);
+
+    /**
      * Translate a message or a whole chat with Google's web translate, beside Telegram's own Premium
      * translation. Off by default, and nothing leaves the phone until a chat or message is turned on.
      */

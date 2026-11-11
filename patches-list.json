@@ -3162,6 +3162,63 @@
       "options": []
     },
     {
+      "name": "Proxy in the chat list menu",
+      "description": "Keeps Proxy in the chat list's menu, which Telegram only shows while a proxy is on or where Telegram is blocked. Starts off. Turn it on in HushTelegram settings > Chat list.",
+      "category": "Chats",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushTelegram settings"
+      ],
+      "compatiblePackages": {
+        "org.telegram.messenger": [
+          "13.2.1"
+        ],
+        "org.telegram.messenger.web": [
+          "13.2.1"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Telegram",
+          "packageName": "org.telegram.messenger",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.2.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 72911
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telegram (telegram.org)",
+          "packageName": "org.telegram.messenger.web",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.2.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 72919
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Quiet contacts nag",
       "description": "Once you've said no, stops the Contacts tab from asking for contacts access again and clears its warning badge. On by default. Turn it off in HushTelegram settings > Look and feel.",
       "category": "Interface",

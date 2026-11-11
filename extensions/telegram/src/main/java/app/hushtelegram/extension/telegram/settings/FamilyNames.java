@@ -93,6 +93,7 @@ public final class FamilyNames {
     public static final String AUTO_FORWARDING = "Auto-forwarding rules";
     public static final String CROP_GUARD = "Never send an uncropped photo";
     public static final String CAPTION_ORDER = "Keep captions with their photos";
+    public static final String PROXY_MENU = "Proxy in the chat list menu";
 
     private FamilyNames() {
     }

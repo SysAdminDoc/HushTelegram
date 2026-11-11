@@ -12,11 +12,11 @@ function Assert-Selection([bool]$Condition, [string]$Message) {
 $catalog = Get-Content (Join-Path $Root 'patches-list.json') -Raw | ConvertFrom-Json
 $model = Get-SelectionStatusModel -Root $Root
 $plans = @(Get-PatchSelectionCases -Catalog $catalog -StatusModel $model)
-Assert-Selection ($plans.Count -eq 94 -and @($plans.Id | Sort-Object -Unique).Count -eq 94) 'The matrix changed its bounded case inventory.'
+Assert-Selection ($plans.Count -eq 95 -and @($plans.Id | Sort-Object -Unique).Count -eq 95) 'The matrix changed its bounded case inventory.'
 Assert-Selection (@($plans | Where-Object Failure).Count -eq 10) 'A malformed, incomplete or typed-input refusal is missing.'
 Assert-Selection (@($plans | Where-Object Id -CEQ 'maps-array-noop').Count -eq 1) 'The CLI typed-option no-op case is missing.'
-Assert-Selection (@($plans | Where-Object Default).Count -eq 1 -and $plans[0].Id -ceq 'default72') 'Defaults must be exercised through the actual CLI defaults.'
-Assert-Selection ($plans[0].Names.Count -eq 72 -and ($plans | Where-Object Id -CEQ 'full76').Names.Count -eq 76) 'Default and full catalog counts changed.'
+Assert-Selection (@($plans | Where-Object Default).Count -eq 1 -and $plans[0].Id -ceq 'default73') 'Defaults must be exercised through the actual CLI defaults.'
+Assert-Selection ($plans[0].Names.Count -eq 73 -and ($plans | Where-Object Id -CEQ 'full77').Names.Count -eq 77) 'Default and full catalog counts changed.'
 $logoCase = @($plans | Where-Object Id -CEQ 'launch-logo')
 Assert-Selection ($logoCase.Count -eq 1 -and ($logoCase[0].Names -join ',') -ceq 'AMOLED black,Black and white launch logo') 'The launch logo needs its own case beside the switch it shows behind.'
 $hostile = $catalog | ConvertTo-Json -Depth 20 | ConvertFrom-Json
@@ -241,7 +241,7 @@ $tail = "`r`n[resources] files named by the patched table: 7117, moved 0"
 $icons = "[resources] added resources: 3`r`n$iconLines$tail"
 $logos = "[resources] added resources: 3`r`n$logoLines$tail"
 $both = "[resources] added resources: 6`r`n$iconLines`r`n$logoLines$tail"
-$full = ($plans | Where-Object Id -CEQ 'full76').Names
+$full = ($plans | Where-Object Id -CEQ 'full77').Names
 $default = $plans[0].Names
 $logoOnly = ($plans | Where-Object Id -CEQ 'launch-logo').Names
 Assert-Selection (Test-SelectionAddedResources -Report $none -Closure $default) 'A case without the icon was refused for adding nothing.'

@@ -495,6 +495,7 @@ public final class SelectionCheck {
         hook(calls, flags, "botTokenSignIn", "misc/BotSignIn", "phoneScreen", "drop");
         hook(calls, flags, "cropGuard", "misc/CropGuard", "begin", "missing", "notMade", "held");
         hook(calls, flags, "captionOrder", "misc/CaptionOrder", "before", "after");
+        hook(calls, flags, "proxyMenu", "misc/ProxyMenu", "show");
         for (String[] bridge : List.of(
                 new String[]{"nativeTokenPresence", names.method("Lorg/telegram/messenger/SharedConfig;->hushTelegramTokenPresence()I")},
                 new String[]{"nativeAccountCounts", names.method("Lorg/telegram/messenger/UserConfig;->hushTelegramAccountCounts()I")})) {

@@ -140,6 +140,7 @@ body:
         - Bot token sign-in
         - Never send an uncropped photo
         - Keep captions with their photos
+        - Proxy in the chat list menu
         - HushTelegram settings
     validations:
       required: true

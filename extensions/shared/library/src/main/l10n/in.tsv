@@ -1575,3 +1575,6 @@ Read receipts sent	Laporan dibaca terkirim
 No read receipts waiting	Tidak ada laporan dibaca tertunda
 # context: short message after a tap on the chat list's double check button couldn't send the held read receipts.
 Couldn't send read receipts	Laporan dibaca gagal dikirim
+# context: Proxy in the chat list menu (#67). A switch on Chat list, off by default: the menu that opens from the top of the chat list (New Group, Saved Messages and so on) always gets Telegram's own Proxy row, which Telegram otherwise shows only while a proxy is on or where Telegram is blocked.
+Proxy in the chat list menu	Proxy di menu daftar obrolan
+The menu at the top of the chat list always has Proxy, so your proxies are one tap away even where Telegram isn't blocked.	Menu di atas daftar obrolan selalu menampilkan Proxy, jadi proxy Anda tinggal satu ketukan meski Telegram tidak diblokir di tempat Anda.

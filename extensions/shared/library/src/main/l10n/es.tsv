@@ -1575,3 +1575,6 @@ Read receipts sent	Confirmaciones de lectura enviadas
 No read receipts waiting	No hay confirmaciones pendientes
 # context: short message after a tap on the chat list's double check button couldn't send the held read receipts.
 Couldn't send read receipts	No se pudieron enviar las confirmaciones
+# context: Proxy in the chat list menu (#67). A switch on Chat list, off by default: the menu that opens from the top of the chat list (New Group, Saved Messages and so on) always gets Telegram's own Proxy row, which Telegram otherwise shows only while a proxy is on or where Telegram is blocked.
+Proxy in the chat list menu	Proxy en el menú de la lista de chats
+The menu at the top of the chat list always has Proxy, so your proxies are one tap away even where Telegram isn't blocked.	El menú de arriba de la lista de chats siempre tiene Proxy, así tus proxies quedan a un toque aunque Telegram no esté bloqueado donde estás.

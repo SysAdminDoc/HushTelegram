@@ -15,6 +15,7 @@ Every HushTelegram release, newest first.
 
 ### Added
 
+* **Telegram:** **Proxy in the chat list menu**, under Chat list and off by default. The menu at the top of the chat list always has Proxy, so your saved proxies are one tap away. Telegram only puts it there while a proxy is on or in a country where Telegram is blocked (#67).
 * **Telegram:** **Ghost mode** has two new switches in Privacy, both off by default. **Read after you reply** sends the read receipt Ghost mode held back in a chat once you send a message there, so your other devices stop showing that chat as unread. **Read receipts button** puts a double check at the top of the chat list that sends every read receipt Ghost mode is holding for the account you're on. Held receipts last until Telegram restarts.
 * **Tooling:** `scripts/name-table.ps1` writes a Telegram build's name table, the map from 13.1.1's names to the ones R8 gave the build. Run it again on a build that already has a table and it keeps the rows people added by hand and lets them win over anything it matched, so 72919's table comes back unchanged.
 * **Telegram:** **Suppress screenshot notification**, a new patch with its switch in HushTelegram settings > Privacy, off by default. Telegram stops telling the other person you took a screenshot, in regular and secret chats.

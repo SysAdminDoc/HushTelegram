@@ -666,6 +666,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "Restart Telegram to see the change.")));
             }
         }
+        if (build.contains(PatchFamily.PROXY_MENU)) {
+            on(pages, PatchFamily.PROXY_MENU).addPreference(toggle(context, Settings.PROXY_MENU, L10n.t("Proxy in the chat list menu"),
+                    PatchFamily.PROXY_MENU.coverageSummary(L10n.t("The menu at the top of the chat list always has Proxy, so your "
+                            + "proxies are one tap away even where Telegram isn't blocked."))));
+        }
         if (build.contains(PatchFamily.TEST_SERVER_SIGN_IN)) {
             on(pages, PatchFamily.TEST_SERVER_SIGN_IN).addPreference(toggle(context, Settings.TEST_SERVER_SIGN_IN, L10n.t("Test server sign-in"),
                     PatchFamily.TEST_SERVER_SIGN_IN.coverageSummary(L10n.t("Signing in or adding an account shows Telegram's Test Backend box "

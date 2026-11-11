@@ -1571,3 +1571,6 @@ Read receipts sent	Потвържденията са изпратени
 No read receipts waiting	Няма чакащи потвърждения
 # context: short message after a tap on the chat list's double check button couldn't send the held read receipts.
 Couldn't send read receipts	Потвържденията не се изпратиха
+# context: Proxy in the chat list menu (#67). A switch on Chat list, off by default: the menu that opens from the top of the chat list (New Group, Saved Messages and so on) always gets Telegram's own Proxy row, which Telegram otherwise shows only while a proxy is on or where Telegram is blocked.
+Proxy in the chat list menu	Прокси в менюто на списъка с чатове
+The menu at the top of the chat list always has Proxy, so your proxies are one tap away even where Telegram isn't blocked.	Менюто в горната част на списъка с чатове винаги показва „Прокси“, така че проксита ви са на едно докосване, дори където Telegram не е блокиран.

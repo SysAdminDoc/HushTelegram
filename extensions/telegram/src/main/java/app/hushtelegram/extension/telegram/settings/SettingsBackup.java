@@ -254,7 +254,8 @@ public final class SettingsBackup {
             Settings.BYPASS_INTEGRITY_CHECK,
             Settings.AUTO_FORWARDING,
             Settings.CROP_GUARD,
-            Settings.CAPTION_ORDER));
+            Settings.CAPTION_ORDER,
+            Settings.PROXY_MENU));
 
     /**
      * The text a file carries besides the switches: the message filters, each list as a JSON array

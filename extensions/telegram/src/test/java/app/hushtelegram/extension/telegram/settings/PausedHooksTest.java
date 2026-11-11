@@ -481,6 +481,8 @@ public class PausedHooksTest {
             order.remove(0);
             return app.hushtelegram.extension.telegram.misc.CaptionOrder.after(order, 0) != null;
         }));
+        probes.put(PatchFamily.PROXY_MENU, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.ProxyMenu.show(1)));
         // New messages are looked at for forwarding.
         probes.put(PatchFamily.AUTO_FORWARDING, Collections.singletonList(() -> {
             List<String> before = HookStatus.report();
