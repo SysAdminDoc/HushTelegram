@@ -6,6 +6,8 @@ package app.hushtelegram.extension.telegram.misc;
 
 import android.graphics.Bitmap;
 
+import java.io.File;
+
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
@@ -53,6 +55,22 @@ public final class CropGuard {
     public static boolean notMade(Bitmap cropped) {
         if (cropped != null) return false;
         return fail("cropped copy not made");
+    }
+
+    /**
+     * Called when a failed copy takes the crop back off the photo, with the drawing Telegram cropped
+     * for it. The photo no longer points at that file, and the next crop makes a new one, so it's
+     * deleted here instead of left in the cache.
+     *
+     * @param path the cropped drawing's file, or null when the photo has no drawing
+     */
+    public static void dropCopy(String path) {
+        if (path == null) return;
+        try {
+            new File(path).delete();
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.CROP_GUARD, "drawing", failure);
+        }
     }
 
     /**

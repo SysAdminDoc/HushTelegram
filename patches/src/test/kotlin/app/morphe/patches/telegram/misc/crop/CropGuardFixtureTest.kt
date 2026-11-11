@@ -101,12 +101,16 @@ class CropGuardFixtureTest {
             }
             assertNotEquals("$name: viewer kept", sites.viewState, bakeScratch)
             assertNotEquals("$name: photo state kept", sites.photoState, bakeScratch)
+            // The failed pass's cropped drawing file goes before the photo stops pointing at it.
+            assertEquals("$name: drawing file dropped", listOf(listOf(bakeScratch, sites.photoState), listOf(bakeScratch)),
+                after.subList(bake + 8, bake + 10).map { it.namedRegisters() })
+            assertEquals(listOf(CROPPED_PAINT_PATH, CROP_GUARD_DROP_COPY), after.subList(bake + 8, bake + 10).map { it.controlRef() })
             assertEquals("$name: crops cleared",
                 listOf(listOf(bakeScratch)) + List(4) { listOf(bakeScratch, sites.photoState) } + List(3) { listOf(bakeScratch, sites.viewState) },
-                after.subList(bake + 8, bake + 16).map { it.namedRegisters() })
-            assertEquals(0L, (after[bake + 8] as WideLiteralInstruction).wideLiteral)
+                after.subList(bake + 10, bake + 18).map { it.namedRegisters() })
+            assertEquals(0L, (after[bake + 10] as WideLiteralInstruction).wideLiteral)
             assertEquals(listOf(CROP_STATE_WRITE, CROPPED_PAINT_PATH, CROPPED_ENTITIES, IS_CROPPED, sites.viewCrop, sites.viewPaint, sites.viewEntities),
-                after.subList(bake + 9, bake + 16).map { it.controlRef() })
+                after.subList(bake + 11, bake + 18).map { it.controlRef() })
 
             val flow = ControlFlow.of(sites.apply).normal
             for (branch in listOf(entry + 1, entry + 7)) assertEquals("$name: photo check $branch", setOf(branch + 1, entry + 9), flow[branch].toSet())
@@ -194,7 +198,7 @@ class CropGuardFixtureTest {
         )
         val BAKE_SHAPE = listOf(
             Opcode.IGET_BOOLEAN, Opcode.IF_EQZ, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT, Opcode.IF_EQZ,
-            Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT, Opcode.IF_EQZ,
+            Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.IGET_OBJECT, Opcode.INVOKE_STATIC_RANGE,
             Opcode.CONST_4, Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.IPUT_BOOLEAN,
             Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.RETURN_VOID, Opcode.NOP,
         )

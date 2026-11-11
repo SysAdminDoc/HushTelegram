@@ -8,6 +8,7 @@ import static org.junit.Assert.*;
 
 import android.graphics.Bitmap;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,6 +90,16 @@ public class CropGuardTest {
         assertTrue(CropGuard.notMade(null));
         CropGuard.begin();
         assertFalse(CropGuard.held());
+    }
+
+    @Test public void aHeldCropDeletesItsCroppedDrawing() throws Exception {
+        File drawing = File.createTempFile("crop", "_temp.jpg");
+        CropGuard.dropCopy(drawing.getPath());
+        assertFalse(drawing.exists());
+        // No drawing, or one already gone, is nothing to do.
+        CropGuard.dropCopy(null);
+        CropGuard.dropCopy(drawing.getPath());
+        assertTrue(HookStatus.missing(FamilyNames.CROP_GUARD).isEmpty());
     }
 
     @Test public void offPausedOrUnreadableTelegramGoesOnAsBefore() {

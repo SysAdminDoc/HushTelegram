@@ -50,6 +50,7 @@ internal const val CROP_GUARD_BEGIN = "$CROP_GUARD->begin()V"
 internal const val CROP_GUARD_MISSING = "$CROP_GUARD->missing(Landroid/graphics/Bitmap;)Z"
 internal const val CROP_GUARD_NOT_MADE = "$CROP_GUARD->notMade(Landroid/graphics/Bitmap;)Z"
 internal const val CROP_GUARD_HELD = "$CROP_GUARD->held()Z"
+internal const val CROP_GUARD_DROP_COPY = "$CROP_GUARD->dropCopy(Ljava/lang/String;)V"
 internal const val CROP_VIEWER = "Lorg/telegram/ui/PhotoViewer;"
 internal const val CROP_AREA_VIEW = "Lorg/telegram/ui/Components/Crop/CropAreaView;"
 private const val BITMAP = "Landroid/graphics/Bitmap;"
@@ -106,7 +107,8 @@ val cropGuardPatch = bytecodePatch(
  *
  * A failure at [bake] comes after Telegram has deleted the photo's earlier edited copy and handed the
  * new crop, with the drawing and stickers cropped to it, to the photo's edit state and the viewer's
- * ([photoState], [viewState]). The check takes all of that back off both and clears the photo's
+ * ([photoState], [viewState]). The check deletes the cropped drawing's file, which Telegram would
+ * otherwise have deleted on the next crop, takes all of that back off both and clears the photo's
  * cropped flag, which an earlier crop may have left set, so the photo reads as uncropped, the way it
  * would now be sent, even when the editor is cancelled next. The editor is still open, and the next
  * Done runs the crop again from the start.
@@ -145,6 +147,8 @@ internal class CropGuardSites(
             invoke-static/range {v$cropped .. v$cropped}, $CROP_GUARD_NOT_MADE
             move-result v$bakeFree
             if-eqz v$bakeFree, :hush_baked
+            iget-object v$bakeFree, v$photoState, $CROPPED_PAINT_PATH
+            invoke-static/range {v$bakeFree .. v$bakeFree}, $CROP_GUARD_DROP_COPY
             const/4 v$bakeFree, 0x0
             iput-object v$bakeFree, v$photoState, $CROP_STATE_WRITE
             iput-object v$bakeFree, v$photoState, $CROPPED_PAINT_PATH
@@ -190,6 +194,7 @@ internal fun BytecodePatchContext.resolveCropGuard(): CropGuardSites {
     controlHook(CROP_GUARD, "missing", listOf(BITMAP), "Z")
     controlHook(CROP_GUARD, "notMade", listOf(BITMAP), "Z")
     controlHook(CROP_GUARD, "held", emptyList(), "Z")
+    controlHook(CROP_GUARD, "dropCopy", listOf("Ljava/lang/String;"), "V")
     val viewer = tgMutableClassDefByOrNull(CROP_VIEWER)
     controlShape(viewer != null, "the photo viewer is missing")
 
