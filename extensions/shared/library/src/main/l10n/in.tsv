@@ -1285,8 +1285,13 @@ the hidden accounts	akun tersembunyi
 Fit all folder tabs	Muat semua tab folder
 # context: Summary of the Fit all folder tabs switch. The folder tabs shrink so none of them scrolls out of sight; with few folders nothing changes
 Shrinks the folder tabs above the chat list until all of them fit on the screen, so you never scroll sideways to find one. With only a few folders nothing changes.	Memperkecil tab folder di atas daftar obrolan sampai semuanya muat di layar, jadi kamu tidak perlu menggeser ke samping untuk mencari satu. Kalau foldernya sedikit, tidak ada yang berubah.
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default. It puts an icon for the kind of folder in front of each folder tab's name above the chat list
+Folder icons on tabs	Ikon di tab folder
+# context: Summary of the Folder icons on tabs switch. All Chats gets two speech bubbles, a folder of only private chats a person, of only groups a group, of only channels a channel, of only bots a bot. All Chats is Telegram's FilterAllChats label
+Puts a small icon in front of each folder tab's name: two bubbles for All Chats, and a person, group, channel or bot for a folder of that kind of chat. Other folders get a folder icon. With a pack picked under Folder icons, the tabs use that pack instead.	Menaruh ikon kecil di depan nama setiap tab folder: dua gelembung untuk Semua Obrolan, dan orang, grup, kanal atau bot untuk folder berisi jenis obrolan itu. Folder lain mendapat ikon folder. Jika paket dipilih di Ikon folder, tab memakai paket itu.
 # context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the switch that shrinks the folder tabs to fit the screen
 the fitted folder tabs	tab folder yang dimuatkan
+the folder tab icons	ikon tab folder
 # context: Switch under Privacy for Receive only mode, per account (#53).
 Receive only mode	Mode hanya terima
 The accounts you pick below can read but not write. Messages, reactions, drafts and typing stay on this phone and show an error. Reading, files and read receipts work. Works with this switch on.	Akun yang Anda pilih di bawah bisa membaca tetapi tidak menulis. Pesan, reaksi, draf, dan status mengetik tetap di ponsel ini dan menampilkan kesalahan. Membaca, berkas, dan tanda dibaca tetap berfungsi. Berlaku saat sakelar ini aktif.
@@ -1348,6 +1353,8 @@ None	Tidak ada
 Couldn't save the choice. Try again in a moment.	Pilihan tidak tersimpan. Coba lagi sebentar lagi.
 # context: Summary of the Folder icons row. %1$s is the chosen pack (Regular, Bold, Filled or None).
 %1$s. Icons show beside folder names in HushTelegram's own lists. Telegram's folder tabs stay as they are.	%1$s. Ikon muncul di samping nama folder pada daftar HushTelegram sendiri. Tab folder Telegram tetap seperti semula.
+# context: Summary of the Folder icons row in a build that can put icons on the folder tabs. %1$s is the chosen pack (Regular, Bold, Filled or None). Folder icons on tabs is the switch above it
+%1$s. Icons show beside folder names in HushTelegram's own lists, and on the folder tabs with Folder icons on tabs on.	%1$s. Ikon muncul di samping nama folder pada daftar HushTelegram sendiri, dan di tab folder saat Ikon di tab folder aktif.
 # context: Settings row that makes downloads run one at a time. Its list is in the side menu.
 Download manager	Pengelola unduhan
 # context: Summary of the Download manager row.

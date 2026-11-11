@@ -1285,8 +1285,13 @@ the hidden accounts	die ausgeblendeten Konten
 Fit all folder tabs	Alle Ordner-Tabs einpassen
 # context: Summary of the Fit all folder tabs switch. The folder tabs shrink so none of them scrolls out of sight; with few folders nothing changes
 Shrinks the folder tabs above the chat list until all of them fit on the screen, so you never scroll sideways to find one. With only a few folders nothing changes.	Verkleinert die Ordner-Tabs über der Chatliste, bis alle auf den Bildschirm passen, damit du nie seitwärts scrollen musst, um einen zu finden. Bei wenigen Ordnern ändert sich nichts.
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default. It puts an icon for the kind of folder in front of each folder tab's name above the chat list
+Folder icons on tabs	Ordnersymbole auf Tabs
+# context: Summary of the Folder icons on tabs switch. All Chats gets two speech bubbles, a folder of only private chats a person, of only groups a group, of only channels a channel, of only bots a bot. All Chats is Telegram's FilterAllChats label
+Puts a small icon in front of each folder tab's name: two bubbles for All Chats, and a person, group, channel or bot for a folder of that kind of chat. Other folders get a folder icon. With a pack picked under Folder icons, the tabs use that pack instead.	Setzt ein kleines Symbol vor den Namen jedes Ordner-Tabs: zwei Sprechblasen für Alle Chats und eine Person, eine Gruppe, einen Kanal oder einen Bot für einen Ordner mit dieser Art von Chats. Andere Ordner bekommen ein Ordnersymbol. Mit einem unter Ordner-Symbole gewählten Paket nutzen die Tabs dieses Paket.
 # context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the switch that shrinks the folder tabs to fit the screen
 the fitted folder tabs	die eingepassten Ordner-Tabs
+the folder tab icons	die Symbole der Ordner-Tabs
 # context: Switch under Privacy for Receive only mode, per account (#53).
 Receive only mode	Nur-Empfangen-Modus
 The accounts you pick below can read but not write. Messages, reactions, drafts and typing stay on this phone and show an error. Reading, files and read receipts work. Works with this switch on.	Die Konten, die du unten wählst, können lesen, aber nicht schreiben. Nachrichten, Reaktionen, Entwürfe und Tippen bleiben auf diesem Telefon und zeigen einen Fehler. Lesen, Dateien und Lesebestätigungen funktionieren. Wirkt bei eingeschaltetem Schalter.
@@ -1348,6 +1353,8 @@ None	Keine
 Couldn't save the choice. Try again in a moment.	Die Auswahl wurde nicht gespeichert. Versuch es gleich noch mal.
 # context: Summary of the Folder icons row. %1$s is the chosen pack (Regular, Bold, Filled or None).
 %1$s. Icons show beside folder names in HushTelegram's own lists. Telegram's folder tabs stay as they are.	%1$s. Die Symbole erscheinen neben den Ordnernamen in den eigenen Listen von HushTelegram. Die Ordner-Tabs von Telegram bleiben, wie sie sind.
+# context: Summary of the Folder icons row in a build that can put icons on the folder tabs. %1$s is the chosen pack (Regular, Bold, Filled or None). Folder icons on tabs is the switch above it
+%1$s. Icons show beside folder names in HushTelegram's own lists, and on the folder tabs with Folder icons on tabs on.	%1$s. Die Symbole erscheinen neben den Ordnernamen in den eigenen Listen von HushTelegram und, wenn Ordnersymbole auf Tabs an ist, auch auf den Ordner-Tabs.
 # context: Settings row that makes downloads run one at a time. Its list is in the side menu.
 Download manager	Download-Manager
 # context: Summary of the Download manager row.

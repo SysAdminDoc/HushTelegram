@@ -596,6 +596,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 });
                 folderTabs.addPreference(fit);
             }
+            if (PatchFamily.Capability.TAB_ICONS.installed()) {
+                folderTabs.addPreference(toggle(context, Settings.FOLDER_TAB_ICONS, L10n.t("Folder icons on tabs"),
+                        L10n.t("Puts a small icon in front of each folder tab's name: two bubbles for All Chats, and a person, "
+                                + "group, channel or bot for a folder of that kind of chat. Other folders get a folder icon. "
+                                + "With a pack picked under Folder icons, the tabs use that pack instead.")));
+            }
             if (PatchFamily.Capability.SORT_BY_DATE.installed()) {
                 SwitchPreference sort = toggle(context, Settings.SORT_BY_DATE, L10n.t("Sort chats by date"),
                         L10n.t("Orders your unpinned chats by the date of their last message. Pinned chats and the archive row keep "
@@ -2269,8 +2275,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     }
 
     static String folderIconSummary() {
+        String pack = folderIconLabel(Settings.FOLDER_ICON_PACK.savedValue());
+        if (PatchFamily.Capability.TAB_ICONS.installed()) {
+            return L10n.f("%1$s. Icons show beside folder names in HushTelegram's own lists, and on the folder tabs"
+                    + " with Folder icons on tabs on.", pack);
+        }
         return L10n.f("%1$s. Icons show beside folder names in HushTelegram's own lists."
-                + " Telegram's folder tabs stay as they are.", folderIconLabel(Settings.FOLDER_ICON_PACK.savedValue()));
+                + " Telegram's folder tabs stay as they are.", pack);
     }
 
     /** The folder the chat list opens on for the account shown now: the row says which, and a tap lists the others. */

@@ -1281,8 +1281,13 @@ the hidden accounts	скритите акаунти
 Fit all folder tabs	Всички папки на екрана
 # context: Summary of the Fit all folder tabs switch. The folder tabs shrink so none of them scrolls out of sight; with few folders nothing changes
 Shrinks the folder tabs above the chat list until all of them fit on the screen, so you never scroll sideways to find one. With only a few folders nothing changes.	Свива табовете на папките над списъка с чатове, докато всички се поберат на екрана, и не се налага да превърташ настрани, за да намериш някой. При малко папки нищо не се променя.
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default. It puts an icon for the kind of folder in front of each folder tab's name above the chat list
+Folder icons on tabs	Икони на табовете с папки
+# context: Summary of the Folder icons on tabs switch. All Chats gets two speech bubbles, a folder of only private chats a person, of only groups a group, of only channels a channel, of only bots a bot. All Chats is Telegram's FilterAllChats label
+Puts a small icon in front of each folder tab's name: two bubbles for All Chats, and a person, group, channel or bot for a folder of that kind of chat. Other folders get a folder icon. With a pack picked under Folder icons, the tabs use that pack instead.	Слага малка икона пред името на всеки таб с папка: два балона за „All Chats“ и човек, група, канал или бот за папка с такива чатове. Другите папки получават икона на папка. С избран пакет в „Икони на папките“ табовете ползват него.
 # context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the switch that shrinks the folder tabs to fit the screen
 the fitted folder tabs	побраните папки
+the folder tab icons	иконите на разделите с папки
 # context: Switch under Privacy for Receive only mode, per account (#53).
 Receive only mode	Режим само за получаване
 The accounts you pick below can read but not write. Messages, reactions, drafts and typing stay on this phone and show an error. Reading, files and read receipts work. Works with this switch on.	Профилите, които изберете по-долу, могат да четат, но не и да пишат. Съобщенията, реакциите, черновите и писането остават на този телефон и показват грешка. Четенето, файловете и потвържденията за прочитане работят. Действа при включен този превключвател.
@@ -1344,6 +1349,8 @@ None	Няма
 Couldn't save the choice. Try again in a moment.	Изборът не се записа. Опитай пак след малко.
 # context: Summary of the Folder icons row. %1$s is the chosen pack (Regular, Bold, Filled or None).
 %1$s. Icons show beside folder names in HushTelegram's own lists. Telegram's folder tabs stay as they are.	%1$s. Иконите се показват до имената на папките в списъците на HushTelegram. Табовете на Telegram си остават същите.
+# context: Summary of the Folder icons row in a build that can put icons on the folder tabs. %1$s is the chosen pack (Regular, Bold, Filled or None). Folder icons on tabs is the switch above it
+%1$s. Icons show beside folder names in HushTelegram's own lists, and on the folder tabs with Folder icons on tabs on.	%1$s. Иконите се показват до имената на папките в списъците на HushTelegram, а и на табовете с папки, когато „Икони на табовете с папки“ е включено.
 # context: Settings row that makes downloads run one at a time. Its list is in the side menu.
 Download manager	Мениджър на изтеглянията
 # context: Summary of the Download manager row.
