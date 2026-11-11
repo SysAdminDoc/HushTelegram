@@ -21,7 +21,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * included. With the switch on, either failure stops the crop where it is instead. Done and Send
  * leave the editor open and say to try again, and the next tap runs the crop from the start.
  * Videos are cropped as they're sent, so they're left as they are. A live photo's still is a
- * cropped copy like a photo's, so a copy that fails holds it too.
+ * cropped copy like a photo's, so a copy that fails holds it too, and so does a still that can't
+ * be read from its file.
  */
 public final class CropGuard {
     private CropGuard() {}
@@ -58,18 +59,32 @@ public final class CropGuard {
     }
 
     /**
-     * Called when a failed copy takes the crop back off the photo, with the drawing Telegram cropped
-     * for it. The photo no longer points at that file, and the next crop makes a new one, so it's
-     * deleted here instead of left in the cache.
+     * Asked as a live photo's still is read from its file, which happens after Telegram has set the
+     * new crop on the photo.
      *
-     * @param path the cropped drawing's file, or null when the photo has no drawing
+     * @param still the still, or null when the file couldn't be read
+     * @return true to stop the crop there and take it back off the photo
+     */
+    public static boolean stillUnread(Bitmap still) {
+        if (still != null) return false;
+        return fail("still not read");
+    }
+
+    /**
+     * Called as a failed crop is taken back off the photo, once for each file it leaves behind: the
+     * drawing Telegram cropped for it and, when the crop stopped at the still's read, the photo's
+     * earlier edited copy and its thumbnail, which Telegram deletes before it draws a new copy. The
+     * photo no longer points at any of them, so they're deleted here instead of left in the cache.
+     *
+     * @param path the file, or null when the photo has none
      */
     public static void dropCopy(String path) {
         if (path == null) return;
         try {
-            new File(path).delete();
+            File file = new File(path);
+            if (!file.delete() && file.exists()) HookStatus.counted(FamilyNames.CROP_GUARD, "file not deleted");
         } catch (Throwable failure) {
-            HookStatus.threw(FamilyNames.CROP_GUARD, "drawing", failure);
+            HookStatus.threw(FamilyNames.CROP_GUARD, "file", failure);
         }
     }
 

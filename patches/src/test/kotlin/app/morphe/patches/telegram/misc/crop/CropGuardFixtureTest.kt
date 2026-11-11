@@ -64,18 +64,28 @@ class CropGuardFixtureTest {
             assertEquals("$name: stock read after the check", apply.controlBody()[sites.entry].origRef(), after[entry + 10].origRef())
 
             // A live photo's still is read from the filter's copy, else its own path; each read is checked as it lands.
-            val reads = after.indices.filter { after[it].controlRef() == CROP_GUARD_MISSING && after[it - 3].controlRef() == IS_LIVE_PHOTO }.map { it - 4 }
+            val reads = after.indices.filter { after[it].controlRef() == CROP_GUARD_STILL_UNREAD }.map { it - 3 }
             assertEquals("$name: both still reads checked", 2, reads.size)
+            // An unread still takes the crop back off the viewer's edit state too, which Telegram reads off the viewer after the reads.
+            assertEquals("$name: the viewer's edit state", true, apply.controlBody().any {
+                it.opcode == Opcode.IGET_OBJECT && it.controlRef() == sites.viewField && it.namedRegisters() == listOf(sites.viewState, self)
+            })
+            assertEquals(sites.viewCrop.substringBefore("->"), sites.viewField.substringAfterLast(":"))
             val pathFrom = reads.map { read ->
                 assertEquals("$name: still read $read", READ_SHAPE, after.subList(read, read + READ_SHAPE.size).map { it.opcode })
                 assertEquals(listOf(LOAD_BITMAP, null), after.subList(read - 2, read).map { it.controlRef() })
                 assertEquals(Opcode.MOVE_RESULT_OBJECT, after[read - 1].opcode)
                 val still = after[read - 1].namedRegisters().single()
-                val scratch = after[read + 2].namedRegisters().single()
+                val scratch = after[read + 1].namedRegisters().single()
+                val view = after[read + 6].namedRegisters().first()
                 assertEquals("$name: still read $read registers",
-                    listOf(listOf(still), listOf(sites.photoState), listOf(scratch), listOf(scratch), listOf(still)),
-                    after.subList(read, read + 5).map { it.namedRegisters() })
-                assertEquals("$name: still kept", false, scratch == still || scratch == sites.photoState)
+                    listOf(listOf(sites.photoState), listOf(scratch), listOf(scratch), listOf(still), listOf(scratch), listOf(scratch), listOf(view, self)),
+                    after.subList(read, read + 7).map { it.namedRegisters() })
+                assertEquals(listOf(IS_LIVE_PHOTO, CROP_GUARD_STILL_UNREAD, sites.viewField), listOf(read, read + 3, read + 6).map { after[it].controlRef() })
+                assertEquals("$name: still, photo and this kept", true,
+                    scratch != view && listOf(scratch, view).none { it == still || it == sites.photoState || it == self })
+                assertTakesBack("$name: still read $read", sites, after, read + 7, scratch, sites.photoState, view,
+                    listOf(THUMB_PATH, IMAGE_PATH, CROPPED_PAINT_PATH))
                 assertEquals(Opcode.GOTO, kind(after[read + READ_SHAPE.size]))
                 // Where the read's path came from.
                 val path = after[read - 2].namedRegisters().first()
@@ -129,24 +139,19 @@ class CropGuardFixtureTest {
             assertNotEquals("$name: viewer kept", sites.viewState, bakeScratch)
             assertNotEquals("$name: photo state kept", sites.photoState, bakeScratch)
             // The failed pass's cropped drawing file goes before the photo stops pointing at it.
-            assertEquals("$name: drawing file dropped", listOf(listOf(bakeScratch, sites.photoState), listOf(bakeScratch)),
-                after.subList(bake + 8, bake + 10).map { it.namedRegisters() })
-            assertEquals(listOf(CROPPED_PAINT_PATH, CROP_GUARD_DROP_COPY), after.subList(bake + 8, bake + 10).map { it.controlRef() })
-            assertEquals("$name: crops cleared",
-                listOf(listOf(bakeScratch)) + List(4) { listOf(bakeScratch, sites.photoState) } + List(3) { listOf(bakeScratch, sites.viewState) },
-                after.subList(bake + 10, bake + 18).map { it.namedRegisters() })
-            assertEquals(0L, (after[bake + 10] as WideLiteralInstruction).wideLiteral)
-            assertEquals(listOf(CROP_STATE_WRITE, CROPPED_PAINT_PATH, CROPPED_ENTITIES, IS_CROPPED, sites.viewCrop, sites.viewPaint, sites.viewEntities),
-                after.subList(bake + 11, bake + 18).map { it.controlRef() })
+            assertTakesBack("$name: copy check", sites, after, bake + 8, bakeScratch, sites.photoState, sites.viewState, listOf(CROPPED_PAINT_PATH))
 
             val flow = ControlFlow.of(sites.apply).normal
             for (branch in listOf(entry + 1, entry + 7)) assertEquals("$name: photo check $branch", setOf(branch + 1, entry + 9), flow[branch].toSet())
             val baked = bake + BAKE_SHAPE.size - 1
             assertEquals("$name: a still photo goes to the copy check", setOf(bake + 2, bake + 5), flow[bake + 1].toSet())
             for (branch in listOf(bake + 4, bake + 7)) assertEquals("$name: copy check $branch", setOf(branch + 1, baked), flow[branch].toSet())
+            assertEquals("$name: a failed copy returns", emptySet<Int>(), flow[baked - 1].toSet())
             for (read in reads) {
-                assertEquals("$name: a still that loaded goes on $read", setOf(read + 1, read + 5), flow[read].toSet())
-                assertEquals("$name: a video's goes on $read", setOf(read + 4, read + 5), flow[read + 3].toSet())
+                val goesOn = read + READ_SHAPE.size - 1
+                assertEquals("$name: a video's still goes on $read", setOf(read + 3, goesOn), flow[read + 2].toSet())
+                assertEquals("$name: a still that was read goes on $read", setOf(read + 6, goesOn), flow[read + 5].toSet())
+                assertEquals("$name: an unread still returns $read", emptySet<Int>(), flow[goesOn - 1].toSet())
             }
             assertKept("$name apply", apply, sites.apply, setOf(0) + (entry until entry + ENTRY_SHAPE.size) + (bake until bake + BAKE_SHAPE.size) +
                 reads.flatMap { it until it + READ_SHAPE.size },
@@ -206,6 +211,35 @@ class CropGuardFixtureTest {
         }
     }
 
+    /**
+     * A failed crop taken back at [at], through [scratch]: each of [files] read off the photo's edit
+     * state in [state] and deleted, then cleared from it with its crop and cropped stickers, its
+     * cropped flag cleared, and the viewer's crop, cropped drawing and cropped stickers cleared off
+     * the viewer's edit state in [view].
+     */
+    private fun assertTakesBack(
+        name: String,
+        sites: CropGuardSites,
+        after: List<Instruction>,
+        at: Int,
+        scratch: Int,
+        state: Int,
+        view: Int,
+        files: List<String>,
+    ) {
+        val drops = after.subList(at, at + 2 * files.size)
+        assertEquals("$name: files deleted", files.flatMap { listOf(listOf(scratch, state), listOf(scratch)) }, drops.map { it.namedRegisters() })
+        assertEquals(files.flatMap { listOf(it, CROP_GUARD_DROP_COPY) }, drops.map { it.controlRef() })
+        val clear = at + 2 * files.size
+        assertEquals("$name: cleared to nothing", 0L, (after[clear] as WideLiteralInstruction).wideLiteral)
+        val photoFields = listOf(CROP_STATE_WRITE, CROPPED_ENTITIES) + files + IS_CROPPED
+        val viewFields = listOf(sites.viewCrop, sites.viewPaint, sites.viewEntities)
+        val clears = after.subList(clear + 1, clear + 1 + photoFields.size + viewFields.size)
+        assertEquals("$name: crops cleared", photoFields.map { listOf(scratch, state) } + viewFields.map { listOf(scratch, view) },
+            clears.map { it.namedRegisters() })
+        assertEquals(photoFields + viewFields, clears.map { it.controlRef() })
+    }
+
     private fun kind(instruction: Instruction) = when (instruction.opcode) {
         Opcode.GOTO_16, Opcode.GOTO_32 -> Opcode.GOTO
         else -> instruction.opcode
@@ -235,7 +269,11 @@ class CropGuardFixtureTest {
             Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.RETURN_VOID, Opcode.NOP,
         )
         val READ_SHAPE = listOf(
-            Opcode.IF_NEZ, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.INVOKE_STATIC_RANGE, Opcode.NOP,
+            Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT,
+            Opcode.IF_EQZ, Opcode.IGET_OBJECT, Opcode.IGET_OBJECT, Opcode.INVOKE_STATIC_RANGE, Opcode.IGET_OBJECT,
+            Opcode.INVOKE_STATIC_RANGE, Opcode.IGET_OBJECT, Opcode.INVOKE_STATIC_RANGE, Opcode.CONST_4, Opcode.IPUT_OBJECT,
+            Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.IPUT_BOOLEAN,
+            Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.RETURN_VOID, Opcode.NOP,
         )
         val HELD_SHAPE = listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.RETURN_VOID)
     }

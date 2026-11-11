@@ -9,6 +9,7 @@ import static org.junit.Assert.*;
 import android.graphics.Bitmap;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,6 +86,17 @@ public class CropGuardTest {
         assertFalse("held once per failure", CropGuard.held());
     }
 
+    @Test public void aLivePhotoStillThatWasntReadHoldsTheEditor() {
+        CropGuard.begin();
+        assertFalse(CropGuard.stillUnread(Bitmap.createBitmap(4, 4, Bitmap.Config.ARGB_8888)));
+        assertFalse(CropGuard.held());
+
+        CropGuard.begin();
+        assertTrue(CropGuard.stillUnread(null));
+        assertTrue(CropGuard.held());
+        assertTrue(String.join("\n", HookStatus.report()).contains("still not read"));
+    }
+
     @Test public void aFailureNobodyReadIsGoneWhenTheNextEditStarts() {
         // A crop applied from somewhere other than Done or Send fails, and nothing reads it there.
         assertTrue(CropGuard.notMade(null));
@@ -100,12 +112,24 @@ public class CropGuardTest {
         CropGuard.dropCopy(null);
         CropGuard.dropCopy(drawing.getPath());
         assertTrue(HookStatus.missing(FamilyNames.CROP_GUARD).isEmpty());
+        assertFalse(String.join("\n", HookStatus.report()).contains("file not deleted"));
+
+        // A file that stays (here a folder with something in it) is counted.
+        File folder = Files.createTempDirectory("crop").toFile();
+        File inside = new File(folder, "kept");
+        assertTrue(inside.createNewFile());
+        CropGuard.dropCopy(folder.getPath());
+        assertTrue(folder.exists());
+        assertTrue(String.join("\n", HookStatus.report()).contains("file not deleted"));
+        assertTrue(inside.delete());
+        assertTrue(folder.delete());
     }
 
     @Test public void offPausedOrUnreadableTelegramGoesOnAsBefore() {
         Settings.CROP_GUARD.save(false);
         assertFalse(CropGuard.missing(null));
         assertFalse(CropGuard.notMade(null));
+        assertFalse(CropGuard.stillUnread(null));
         assertFalse(CropGuard.held());
 
         Settings.CROP_GUARD.save(true);

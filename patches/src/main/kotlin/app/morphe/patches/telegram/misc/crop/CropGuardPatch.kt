@@ -49,6 +49,7 @@ internal const val CROP_GUARD = "$EXTENSION_PACKAGE/misc/CropGuard;"
 internal const val CROP_GUARD_BEGIN = "$CROP_GUARD->begin()V"
 internal const val CROP_GUARD_MISSING = "$CROP_GUARD->missing(Landroid/graphics/Bitmap;)Z"
 internal const val CROP_GUARD_NOT_MADE = "$CROP_GUARD->notMade(Landroid/graphics/Bitmap;)Z"
+internal const val CROP_GUARD_STILL_UNREAD = "$CROP_GUARD->stillUnread(Landroid/graphics/Bitmap;)Z"
 internal const val CROP_GUARD_HELD = "$CROP_GUARD->held()Z"
 internal const val CROP_GUARD_DROP_COPY = "$CROP_GUARD->dropCopy(Ljava/lang/String;)V"
 internal const val CROP_VIEWER = "Lorg/telegram/ui/PhotoViewer;"
@@ -61,6 +62,8 @@ internal const val PAINT_PATH = "$EDIT_STATE->paintPath:Ljava/lang/String;"
 internal const val CROPPED_PAINT_PATH = "$EDIT_STATE->croppedPaintPath:Ljava/lang/String;"
 internal const val CROPPED_ENTITIES = "$EDIT_STATE->croppedMediaEntities:Ljava/util/ArrayList;"
 internal const val IS_CROPPED = "$EDIT_STATE->isCropped:Z"
+internal const val THUMB_PATH = "$EDIT_STATE->thumbPath:Ljava/lang/String;"
+internal const val IMAGE_PATH = "$EDIT_STATE->imagePath:Ljava/lang/String;"
 internal const val IS_LIVE_PHOTO = "$EDIT_STATE->isLivePhoto()Z"
 internal const val GET_BITMAP = "Lorg/telegram/messenger/ImageReceiver;->getBitmap()$BITMAP"
 internal const val LOAD_BITMAP = "Lorg/telegram/messenger/ImageLoader;->loadBitmap(Ljava/lang/String;Landroid/net/Uri;FFZ)$BITMAP"
@@ -101,20 +104,23 @@ val cropGuardPatch = bytecodePatch(
  * The guard asks before the crop is set ([entry]) whether the photo is there, and after the copy is
  * drawn ([bake]) whether there is one. A failure returns from the method there, and Done and Send,
  * right after their call to it ([doneAt], [sendAt]), keep the editor open instead of going on.
- * Videos are cropped by the encoder when they're sent, so both checks leave them alone. The viewer
+ * Videos are cropped by the encoder when they're sent, so these checks leave them alone. The viewer
  * counts a live photo as a video too, but its still goes out as the cropped copy the way a photo's
  * does, so the copy check covers it. The photo check doesn't, since a live photo's still isn't the
  * viewer's photo: it's read from its file after the crop is set, from the filter's copy or the
- * photo's own path ([reads]). A read that comes back empty fails there, for a live photo only, and
- * Telegram returns without a copy as it does for a missing photo.
+ * photo's own path ([reads]), so a third check asks there, for a live photo only, whether the read
+ * came back with a still.
  *
- * A failure at [bake] comes after Telegram has deleted the photo's earlier edited copy and handed the
- * new crop, with the drawing and stickers cropped to it, to the photo's edit state and the viewer's
- * ([photoState], [viewState]). The check deletes the cropped drawing's file, which Telegram would
- * otherwise have deleted on the next crop, takes all of that back off both and clears the photo's
- * cropped flag, which an earlier crop may have left set, so the photo reads as uncropped, the way it
- * would now be sent, even when the editor is cancelled next. The editor is still open, and the next
- * Done runs the crop again from the start.
+ * Both later checks come after Telegram has set the new crop on the photo's edit state
+ * ([photoState]), with the drawing and stickers cropped to it, and the copy check also after Telegram
+ * has deleted the photo's earlier edited copy and handed all of that to the viewer's edit state
+ * ([viewState], read off [viewField]). A failure at either takes it back ([takeBack]): it deletes the
+ * cropped drawing's file, which Telegram would otherwise have deleted on the next crop, and at a
+ * still's read also the earlier edited copy and its thumbnail, as Telegram would have before drawing
+ * the new one. It takes the crop, drawing and stickers back off both edit states and clears the
+ * photo's cropped flag, which an earlier crop may have left set, so the photo reads as uncropped, the
+ * way it would now be sent, even when the editor is cancelled next. The editor is still open, and the
+ * next Done runs the crop again from the start.
  */
 internal class CropGuardSites(
     val apply: MutableMethod,
@@ -129,6 +135,7 @@ internal class CropGuardSites(
     val cropped: Int,
     val photoState: Int,
     val viewState: Int,
+    val viewField: String,
     val viewCrop: String,
     val viewPaint: String,
     val viewEntities: String,
@@ -151,26 +158,19 @@ internal class CropGuardSites(
             invoke-static/range {v$cropped .. v$cropped}, $CROP_GUARD_NOT_MADE
             move-result v$bakeFree
             if-eqz v$bakeFree, :hush_baked
-            iget-object v$bakeFree, v$photoState, $CROPPED_PAINT_PATH
-            invoke-static/range {v$bakeFree .. v$bakeFree}, $CROP_GUARD_DROP_COPY
-            const/4 v$bakeFree, 0x0
-            iput-object v$bakeFree, v$photoState, $CROP_STATE_WRITE
-            iput-object v$bakeFree, v$photoState, $CROPPED_PAINT_PATH
-            iput-object v$bakeFree, v$photoState, $CROPPED_ENTITIES
-            iput-boolean v$bakeFree, v$photoState, $IS_CROPPED
-            iput-object v$bakeFree, v$viewState, $viewCrop
-            iput-object v$bakeFree, v$viewState, $viewPaint
-            iput-object v$bakeFree, v$viewState, $viewEntities
-            return-void
+            ${takeBack(photoState, viewState, bakeFree, BAKE_FILES)}
             :hush_baked
             nop
         """)
         for (read in reads.sortedByDescending { it.at }) apply.addInstructionsAtControlFlowLabel(read.at, """
-            if-nez v${read.still}, :hush_read
             invoke-virtual {v${read.owner}}, $IS_LIVE_PHOTO
             move-result v${read.free}
             if-eqz v${read.free}, :hush_read
-            invoke-static/range {v${read.still} .. v${read.still}}, $CROP_GUARD_MISSING
+            invoke-static/range {v${read.still} .. v${read.still}}, $CROP_GUARD_STILL_UNREAD
+            move-result v${read.free}
+            if-eqz v${read.free}, :hush_read
+            iget-object v${read.view}, v$self, $viewField
+            ${takeBack(read.owner, read.view, read.free, READ_FILES)}
             :hush_read
             nop
         """)
@@ -199,20 +199,44 @@ internal class CropGuardSites(
         if-eqz v$free, :hush_keep
         return-void
     """, ExternalLabel("hush_keep", method.getInstruction(index)))
+
+    /**
+     * Takes a failed crop back off the photo's edit state in [state] and the viewer's in [view], then
+     * returns: deletes the photo's [files] and clears them with the crop, the cropped stickers and
+     * the cropped flag, and clears the viewer's crop, cropped drawing and cropped stickers.
+     */
+    private fun takeBack(state: Int, view: Int, free: Int, files: List<String>) = """
+        ${files.joinToString("\n") { "iget-object v$free, v$state, $it\ninvoke-static/range {v$free .. v$free}, $CROP_GUARD_DROP_COPY" }}
+        const/4 v$free, 0x0
+        ${(listOf(CROP_STATE_WRITE, CROPPED_ENTITIES) + files).joinToString("\n") { "iput-object v$free, v$state, $it" }}
+        iput-boolean v$free, v$state, $IS_CROPPED
+        iput-object v$free, v$view, $viewCrop
+        iput-object v$free, v$view, $viewPaint
+        iput-object v$free, v$view, $viewEntities
+        return-void
+    """
 }
+
+/** What a failed copy deletes: Telegram has already deleted the earlier edited copy and its thumbnail. */
+private val BAKE_FILES = listOf(CROPPED_PAINT_PATH)
+
+/** What a failed still read deletes: Telegram deletes the earlier edited copy and its thumbnail only after the read. */
+private val READ_FILES =listOf(THUMB_PATH, IMAGE_PATH, CROPPED_PAINT_PATH)
 
 /**
  * A read of a live photo's still in applyCurrentEditMode's video branch. The check goes in front of
  * instruction [at], right after the read's result lands in [still]; [owner] holds the edit state
- * the file's path came off, and [free] is the check's scratch register.
+ * the file's path came off. [free] is the check's scratch register, and [view] takes the viewer's
+ * edit state when the read failed.
  */
-internal class StillRead(val at: Int, val still: Int, val owner: Int, val free: Int)
+internal class StillRead(val at: Int, val still: Int, val owner: Int, val free: Int, val view: Int)
 
 internal fun BytecodePatchContext.resolveCropGuard(): CropGuardSites {
     requireStatusMethod("cropGuard")
     controlHook(CROP_GUARD, "begin", emptyList(), "V")
     controlHook(CROP_GUARD, "missing", listOf(BITMAP), "Z")
     controlHook(CROP_GUARD, "notMade", listOf(BITMAP), "Z")
+    controlHook(CROP_GUARD, "stillUnread", listOf(BITMAP), "Z")
     controlHook(CROP_GUARD, "held", emptyList(), "Z")
     controlHook(CROP_GUARD, "dropCopy", listOf("Ljava/lang/String;"), "V")
     val viewer = tgMutableClassDefByOrNull(CROP_VIEWER)
@@ -299,6 +323,19 @@ internal fun BytecodePatchContext.resolveCropGuard(): CropGuardSites {
     }
     val viewPaint = viewCopy(CROPPED_PAINT_PATH, "the viewer's copy of the photo's cropped drawing")
     val viewEntities = viewCopy(CROPPED_ENTITIES, "the viewer's copy of the photo's cropped stickers")
+    // The still reads come before Telegram reads the viewer's edit state, so their check reads it off this itself.
+    val viewLoad = (0 until viewShare).lastOrNull { body[it].writes(viewState) }
+    controlShape(viewLoad != null && body[viewLoad].opcode == Opcode.IGET_OBJECT && body[viewLoad].reads(self) &&
+        body[viewLoad].controlField()?.definingClass == CROP_VIEWER &&
+        body[viewLoad].controlField()?.type == body[viewShare].controlField()?.definingClass,
+        "the photo editor no longer reads the viewer's edit state off the viewer")
+    // The reads take the still's path off the edit state the crop is set on and the copy is drawn with.
+    controlShape(reads.all { it!!.owner == photoState } && (entry!!..bake).none { body[it].writes(photoState) },
+        "the photo editor reads a live photo's still off another edit state")
+    // Telegram deletes the earlier edited copy and its thumbnail after the reads; a failed read deletes them itself.
+    controlShape(listOf(THUMB_PATH, IMAGE_PATH).all { field ->
+        (bitmap until cropRead).any { body[it].opcode == Opcode.IPUT_OBJECT && body[it].controlRef() == field && body[it].reads(photoState) }
+    }, "the photo editor no longer drops the photo's earlier edited copy before drawing the new one")
 
     val applyRef = "$CROP_VIEWER->${apply.origName}()V"
     val doneSites = mutableListOf<Triple<ClassDef, Method, Int>>()
@@ -336,7 +373,7 @@ internal fun BytecodePatchContext.resolveCropGuard(): CropGuardSites {
         // The check reads the copy and both edit states after its scratch register is written, so none can share it.
         bake, apply.freeLocalsAt("Never send an uncropped photo", bake + 2, 4).first { it != cropped && it != viewState && it != photoState },
         cropped,
-        photoState, viewState, body[viewShare].controlRef()!!, viewPaint, viewEntities,
+        photoState, viewState, body[viewLoad!!].controlRef()!!, body[viewShare].controlRef()!!, viewPaint, viewEntities,
         body[video].controlRef()!!, photo,
         doneCall + 1, done.freeLocalsAt("Never send an uncropped photo", doneCall + 1, 1, highest = 255).single(),
         sendCall + 1, send.freeLocalsAt("Never send an uncropped photo", sendCall + 1, 1, highest = 255).single(),
@@ -344,8 +381,9 @@ internal fun BytecodePatchContext.resolveCropGuard(): CropGuardSites {
 }
 
 /**
- * The still read at [at], or null unless its path comes straight off an edit state: a field of it or
- * a call on it, with nothing jumping in and nothing writing that register before the result lands.
+ * The still read at [at], or null unless its path comes straight off an edit state, a field of it or
+ * a call on it, with nothing jumping in and nothing writing that register before the result lands,
+ * and unless an empty read goes on to Telegram's own return.
  */
 private fun MutableMethod.stillRead(body: List<Instruction>, flow: ControlFlow, at: Int): StillRead? {
     val call = body[at] as? FiveRegisterInstruction ?: return null
@@ -364,7 +402,29 @@ private fun MutableMethod.stillRead(body: List<Instruction>, flow: ControlFlow, 
     val straight = (from + 1..at + 2).all { x -> flow.normal.indices.filter { x in flow.normal[it] || x in flow.exceptional[it] } == listOf(x - 1) }
     if (!straight || (written..at + 1).any { body[it].writes(owner) }) return null
     val still = (body[at + 1] as OneRegisterInstruction).registerA
-    return StillRead(at + 2, still, owner, freeLocalsAt("Never send an uncropped photo", at + 2, 3).first { it != still && it != owner })
+    if (!flow.nullReturns(body, at + 2, still)) return null
+    val free = freeLocalsAt("Never send an uncropped photo", at + 2, 4).filter { it != still && it != owner }
+    return StillRead(at + 2, still, owner, free[0], free[1])
+}
+
+/**
+ * Whether a null in [register] at instruction [from] reaches a return-void: through code that has
+ * one way on and leaves [register] alone, to a null check on it whose null branch jumps straight there.
+ */
+private fun ControlFlow.nullReturns(body: List<Instruction>, from: Int, register: Int): Boolean {
+    val seen = mutableSetOf<Int>()
+    var at = from
+    while (seen.add(at)) {
+        val check = body[at]
+        if (check.opcode in listOf(Opcode.IF_EQZ, Opcode.IF_NEZ) && (check as OneRegisterInstruction).registerA == register) {
+            var next = if (check.opcode == Opcode.IF_NEZ) at + 1 else normal[at].singleOrNull { it != at + 1 } ?: return false
+            while (seen.add(next) && body[next].opcode in listOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)) next = normal[next].single()
+            return body[next].opcode == Opcode.RETURN_VOID
+        }
+        if (check.writes(register)) return false
+        at = normal[at].singleOrNull() ?: return false
+    }
+    return false
 }
 
 /** applyCurrentEditMode: sets an edit state's crop, reads the shown photo and draws the cropped copy. */
