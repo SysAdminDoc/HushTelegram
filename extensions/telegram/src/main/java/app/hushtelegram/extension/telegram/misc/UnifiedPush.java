@@ -542,31 +542,9 @@ public final class UnifiedPush {
                     }
                     Logger.printInfo(() -> "UnifiedPush: the app's server is down for now");
                     break;
-                case UNREGISTERED: {
-                    String ended = prefs.getString(ENDPOINT, null);
-                    if (ENDING.remove(token)) {
-                        // The end this side asked for, whose save didn't land: the sign-up goes now,
-                        // and the row doesn't say the app ended it.
-                        boolean forgotten = save(prefs, TOKEN, null, ENDPOINT, null);
-                        if (!forgotten) {
-                            HookStatus.counted(FamilyNames.UNIFIED_PUSH, "sign-up not forgotten, ended again at the next start");
-                        }
-                        Logger.printInfo(() -> "UnifiedPush: the app let go of a sign-up as asked");
-                        // A move to another app that couldn't be saved goes ahead now, with the switch still on.
-                        if (forgotten && Utils.settingsReady() && Settings.UNIFIED_PUSH.savedValue()) {
-                            Context app = context.getApplicationContext() != null ? context.getApplicationContext() : context;
-                            work.execute(() -> sync(app, true));
-                        }
-                    } else {
-                        if (!save(prefs, TOKEN, null, ENDPOINT, null, PROBLEM, ENDED)) {
-                            HookStatus.counted(FamilyNames.UNIFIED_PUSH, "ended sign-up not saved");
-                        }
-                        Logger.printInfo(() -> "UnifiedPush: the app ended the sign-up");
-                    }
-                    // Nothing answers at that address now, so Telegram is pointed back at Firebase.
-                    if (ended != null) telegram.release(ended);
+                case UNREGISTERED:
+                    unregistered(context, prefs, token);
                     break;
-                }
                 default:
                     break;
             }
@@ -574,6 +552,40 @@ public final class UnifiedPush {
             HookStatus.threw(FamilyNames.UNIFIED_PUSH, "UnifiedPush broadcast", failure);
         }
         once.run();
+    }
+
+    /**
+     * The app's end of [token]'s sign-up. It takes turns with {@link #sync}, which may have
+     * signed up with a new token since [token] was read, and then this end is for one that's gone.
+     */
+    private static synchronized void unregistered(Context context, SharedPreferences prefs, String token) {
+        if (!token.equals(prefs.getString(TOKEN, null))) {
+            ENDING.remove(token);
+            Logger.printInfo(() -> "UnifiedPush: dropped the end of a sign-up already replaced");
+            return;
+        }
+        String ended = prefs.getString(ENDPOINT, null);
+        if (ENDING.remove(token)) {
+            // The end this side asked for, whose save didn't land: the sign-up goes now,
+            // and the row doesn't say the app ended it.
+            boolean forgotten = save(prefs, TOKEN, null, ENDPOINT, null);
+            if (!forgotten) {
+                HookStatus.counted(FamilyNames.UNIFIED_PUSH, "sign-up not forgotten, ended again at the next start");
+            }
+            Logger.printInfo(() -> "UnifiedPush: the app let go of a sign-up as asked");
+            // A move to another app that couldn't be saved goes ahead now, with the switch still on.
+            if (forgotten && Utils.settingsReady() && Settings.UNIFIED_PUSH.savedValue()) {
+                Context app = context.getApplicationContext() != null ? context.getApplicationContext() : context;
+                work.execute(() -> sync(app, true));
+            }
+        } else {
+            if (!save(prefs, TOKEN, null, ENDPOINT, null, PROBLEM, ENDED)) {
+                HookStatus.counted(FamilyNames.UNIFIED_PUSH, "ended sign-up not saved");
+            }
+            Logger.printInfo(() -> "UnifiedPush: the app ended the sign-up");
+        }
+        // Nothing answers at that address now, so Telegram is pointed back at Firebase.
+        if (ended != null) telegram.release(ended);
     }
 
     private static void endpoint(Context context, SharedPreferences prefs, @Nullable String endpoint) {

@@ -617,6 +617,8 @@ public class UnifiedPushTest {
         boolean failedWritesStay;
         /** When set, each read of the auth secret waits up to a second for the others, so first asks overlap if they can. */
         java.util.concurrent.CountDownLatch readers;
+        /** Runs once, right after the next read of the token, as whatever happens between that read and the next step. */
+        Runnable afterTokenRead;
 
         Flaky(android.content.SharedPreferences real) {
             this.real = real;
@@ -625,6 +627,11 @@ public class UnifiedPushTest {
         @Override public java.util.Map<String, ?> getAll() { return real.getAll(); }
         @Override public String getString(String key, String fallback) {
             String value = real.getString(key, fallback);
+            if (afterTokenRead != null && UnifiedPush.TOKEN.equals(key)) {
+                Runnable between = afterTokenRead;
+                afterTokenRead = null;
+                between.run();
+            }
             if (readers != null && UnifiedPush.WEB_PUSH_AUTH.equals(key)) {
                 readers.countDown();
                 try {
@@ -817,6 +824,69 @@ public class UnifiedPushTest {
         assertEquals(OTHER, last(UnifiedPush.REGISTER).getPackage());
         assertNotEquals(token, token());
         assertEquals(token(), last(UnifiedPush.REGISTER).getStringExtra("token"));
+    }
+
+    /** Back on, signing up just after the app's answer to an off whose save failed has read the old token: the new sign-up stays. */
+    @Test public void aSignUpSavedWhileTheAppsAnswerIsReadStays() {
+        String token = signedUp();
+        Flaky flaky = offWhoseSaveFailed();
+        String[] signedUpWith = new String[1];
+        flaky.afterTokenRead = () -> {
+            UnifiedPush.sync(context, true);
+            signedUpWith[0] = token();
+        };
+        int registers = count(UnifiedPush.REGISTER);
+        UnifiedPush.receive(context, from(UnifiedPush.UNREGISTERED, token), () -> {});
+        assertNotNull(signedUpWith[0]);
+        assertNotEquals(token, signedUpWith[0]);
+        assertEquals("the answer didn't end the new sign-up", signedUpWith[0], token());
+        assertEquals("one sign-up", registers + 1, count(UnifiedPush.REGISTER));
+        assertEquals(signedUpWith[0], last(UnifiedPush.REGISTER).getStringExtra("token"));
+    }
+
+    /** The app's answer arriving while a sign-up is under way waits for it, so the sign-up never reuses the ending token. */
+    @Test public void theAppsAnswerWaitsForASignUpUnderWay() throws Exception {
+        String token = signedUp();
+        Flaky flaky = offWhoseSaveFailed();
+        int withOld = registersWith(token);
+        Thread[] answer = new Thread[1];
+        // The sign-up has read the old token when the answer comes in on Android's main thread.
+        flaky.afterTokenRead = () -> {
+            answer[0] = new Thread(() -> UnifiedPush.receive(context, from(UnifiedPush.UNREGISTERED, token), () -> {}));
+            answer[0].start();
+            try {
+                answer[0].join(300);
+            } catch (InterruptedException stopped) {
+                Thread.currentThread().interrupt();
+            }
+        };
+        UnifiedPush.sync(context, true);
+        answer[0].join(5000);
+        assertFalse(answer[0].isAlive());
+        assertEquals("the ending token was signed up again", withOld, registersWith(token));
+        assertNotEquals(token, token());
+        assertEquals(token(), last(UnifiedPush.REGISTER).getStringExtra("token"));
+    }
+
+    /** Off whose save failed, the app not answered yet, the switch saved back on and saves working again. */
+    private Flaky offWhoseSaveFailed() {
+        Flaky flaky = new Flaky(UnifiedPush.prefs(context));
+        UnifiedPush.store = ignored -> flaky;
+        flaky.failWrites = true;
+        flaky.failedWritesStay = true;
+        Settings.UNIFIED_PUSH.save(false);
+        UnifiedPush.sync(context, false);
+        flaky.failWrites = false;
+        Settings.UNIFIED_PUSH.save(true);
+        return flaky;
+    }
+
+    private int registersWith(String token) {
+        int n = 0;
+        for (Intent intent : sent()) {
+            if (UnifiedPush.REGISTER.equals(intent.getAction()) && token.equals(intent.getStringExtra("token"))) n++;
+        }
+        return n;
     }
 
     private int count(String action) {
