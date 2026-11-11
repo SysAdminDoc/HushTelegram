@@ -32,6 +32,10 @@ public final class AutoForwardingForTests {
         public int date;
         /** When the message a forward copies was first sent, or 0. */
         public int originDate;
+        /** The name a forward header gives a hidden author, or null. */
+        public String originName;
+        /** Its photo or file, or 0. */
+        public long mediaId;
         public boolean service;
         public boolean media;
 
@@ -79,6 +83,8 @@ public final class AutoForwardingForTests {
         @Override public long origin(Object message) { return ((Message) message).origin; }
         @Override public int date(Object message) { return ((Message) message).date; }
         @Override public int originDate(Object message) { return ((Message) message).originDate; }
+        @Override public String originName(Object message) { return ((Message) message).originName; }
+        @Override public long mediaId(Object message) { return ((Message) message).mediaId; }
         @Override public boolean service(Object message) { return ((Message) message).service; }
         @Override public boolean media(Object message) { return ((Message) message).media; }
         @Override public int selectedAccount() { return selected; }

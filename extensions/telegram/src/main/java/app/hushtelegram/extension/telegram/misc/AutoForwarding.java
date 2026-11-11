@@ -53,8 +53,10 @@ public final class AutoForwarding {
     };
     /**
      * Each original a rule forwarded, with the chat it went to, on any account. A forward keeps
-     * its original's author and date through every copy, so a copy coming round again is known by
-     * them even when its sender is a channel and its header names a third chat.
+     * its original's author, date and photo or file through every copy, so a copy coming round
+     * again is known by them even when its sender is a channel and its header names a third chat.
+     * Unless the original was a forward from a hidden author, its date and photo or file are kept
+     * on their own too: a copy that comes back naming its author by a hidden name is known by those.
      */
     private static final Map<String, Boolean> copies = new LinkedHashMap<String, Boolean>() {
         @Override
@@ -323,8 +325,12 @@ public final class AutoForwarding {
                 // A copy a rule made, back in a chat it went to or on its way there again. Across two
                 // accounts through channels its sender is the channel and its header can name a third chat.
                 String original = original(message);
+                String moment = moment(message);
+                boolean hidden = telegram.forwarded(message) && telegram.origin(message) == 0;
                 if (telegram.forwarded(message) && (copies.containsKey(original + "@" + dialog)
-                        || copies.containsKey(original + "@" + rule.destination))) continue;
+                        || copies.containsKey(original + "@" + rule.destination)
+                        || hidden && (copies.containsKey(moment + "@" + dialog)
+                        || copies.containsKey(moment + "@" + rule.destination)))) continue;
                 String key = account + ":" + dialog + ":" + id + ":" + rule.destination;
                 if (forwarded.containsKey(key)) continue;
                 if (!allowed(account)) {
@@ -333,6 +339,8 @@ public final class AutoForwarding {
                 }
                 forwarded.put(key, Boolean.TRUE);
                 sending.add(original + "@" + rule.destination);
+                // Two hidden authors can post in the same second, so a hidden one's moment isn't kept.
+                if (!hidden) sending.add(moment + "@" + rule.destination);
                 String to = account + ":" + rule.destination;
                 Batch batch = batches.get(to);
                 if (batch == null) {
@@ -346,11 +354,21 @@ public final class AutoForwarding {
         return batches;
     }
 
-    /** Who first sent [message] and when: the forward header's author and date, or its own. */
+    /**
+     * Who first sent [message], when, and its photo or file: the forward header's author and date,
+     * or its own. An album's parts share an author and a date, and their photos tell them apart. A
+     * hidden author's header has a name and no id.
+     */
     private static String original(Object message) {
-        return telegram.forwarded(message)
-                ? telegram.origin(message) + "/" + telegram.originDate(message)
-                : telegram.sender(message) + "/" + telegram.date(message);
+        if (!telegram.forwarded(message)) return telegram.sender(message) + "/" + moment(message);
+        long origin = telegram.origin(message);
+        return (origin != 0 ? String.valueOf(origin) : "~" + telegram.originName(message)) + "/" + moment(message);
+    }
+
+    /** When [message]'s original was first sent, and its photo or file, without who sent it. */
+    private static String moment(Object message) {
+        int date = telegram.forwarded(message) ? telegram.originDate(message) : telegram.date(message);
+        return date + "/" + telegram.mediaId(message);
     }
 
     /** Whether [account] may send one more forward this minute, and if so, counts it. */
@@ -403,6 +421,11 @@ public final class AutoForwarding {
 
         int originDate(Object message);
 
+        @Nullable
+        String originName(Object message);
+
+        long mediaId(Object message);
+
         boolean service(Object message);
 
         boolean media(Object message);
@@ -440,6 +463,8 @@ public final class AutoForwarding {
         @Override public long origin(Object message) { return AutoForwarding.origin(message); }
         @Override public int date(Object message) { return AutoForwarding.date(message); }
         @Override public int originDate(Object message) { return AutoForwarding.originDate(message); }
+        @Override public String originName(Object message) { return AutoForwarding.originName(message); }
+        @Override public long mediaId(Object message) { return AutoForwarding.mediaId(message); }
         @Override public boolean service(Object message) { return AutoForwarding.service(message); }
         @Override public boolean media(Object message) { return AutoForwarding.media(message); }
         @Override public int selectedAccount() { return AutoForwarding.selectedAccount(); }
@@ -484,6 +509,13 @@ public final class AutoForwarding {
 
     /** The forward header's date, when the message it copies was first sent, or 0 when it has none. */
     public static int originDate(Object message) { return 0; }
+
+    /** The name the forward header gives an author who hides their account, or null. */
+    @Nullable
+    public static String originName(Object message) { return null; }
+
+    /** The id of the message's photo or file, which a forward keeps, or 0 when it has neither. */
+    public static long mediaId(Object message) { return 0L; }
 
     /** Whether the message is a service message: an action other than TL_messageActionEmpty. */
     public static boolean service(Object message) { return false; }

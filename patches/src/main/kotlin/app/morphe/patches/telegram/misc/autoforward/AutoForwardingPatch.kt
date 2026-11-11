@@ -40,6 +40,9 @@ private const val MESSAGE = "Lorg/telegram/messenger/MessageObject;"
 private const val TL_MESSAGE = "Lorg/telegram/tgnet/TLRPC\$Message;"
 private const val FWD_HEADER = "Lorg/telegram/tgnet/TLRPC\$MessageFwdHeader;"
 private const val PEER = "Lorg/telegram/tgnet/TLRPC\$Peer;"
+private const val MEDIA = "Lorg/telegram/tgnet/TLRPC\$MessageMedia;"
+private const val PHOTO = "Lorg/telegram/tgnet/TLRPC\$Photo;"
+private const val DOCUMENT = "Lorg/telegram/tgnet/TLRPC\$Document;"
 private const val TL_CHAT = "Lorg/telegram/tgnet/TLRPC\$Chat;"
 private const val CHAT_OBJECT = "Lorg/telegram/messenger/ChatObject;"
 private const val TL_USER = "Lorg/telegram/tgnet/TLRPC\$User;"
@@ -88,7 +91,8 @@ internal fun BytecodePatchContext.resolveAutoForwarding(): MutableMethod {
     controlHook(AUTO_FORWARDING, "onNewMessages", listOf(OBJECT, "I"), "V")
     for (name in listOf("account", "id", "date", "originDate")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "I")
     for (name in listOf("out", "forwarded", "service", "media")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "Z")
-    for (name in listOf("dialog", "dialogId", "sender", "origin")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "J")
+    for (name in listOf("dialog", "dialogId", "sender", "origin", "mediaId")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "J")
+    controlHook(AUTO_FORWARDING, "originName", listOf(OBJECT), STRING)
     controlHook(AUTO_FORWARDING, "selectedAccount", emptyList(), "I")
     controlHook(AUTO_FORWARDING, "userId", listOf("I"), "J")
     controlHook(AUTO_FORWARDING, "dialogs", listOf("I", "I"), LIST)
@@ -99,8 +103,11 @@ internal fun BytecodePatchContext.resolveAutoForwarding(): MutableMethod {
 
     controlMembers(MESSAGE, "currentAccount:I", "messageOwner:$TL_MESSAGE", "getDialogId()J", "getId()I", "isOut()Z",
         "isForwarded()Z", "isMediaEmpty()Z", "getFromChatId()J", "static getPeerId($PEER)J")
-    controlMembers(TL_MESSAGE, "action:$ACTION", "fwd_from:$FWD_HEADER", "date:I")
-    controlMembers(FWD_HEADER, "from_id:$PEER", "date:I")
+    controlMembers(TL_MESSAGE, "action:$ACTION", "fwd_from:$FWD_HEADER", "date:I", "media:$MEDIA")
+    controlMembers(FWD_HEADER, "from_id:$PEER", "date:I", "from_name:$STRING")
+    controlMembers(MEDIA, "photo:$PHOTO", "document:$DOCUMENT")
+    controlMembers(PHOTO, "id:J")
+    controlMembers(DOCUMENT, "id:J")
     controlMembers(ACTION_EMPTY)
     controlMembers(USER_CONFIG, "static selectedAccount:I", "static getInstance(I)$USER_CONFIG", "getClientUserId()J")
     controlMembers(CONTROLLER, "static getInstance(I)$CONTROLLER", "getDialogs(I)$LIST", "getPeerName(J)$STRING",
@@ -182,6 +189,39 @@ internal fun BytecodePatchContext.writeAutoForwardingStubs() {
         :hush_none
         const/4 v0, 0x0
         return v0
+    """)
+    // An author who hides their account leaves only the name they go by in the header.
+    writeStub(AUTO_FORWARDING, "originName", 2, """
+        check-cast p0, $MESSAGE
+        iget-object v0, p0, $MESSAGE->messageOwner:$TL_MESSAGE
+        if-eqz v0, :hush_none
+        iget-object v0, v0, $TL_MESSAGE->fwd_from:$FWD_HEADER
+        if-eqz v0, :hush_none
+        iget-object v0, v0, $FWD_HEADER->from_name:$STRING
+        return-object v0
+        :hush_none
+        const/4 v0, 0x0
+        return-object v0
+    """)
+    // The photo or file keeps its id through every copy, which tells an album's parts apart.
+    writeStub(AUTO_FORWARDING, "mediaId", 4, """
+        check-cast p0, $MESSAGE
+        iget-object v0, p0, $MESSAGE->messageOwner:$TL_MESSAGE
+        if-eqz v0, :hush_none
+        iget-object v0, v0, $TL_MESSAGE->media:$MEDIA
+        if-eqz v0, :hush_none
+        iget-object v2, v0, $MEDIA->photo:$PHOTO
+        if-eqz v2, :hush_document
+        iget-wide v0, v2, $PHOTO->id:J
+        return-wide v0
+        :hush_document
+        iget-object v2, v0, $MEDIA->document:$DOCUMENT
+        if-eqz v2, :hush_none
+        iget-wide v0, v2, $DOCUMENT->id:J
+        return-wide v0
+        :hush_none
+        const-wide/16 v0, 0x0
+        return-wide v0
     """)
     writeStub(AUTO_FORWARDING, "service", 2, """
         check-cast p0, $MESSAGE

@@ -235,6 +235,70 @@ public class AutoForwardingTest {
         assertEquals(Collections.singletonList("0: [11/1, 11/2, 11/3] to 12"), telegram.sent);
     }
 
+    @Test public void anAlbumThatArrivesInTwoPartsAllGoes() {
+        Settings.AUTO_FORWARDING.save(true);
+        assertTrue(AutoForwarding.add(new AutoForwarding.Rule(1000, A, B, false)));
+        List<Object> first = new ArrayList<>();
+        List<Object> rest = new ArrayList<>();
+        for (int id = 1; id <= 3; id++) {
+            AutoForwardingForTests.Message part = message(A, id);
+            part.forwarded = true;
+            part.sender = 7000;
+            part.origin = 8000;
+            part.originDate = 90;
+            part.media = true;
+            part.mediaId = 500 + id;
+            (id < 3 ? first : rest).add(part);
+        }
+        arrive(first.toArray());
+        arrive(rest.toArray());
+        assertEquals(Arrays.asList("0: [11/1, 11/2] to 12", "0: [11/3] to 12"), telegram.sent);
+    }
+
+    @Test public void aCopyFromAHiddenAuthorStays() {
+        Settings.AUTO_FORWARDING.save(true);
+        assertTrue(AutoForwarding.add(new AutoForwarding.Rule(1000, A, B, false)));
+        AutoForwardingForTests.Message written = message(A, 1);
+        written.sender = 7000;
+        written.date = 40;
+        arrive(written);
+        assertEquals(1, telegram.sent.size());
+        // The author hides who they are, so the copy that comes back has only their name.
+        AutoForwardingForTests.Message copy = message(A, 2);
+        copy.forwarded = true;
+        copy.sender = B;
+        copy.originName = "Pat";
+        copy.originDate = 40;
+        arrive(copy);
+        assertEquals(1, telegram.sent.size());
+    }
+
+    @Test public void twoHiddenAuthorsInOneSecondBothGo() {
+        Settings.AUTO_FORWARDING.save(true);
+        assertTrue(AutoForwarding.add(new AutoForwarding.Rule(1000, A, B, false)));
+        AutoForwardingForTests.Message one = message(A, 1);
+        one.forwarded = true;
+        one.sender = 7000;
+        one.originName = "Pat";
+        one.originDate = 50;
+        arrive(one);
+        AutoForwardingForTests.Message other = message(A, 2);
+        other.forwarded = true;
+        other.sender = 7000;
+        other.originName = "Sam";
+        other.originDate = 50;
+        arrive(other);
+        assertEquals(Arrays.asList("0: [11/1] to 12", "0: [11/2] to 12"), telegram.sent);
+        // The first one forwarded again is still a copy.
+        AutoForwardingForTests.Message again = message(A, 3);
+        again.forwarded = true;
+        again.sender = 7001;
+        again.originName = "Pat";
+        again.originDate = 50;
+        arrive(again);
+        assertEquals(2, telegram.sent.size());
+    }
+
     @Test public void aRuleAddedWhilePausedKeepsTheOthers() {
         assertTrue(AutoForwarding.add(new AutoForwarding.Rule(1000, A, B, false)));
         PauseForTests.pause(HushTelegramPause.Reason.SWITCH);

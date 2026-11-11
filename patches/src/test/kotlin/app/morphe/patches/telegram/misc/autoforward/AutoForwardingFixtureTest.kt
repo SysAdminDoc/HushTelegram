@@ -37,6 +37,7 @@ class AutoForwardingFixtureTest {
         "Lorg/telegram/messenger/DialogObject;", "Lorg/telegram/messenger/SendMessagesHelper;",
         "Lorg/telegram/tgnet/TLRPC\$MessageFwdHeader;", "Lorg/telegram/tgnet/TLRPC\$Peer;", "Lorg/telegram/tgnet/TLRPC\$Chat;",
         "Lorg/telegram/messenger/ChatObject;", "Lorg/telegram/messenger/UserObject;", "Lorg/telegram/tgnet/TLRPC\$User;",
+        "Lorg/telegram/tgnet/TLRPC\$MessageMedia;", "Lorg/telegram/tgnet/TLRPC\$Photo;", "Lorg/telegram/tgnet/TLRPC\$Document;",
     )
 
     @Test
@@ -80,6 +81,15 @@ class AutoForwardingFixtureTest {
             assertTrue("$name: originDate", refs("originDate").containsAll(listOf(
                 "Lorg/telegram/tgnet/TLRPC\$Message;->fwd_from:Lorg/telegram/tgnet/TLRPC\$MessageFwdHeader;",
                 "Lorg/telegram/tgnet/TLRPC\$MessageFwdHeader;->date:I")))
+            assertTrue("$name: originName", refs("originName").containsAll(listOf(
+                "Lorg/telegram/tgnet/TLRPC\$Message;->fwd_from:Lorg/telegram/tgnet/TLRPC\$MessageFwdHeader;",
+                "Lorg/telegram/tgnet/TLRPC\$MessageFwdHeader;->from_name:Ljava/lang/String;")))
+            assertTrue("$name: mediaId", refs("mediaId").containsAll(listOf(
+                "Lorg/telegram/tgnet/TLRPC\$Message;->media:Lorg/telegram/tgnet/TLRPC\$MessageMedia;",
+                "Lorg/telegram/tgnet/TLRPC\$MessageMedia;->photo:Lorg/telegram/tgnet/TLRPC\$Photo;",
+                "Lorg/telegram/tgnet/TLRPC\$MessageMedia;->document:Lorg/telegram/tgnet/TLRPC\$Document;",
+                "Lorg/telegram/tgnet/TLRPC\$Photo;->id:J",
+                "Lorg/telegram/tgnet/TLRPC\$Document;->id:J")))
             assertTrue("$name: canPost", refs("canPost").containsAll(listOf(
                 "Lorg/telegram/messenger/MessagesController;->getChat(Ljava/lang/Long;)Lorg/telegram/tgnet/TLRPC\$Chat;",
                 "Lorg/telegram/messenger/ChatObject;->isNotInChat(Lorg/telegram/tgnet/TLRPC\$Chat;)Z",
