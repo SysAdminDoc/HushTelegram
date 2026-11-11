@@ -85,6 +85,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
 public final class UnifiedPush {
     static final String PREFS = "hushtelegram_unified_push";
     static final String CHOSEN = "chosen";
+    /** A pick the next sign-up hasn't acted on yet. */
+    static final String PICKED = "picked";
     static final String DISTRIBUTOR = "distributor";
     static final String TOKEN = "token";
     static final String ENDPOINT = "endpoint";
@@ -362,7 +364,7 @@ public final class UnifiedPush {
     public static void choose(Context context, String distributor, boolean on) {
         if (context == null || !PatchFamily.UNIFIED_PUSH.inBuild()) return;
         Context app = context.getApplicationContext() != null ? context.getApplicationContext() : context;
-        if (!save(prefs(app), CHOSEN, distributor, PROBLEM, null)) {
+        if (!save(prefs(app), CHOSEN, distributor, PICKED, distributor, PROBLEM, null)) {
             HookStatus.counted(FamilyNames.UNIFIED_PUSH, "app choice not saved");
             return;
         }
@@ -391,9 +393,18 @@ public final class UnifiedPush {
                 if (!forgotten) HookStatus.counted(FamilyNames.UNIFIED_PUSH, "sign-up not forgotten, ended again at the next start");
                 return;
             }
-            if (ENDED.equals(prefs.getString(PROBLEM, null))) return;
             List<String> installed = distributors(context);
-            String distributor = pick(installed, prefs.getString(CHOSEN, current));
+            String chosen = prefs.getString(CHOSEN, null);
+            // An end holds back everything but a pick of another app that's still there, which can
+            // land between the pick and this sign-up. A pick counts once, so an old one can't undo a
+            // later end when its app comes back.
+            String picked = prefs.getString(PICKED, null);
+            if (picked != null && !save(prefs, PICKED, null)) {
+                HookStatus.counted(FamilyNames.UNIFIED_PUSH, "app pick not cleared");
+            }
+            if (ENDED.equals(prefs.getString(PROBLEM, null))
+                    && (picked == null || picked.equals(current) || !installed.contains(picked))) return;
+            String distributor = pick(installed, chosen != null ? chosen : current);
             if (distributor == null) {
                 // The app is gone, or there are several and none is picked yet. An address nothing
                 // answers any more would keep Firebase out for good, so the sign-up goes with it.
@@ -414,6 +425,7 @@ public final class UnifiedPush {
             boolean ending = token != null && ENDING.contains(token);
             if (token == null || ending || !distributor.equals(current)) {
                 String fresh = UUID.randomUUID().toString();
+                String endpoint = prefs.getString(ENDPOINT, null);
                 // The token goes out only once it's on disk. An app holding a token this side forgot
                 // would have its answers dropped as a stranger's.
                 boolean saved = save(prefs, DISTRIBUTOR, distributor, TOKEN, fresh, ENDPOINT, null, PROBLEM, null);
@@ -422,6 +434,9 @@ public final class UnifiedPush {
                     HookStatus.counted(FamilyNames.UNIFIED_PUSH, "sign-up not saved, tried again at the next start");
                     return;
                 }
+                // The old sign-up's address dies with it, and the new app may never send one, so
+                // Telegram goes back to Firebase until it does.
+                if (endpoint != null) telegram.release(endpoint);
                 token = fresh;
             }
             send(context, new Intent(REGISTER)

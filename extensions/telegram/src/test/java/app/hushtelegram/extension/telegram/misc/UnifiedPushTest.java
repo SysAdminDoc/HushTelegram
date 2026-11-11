@@ -46,6 +46,7 @@ public class UnifiedPushTest {
     private final List<String> registered = new ArrayList<>();
     private final List<Runnable> wakes = new ArrayList<>();
     private final List<String> released = new ArrayList<>();
+    private final java.util.Map<Thread, Throwable> failed = new java.util.concurrent.ConcurrentHashMap<>();
     private UnifiedPush.Telegram real;
     private java.util.concurrent.Executor realWork;
     private final java.util.function.Function<Context, android.content.SharedPreferences> realStore = UnifiedPush.store;
@@ -835,8 +836,7 @@ public class UnifiedPushTest {
         // The answer has read the old token when the switch's sign-up starts on its own thread.
         flaky.afterTokenRead = () -> signUp[0] = overlapping(() -> UnifiedPush.sync(context, true));
         UnifiedPush.receive(context, from(UnifiedPush.UNREGISTERED, token), () -> {});
-        signUp[0].join(5000);
-        assertFalse(signUp[0].isAlive());
+        finished(signUp[0]);
         assertNotNull(token());
         assertNotEquals(token, token());
         assertEquals("every sign-up since carries the one token kept", Collections.singleton(token()), signedUpSince(before));
@@ -853,8 +853,7 @@ public class UnifiedPushTest {
         flaky.afterTokenRead = () -> answer[0] = overlapping(
                 () -> UnifiedPush.receive(context, from(UnifiedPush.UNREGISTERED, token), () -> {}));
         UnifiedPush.sync(context, true);
-        answer[0].join(5000);
-        assertFalse(answer[0].isAlive());
+        finished(answer[0]);
         assertEquals("the ending token was signed up again", withOld, registersWith(token));
         assertNotEquals(token, token());
         assertEquals(token(), last(UnifiedPush.REGISTER).getStringExtra("token"));
@@ -869,8 +868,7 @@ public class UnifiedPushTest {
         Thread[] move = new Thread[1];
         flaky.afterTokenRead = () -> move[0] = overlapping(() -> UnifiedPush.choose(context, OTHER, true));
         UnifiedPush.receive(context, from(UnifiedPush.REGISTRATION_FAILED, token), () -> {});
-        move[0].join(5000);
-        assertFalse(move[0].isAlive());
+        finished(move[0]);
         assertNotNull("the move's sign-up was wiped", token());
         assertNotEquals(token, token());
         assertNull(flaky.getString(UnifiedPush.PROBLEM, null));
@@ -886,13 +884,88 @@ public class UnifiedPushTest {
         Thread[] move = new Thread[1];
         flaky.afterTokenRead = () -> move[0] = overlapping(() -> UnifiedPush.choose(context, OTHER, true));
         UnifiedPush.receive(context, from(UnifiedPush.NEW_ENDPOINT, token).putExtra("endpoint", ENDPOINT), () -> {});
-        move[0].join(5000);
-        assertFalse(move[0].isAlive());
+        finished(move[0]);
         assertNotEquals(token, token());
         assertEquals(token(), last(UnifiedPush.REGISTER).getStringExtra("token"));
         assertEquals(OTHER, last(UnifiedPush.REGISTER).getPackage());
         assertNull("the new sign-up holds the old app's address", flaky.getString(UnifiedPush.ENDPOINT, null));
         assertNull(UnifiedPush.activeEndpoint());
+        assertEquals("Telegram still holds the old app's address", Collections.singletonList(ENDPOINT), released);
+    }
+
+    @Test public void movingToAnotherAppHandsTheOldAddressBack() {
+        install(OTHER);
+        signedUp();
+        assertEquals(webPush(), UnifiedPush.token(2, "fcm-token"));
+        UnifiedPush.choose(context, OTHER, true);
+        assertEquals(OTHER, last(UnifiedPush.REGISTER).getPackage());
+        assertEquals("nothing answers at the old address, so Telegram is asked for Firebase again",
+                Collections.singletonList(ENDPOINT), released);
+        assertNull(UnifiedPush.activeEndpoint());
+        assertEquals("fcm-token", UnifiedPush.token(2, "fcm-token"));
+        // Until the new app sends its own address.
+        String moved = "https://push.example.org/up/9f8e7d";
+        UnifiedPush.receive(context, from(UnifiedPush.NEW_ENDPOINT, token()).putExtra("endpoint", moved), () -> {});
+        assertEquals(moved, UnifiedPush.activeEndpoint());
+        assertEquals("the new address is kept", Collections.singletonList(ENDPOINT), released);
+    }
+
+    @Test public void anOldPickDoesntUndoALaterEndWhenItsAppComesBack() {
+        install(OTHER);
+        signedUp();
+        UnifiedPush.choose(context, OTHER, true);
+        assertEquals(OTHER, last(UnifiedPush.REGISTER).getPackage());
+        // The picked app goes, ntfy takes over, and then ntfy ends it.
+        shadowOf(context.getPackageManager()).removeResolveInfosForIntent(new Intent(UnifiedPush.REGISTER), OTHER);
+        UnifiedPush.sync(context, true);
+        assertEquals(UnifiedPush.NTFY, last(UnifiedPush.REGISTER).getPackage());
+        UnifiedPush.receive(context, from(UnifiedPush.UNREGISTERED, token()), () -> {});
+        int registers = count(UnifiedPush.REGISTER);
+        install(OTHER);
+        UnifiedPush.sync(context, true);
+        assertEquals("the end holds until the user acts", registers, count(UnifiedPush.REGISTER));
+    }
+
+    @Test public void anEndAfterPickingAnAppThatsSinceGoneStillHoldsItBack() {
+        install(OTHER);
+        String token = signedUp();
+        List<Runnable> queued = new ArrayList<>();
+        UnifiedPush.work = queued::add;
+        UnifiedPush.choose(context, OTHER, true);
+        shadowOf(context.getPackageManager()).removeResolveInfosForIntent(new Intent(UnifiedPush.REGISTER), OTHER);
+        UnifiedPush.receive(context, from(UnifiedPush.UNREGISTERED, token), () -> {});
+        int registers = count(UnifiedPush.REGISTER);
+        for (Runnable step : queued) step.run();
+        assertEquals("ntfy isn't asked again behind its back", registers, count(UnifiedPush.REGISTER));
+        assertNull(token());
+    }
+
+    /** The old app ends its sign-up after another app was picked but before the move's sign-up ran. */
+    @Test public void anEndThatLandsBeforeAPickedMoveRunsDoesntHoldItBack() {
+        install(OTHER);
+        String token = signedUp();
+        List<Runnable> queued = new ArrayList<>();
+        UnifiedPush.work = queued::add;
+        UnifiedPush.choose(context, OTHER, true);
+        UnifiedPush.receive(context, from(UnifiedPush.UNREGISTERED, token), () -> {});
+        int registers = count(UnifiedPush.REGISTER);
+        for (Runnable step : queued) step.run();
+        assertEquals(registers + 1, count(UnifiedPush.REGISTER));
+        assertEquals(OTHER, last(UnifiedPush.REGISTER).getPackage());
+        assertEquals(token(), last(UnifiedPush.REGISTER).getStringExtra("token"));
+        assertEquals("Signing up with org.example.push…", UnifiedPush.status(context, true));
+    }
+
+    @Test public void anEndAfterPickingTheSameAppAgainStillHoldsItBack() {
+        String token = signedUp();
+        List<Runnable> queued = new ArrayList<>();
+        UnifiedPush.work = queued::add;
+        UnifiedPush.choose(context, UnifiedPush.NTFY, true);
+        UnifiedPush.receive(context, from(UnifiedPush.UNREGISTERED, token), () -> {});
+        int registers = count(UnifiedPush.REGISTER);
+        for (Runnable step : queued) step.run();
+        assertEquals("the app that ended it isn't asked again behind its back", registers, count(UnifiedPush.REGISTER));
+        assertEquals("io.heckel.ntfy ended the sign-up. Turn the switch off and on to sign up again.", UnifiedPush.status(context, true));
     }
 
     /** Signed up with ntfy and waiting for its address, another app installed, the switch on. */
@@ -908,15 +981,25 @@ public class UnifiedPushTest {
      * Starts [step] on a thread of its own and returns once it's waiting for a lock or done, the
      * way a broadcast on Android's main thread and a sign-up on the work thread overlap.
      */
-    private static Thread overlapping(Runnable step) {
+    private Thread overlapping(Runnable step) {
         Thread thread = new Thread(step);
+        thread.setUncaughtExceptionHandler(failed::put);
         thread.start();
         long until = System.nanoTime() + 5_000_000_000L;
-        while (thread.getState() != Thread.State.BLOCKED && thread.getState() != Thread.State.TERMINATED
-                && System.nanoTime() < until) {
+        while (thread.getState() != Thread.State.BLOCKED && thread.getState() != Thread.State.TERMINATED) {
+            if (System.nanoTime() > until) throw new AssertionError("the overlapping step neither waited nor finished");
             Thread.yield();
         }
         return thread;
+    }
+
+    /** Waits for an {@link #overlapping} step and fails with whatever it threw. */
+    private void finished(Thread thread) throws InterruptedException {
+        assertNotNull("the overlapping step never started", thread);
+        thread.join(5000);
+        assertFalse("the overlapping step never finished", thread.isAlive());
+        Throwable failure = failed.get(thread);
+        if (failure != null) throw new AssertionError("the overlapping step failed", failure);
     }
 
     /** The tokens of the sign-ups sent after the first [before] broadcasts. */
