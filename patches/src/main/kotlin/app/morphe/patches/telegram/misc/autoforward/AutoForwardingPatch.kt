@@ -38,6 +38,10 @@ private const val LIST = "Ljava/util/ArrayList;"
 private const val STRING = "Ljava/lang/String;"
 private const val MESSAGE = "Lorg/telegram/messenger/MessageObject;"
 private const val TL_MESSAGE = "Lorg/telegram/tgnet/TLRPC\$Message;"
+private const val FWD_HEADER = "Lorg/telegram/tgnet/TLRPC\$MessageFwdHeader;"
+private const val PEER = "Lorg/telegram/tgnet/TLRPC\$Peer;"
+private const val TL_CHAT = "Lorg/telegram/tgnet/TLRPC\$Chat;"
+private const val CHAT_OBJECT = "Lorg/telegram/messenger/ChatObject;"
 private const val ACTION = "Lorg/telegram/tgnet/TLRPC\$MessageAction;"
 private const val ACTION_EMPTY = "Lorg/telegram/tgnet/TLRPC\$TL_messageActionEmpty;"
 private const val TL_DIALOG = "Lorg/telegram/tgnet/TLRPC\$Dialog;"
@@ -49,8 +53,8 @@ private const val SEND_HELPER = "Lorg/telegram/messenger/SendMessagesHelper;"
 @Suppress("unused")
 val autoForwardingPatch = bytecodePatch(
     name = PATCH,
-    description = "Forwards new messages from one chat to another by rules you set, every message or only " +
-        "messages with media. Your own forwards are never forwarded again, so two rules can't loop, " +
+    description = "Forwards new messages others send in one chat to another by rules you set, every message or only " +
+        "messages with media. A forward from any account you're signed in to is never forwarded again, so rules can't loop, " +
         "and at most 20 go out a minute. Starts off. Turn it on and add rules in HushTelegram settings > Privacy.",
     default = true,
 ) {
@@ -82,22 +86,26 @@ internal fun BytecodePatchContext.resolveAutoForwarding(): MutableMethod {
     controlHook(AUTO_FORWARDING, "onNewMessages", listOf(OBJECT, "I"), "V")
     for (name in listOf("account", "id")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "I")
     for (name in listOf("out", "forwarded", "service", "media")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "Z")
-    for (name in listOf("dialog", "dialogId")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "J")
+    for (name in listOf("dialog", "dialogId", "sender", "origin")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "J")
     controlHook(AUTO_FORWARDING, "selectedAccount", emptyList(), "I")
     controlHook(AUTO_FORWARDING, "userId", listOf("I"), "J")
     controlHook(AUTO_FORWARDING, "dialogs", listOf("I", "I"), LIST)
-    controlHook(AUTO_FORWARDING, "secret", listOf("J"), "Z")
+    for (name in listOf("secret", "folder")) controlHook(AUTO_FORWARDING, name, listOf("J"), "Z")
+    controlHook(AUTO_FORWARDING, "canPost", listOf("I", "J"), "Z")
     controlHook(AUTO_FORWARDING, "peerName", listOf("I", "J"), STRING)
     controlHook(AUTO_FORWARDING, "forward", listOf("I", LIST, "J"), "I")
 
     controlMembers(MESSAGE, "currentAccount:I", "messageOwner:$TL_MESSAGE", "getDialogId()J", "getId()I", "isOut()Z",
-        "isForwarded()Z", "isMediaEmpty()Z")
-    controlMembers(TL_MESSAGE, "action:$ACTION")
+        "isForwarded()Z", "isMediaEmpty()Z", "getFromChatId()J", "static getPeerId($PEER)J")
+    controlMembers(TL_MESSAGE, "action:$ACTION", "fwd_from:$FWD_HEADER")
+    controlMembers(FWD_HEADER, "from_id:$PEER")
     controlMembers(ACTION_EMPTY)
     controlMembers(USER_CONFIG, "static selectedAccount:I", "static getInstance(I)$USER_CONFIG", "getClientUserId()J")
-    controlMembers(CONTROLLER, "static getInstance(I)$CONTROLLER", "getDialogs(I)$LIST", "getPeerName(J)$STRING")
+    controlMembers(CONTROLLER, "static getInstance(I)$CONTROLLER", "getDialogs(I)$LIST", "getPeerName(J)$STRING",
+        "getChat(Ljava/lang/Long;)$TL_CHAT")
     controlMembers(TL_DIALOG, "id:J")
-    controlMembers(DIALOG_OBJECT, "static isEncryptedDialog(J)Z")
+    controlMembers(DIALOG_OBJECT, "static isEncryptedDialog(J)Z", "static isFolderDialogId(J)Z")
+    controlMembers(CHAT_OBJECT, "static isNotInChat($TL_CHAT)Z", "static canSendMessages($TL_CHAT)Z")
     controlMembers(SEND_HELPER, "static getInstance(I)$SEND_HELPER", FORWARD_SEND.substringAfter("->"))
 
     val owner = tgMutableClassDefByOrNull(NOTIFICATIONS_CONTROLLER)
@@ -127,6 +135,27 @@ internal fun BytecodePatchContext.writeAutoForwardingStubs() {
             return v0
         """)
     }
+    writeStub(AUTO_FORWARDING, "sender", 3, """
+        check-cast p0, $MESSAGE
+        invoke-virtual {p0}, $MESSAGE->getFromChatId()J
+        move-result-wide v0
+        return-wide v0
+    """)
+    writeStub(AUTO_FORWARDING, "origin", 4, """
+        check-cast p0, $MESSAGE
+        iget-object v0, p0, $MESSAGE->messageOwner:$TL_MESSAGE
+        if-eqz v0, :hush_none
+        iget-object v0, v0, $TL_MESSAGE->fwd_from:$FWD_HEADER
+        if-eqz v0, :hush_none
+        iget-object v0, v0, $FWD_HEADER->from_id:$PEER
+        if-eqz v0, :hush_none
+        invoke-static {v0}, $MESSAGE->getPeerId($PEER)J
+        move-result-wide v1
+        return-wide v1
+        :hush_none
+        const-wide/16 v1, 0x0
+        return-wide v1
+    """)
     writeStub(AUTO_FORWARDING, "service", 2, """
         check-cast p0, $MESSAGE
         iget-object v0, p0, $MESSAGE->messageOwner:$TL_MESSAGE
@@ -171,6 +200,38 @@ internal fun BytecodePatchContext.writeAutoForwardingStubs() {
     writeStub(AUTO_FORWARDING, "secret", 3, """
         invoke-static {p0, p1}, $DIALOG_OBJECT->isEncryptedDialog(J)Z
         move-result v0
+        return v0
+    """)
+    writeStub(AUTO_FORWARDING, "folder", 3, """
+        invoke-static {p0, p1}, $DIALOG_OBJECT->isFolderDialogId(J)Z
+        move-result v0
+        return v0
+    """)
+    // p0 is the account, p1-p2 the dialog id. A user's chat is always open to you; a group or
+    // channel needs you in it and allowed to send.
+    writeStub(AUTO_FORWARDING, "canPost", 6, """
+        const-wide/16 v0, 0x0
+        cmp-long v0, p1, v0
+        if-gez v0, :hush_yes
+        invoke-static {p0}, $CONTROLLER->getInstance(I)$CONTROLLER
+        move-result-object v0
+        neg-long v1, p1
+        invoke-static {v1, v2}, Ljava/lang/Long;->valueOf(J)Ljava/lang/Long;
+        move-result-object v1
+        invoke-virtual {v0, v1}, $CONTROLLER->getChat(Ljava/lang/Long;)$TL_CHAT
+        move-result-object v0
+        if-eqz v0, :hush_no
+        invoke-static {v0}, $CHAT_OBJECT->isNotInChat($TL_CHAT)Z
+        move-result v1
+        if-nez v1, :hush_no
+        invoke-static {v0}, $CHAT_OBJECT->canSendMessages($TL_CHAT)Z
+        move-result v0
+        return v0
+        :hush_no
+        const/4 v0, 0x0
+        return v0
+        :hush_yes
+        const/4 v0, 0x1
         return v0
     """)
     writeStub(AUTO_FORWARDING, "peerName", 4, """

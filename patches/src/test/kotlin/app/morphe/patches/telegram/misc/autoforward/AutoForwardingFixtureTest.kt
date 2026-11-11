@@ -35,6 +35,8 @@ class AutoForwardingFixtureTest {
         "Lorg/telegram/tgnet/TLRPC\$MessageAction;", "Lorg/telegram/tgnet/TLRPC\$TL_messageActionEmpty;",
         "Lorg/telegram/messenger/UserConfig;", "Lorg/telegram/messenger/MessagesController;", "Lorg/telegram/tgnet/TLRPC\$Dialog;",
         "Lorg/telegram/messenger/DialogObject;", "Lorg/telegram/messenger/SendMessagesHelper;",
+        "Lorg/telegram/tgnet/TLRPC\$MessageFwdHeader;", "Lorg/telegram/tgnet/TLRPC\$Peer;", "Lorg/telegram/tgnet/TLRPC\$Chat;",
+        "Lorg/telegram/messenger/ChatObject;",
     )
 
     @Test
@@ -68,6 +70,16 @@ class AutoForwardingFixtureTest {
             assertTrue("$name: media", "Lorg/telegram/messenger/MessageObject;->isMediaEmpty()Z" in refs("media"))
             assertTrue("$name: chats", "Lorg/telegram/messenger/MessagesController;->getDialogs(I)Ljava/util/ArrayList;" in refs("dialogs"))
             assertTrue("$name: secret", "Lorg/telegram/messenger/DialogObject;->isEncryptedDialog(J)Z" in refs("secret"))
+            assertTrue("$name: sender", "Lorg/telegram/messenger/MessageObject;->getFromChatId()J" in refs("sender"))
+            assertTrue("$name: origin", refs("origin").containsAll(listOf(
+                "Lorg/telegram/tgnet/TLRPC\$Message;->fwd_from:Lorg/telegram/tgnet/TLRPC\$MessageFwdHeader;",
+                "Lorg/telegram/tgnet/TLRPC\$MessageFwdHeader;->from_id:Lorg/telegram/tgnet/TLRPC\$Peer;",
+                "Lorg/telegram/messenger/MessageObject;->getPeerId(Lorg/telegram/tgnet/TLRPC\$Peer;)J")))
+            assertTrue("$name: folder", "Lorg/telegram/messenger/DialogObject;->isFolderDialogId(J)Z" in refs("folder"))
+            assertTrue("$name: canPost", refs("canPost").containsAll(listOf(
+                "Lorg/telegram/messenger/MessagesController;->getChat(Ljava/lang/Long;)Lorg/telegram/tgnet/TLRPC\$Chat;",
+                "Lorg/telegram/messenger/ChatObject;->isNotInChat(Lorg/telegram/tgnet/TLRPC\$Chat;)Z",
+                "Lorg/telegram/messenger/ChatObject;->canSendMessages(Lorg/telegram/tgnet/TLRPC\$Chat;)Z")))
 
             // Telegram's own forward, with the sender shown, captions kept and notifying.
             val forward = stub("forward")

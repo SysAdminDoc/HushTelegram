@@ -107,11 +107,67 @@ public class AutoForwardingTest {
         landed.forwarded = true;
         arrive(landed);
         assertEquals(1, telegram.sent.size());
-        // Something you write in B yourself still goes to A.
-        AutoForwardingForTests.Message yours = message(B, 3);
-        yours.out = true;
-        arrive(yours);
-        assertEquals("0: [12/3] to 11", telegram.sent.get(1));
+        // Your own messages stay: Telegram hands them over only when a scheduled one goes out.
+        AutoForwardingForTests.Message scheduled = message(B, 3);
+        scheduled.out = true;
+        arrive(scheduled);
+        assertEquals(1, telegram.sent.size());
+        // Someone else's message in B still goes to A.
+        arrive(message(B, 4));
+        assertEquals("0: [12/4] to 11", telegram.sent.get(1));
+    }
+
+    @Test public void rulesOnTwoAccountsPointingAtEachOtherDontLoop() {
+        Settings.AUTO_FORWARDING.save(true);
+        assertTrue(AutoForwarding.add(new AutoForwarding.Rule(1000, A, B, false)));
+        assertTrue(AutoForwarding.add(new AutoForwarding.Rule(2000, B, A, false)));
+        arrive(message(A, 1));
+        assertEquals(Collections.singletonList("0: [11/1] to 12"), telegram.sent);
+        // Account 1 sees account 0's forward come into B from someone else, and leaves it.
+        AutoForwardingForTests.Message landed = new AutoForwardingForTests.Message(1, B, 2);
+        landed.forwarded = true;
+        landed.sender = 1000;
+        arrive(landed);
+        assertEquals(1, telegram.sent.size());
+        // A forward someone else sent into B still goes.
+        AutoForwardingForTests.Message theirs = new AutoForwardingForTests.Message(1, B, 3);
+        theirs.forwarded = true;
+        theirs.sender = 5000;
+        arrive(theirs);
+        assertEquals("1: [12/3] to 11", telegram.sent.get(1));
+        // And something account 0 writes in B, not a forward, goes too.
+        AutoForwardingForTests.Message written = new AutoForwardingForTests.Message(1, B, 4);
+        written.sender = 1000;
+        arrive(written);
+        assertEquals("1: [12/4] to 11", telegram.sent.get(2));
+    }
+
+    @Test public void aForwardFromTheDestinationStays() {
+        Settings.AUTO_FORWARDING.save(true);
+        assertTrue(AutoForwarding.add(new AutoForwarding.Rule(1000, A, B, false)));
+        // A channel's post its discussion group got, with a rule from the group back to the channel.
+        AutoForwardingForTests.Message post = message(A, 1);
+        post.forwarded = true;
+        post.sender = B;
+        post.origin = B;
+        arrive(post);
+        assertEquals(Collections.emptyList(), telegram.sent);
+        AutoForwardingForTests.Message elsewhere = message(A, 2);
+        elsewhere.forwarded = true;
+        elsewhere.sender = 5000;
+        elsewhere.origin = C;
+        arrive(elsewhere);
+        assertEquals(Collections.singletonList("0: [11/2] to 12"), telegram.sent);
+    }
+
+    @Test public void aRuleAddedWhilePausedKeepsTheOthers() {
+        assertTrue(AutoForwarding.add(new AutoForwarding.Rule(1000, A, B, false)));
+        PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
+        assertEquals(Collections.singletonList(new AutoForwarding.Rule(1000, A, B, false)), AutoForwarding.rules());
+        assertTrue(AutoForwarding.add(new AutoForwarding.Rule(1000, A, C, false)));
+        assertEquals("1000 11 12 0\n1000 11 13 0", Settings.AUTO_FORWARDING_RULES.savedValue());
+        assertTrue(AutoForwarding.remove(new AutoForwarding.Rule(1000, A, B, false)));
+        assertEquals("1000 11 13 0", Settings.AUTO_FORWARDING_RULES.savedValue());
     }
 
     @Test public void aMediaRuleTakesOnlyMedia() {
@@ -179,19 +235,29 @@ public class AutoForwardingTest {
     @Test public void theRulesPageSeesTheShownAccountOnly() {
         assertTrue(AutoForwarding.add(new AutoForwarding.Rule(1000, A, B, false)));
         assertTrue(AutoForwarding.add(new AutoForwarding.Rule(2000, A, C, false)));
-        telegram.chats(0, 0, A, B, 1000L, 99L).chats(0, 1, C);
+        telegram.chats(0, 0, 77L, A, B, 1000L, 99L).chats(0, 1, C);
         telegram.names.put(A, "Alice");
         telegram.names.put(B, "Bob");
         telegram.secret.add(99L);
+        telegram.folders.add(77L);
+        telegram.readOnly.add(B);
         AutoForwarding.Shown shown = AutoForwarding.shown();
         assertEquals(1000, shown.user);
         assertEquals(Collections.singletonList(new AutoForwarding.Rule(1000, A, B, false)), shown.rules);
-        List<String> names = new ArrayList<>();
-        for (AutoForwarding.Chat chat : shown.chats) names.add(chat.id + " " + chat.name);
-        // Your own chat is Saved Messages, a secret chat is left out, and a chat with no name shows its id.
-        assertEquals(Arrays.asList("11 Alice", "12 Bob", "1000 Saved Messages", "13 13"), names);
+        // Your own chat is Saved Messages, a secret chat and the archive entry are left out, and a
+        // chat with no name shows its id.
+        assertEquals(Arrays.asList("11 Alice", "12 Bob", "1000 Saved Messages", "13 13"), ids(shown.chats));
         assertEquals("Bob", shown.name(B));
         assertEquals("404", shown.name(404));
+        // Saved Messages can take forwards but never hands any over; Bob's chat can't be posted in.
+        assertEquals(Arrays.asList("11 Alice", "12 Bob", "13 13"), ids(shown.sources()));
+        assertEquals(Arrays.asList("1000 Saved Messages", "13 13"), ids(shown.destinations(A)));
+    }
+
+    private static List<String> ids(List<AutoForwarding.Chat> chats) {
+        List<String> names = new ArrayList<>();
+        for (AutoForwarding.Chat chat : chats) names.add(chat.id + " " + chat.name);
+        return names;
     }
 
     @Test public void aBrokenTelegramLeavesThePageEmpty() {

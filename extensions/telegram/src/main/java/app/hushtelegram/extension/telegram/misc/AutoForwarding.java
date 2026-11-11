@@ -12,6 +12,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -25,12 +26,14 @@ import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
 
 /**
- * Auto-forwarding rules. A new message in a rule's first chat is forwarded to its second chat on
- * the same account, the way Forward sends it, and a rule can take only photos, videos and files.
- * A forward of your own is never forwarded again, so two rules pointing at each other don't loop;
- * a message that comes in twice goes out once; and each account sends at most {@link #PER_MINUTE}
- * forwards a minute. Notifications built from a push aren't forwarded: Telegram hands the same
- * messages over again once it connects.
+ * Auto-forwarding rules. A new message someone else sends in a rule's first chat is forwarded to
+ * its second chat on the same account, the way Forward sends it, and a rule can take only photos,
+ * videos and files. Your own messages stay, scheduled ones included. A forward one of your signed-in
+ * accounts sent, or one that came from the destination, isn't forwarded, so rules pointing at each
+ * other don't loop, on one account or across two. A message that comes in twice goes out once, and
+ * each account sends at most {@link #PER_MINUTE} forwards a minute. Notifications built from a push
+ * aren't forwarded: Telegram hands the same messages over again once it connects. Telegram hands
+ * over only unread messages, so one already read on another device before this one connects stays.
  */
 public final class AutoForwarding {
     /** The most forwards one account sends in a minute. Past it, new matches aren't forwarded. */
@@ -88,14 +91,16 @@ public final class AutoForwarding {
         }
     }
 
-    /** A chat the rules page lists: Telegram's dialog id for it and its name. */
+    /** A chat the rules page lists: Telegram's dialog id for it, its name and whether you can post there. */
     public static final class Chat {
         public final long id;
         public final String name;
+        public final boolean canPost;
 
-        public Chat(long id, String name) {
+        public Chat(long id, String name, boolean canPost) {
             this.id = id;
             this.name = name;
+            this.canPost = canPost;
         }
     }
 
@@ -117,6 +122,24 @@ public final class AutoForwarding {
                 if (chat.id == id) return chat.name;
             }
             return String.valueOf(id);
+        }
+
+        /** The chats a rule can watch. Not Saved Messages: Telegram never hands over what's posted there. */
+        public List<Chat> sources() {
+            List<Chat> sources = new ArrayList<>();
+            for (Chat chat : chats) {
+                if (chat.id != user) sources.add(chat);
+            }
+            return sources;
+        }
+
+        /** The chats [source]'s messages can go to: any you can post in but [source]. */
+        public List<Chat> destinations(long source) {
+            List<Chat> destinations = new ArrayList<>();
+            for (Chat chat : chats) {
+                if (chat.id != source && chat.canPost) destinations.add(chat);
+            }
+            return destinations;
         }
     }
 
@@ -158,8 +181,9 @@ public final class AutoForwarding {
         return false;
     }
 
+    /** The saved rules. Read as saved even while HushTelegram is paused, so a rule added then keeps the rest. */
     public static List<Rule> rules() {
-        return parse(Settings.AUTO_FORWARDING_RULES.get());
+        return parse(Settings.AUTO_FORWARDING_RULES.savedValue());
     }
 
     /**
@@ -180,7 +204,10 @@ public final class AutoForwarding {
         return !rules.remove(rule) || Settings.AUTO_FORWARDING_RULES.save(format(rules));
     }
 
-    /** The account shown now, with its chats (archived ones too, secret chats left out) and its rules, or null when they can't be read. */
+    /**
+     * The account shown now, with its chats (archived ones too, secret chats and the Archived Chats
+     * entry left out) and its rules, or null when they can't be read.
+     */
     @Nullable
     public static Shown shown() {
         try {
@@ -200,10 +227,11 @@ public final class AutoForwarding {
             }
             List<Chat> chats = new ArrayList<>();
             for (long id : ids) {
-                if (id == 0 || telegram.secret(id)) continue;
+                if (id == 0 || telegram.folder(id) || telegram.secret(id)) continue;
                 // Your own chat is Saved Messages, as Telegram lists it, not your name.
                 String name = id == user ? L10n.t("Saved Messages") : telegram.peerName(account, id);
-                chats.add(new Chat(id, name == null || name.trim().isEmpty() ? String.valueOf(id) : name));
+                chats.add(new Chat(id, name == null || name.trim().isEmpty() ? String.valueOf(id) : name,
+                        telegram.canPost(account, id)));
             }
             return new Shown(user, Collections.unmodifiableList(chats), Collections.unmodifiableList(mine));
         } catch (Throwable failure) {
@@ -254,6 +282,9 @@ public final class AutoForwarding {
     static synchronized Map<String, Batch> matches(List<?> messages, List<Rule> rules) {
         Map<String, Batch> batches = new LinkedHashMap<>();
         Map<Integer, Long> users = new HashMap<>();
+        // Every account a rule is for: a forward one of them sent is a rule's, on whichever account it lands.
+        Set<Long> owners = new HashSet<>();
+        for (Rule rule : rules) owners.add(rule.user);
         for (Object message : messages) {
             if (message == null) continue;
             int account = telegram.account(message);
@@ -266,8 +297,12 @@ public final class AutoForwarding {
             int id = telegram.id(message);
             for (Rule rule : rules) {
                 if (rule.user != user || rule.source != dialog || id <= 0) continue;
-                // Your own forward is what a rule sends, so a rule back the other way can't loop.
-                if (telegram.out(message) && telegram.forwarded(message)) continue;
+                // Telegram hands over your own messages only when a scheduled one goes out, so none go.
+                if (telegram.out(message)) continue;
+                // A rule's forward landing on another account you're signed in to, or a channel's post
+                // its discussion group got, would go back where it came from and round again.
+                if (telegram.forwarded(message)
+                        && (owners.contains(telegram.sender(message)) || telegram.origin(message) == rule.destination)) continue;
                 if (telegram.service(message)) continue;
                 if (rule.mediaOnly && !telegram.media(message)) continue;
                 String key = account + ":" + dialog + ":" + id + ":" + rule.destination;
@@ -330,6 +365,10 @@ public final class AutoForwarding {
 
         boolean forwarded(Object message);
 
+        long sender(Object message);
+
+        long origin(Object message);
+
         boolean service(Object message);
 
         boolean media(Object message);
@@ -345,6 +384,10 @@ public final class AutoForwarding {
 
         boolean secret(long dialog);
 
+        boolean folder(long dialog);
+
+        boolean canPost(int account, long id);
+
         @Nullable
         String peerName(int account, long id);
 
@@ -359,6 +402,8 @@ public final class AutoForwarding {
         @Override public int id(Object message) { return AutoForwarding.id(message); }
         @Override public boolean out(Object message) { return AutoForwarding.out(message); }
         @Override public boolean forwarded(Object message) { return AutoForwarding.forwarded(message); }
+        @Override public long sender(Object message) { return AutoForwarding.sender(message); }
+        @Override public long origin(Object message) { return AutoForwarding.origin(message); }
         @Override public boolean service(Object message) { return AutoForwarding.service(message); }
         @Override public boolean media(Object message) { return AutoForwarding.media(message); }
         @Override public int selectedAccount() { return AutoForwarding.selectedAccount(); }
@@ -366,6 +411,8 @@ public final class AutoForwarding {
         @Override public List<?> dialogs(int account, int folder) { return AutoForwarding.dialogs(account, folder); }
         @Override public long dialogId(Object dialog) { return AutoForwarding.dialogId(dialog); }
         @Override public boolean secret(long dialog) { return AutoForwarding.secret(dialog); }
+        @Override public boolean folder(long dialog) { return AutoForwarding.folder(dialog); }
+        @Override public boolean canPost(int account, long id) { return AutoForwarding.canPost(account, id); }
         @Override public String peerName(int account, long id) { return AutoForwarding.peerName(account, id); }
         @Override public int forward(int account, ArrayList<Object> messages, long destination) {
             return AutoForwarding.forward(account, messages, destination);
@@ -390,6 +437,12 @@ public final class AutoForwarding {
     /** {@code message.isForwarded()}. */
     public static boolean forwarded(Object message) { return false; }
 
+    /** {@code message.getFromChatId()}: who sent it, a user or a chat as a dialog id. */
+    public static long sender(Object message) { return 0L; }
+
+    /** The dialog id the forward header names as where it came from, or 0 when it names none. */
+    public static long origin(Object message) { return 0L; }
+
     /** Whether the message is a service message: an action other than TL_messageActionEmpty. */
     public static boolean service(Object message) { return false; }
 
@@ -411,6 +464,15 @@ public final class AutoForwarding {
 
     /** {@code DialogObject.isEncryptedDialog(dialog)}. */
     public static boolean secret(long dialog) { return false; }
+
+    /** {@code DialogObject.isFolderDialogId(dialog)}: the Archived Chats entry, not a chat. */
+    public static boolean folder(long dialog) { return false; }
+
+    /**
+     * Whether you can post in the chat: a user's chat always, a group or channel when you're in it
+     * and {@code ChatObject.canSendMessages} says so.
+     */
+    public static boolean canPost(int account, long id) { return true; }
 
     /** {@code MessagesController.getInstance(account).getPeerName(id)}. */
     @Nullable

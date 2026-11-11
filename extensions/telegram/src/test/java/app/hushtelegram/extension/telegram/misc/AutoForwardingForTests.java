@@ -24,6 +24,10 @@ public final class AutoForwardingForTests {
         public final int id;
         public boolean out;
         public boolean forwarded;
+        /** Who sent it, as a dialog id. */
+        public long sender;
+        /** Where a forward came from, as a dialog id, or 0. */
+        public long origin;
         public boolean service;
         public boolean media;
 
@@ -46,6 +50,9 @@ public final class AutoForwardingForTests {
         public final Map<String, List<Long>> chats = new HashMap<>();
         public final Map<Long, String> names = new HashMap<>();
         public final List<Long> secret = new ArrayList<>();
+        public final List<Long> folders = new ArrayList<>();
+        /** Chats you can't post in. */
+        public final List<Long> readOnly = new ArrayList<>();
         /** Each forward as "account: messages to destination". */
         public final List<String> sent = new ArrayList<>();
         public long now = 1_000_000L;
@@ -63,6 +70,8 @@ public final class AutoForwardingForTests {
         @Override public int id(Object message) { return ((Message) message).id; }
         @Override public boolean out(Object message) { return ((Message) message).out; }
         @Override public boolean forwarded(Object message) { return ((Message) message).forwarded; }
+        @Override public long sender(Object message) { return ((Message) message).sender; }
+        @Override public long origin(Object message) { return ((Message) message).origin; }
         @Override public boolean service(Object message) { return ((Message) message).service; }
         @Override public boolean media(Object message) { return ((Message) message).media; }
         @Override public int selectedAccount() { return selected; }
@@ -70,6 +79,8 @@ public final class AutoForwardingForTests {
         @Override public List<?> dialogs(int account, int folder) { return chats.get(account + "/" + folder); }
         @Override public long dialogId(Object dialog) { return (Long) dialog; }
         @Override public boolean secret(long dialog) { return secret.contains(dialog); }
+        @Override public boolean folder(long dialog) { return folders.contains(dialog); }
+        @Override public boolean canPost(int account, long id) { return !readOnly.contains(id); }
         @Override public String peerName(int account, long id) { return names.get(id); }
         @Override public long now() { return now; }
 

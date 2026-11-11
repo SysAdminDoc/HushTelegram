@@ -2658,8 +2658,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
     /** Add rule, first: the chat new messages come from. */
     private void pickForwardingSource(Context context, AutoForwarding.Shown shown) {
-        List<AutoForwarding.Chat> chats = shown.chats;
-        if (chats.size() < 2) {
+        List<AutoForwarding.Chat> chats = shown.sources();
+        if (chats.isEmpty() || shown.chats.size() < 2) {
             Utils.showToastLong(L10n.t("A rule needs two chats."));
             return;
         }
@@ -2669,11 +2669,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 .setNegativeButton(L10n.t("Cancel"), null));
     }
 
-    /** Then the chat they go to, any but the first. */
+    /** Then the chat they go to, any you can post in but the first. */
     private void pickForwardingDestination(Context context, AutoForwarding.Shown shown, long source) {
-        List<AutoForwarding.Chat> chats = new ArrayList<>();
-        for (AutoForwarding.Chat chat : shown.chats) {
-            if (chat.id != source) chats.add(chat);
+        List<AutoForwarding.Chat> chats = shown.destinations(source);
+        if (chats.isEmpty()) {
+            Utils.showToastLong(L10n.t("A rule needs two chats."));
+            return;
         }
         show(new AlertDialog.Builder(context)
                 .setTitle(L10n.t("Forward them to"))

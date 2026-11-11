@@ -235,7 +235,7 @@
     },
     {
       "name": "Auto-forwarding rules",
-      "description": "Forwards new messages from one chat to another by rules you set, every message or only messages with media. Your own forwards are never forwarded again, so two rules can't loop, and at most 20 go out a minute. Starts off. Turn it on and add rules in HushTelegram settings > Privacy.",
+      "description": "Forwards new messages others send in one chat to another by rules you set, every message or only messages with media. A forward from any account you're signed in to is never forwarded again, so rules can't loop, and at most 20 go out a minute. Starts off. Turn it on and add rules in HushTelegram settings > Privacy.",
       "category": "Privacy",
       "use": true,
       "dependencies": [
