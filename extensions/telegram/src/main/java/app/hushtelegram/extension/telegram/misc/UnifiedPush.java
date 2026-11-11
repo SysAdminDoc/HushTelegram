@@ -499,54 +499,18 @@ public final class UnifiedPush {
         try {
             if (intent == null || !PatchFamily.UNIFIED_PUSH.inBuild()) { once.run(); return; }
             SharedPreferences prefs = prefs(context);
-            String token = prefs.getString(TOKEN, null);
-            if (token == null || !token.equals(intent.getStringExtra("token"))) {
-                Logger.printInfo(() -> "UnifiedPush: dropped a broadcast without this sign-up's token");
-                once.run();
-                return;
-            }
+            String token = intent.getStringExtra("token");
             String action = String.valueOf(intent.getAction());
-            switch (action) {
-                case NEW_ENDPOINT:
-                    // The spec asks for this acknowledgement too, and an app may drop an address nobody acknowledged.
-                    acknowledge(context, prefs, token, intent.getStringExtra("id"));
-                    endpoint(context, prefs, intent.getStringExtra("endpoint"));
-                    break;
-                case MESSAGE:
-                    acknowledge(context, prefs, token, intent.getStringExtra("id"));
-                    if (Utils.settingsReady() && Settings.UNIFIED_PUSH.get()) {
-                        telegram.wake(once);
-                        return;
-                    }
-                    break;
-                case REGISTRATION_FAILED:
-                    if (prefs.getString(ENDPOINT, null) != null) {
-                        // This token's address already came in, so the spec says a refusal is ignored.
-                        // Asked again at a start, the app can fail for a moment while the address still works.
-                        Logger.printInfo(() -> "UnifiedPush: ignored a refusal after the address came in ("
-                                + intent.getStringExtra("reason") + ")");
-                        break;
-                    }
-                    // The spec asks for a new token on the next sign-up, so this one is let go.
-                    if (!save(prefs, TOKEN, null, PROBLEM, REFUSED)) {
-                        HookStatus.counted(FamilyNames.UNIFIED_PUSH, "refusal not saved");
-                    }
-                    Logger.printInfo(() -> "UnifiedPush: the app turned the sign-up down ("
-                            + intent.getStringExtra("reason") + ")");
-                    break;
-                case TEMP_UNAVAILABLE:
-                    // The app's server is down for now. The sign-up and its address stay, and its next
-                    // NEW_ENDPOINT says it's back. A stand-in app it suggests (useDistributor) isn't used.
-                    if (!save(prefs, PROBLEM, UNAVAILABLE)) {
-                        HookStatus.counted(FamilyNames.UNIFIED_PUSH, "outage not saved");
-                    }
-                    Logger.printInfo(() -> "UnifiedPush: the app's server is down for now");
-                    break;
-                case UNREGISTERED:
-                    unregistered(context, prefs, token);
-                    break;
-                default:
-                    break;
+            if (!MESSAGE.equals(action)) {
+                answer(context, prefs, token, intent, action);
+            } else if (!ours(prefs, token)) {
+                Logger.printInfo(() -> "UnifiedPush: dropped a broadcast without this sign-up's token");
+            } else {
+                acknowledge(context, prefs, token, intent.getStringExtra("id"));
+                if (Utils.settingsReady() && Settings.UNIFIED_PUSH.get()) {
+                    telegram.wake(once);
+                    return;
+                }
             }
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.UNIFIED_PUSH, "UnifiedPush broadcast", failure);
@@ -555,15 +519,62 @@ public final class UnifiedPush {
     }
 
     /**
-     * The app's end of [token]'s sign-up. It takes turns with {@link #sync}, which may have
-     * signed up with a new token since [token] was read, and then this end is for one that's gone.
+     * The app's answer about [token]'s sign-up. Answers change the sign-up, so they take turns with
+     * {@link #sync} and read the saved token under its lock: a sign-up that replaces [token] can't
+     * land between the check and the change, and an answer for one already replaced is dropped.
      */
-    private static synchronized void unregistered(Context context, SharedPreferences prefs, String token) {
-        if (!token.equals(prefs.getString(TOKEN, null))) {
-            ENDING.remove(token);
-            Logger.printInfo(() -> "UnifiedPush: dropped the end of a sign-up already replaced");
+    private static synchronized void answer(Context context, SharedPreferences prefs, @Nullable String token, Intent intent, String action) {
+        if (!ours(prefs, token)) {
+            // The end of a sign-up this side asked to end and has since replaced: nothing is left to do.
+            if (UNREGISTERED.equals(action)) ENDING.remove(token);
+            Logger.printInfo(() -> "UnifiedPush: dropped a broadcast without this sign-up's token");
             return;
         }
+        switch (action) {
+            case NEW_ENDPOINT:
+                // The spec asks for this acknowledgement too, and an app may drop an address nobody acknowledged.
+                acknowledge(context, prefs, token, intent.getStringExtra("id"));
+                endpoint(context, prefs, intent.getStringExtra("endpoint"));
+                break;
+            case REGISTRATION_FAILED:
+                if (prefs.getString(ENDPOINT, null) != null) {
+                    // This token's address already came in, so the spec says a refusal is ignored.
+                    // Asked again at a start, the app can fail for a moment while the address still works.
+                    Logger.printInfo(() -> "UnifiedPush: ignored a refusal after the address came in ("
+                            + intent.getStringExtra("reason") + ")");
+                    break;
+                }
+                // The spec asks for a new token on the next sign-up, so this one is let go.
+                if (!save(prefs, TOKEN, null, PROBLEM, REFUSED)) {
+                    HookStatus.counted(FamilyNames.UNIFIED_PUSH, "refusal not saved");
+                }
+                Logger.printInfo(() -> "UnifiedPush: the app turned the sign-up down ("
+                        + intent.getStringExtra("reason") + ")");
+                break;
+            case TEMP_UNAVAILABLE:
+                // The app's server is down for now. The sign-up and its address stay, and its next
+                // NEW_ENDPOINT says it's back. A stand-in app it suggests (useDistributor) isn't used.
+                if (!save(prefs, PROBLEM, UNAVAILABLE)) {
+                    HookStatus.counted(FamilyNames.UNIFIED_PUSH, "outage not saved");
+                }
+                Logger.printInfo(() -> "UnifiedPush: the app's server is down for now");
+                break;
+            case UNREGISTERED:
+                unregistered(context, prefs, token);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /** Whether [token] is the saved sign-up's. */
+    private static boolean ours(SharedPreferences prefs, @Nullable String token) {
+        String saved = prefs.getString(TOKEN, null);
+        return saved != null && saved.equals(token);
+    }
+
+    /** The app's end of [token]'s sign-up, the saved one. */
+    private static void unregistered(Context context, SharedPreferences prefs, String token) {
         String ended = prefs.getString(ENDPOINT, null);
         if (ENDING.remove(token)) {
             // The end this side asked for, whose save didn't land: the sign-up goes now,
