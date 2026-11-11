@@ -1517,7 +1517,24 @@ Channels and chats that block forwarding and saving let you forward messages and
 Bypass integrity check	Заобикаляне на проверката за цялост
 Telegram's two emulator checks always say this phone isn't an emulator.	Двете проверки за емулатор на Telegram винаги казват, че този телефон не е емулатор.
 Auto-forwarding rules	Правила за автоматично препращане
-Nothing is forwarded yet. For now this only counts the new messages a forwarding rule would look at.	Засега нищо не се препраща. Това само брои новите съобщения, които едно правило за препращане би проверило.
+# context: Auto-forwarding rules. The row under the switch, its list of rules and the three pickers that add one. %1$s and %2$s are chat names, the chat new messages come from and the chat they go to.
+New messages in a chat are forwarded to another chat by the rules below. Your own forwards are never forwarded again, and at most 20 go out a minute.	Новите съобщения в един чат се препращат към друг чат според правилата по-долу. Вашите собствени препращания никога не се препращат отново и най-много 20 излизат на минута.
+Forwarding rules	Правила за препращане
+No rules yet.	Още няма правила.
+%1$s to %2$s	%1$s към %2$s
+%1$s to %2$s, media only	%1$s към %2$s, само медия
+Add rule	Добавяне на правило
+Tap a rule to remove it	Докоснете правило, за да го премахнете
+Couldn't save the rules. Try again in a moment.	Правилата не можаха да се запазят. Опитайте отново след малко.
+Rule removed	Правилото е премахнато
+A rule needs two chats.	Правилото изисква два чата.
+Forward new messages from	Препращане на нови съобщения от
+Forward them to	Препращане към
+Those chats already have a rule.	За тези чатове вече има правило.
+What to forward	Какво да се препраща
+Every message	Всяко съобщение
+Only messages with media	Само съобщения с медия
+Rule saved	Правилото е запазено
 Open restricted channels	Отваряне на ограничени канали
 Channels, groups and messages Telegram says are unavailable for copyright or local law open anyway, as long as Telegram still sends them.	Канали, групи и съобщения, за които Telegram казва, че са недостъпни заради авторски права или местен закон, се отварят въпреки това, стига Telegram все още да ги изпраща.
 channels restricted for copyright or local law	канали, ограничени заради авторски права или местен закон

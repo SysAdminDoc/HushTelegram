@@ -85,6 +85,7 @@ import app.hushtelegram.extension.shared.settings.preference.QuickSetups;
 import app.hushtelegram.extension.telegram.misc.AppPasscode;
 import app.hushtelegram.extension.telegram.misc.AccountGuard;
 import app.hushtelegram.extension.telegram.misc.Accounts;
+import app.hushtelegram.extension.telegram.misc.AutoForwarding;
 import app.hushtelegram.extension.telegram.misc.CallRecorder;
 import app.hushtelegram.extension.telegram.misc.ChatTypeFolders;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
@@ -147,6 +148,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String FOLDER_ICON_ROW = "action_folder_icons";
     static final String HIDDEN_CHATS_ROW = "action_hidden_chats";
     static final String HIDDEN_ACCOUNTS_ROW = "action_hidden_accounts";
+    /** The Forwarding rules row's key. The rules themselves are saved under {@link Settings#AUTO_FORWARDING_RULES}. */
+    static final String FORWARDING_RULES_ROW = "action_forwarding_rules";
     /** The Tracked people row's key. The people themselves are kept by {@link SpecialContacts}, one list for each account. */
     static final String SPECIAL_CONTACTS_ROW = "action_special_contacts";
 
@@ -1418,8 +1421,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.AUTO_FORWARDING).addPreference(toggle(context, Settings.AUTO_FORWARDING,
                     L10n.t("Auto-forwarding rules"),
                     PatchFamily.AUTO_FORWARDING.coverageSummary(L10n.t(
-                            "Nothing is forwarded yet. For now this only counts the new messages a forwarding rule "
-                                    + "would look at."))));
+                            "New messages in a chat are forwarded to another chat by the rules below. Your own "
+                                    + "forwards are never forwarded again, and at most 20 go out a minute."))));
+            on(pages, PatchFamily.AUTO_FORWARDING).addPreference(forwardingRulesRow(context));
         }
     }
 
@@ -2575,6 +2579,140 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             }
         }
         return names.isEmpty() ? L10n.t("No chats hidden yet.") : TextUtils.join(", ", names);
+    }
+
+    /** The forwarding rules for the account shown now: the row names them, and a tap lists them to add to or take from. */
+    private Preference forwardingRulesRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(FORWARDING_RULES_ROW);
+        row.setTitle(L10n.t("Forwarding rules"));
+        row.setPersistent(false);
+        row.setSummary(forwardingRulesSummary(AutoForwarding.shown()));
+        row.setOnPreferenceClickListener(p -> {
+            showForwardingRules(context);
+            return true;
+        });
+        return row;
+    }
+
+    private void refreshForwardingRulesRow() {
+        Preference row = findPreference(FORWARDING_RULES_ROW);
+        if (row != null) row.setSummary(forwardingRulesSummary(AutoForwarding.shown()));
+    }
+
+    /** The rules for the account shown now, one a line, or that there are none. */
+    static String forwardingRulesSummary(@Nullable AutoForwarding.Shown shown) {
+        if (shown == null || shown.rules.isEmpty()) return L10n.t("No rules yet.");
+        List<String> rules = new ArrayList<>();
+        for (AutoForwarding.Rule rule : shown.rules) rules.add(ruleLabel(shown, rule));
+        return TextUtils.join("\n", rules);
+    }
+
+    private static String ruleLabel(AutoForwarding.Shown shown, AutoForwarding.Rule rule) {
+        String from = shown.name(rule.source);
+        String to = shown.name(rule.destination);
+        return rule.mediaOnly ? L10n.f("%1$s to %2$s, media only", from, to) : L10n.f("%1$s to %2$s", from, to);
+    }
+
+    /**
+     * The account's rules: a tap on one takes it off the list, and Add rule picks the chat new
+     * messages come from, the chat they go to and what goes.
+     */
+    void showForwardingRules(Context context) {
+        if (SettingsLock.refuses()) return;
+        AutoForwarding.Shown shown = AutoForwarding.shown();
+        if (shown == null) {
+            Utils.showToastLong(L10n.t("Couldn't read your chats."));
+            return;
+        }
+        if (shown.user == 0) {
+            Utils.showToastLong(L10n.t("Sign in to Telegram first."));
+            return;
+        }
+        List<AutoForwarding.Rule> rules = shown.rules;
+        AlertDialog.Builder builder = new AlertDialog.Builder(context)
+                .setPositiveButton(L10n.t("Add rule"), (d, which) -> pickForwardingSource(context, shown))
+                .setNegativeButton(L10n.t("Close"), null);
+        if (rules.isEmpty()) {
+            builder.setTitle(L10n.t("Forwarding rules")).setMessage(L10n.t("No rules yet."));
+        } else {
+            CharSequence[] labels = new CharSequence[rules.size()];
+            for (int i = 0; i < rules.size(); i++) labels[i] = ruleLabel(shown, rules.get(i));
+            builder.setTitle(L10n.t("Tap a rule to remove it")).setItems(labels, null);
+        }
+        AlertDialog dialog = show(builder);
+        if (dialog == null || rules.isEmpty()) return;
+        // Set here rather than on the builder, so a tap waits for the save instead of closing the list.
+        dialog.getListView().setOnItemClickListener((parent, view, position, id) ->
+                save(dialog, () -> AutoForwarding.remove(rules.get(position)), landed -> {
+                    if (!landed) {
+                        Utils.showToastLong(L10n.t("Couldn't save the rules. Try again in a moment."));
+                        return;
+                    }
+                    Utils.showToastShort(L10n.t("Rule removed"));
+                    refreshForwardingRulesRow();
+                    dialog.dismiss();
+                    showForwardingRules(context);
+                }));
+    }
+
+    /** Add rule, first: the chat new messages come from. */
+    private void pickForwardingSource(Context context, AutoForwarding.Shown shown) {
+        List<AutoForwarding.Chat> chats = shown.chats;
+        if (chats.size() < 2) {
+            Utils.showToastLong(L10n.t("A rule needs two chats."));
+            return;
+        }
+        show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("Forward new messages from"))
+                .setItems(chatNames(chats), (d, which) -> pickForwardingDestination(context, shown, chats.get(which).id))
+                .setNegativeButton(L10n.t("Cancel"), null));
+    }
+
+    /** Then the chat they go to, any but the first. */
+    private void pickForwardingDestination(Context context, AutoForwarding.Shown shown, long source) {
+        List<AutoForwarding.Chat> chats = new ArrayList<>();
+        for (AutoForwarding.Chat chat : shown.chats) {
+            if (chat.id != source) chats.add(chat);
+        }
+        show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("Forward them to"))
+                .setItems(chatNames(chats), (d, which) -> pickForwardingKind(context, shown, source, chats.get(which).id))
+                .setNegativeButton(L10n.t("Cancel"), null));
+    }
+
+    /** Then what goes: every message, or only the ones with media. A tap saves the rule. */
+    private void pickForwardingKind(Context context, AutoForwarding.Shown shown, long source, long destination) {
+        AutoForwarding.Rule every = new AutoForwarding.Rule(shown.user, source, destination, false);
+        for (AutoForwarding.Rule held : shown.rules) {
+            if (held.samePair(every)) {
+                Utils.showToastLong(L10n.t("Those chats already have a rule."));
+                return;
+            }
+        }
+        AlertDialog dialog = show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("What to forward"))
+                .setItems(new CharSequence[]{L10n.t("Every message"), L10n.t("Only messages with media")}, null)
+                .setNegativeButton(L10n.t("Cancel"), null));
+        if (dialog == null) return;
+        dialog.getListView().setOnItemClickListener((parent, view, position, id) -> {
+            AutoForwarding.Rule rule = new AutoForwarding.Rule(shown.user, source, destination, position == 1);
+            save(dialog, () -> AutoForwarding.add(rule), landed -> {
+                if (!landed) {
+                    Utils.showToastLong(L10n.t("Couldn't save the rules. Try again in a moment."));
+                    return;
+                }
+                Utils.showToastShort(L10n.t("Rule saved"));
+                refreshForwardingRulesRow();
+                dialog.dismiss();
+            });
+        });
+    }
+
+    private static CharSequence[] chatNames(List<AutoForwarding.Chat> chats) {
+        CharSequence[] names = new CharSequence[chats.size()];
+        for (int i = 0; i < chats.size(); i++) names[i] = chats.get(i).name;
+        return names;
     }
 
     /** What the Data Saver switch does, then what Android reports right now, read when the page opens. */

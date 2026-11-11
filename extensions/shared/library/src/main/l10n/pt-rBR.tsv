@@ -1518,7 +1518,24 @@ Channels and chats that block forwarding and saving let you forward messages and
 Bypass integrity check	Ignorar verificação de integridade
 Telegram's two emulator checks always say this phone isn't an emulator.	As duas verificações de emulador do Telegram sempre dizem que este celular não é um emulador.
 Auto-forwarding rules	Regras de encaminhamento automático
-Nothing is forwarded yet. For now this only counts the new messages a forwarding rule would look at.	Nada é encaminhado ainda. Por enquanto isso só conta as mensagens novas que uma regra de encaminhamento olharia.
+# context: Auto-forwarding rules. The row under the switch, its list of rules and the three pickers that add one. %1$s and %2$s are chat names, the chat new messages come from and the chat they go to.
+New messages in a chat are forwarded to another chat by the rules below. Your own forwards are never forwarded again, and at most 20 go out a minute.	Mensagens novas em uma conversa são encaminhadas para outra conversa pelas regras abaixo. Seus próprios encaminhamentos nunca são encaminhados de novo, e no máximo 20 saem por minuto.
+Forwarding rules	Regras de encaminhamento
+No rules yet.	Nenhuma regra ainda.
+%1$s to %2$s	%1$s para %2$s
+%1$s to %2$s, media only	%1$s para %2$s, só mídia
+Add rule	Adicionar regra
+Tap a rule to remove it	Toque em uma regra para removê-la
+Couldn't save the rules. Try again in a moment.	Não foi possível salvar as regras. Tente de novo em instantes.
+Rule removed	Regra removida
+A rule needs two chats.	Uma regra precisa de duas conversas.
+Forward new messages from	Encaminhar mensagens novas de
+Forward them to	Encaminhar para
+Those chats already have a rule.	Essas conversas já têm uma regra.
+What to forward	O que encaminhar
+Every message	Todas as mensagens
+Only messages with media	Só mensagens com mídia
+Rule saved	Regra salva
 Open restricted channels	Abrir canais restritos
 Channels, groups and messages Telegram says are unavailable for copyright or local law open anyway, as long as Telegram still sends them.	Canais, grupos e mensagens que o Telegram diz estarem indisponíveis por direitos autorais ou leis locais abrem mesmo assim, desde que o Telegram ainda os envie.
 channels restricted for copyright or local law	canais restritos por direitos autorais ou leis locais

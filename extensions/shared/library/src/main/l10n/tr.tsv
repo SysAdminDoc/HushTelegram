@@ -1521,7 +1521,24 @@ Channels and chats that block forwarding and saving let you forward messages and
 Bypass integrity check	Bütünlük denetimini aş
 Telegram's two emulator checks always say this phone isn't an emulator.	Telegram'ın iki emülatör denetimi bu telefonun emülatör olmadığını her zaman söyler.
 Auto-forwarding rules	Otomatik iletme kuralları
-Nothing is forwarded yet. For now this only counts the new messages a forwarding rule would look at.	Henüz hiçbir şey iletilmiyor. Şimdilik bu yalnızca bir iletme kuralının bakacağı yeni mesajları sayar.
+# context: Auto-forwarding rules. The row under the switch, its list of rules and the three pickers that add one. %1$s and %2$s are chat names, the chat new messages come from and the chat they go to.
+New messages in a chat are forwarded to another chat by the rules below. Your own forwards are never forwarded again, and at most 20 go out a minute.	Bir sohbetteki yeni mesajlar aşağıdaki kurallara göre başka bir sohbete iletilir. Kendi ilettikleriniz asla yeniden iletilmez ve dakikada en fazla 20 ileti gönderilir.
+Forwarding rules	İletme kuralları
+No rules yet.	Henüz kural yok.
+%1$s to %2$s	%1$s → %2$s
+%1$s to %2$s, media only	%1$s → %2$s, yalnızca medya
+Add rule	Kural ekle
+Tap a rule to remove it	Kaldırmak için bir kurala dokunun
+Couldn't save the rules. Try again in a moment.	Kurallar kaydedilemedi. Birazdan tekrar deneyin.
+Rule removed	Kural kaldırıldı
+A rule needs two chats.	Bir kural için iki sohbet gerekir.
+Forward new messages from	Yeni mesajları şuradan ilet
+Forward them to	Şuraya ilet
+Those chats already have a rule.	Bu sohbetler için zaten bir kural var.
+What to forward	Neler iletilsin
+Every message	Her mesaj
+Only messages with media	Yalnızca medya içeren mesajlar
+Rule saved	Kural kaydedildi
 Open restricted channels	Kısıtlanmış kanalları aç
 Channels, groups and messages Telegram says are unavailable for copyright or local law open anyway, as long as Telegram still sends them.	Telegram'ın telif hakkı veya yerel yasalar nedeniyle kullanılamıyor dediği kanallar, gruplar ve mesajlar, Telegram onları göndermeye devam ettiği sürece yine de açılır.
 channels restricted for copyright or local law	telif hakkı veya yerel yasalar nedeniyle kısıtlanmış kanallar

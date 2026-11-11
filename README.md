@@ -127,7 +127,7 @@ A few descriptions are behind the app. Since 0.0.20, `Save downloaded files` has
 | `Unlock Premium features` | Makes Telegram on your phone treat your account as Premium, so the parts the app itself locks behind Premium open up. Telegram's servers still know your real plan, so their limits, like upload size, stay the same. Starts off. Turn it on in HushTelegram settings > Privacy. |
 | `Bypass channel restrictions` | Lets you forward, copy and save from channels and chats that turn those off. A second switch, Open restricted channels, opens channels, groups and messages Telegram marks unavailable for copyright or local law, as long as Telegram still sends them. Both start off. Turn them on in HushTelegram settings > Privacy. |
 | `Bypass integrity check` | Makes Telegram's two emulator checks always say your phone isn't an emulator. Starts off. Turn it on in HushTelegram settings > Privacy. |
-| `Auto-forwarding rules` | Groundwork for forwarding new messages from one chat to another by rules you set. It doesn't forward anything yet, it only counts the new messages a rule would look at. Starts off. Turn it on in HushTelegram settings > Privacy. |
+| `Auto-forwarding rules` | Forwards new messages from one chat to another by rules you set, every message or only messages with media. Your own forwards are never forwarded again, so two rules can't loop, and at most 20 go out a minute. Starts off. Turn it on and add rules in HushTelegram settings > Privacy. |
 
 ### Patches without a switch
 

@@ -973,10 +973,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_bypass_integrity_check", FALSE);
 
     /**
-     * Messages matching a set of rules are automatically forwarded to a chosen chat. Rules are
-     * managed from the settings screen
+     * New messages in a rule's chat are forwarded to the rule's other chat on the same account.
+     * Rules are kept in {@link #AUTO_FORWARDING_RULES}
      * ({@link app.hushtelegram.extension.telegram.misc.AutoForwarding}).
      */
     public static final BooleanSetting AUTO_FORWARDING =
             new BooleanSetting("hushtelegram_auto_forwarding", FALSE);
+
+    /** The forwarding rules, one a line: user id, source chat, destination chat, then 1 for media only. Kept per account, so they aren't in settings files. */
+    public static final StringSetting AUTO_FORWARDING_RULES =
+            new StringSetting("hushtelegram_auto_forwarding_rules", "", false, false);
 }

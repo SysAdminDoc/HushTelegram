@@ -1521,7 +1521,24 @@ Channels and chats that block forwarding and saving let you forward messages and
 Bypass integrity check	Integritätsprüfung umgehen
 Telegram's two emulator checks always say this phone isn't an emulator.	Die beiden Emulator-Prüfungen von Telegram sagen immer, dass dieses Handy kein Emulator ist.
 Auto-forwarding rules	Regeln für automatische Weiterleitung
-Nothing is forwarded yet. For now this only counts the new messages a forwarding rule would look at.	Noch wird nichts weitergeleitet. Vorerst zählt das nur die neuen Nachrichten, die sich eine Weiterleitungsregel ansehen würde.
+# context: Auto-forwarding rules. The row under the switch, its list of rules and the three pickers that add one. %1$s and %2$s are chat names, the chat new messages come from and the chat they go to.
+New messages in a chat are forwarded to another chat by the rules below. Your own forwards are never forwarded again, and at most 20 go out a minute.	Neue Nachrichten in einem Chat werden nach den Regeln unten an einen anderen Chat weitergeleitet. Deine eigenen Weiterleitungen werden nie erneut weitergeleitet, und höchstens 20 gehen pro Minute raus.
+Forwarding rules	Weiterleitungsregeln
+No rules yet.	Noch keine Regeln.
+%1$s to %2$s	%1$s an %2$s
+%1$s to %2$s, media only	%1$s an %2$s, nur Medien
+Add rule	Regel hinzufügen
+Tap a rule to remove it	Tippe auf eine Regel, um sie zu entfernen
+Couldn't save the rules. Try again in a moment.	Die Regeln ließen sich nicht speichern. Versuch es gleich noch einmal.
+Rule removed	Regel entfernt
+A rule needs two chats.	Eine Regel braucht zwei Chats.
+Forward new messages from	Neue Nachrichten weiterleiten aus
+Forward them to	Weiterleiten an
+Those chats already have a rule.	Für diese Chats gibt es schon eine Regel.
+What to forward	Was weitergeleitet wird
+Every message	Jede Nachricht
+Only messages with media	Nur Nachrichten mit Medien
+Rule saved	Regel gespeichert
 Open restricted channels	Eingeschränkte Kanäle öffnen
 Channels, groups and messages Telegram says are unavailable for copyright or local law open anyway, as long as Telegram still sends them.	Kanäle, Gruppen und Nachrichten, die Telegram wegen Urheberrecht oder lokaler Gesetze als nicht verfügbar meldet, öffnen sich trotzdem, solange Telegram sie noch sendet.
 channels restricted for copyright or local law	Kanäle, die wegen Urheberrecht oder lokaler Gesetze eingeschränkt sind

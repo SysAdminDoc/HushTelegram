@@ -10,40 +10,80 @@ import app.morphe.Fixtures
 import app.morphe.PatchContexts
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
+import app.morphe.patches.telegram.misc.localcontrols.controlBody
+import app.morphe.patches.telegram.misc.localcontrols.controlRef
+import app.morphe.patches.telegram.misc.messagemenu.FORWARD_SEND
+import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
+import app.morphe.util.names.origDescriptor
 import app.morphe.util.names.origName
-import app.morphe.util.names.origRef
-import app.morphe.util.names.origReturnType
 import app.morphe.util.names.tgMutableClassDefBy
 
 private const val NOTIFICATIONS_CONTROLLER = "Lorg/telegram/messenger/NotificationsController;"
-private const val AUTO_FORWARD_HOOK =
-    "Lapp/hushtelegram/extension/telegram/misc/AutoForwarding;->onNewMessages(Ljava/lang/Object;Ljava/lang/Object;)V"
 
 class AutoForwardingFixtureTest {
+    private val hosts = setOf(
+        NOTIFICATIONS_CONTROLLER, "Lorg/telegram/messenger/MessageObject;", "Lorg/telegram/tgnet/TLRPC\$Message;",
+        "Lorg/telegram/tgnet/TLRPC\$MessageAction;", "Lorg/telegram/tgnet/TLRPC\$TL_messageActionEmpty;",
+        "Lorg/telegram/messenger/UserConfig;", "Lorg/telegram/messenger/MessagesController;", "Lorg/telegram/tgnet/TLRPC\$Dialog;",
+        "Lorg/telegram/messenger/DialogObject;", "Lorg/telegram/messenger/SendMessagesHelper;",
+    )
+
     @Test
-    fun `processNewMessages hands its messages to the extension in every declared build`() {
+    fun `processNewMessages hands its messages and push flag to the rules in every declared build`() {
         for (build in Fixtures.declaredBuilds()) {
-            val hosts = FixtureDex.classes(build, setOf(NOTIFICATIONS_CONTROLLER)).values
-            val context = PatchContexts.of(ExtensionDex.classes() + hosts)
+            val name = build.name
+            val context = PatchContexts.of(ExtensionDex.classes() + FixtureDex.classes(build, hosts).values)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { autoForwardingPatch.execute(context) })
+
             val method = context.tgMutableClassDefBy(NOTIFICATIONS_CONTROLLER).methods.single { m ->
-                m.origName == "processNewMessages" && m.origReturnType == "V" &&
-                    !AccessFlags.STATIC.isSet(m.accessFlags) && m.parameterTypes.size == 4
+                m.origName == "processNewMessages" && m.origDescriptor == "(Ljava/util/ArrayList;ZZLjava/util/concurrent/CountDownLatch;)V" &&
+                    !AccessFlags.STATIC.isSet(m.accessFlags)
             }
-            val body = method.implementation!!.instructions.toList()
-            assertEquals("${build.name}: move p1 down", Opcode.MOVE_OBJECT_FROM16, body[0].opcode)
-            assertEquals("${build.name}: move p0 down", Opcode.MOVE_OBJECT_FROM16, body[1].opcode)
-            assertEquals("${build.name}: invoke-static at 2", Opcode.INVOKE_STATIC, body[2].opcode)
-            assertEquals(AUTO_FORWARD_HOOK, body[2].origRef())
+            val p0 = method.implementation!!.registerCount - 5
+            val body = method.controlBody()
+            assertEquals("$name: the messages, p1", listOf(Opcode.MOVE_OBJECT_FROM16, 0, p0 + 1),
+                listOf(body[0].opcode, (body[0] as TwoRegisterInstruction).registerA, (body[0] as TwoRegisterInstruction).registerB))
+            assertEquals("$name: isFcm, p3", listOf(Opcode.MOVE_FROM16, 1, p0 + 3),
+                listOf(body[1].opcode, (body[1] as TwoRegisterInstruction).registerA, (body[1] as TwoRegisterInstruction).registerB))
+            assertEquals(Opcode.INVOKE_STATIC, body[2].opcode)
+            assertEquals("$name: the rules' hook", ON_NEW_MESSAGES, body[2].controlRef())
+            assertEquals(listOf(0, 1), body[2].namedRegisters())
+
+            fun stub(n: String) = context.tgMutableClassDefBy(AUTO_FORWARDING).methods.single { it.origName == n }.controlBody()
+            val refs = { n: String -> stub(n).mapNotNull { it.controlRef() } }
+            assertTrue("$name: account", "Lorg/telegram/messenger/MessageObject;->currentAccount:I" in refs("account"))
+            assertTrue("$name: dialog", "Lorg/telegram/messenger/MessageObject;->getDialogId()J" in refs("dialog"))
+            assertTrue("$name: out", "Lorg/telegram/messenger/MessageObject;->isOut()Z" in refs("out"))
+            assertTrue("$name: forwarded", "Lorg/telegram/messenger/MessageObject;->isForwarded()Z" in refs("forwarded"))
+            assertTrue("$name: service", "Lorg/telegram/tgnet/TLRPC\$TL_messageActionEmpty;" in refs("service"))
+            assertTrue("$name: media", "Lorg/telegram/messenger/MessageObject;->isMediaEmpty()Z" in refs("media"))
+            assertTrue("$name: chats", "Lorg/telegram/messenger/MessagesController;->getDialogs(I)Ljava/util/ArrayList;" in refs("dialogs"))
+            assertTrue("$name: secret", "Lorg/telegram/messenger/DialogObject;->isEncryptedDialog(J)Z" in refs("secret"))
+
+            // Telegram's own forward, with the sender shown, captions kept and notifying.
+            val forward = stub("forward")
+            val send = forward.single { it.opcode == Opcode.INVOKE_VIRTUAL_RANGE }
+            assertEquals("$name: the send Forward makes", FORWARD_SEND, send.controlRef())
+            assertEquals((0..15).toList(), send.namedRegisters())
+            assertEquals("$name: sender shown, caption kept, notify on, no schedule, repeat, topic, video start, stars or monoforum",
+                listOf(0L, 0L, 1L, 0L, 0L, 0L, -1L, 0L, 0L, 0L),
+                forward.filter { it.opcode == Opcode.CONST_4 || it.opcode == Opcode.CONST_WIDE_16 }.map { (it as WideLiteralInstruction).wideLiteral })
+            assertEquals("$name: answers what Telegram said", Opcode.RETURN, forward.last().opcode)
+            assertEquals(0, (forward.last() as OneRegisterInstruction).registerA)
+
             val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods
                 .single { it.origName == "autoForwarding" }
                 .implementation!!.instructions.toList()
-            assertEquals("${build.name}: status flag set", 1, (status[0] as NarrowLiteralInstruction).narrowLiteral)
+            assertEquals("$name: status flag set", 1, (status[0] as NarrowLiteralInstruction).narrowLiteral)
             assertEquals(Opcode.RETURN, status[1].opcode)
         }
     }
