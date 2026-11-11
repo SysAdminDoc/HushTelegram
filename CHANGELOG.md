@@ -29,6 +29,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** With large text, the HushTelegram settings list no longer jumps a few pixels when you go back from a search. The top bar used to come back a little shorter after a long title had to shrink to fit.
 * **Telegram:** With Telegram set to Português (Brasil), HushTelegram settings and messages come out in Portuguese. They were in English, because Telegram runs that language with no region and only the Brazilian table had Portuguese text.
 * **Telegram:** In German, the text under **Receive only mode** and **Power off accounts** says "du" like the rest of HushTelegram settings.
+* **Telegram:** A settings search while an import, an export or a diagnostic report is running shows the same rows it shows the rest of the time. Searching "Import settings" during an import used to list **Export settings** too, since that row said "Importing settings" for the moment.
 
 ## 0.0.24 (2026-11-08)
 
