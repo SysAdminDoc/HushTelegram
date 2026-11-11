@@ -672,16 +672,28 @@ public class UnifiedPushTest {
 
     /** Nothing goes to the app or to Telegram on a write that didn't reach the disk. */
     @Test public void nothingGoesOutUntilWhatItDependsOnIsSaved() {
+        nothingGoesOutUntilSaved(false);
+    }
+
+    /** The same when Android keeps each failed write in memory, as its own commit does. */
+    @Test public void nothingGoesOutUntilSavedWhenFailedWritesStayInMemory() {
+        nothingGoesOutUntilSaved(true);
+    }
+
+    private void nothingGoesOutUntilSaved(boolean failedWritesStay) {
         install(UnifiedPush.NTFY);
         Settings.UNIFIED_PUSH.save(true);
         Flaky flaky = new Flaky(UnifiedPush.prefs(context));
         UnifiedPush.store = ignored -> flaky;
         flaky.failWrites = true;
+        flaky.failedWritesStay = failedWritesStay;
         UnifiedPush.sync(context, true);
         assertNull("a token this side couldn't keep was sent", last(UnifiedPush.REGISTER));
+        assertNull(token());
         assertTrue(String.join("\n", HookStatus.report()).contains("sign-up not saved"));
         UnifiedPush.choose(context, UnifiedPush.NTFY, true);
         assertNull(last(UnifiedPush.REGISTER));
+        assertNull(flaky.getString(UnifiedPush.CHOSEN, null));
 
         flaky.failWrites = false;
         UnifiedPush.sync(context, true);
@@ -691,12 +703,45 @@ public class UnifiedPushTest {
         UnifiedPush.receive(context, from(UnifiedPush.NEW_ENDPOINT, token).putExtra("endpoint", ENDPOINT), () -> {});
         assertTrue("Telegram got an address that a restart would forget", registered.isEmpty());
         assertNull(UnifiedPush.activeEndpoint());
+        assertNull(flaky.getString(UnifiedPush.ENDPOINT, null));
         assertTrue(String.join("\n", HookStatus.report()).contains("address not saved"));
 
         // Off still ends the sign-up with the app, and says the file still holds it.
         UnifiedPush.sync(context, false);
         assertEquals(token, last(UnifiedPush.UNREGISTER).getStringExtra("token"));
         assertTrue(String.join("\n", HookStatus.report()).contains("sign-up not forgotten"));
+        assertEquals("reads this run see what the file holds", token, token());
+    }
+
+    /** Problems the app reports that couldn't be saved don't show up later in the same run either. */
+    @Test public void problemsThatWerentSavedLeaveTheSignUpAsItWas() {
+        install(UnifiedPush.NTFY);
+        Settings.UNIFIED_PUSH.save(true);
+        UnifiedPush.sync(context, true);
+        String waiting = token();
+        Flaky flaky = new Flaky(UnifiedPush.prefs(context));
+        UnifiedPush.store = ignored -> flaky;
+        flaky.failWrites = true;
+        flaky.failedWritesStay = true;
+        UnifiedPush.receive(context, from(UnifiedPush.REGISTRATION_FAILED, waiting), () -> {});
+        assertEquals(waiting, token());
+        assertNull(flaky.getString(UnifiedPush.PROBLEM, null));
+        assertTrue(String.join("\n", HookStatus.report()).contains("refusal not saved"));
+
+        flaky.failWrites = false;
+        UnifiedPush.receive(context, from(UnifiedPush.NEW_ENDPOINT, waiting).putExtra("endpoint", ENDPOINT), () -> {});
+        assertEquals(ENDPOINT, UnifiedPush.activeEndpoint());
+        flaky.failWrites = true;
+        UnifiedPush.receive(context, from(UnifiedPush.TEMP_UNAVAILABLE, waiting), () -> {});
+        assertNull(flaky.getString(UnifiedPush.PROBLEM, null));
+        UnifiedPush.receive(context, from(UnifiedPush.NEW_ENDPOINT, waiting).putExtra("endpoint", "http://ntfy.example/upAbC"), () -> {});
+        assertEquals(ENDPOINT, flaky.getString(UnifiedPush.ENDPOINT, null));
+        assertNull(flaky.getString(UnifiedPush.PROBLEM, null));
+        UnifiedPush.receive(context, from(UnifiedPush.UNREGISTERED, waiting), () -> {});
+        assertEquals(waiting, token());
+        assertEquals(ENDPOINT, flaky.getString(UnifiedPush.ENDPOINT, null));
+        assertNull(flaky.getString(UnifiedPush.PROBLEM, null));
+        assertTrue(String.join("\n", HookStatus.report()).contains("ended sign-up not saved"));
     }
 
     private int count(String action) {
