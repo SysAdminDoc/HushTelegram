@@ -978,6 +978,31 @@ public class UnifiedPushTest {
         assertEquals(token(), last(UnifiedPush.REGISTER).getStringExtra("token"));
     }
 
+    /** A move spends only the pick it read, so a second pick landing during its sign-up still moves after an end. */
+    @Test public void aSecondPickLandingDuringAMoveStillMovesAfterAnEnd() throws Exception {
+        String third = "org.example.third";
+        install(OTHER, third);
+        signedUp();
+        Flaky flaky = new Flaky(UnifiedPush.prefs(context));
+        UnifiedPush.store = ignored -> flaky;
+        List<Runnable> queued = new ArrayList<>();
+        UnifiedPush.work = queued::add;
+        UnifiedPush.choose(context, OTHER, true);
+        queued.clear();
+        Thread[] move = new Thread[1];
+        // The move to the other app has read its pick when the user picks a third one.
+        flaky.afterReadOf = UnifiedPush.ENDPOINT;
+        flaky.afterRead = () -> move[0] = overlapping(() -> UnifiedPush.choose(context, third, true));
+        UnifiedPush.sync(context, true);
+        finished(move[0]);
+        assertEquals(OTHER, last(UnifiedPush.REGISTER).getPackage());
+        // Then the other app ends the sign-up it was just asked for.
+        UnifiedPush.receive(context, from(UnifiedPush.UNREGISTERED, token()), () -> {});
+        for (Runnable step : queued) step.run();
+        assertEquals(third, last(UnifiedPush.REGISTER).getPackage());
+        assertEquals(token(), last(UnifiedPush.REGISTER).getStringExtra("token"));
+    }
+
     /** A move whose sign-up didn't reach the disk keeps its pick, so it goes ahead at the next start despite the end. */
     @Test public void aPickWhoseSignUpWasntSavedIsKeptForTheNextTry() {
         install(OTHER);
