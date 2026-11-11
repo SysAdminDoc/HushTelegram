@@ -1289,10 +1289,10 @@ Shrinks the folder tabs above the chat list until all of them fit on the screen,
 the fitted folder tabs	die eingepassten Ordner-Tabs
 # context: Switch under Privacy for Receive only mode, per account (#53).
 Receive only mode	Nur-Empfangen-Modus
-The accounts you pick below can read but not write. Messages, reactions, drafts and typing stay on this phone and show an error. Reading, files and read receipts work. Works with this switch on.	Die Konten, die Sie unten wählen, können lesen, aber nicht schreiben. Nachrichten, Reaktionen, Entwürfe und Tippen bleiben auf diesem Telefon und zeigen einen Fehler. Lesen, Dateien und Lesebestätigungen funktionieren. Wirkt bei eingeschaltetem Schalter.
+The accounts you pick below can read but not write. Messages, reactions, drafts and typing stay on this phone and show an error. Reading, files and read receipts work. Works with this switch on.	Die Konten, die du unten wählst, können lesen, aber nicht schreiben. Nachrichten, Reaktionen, Entwürfe und Tippen bleiben auf diesem Telefon und zeigen einen Fehler. Lesen, Dateien und Lesebestätigungen funktionieren. Wirkt bei eingeschaltetem Schalter.
 # context: Switch under Privacy for Power off accounts, per account (#53).
 Power off accounts	Konten ausschalten
-The accounts you pick below send nothing. Telegram's connection can still stay open in the background, so it may still receive messages and notifications. Works with this switch on.	Die Konten, die Sie unten wählen, senden nichts. Die Verbindung von Telegram kann im Hintergrund offen bleiben, daher kommen eventuell weiter Nachrichten und Benachrichtigungen an. Wirkt bei eingeschaltetem Schalter.
+The accounts you pick below send nothing. Telegram's connection can still stay open in the background, so it may still receive messages and notifications. Works with this switch on.	Die Konten, die du unten wählst, senden nichts. Die Verbindung von Telegram kann im Hintergrund offen bleiben, daher kommen eventuell weiter Nachrichten und Benachrichtigungen an. Wirkt bei eingeschaltetem Schalter.
 # context: Summary under a per-account switch in Power off accounts (#53).
 Powered off	Ausgeschaltet
 # context: Summary under a per-account switch in Receive only mode (#53).
