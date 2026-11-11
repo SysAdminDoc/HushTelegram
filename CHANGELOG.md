@@ -26,6 +26,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** The account rows in HushTelegram settings and the checks that tell your own accounts apart no longer log an error on 13.2.1 from Google Play. They only look at the four account slots that build has.
 * **Telegram:** Turning **UnifiedPush notifications** off, or picking another push app, when your phone couldn't save the change (a full phone, say) no longer leaves the row saying the push app ended the sign-up. Turning it back on signs up again, and a move to another app goes ahead once the old one lets go. A refusal, an address or an end the old app sends in the middle of a move can't undo it anymore, and Telegram goes back to Google's push until the new app sends its address.
 * **Telegram:** With large text, the HushTelegram settings list no longer jumps a few pixels when you go back from a search. The top bar used to come back a little shorter after a long title had to shrink to fit.
+* **Telegram:** With Telegram set to Português (Brasil), HushTelegram settings and messages come out in Portuguese. They were in English, because Telegram runs that language with no region and only the Brazilian table had Portuguese text.
 * **Telegram:** In German, the text under **Receive only mode** and **Power off accounts** says "du" like the rest of HushTelegram settings.
 
 ## 0.0.24 (2026-11-08)

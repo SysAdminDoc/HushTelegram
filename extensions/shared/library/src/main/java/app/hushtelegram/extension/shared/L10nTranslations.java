@@ -48,6 +48,19 @@ public final class L10nTranslations {
         }
     }
 
+    /**
+     * The region Android reads a language with no region as, lower case, for a language
+     * whose only table is that region's, or null.
+     */
+    static String likelyRegion(String language) {
+        switch (language) {
+            case "pt":
+                return "br";
+            default:
+                return null;
+        }
+    }
+
     private static Map<String, String> buildBg() {
         Map<String, String> table = new HashMap<>(2170);
         fillBg0(table);
