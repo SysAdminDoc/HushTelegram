@@ -1555,3 +1555,19 @@ Couldn't crop the photo. Try again.	Снимката не се изряза. О�
 # context: Keep captions with their photos. A switch on Conversations, on by default, for the attach menu: when several picked photos each have their own caption, unpicking or reordering them keeps each caption on its own photo.
 Keep captions with their photos	Пази надписите при снимките им
 When you remove or reorder photos that each have a caption, every caption stays with its own photo.	Когато махаш или пренареждаш снимки с отделни надписи, всеки надпис остава при своята снимка.
+# context: a switch under Ghost mode (#69). With it on, sending a message in a chat also sends the read receipt Ghost mode held back for that chat.
+Read after you reply	Четене след отговор
+# context: that switch's summary. No read receipts is the switch title under Ghost mode, translated the same as that row.
+When you send a message in a chat, the read receipt Ghost mode held back there goes out too, so your other devices stop showing it unread. Works with Ghost mode and No read receipts on.	Когато изпратите съобщение в чат, потвърждението за прочитане, задържано там от режим „Призрак“, също се изпраща и другите ви устройства спират да показват чата като непрочетен. Действа, когато режим „Призрак“ и „Без потвърждения за прочитане“ са включени.
+# context: a switch under Ghost mode (#69). With it on, a double check button sits at the top of the chat list, next to the ghost.
+Read receipts button	Бутон за потвърждения за прочитане
+# context: that switch's summary. A double check is the two tick marks Telegram shows on a read message.
+A double check at the top of the chat list sends the read receipts Ghost mode is holding for the account you're on, from chats read since Telegram last started. Shows with Ghost mode and No read receipts on.	Двойна отметка горе в списъка с чатове изпраща потвържденията за прочитане, които режим „Призрак“ задържа за текущия акаунт, от чатовете, прочетени след последното стартиране на Telegram. Показва се, когато режим „Призрак“ и „Без потвърждения за прочитане“ са включени.
+# context: what a screen reader says for the chat list's double check button.
+Send read receipts	Изпращане на потвърждения за прочитане
+# context: short message after a tap on the chat list's double check button sent the held read receipts.
+Read receipts sent	Потвържденията са изпратени
+# context: short message after a tap on the chat list's double check button found no held read receipts.
+No read receipts waiting	Няма чакащи потвърждения
+# context: short message after a tap on the chat list's double check button couldn't send the held read receipts.
+Couldn't send read receipts	Потвържденията не се изпратиха

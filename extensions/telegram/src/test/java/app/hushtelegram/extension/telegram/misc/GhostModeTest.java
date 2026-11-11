@@ -37,14 +37,19 @@ import app.hushtelegram.extension.telegram.settings.Settings;
 public class GhostModeTest {
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
 
+    private Sent sent;
+
     @Before public void setUp() {
         reset();
         HookStatus.clear();
+        sent = new Sent();
+        GhostMode.requests = sent;
     }
 
     @After public void tearDown() {
         PauseForTests.resume();
         GhostMode.chats = CHATS;
+        GhostMode.requests = REQUESTS;
         SettingReadsForTests.mend(Settings.GHOST_MODE);
         reset();
         HookStatus.clear();
@@ -56,9 +61,85 @@ public class GhostModeTest {
         Settings.GHOST_STORIES.resetToDefault();
         Settings.GHOST_TYPING.resetToDefault();
         Settings.GHOST_ONLINE.resetToDefault();
+        Settings.GHOST_READ_AFTER_SEND.resetToDefault();
+        Settings.GHOST_READS_BUTTON.resetToDefault();
+        GhostMode.forgetHeld();
     }
 
     private static final GhostMode.Chats CHATS = GhostMode.chats;
+    private static final GhostMode.Requests REQUESTS = GhostMode.requests;
+
+    /** Telegram's sending as the gate sees it: each request comes back through drop() on its way out. */
+    private static final class Sent implements GhostMode.Requests {
+        int account;
+        boolean works = true;
+        final List<Object> requests = new ArrayList<>();
+        final List<Integer> accounts = new ArrayList<>();
+        final List<Object> callbacks = new ArrayList<>();
+
+        @Override public int account() {
+            return account;
+        }
+
+        @Override public boolean send(int from, Object request, Object callback) {
+            if (!works) return false;
+            requests.add(request);
+            accounts.add(from);
+            callbacks.add(callback);
+            assertFalse("the gate kept back a read it was sending itself", GhostMode.drop(request, null));
+            return true;
+        }
+    }
+
+    private static TLRPC.TL_messages_readHistory read(TLRPC.InputPeer peer, int max) {
+        TLRPC.TL_messages_readHistory request = new TLRPC.TL_messages_readHistory();
+        request.peer = peer;
+        request.max_id = max;
+        return request;
+    }
+
+    private static TLRPC.InputPeer user(long id) {
+        TLRPC.InputPeer peer = new TLRPC.TL_inputPeerUser();
+        peer.user_id = id;
+        return peer;
+    }
+
+    private static TLRPC.InputPeer group(long id) {
+        TLRPC.InputPeer peer = new TLRPC.TL_inputPeerChat();
+        peer.chat_id = id;
+        return peer;
+    }
+
+    private static TLRPC.InputPeer supergroup(long id) {
+        TLRPC.InputPeer peer = new TLRPC.TL_inputPeerChannel();
+        peer.channel_id = id;
+        return peer;
+    }
+
+    private static TLRPC.TL_messages_sendMessage message(TLRPC.InputPeer peer) {
+        TLRPC.TL_messages_sendMessage request = new TLRPC.TL_messages_sendMessage();
+        request.peer = peer;
+        request.message = "hi";
+        return request;
+    }
+
+    private static TLRPC.TL_inputEncryptedChat secret(int id) {
+        TLRPC.TL_inputEncryptedChat chat = new TLRPC.TL_inputEncryptedChat();
+        chat.chat_id = id;
+        return chat;
+    }
+
+    private static TLRPC.TL_messages_readEncryptedHistory secretRead(int id) {
+        TLRPC.TL_messages_readEncryptedHistory request = new TLRPC.TL_messages_readEncryptedHistory();
+        request.peer = secret(id);
+        return request;
+    }
+
+    private static TLRPC.TL_messages_sendEncrypted secretMessage(int id) {
+        TLRPC.TL_messages_sendEncrypted request = new TLRPC.TL_messages_sendEncrypted();
+        request.peer = secret(id);
+        return request;
+    }
 
     private static TLRPC.TL_channels_readHistory channelRead(long id) {
         TLRPC.TL_channels_readHistory request = new TLRPC.TL_channels_readHistory();
@@ -127,10 +208,16 @@ public class GhostModeTest {
         assertEquals(GhostMode.Kind.TYPING, GhostMode.kind("org.telegram.tgnet.TLRPC$TL_messages_setTyping"));
         assertEquals(GhostMode.Kind.TYPING, GhostMode.kind("org.telegram.tgnet.TLRPC$TL_messages_setEncryptedTyping"));
         assertEquals(GhostMode.Kind.ONLINE, GhostMode.kind("org.telegram.tgnet.tl.TL_account$updateStatus"));
-        // Mentions, reactions, sends and story fetches all go out as usual.
+        // Sends go out as usual, and only tell Ghost mode which chat was replied in.
+        for (String send : Arrays.asList("TL_messages_sendMessage", "TL_messages_sendMedia", "TL_messages_sendMultiMedia",
+                "TL_messages_sendInlineBotResult", "TL_messages_sendEncrypted", "TL_messages_sendEncryptedFile",
+                "TL_messages_sendEncryptedMultiMedia")) {
+            assertEquals(send, GhostMode.Kind.SEND, GhostMode.kind("org.telegram.tgnet.TLRPC$" + send));
+        }
+        // Mentions, reactions, service messages and story fetches all go out as usual.
         for (String other : Arrays.asList("org.telegram.tgnet.TLRPC$TL_messages_readMentions",
                 "org.telegram.tgnet.TLRPC$TL_messages_readReactions", "org.telegram.tgnet.TLRPC$TL_account_updateStatus",
-                "org.telegram.tgnet.TLRPC$TL_messages_sendMessage", "org.telegram.tgnet.TLRPC$TL_messages_getHistory",
+                "org.telegram.tgnet.TLRPC$TL_messages_sendEncryptedService", "org.telegram.tgnet.TLRPC$TL_messages_getHistory",
                 "org.telegram.tgnet.tl.TL_stories$TL_stories_getAllStories", "TL_messages_readHistory",
                 "org.telegram.tgnet.TLRPC$TL_messages_readHistoryX", "")) {
             assertEquals(other, GhostMode.Kind.OTHER, GhostMode.kind(other));
@@ -325,5 +412,136 @@ public class GhostModeTest {
         assertEquals(Arrays.asList("a working 'ghost mode switch read' hook (it threw java.lang.NullPointerException)"),
                 HookStatus.missing(FamilyNames.DISABLE_ANALYTICS));
         assertTrue(HookStatus.report().stream().noneMatch(row -> row.contains("Counted:")));
+    }
+
+    @Test public void aReplyLetsOutTheNewestReadKeptBackInThatChatAndNoOther() {
+        Settings.GHOST_MODE.save(true);
+        Settings.GHOST_READ_AFTER_SEND.save(true);
+        TLRPC.TL_messages_readHistory older = read(user(5), 10);
+        TLRPC.TL_messages_readHistory newest = read(user(5), 20);
+        TLRPC.TL_messages_readHistory inGroup = read(group(5), 30);
+        Object newestAnswer = new Object();
+        assertTrue(GhostMode.drop(older, new Object()));
+        assertTrue(GhostMode.drop(newest, newestAnswer));
+        assertTrue(GhostMode.drop(inGroup, null));
+
+        assertFalse("a reply was kept back", GhostMode.drop(message(user(5)), null));
+        assertEquals(Arrays.asList((Object) newest), sent.requests);
+        // Telegram's own answer handling for that read runs when it finally goes.
+        assertEquals(Arrays.asList(newestAnswer), sent.callbacks);
+        // It went out once, and the group with the same number waits for its own reply.
+        assertFalse(GhostMode.drop(message(user(5)), null));
+        assertEquals(1, sent.requests.size());
+        assertFalse(GhostMode.drop(message(group(5)), null));
+        assertEquals(Arrays.asList((Object) newest, inGroup), sent.requests);
+        // Saved Messages and a send with no chat name no one.
+        assertFalse(GhostMode.drop(message(new TLRPC.TL_inputPeerSelf()), null));
+        assertFalse(GhostMode.drop(new TLRPC.TL_messages_sendMessage(), null));
+        assertEquals(2, sent.requests.size());
+        assertTrue(HookStatus.missing(FamilyNames.DISABLE_ANALYTICS).isEmpty());
+        assertEquals(Arrays.asList("Disable analytics: invoked 3, 0 found, 0 missing. "
+                        + "Counted: read receipts kept back 3, reads sent after a reply 2"),
+                HookStatus.report());
+    }
+
+    @Test public void secretChatsAndSupergroupsAreMatchedToTheirOwnReplies() {
+        Settings.GHOST_MODE.save(true);
+        Settings.GHOST_READ_AFTER_SEND.save(true);
+        GhostMode.chats = id -> channel(false, true);
+        TLRPC.TL_channels_readHistory inSupergroup = channelRead(7);
+        TLRPC.TL_messages_readEncryptedHistory inSecret = secretRead(7);
+        TLRPC.TL_messages_readHistory withPerson = read(user(7), 1);
+        assertTrue(GhostMode.drop(inSupergroup, null));
+        assertTrue(GhostMode.drop(inSecret, null));
+        assertTrue(GhostMode.drop(withPerson, null));
+
+        assertFalse(GhostMode.drop(secretMessage(7), null));
+        assertEquals(Arrays.asList((Object) inSecret), sent.requests);
+        TLRPC.TL_messages_sendMedia photo = new TLRPC.TL_messages_sendMedia();
+        photo.peer = supergroup(7);
+        assertFalse(GhostMode.drop(photo, null));
+        assertEquals(Arrays.asList((Object) inSecret, inSupergroup), sent.requests);
+        assertTrue(HookStatus.missing(FamilyNames.DISABLE_ANALYTICS).isEmpty());
+    }
+
+    @Test public void withReadAfterYouReplyOffOnlyTheButtonLetsAReadOut() {
+        Settings.GHOST_MODE.save(true);
+        Settings.GHOST_READS_BUTTON.save(true);
+        TLRPC.TL_messages_readHistory held = read(user(5), 1);
+        assertTrue(GhostMode.drop(held, null));
+
+        assertFalse(GhostMode.drop(message(user(5)), null));
+        assertTrue("a reply let a read out with its switch off", sent.requests.isEmpty());
+        assertEquals(1, GhostMode.sendHeld());
+        assertEquals(Arrays.asList((Object) held), sent.requests);
+        assertEquals("nothing is left once they've gone", 0, GhostMode.sendHeld());
+    }
+
+    @Test public void theButtonSendsOnlyTheReadsOfTheAccountOnScreen() {
+        Settings.GHOST_MODE.save(true);
+        Settings.GHOST_READS_BUTTON.save(true);
+        TLRPC.TL_messages_readHistory first = read(user(5), 1);
+        TLRPC.TL_messages_readEncryptedHistory second = secretRead(3);
+        assertTrue(GhostMode.drop(first, null));
+        assertTrue(GhostMode.drop(second, null));
+        sent.account = 1;
+        TLRPC.TL_messages_readHistory otherAccount = read(user(5), 2);
+        assertTrue(GhostMode.drop(otherAccount, null));
+
+        assertEquals(1, GhostMode.sendHeld());
+        assertEquals(Arrays.asList((Object) otherAccount), sent.requests);
+        sent.account = 0;
+        assertEquals(2, GhostMode.sendHeld());
+        assertTrue(sent.requests.containsAll(Arrays.asList(first, second)));
+        assertEquals(Arrays.asList(1, 0, 0), sent.accounts);
+        assertEquals(0, GhostMode.sendHeld());
+        assertEquals(Arrays.asList("Disable analytics: invoked 3, 0 found, 0 missing. "
+                        + "Counted: read receipts kept back 3, reads sent from the button 3"),
+                HookStatus.report());
+    }
+
+    @Test public void aBuildThatCantSendKeepsTheReadsHeldForTheNextTry() {
+        Settings.GHOST_MODE.save(true);
+        Settings.GHOST_READS_BUTTON.save(true);
+        Settings.GHOST_READ_AFTER_SEND.save(true);
+        TLRPC.TL_messages_readHistory held = read(user(5), 1);
+        assertTrue(GhostMode.drop(held, null));
+        sent.works = false;
+
+        assertEquals(-1, GhostMode.sendHeld());
+        assertFalse(GhostMode.drop(message(user(5)), null));
+        // A read that didn't go isn't let through the gate later.
+        assertTrue(GhostMode.drop(held, null));
+        sent.works = true;
+        assertEquals(1, GhostMode.sendHeld());
+        assertEquals(Arrays.asList((Object) held), sent.requests);
+        // Unpatched, the send itself does nothing.
+        assertFalse(GhostMode.sendRequest(0, held, null));
+    }
+
+    @Test public void nothingIsHeldWhileBothWaysOutAreOff() {
+        Settings.GHOST_MODE.save(true);
+        assertTrue(GhostMode.drop(read(user(5), 1), null));
+
+        Settings.GHOST_READ_AFTER_SEND.save(true);
+        assertFalse(GhostMode.drop(message(user(5)), null));
+        assertEquals(0, GhostMode.sendHeld());
+        assertTrue(sent.requests.isEmpty());
+    }
+
+    @Test public void aReplyLetsNothingOutWhileGhostModeIsOffOrPaused() {
+        Settings.GHOST_MODE.save(true);
+        Settings.GHOST_READ_AFTER_SEND.save(true);
+        assertTrue(GhostMode.drop(read(user(5), 1), null));
+
+        Settings.GHOST_MODE.save(false);
+        assertFalse(GhostMode.drop(message(user(5)), null));
+        Settings.GHOST_MODE.save(true);
+        PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
+        assertFalse(GhostMode.drop(message(user(5)), null));
+        assertTrue(sent.requests.isEmpty());
+        PauseForTests.resume();
+        assertFalse(GhostMode.drop(message(user(5)), null));
+        assertEquals(1, sent.requests.size());
     }
 }

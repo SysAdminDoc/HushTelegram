@@ -53,6 +53,53 @@ public final class TLRPC {
         public int max_id;
     }
 
+    /** Telegram declares every input peer's IDs on this one class. */
+    public static class InputPeer {
+        public long user_id;
+        public long chat_id;
+        public long channel_id;
+        public long access_hash;
+    }
+
+    public static class TL_inputPeerUser extends InputPeer { }
+
+    public static class TL_inputPeerChat extends InputPeer { }
+
+    public static class TL_inputPeerChannel extends InputPeer { }
+
+    /** Saved Messages, which names no one. */
+    public static class TL_inputPeerSelf extends InputPeer { }
+
+    /** Marks a private chat or basic group read up to max_id. */
+    public static class TL_messages_readHistory {
+        public InputPeer peer;
+        public int max_id;
+    }
+
+    public static class TL_messages_sendMessage {
+        public InputPeer peer;
+        public String message;
+    }
+
+    public static class TL_messages_sendMedia {
+        public InputPeer peer;
+    }
+
+    public static class TL_inputEncryptedChat {
+        public int chat_id;
+        public long access_hash;
+    }
+
+    /** Marks a secret chat read up to max_date. */
+    public static class TL_messages_readEncryptedHistory {
+        public TL_inputEncryptedChat peer;
+        public int max_date;
+    }
+
+    public static class TL_messages_sendEncrypted {
+        public TL_inputEncryptedChat peer;
+    }
+
     public static class Peer {
         public long user_id;
         public long chat_id;

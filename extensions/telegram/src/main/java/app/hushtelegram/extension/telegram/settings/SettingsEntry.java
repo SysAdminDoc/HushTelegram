@@ -50,6 +50,7 @@ import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.settings.preference.ReopenSettingsAfterRestart;
 import app.hushtelegram.extension.telegram.misc.BlackTheme;
 import app.hushtelegram.extension.telegram.misc.GhostButton;
+import app.hushtelegram.extension.telegram.misc.ReadsButton;
 import app.hushtelegram.extension.telegram.misc.UnifiedPush;
 
 /**
@@ -425,6 +426,7 @@ public final class SettingsEntry {
             Logger.printException(() -> "Settings entry: could not watch the chat list title", failure);
         }
         GhostButton.attach(bar);
+        ReadsButton.attach(bar);
     }
 
     /**

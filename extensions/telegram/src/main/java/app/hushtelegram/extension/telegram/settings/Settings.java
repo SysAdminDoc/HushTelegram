@@ -797,6 +797,21 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_ghost_button", FALSE);
 
     /**
+     * Ghost mode's read after a reply: a message you send into a chat lets out the read receipt
+     * {@link #GHOST_READS} kept back there (#69). Read only while Ghost mode and its reads are on.
+     */
+    public static final BooleanSetting GHOST_READ_AFTER_SEND =
+            new BooleanSetting("hushtelegram_ghost_read_after_send", FALSE);
+
+    /**
+     * A double check on the chat list's top bar that sends the read receipts Ghost mode kept back
+     * ({@link app.hushtelegram.extension.telegram.misc.ReadsButton}, #69). It shows while Ghost
+     * mode and its reads are on.
+     */
+    public static final BooleanSetting GHOST_READS_BUTTON =
+            new BooleanSetting("hushtelegram_ghost_reads_button", FALSE);
+
+    /**
      * Receive only mode: the accounts on {@link #RECEIVE_ONLY_ACCOUNTS} send nothing that writes.
      * With it off every account sends as in stock Telegram.
      */

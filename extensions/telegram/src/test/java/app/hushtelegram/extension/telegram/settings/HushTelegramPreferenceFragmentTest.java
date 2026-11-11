@@ -369,6 +369,19 @@ public class HushTelegramPreferenceFragmentTest {
                     + "Ghost mode is on.", String.valueOf(page.findPreference(Settings.GHOST_BUTTON.key).getSummary()));
             // The chat list's top bar stays as Telegram made it until the button is asked for.
             assertFalse(Settings.GHOST_BUTTON.key, ((SwitchPreference) page.findPreference(Settings.GHOST_BUTTON.key)).isChecked());
+            assertEquals("Read after you reply", String.valueOf(page.findPreference(Settings.GHOST_READ_AFTER_SEND.key).getTitle()));
+            assertEquals("When you send a message in a chat, the read receipt Ghost mode held back there goes out too, so "
+                    + "your other devices stop showing it unread. Works with Ghost mode and No read receipts on.",
+                    String.valueOf(page.findPreference(Settings.GHOST_READ_AFTER_SEND.key).getSummary()));
+            assertEquals("Read receipts button", String.valueOf(page.findPreference(Settings.GHOST_READS_BUTTON.key).getTitle()));
+            assertEquals("A double check at the top of the chat list sends the read receipts Ghost mode is holding for "
+                    + "the account you're on, from chats read since Telegram last started. Shows with Ghost mode and No "
+                    + "read receipts on.", String.valueOf(page.findPreference(Settings.GHOST_READS_BUTTON.key).getSummary()));
+            // Held reads stay held until one of the two ways out is asked for.
+            assertFalse(Settings.GHOST_READ_AFTER_SEND.key,
+                    ((SwitchPreference) page.findPreference(Settings.GHOST_READ_AFTER_SEND.key)).isChecked());
+            assertFalse(Settings.GHOST_READS_BUTTON.key,
+                    ((SwitchPreference) page.findPreference(Settings.GHOST_READS_BUTTON.key)).isChecked());
             // Receipts go out as usual until Ghost mode itself is turned on; its two parts start on under it.
             assertFalse(Settings.GHOST_MODE.key, ((SwitchPreference) page.findPreference(Settings.GHOST_MODE.key)).isChecked());
             assertTrue(Settings.GHOST_READS.key, ((SwitchPreference) page.findPreference(Settings.GHOST_READS.key)).isChecked());

@@ -1556,3 +1556,19 @@ Couldn't crop the photo. Try again.	Não foi possível cortar a foto. Tente de n
 # context: Keep captions with their photos. A switch on Conversations, on by default, for the attach menu: when several picked photos each have their own caption, unpicking or reordering them keeps each caption on its own photo.
 Keep captions with their photos	Manter cada legenda com sua foto
 When you remove or reorder photos that each have a caption, every caption stays with its own photo.	Ao remover ou reordenar fotos que têm cada uma sua legenda, cada legenda fica com a própria foto.
+# context: a switch under Ghost mode (#69). With it on, sending a message in a chat also sends the read receipt Ghost mode held back for that chat.
+Read after you reply	Lido ao responder
+# context: that switch's summary. No read receipts is the switch title under Ghost mode, translated the same as that row.
+When you send a message in a chat, the read receipt Ghost mode held back there goes out too, so your other devices stop showing it unread. Works with Ghost mode and No read receipts on.	Quando você envia uma mensagem em um chat, a confirmação de leitura que o Modo fantasma segurou ali também é enviada, e seus outros dispositivos deixam de mostrá-lo como não lido. Funciona com o Modo fantasma e Sem confirmação de leitura ativados.
+# context: a switch under Ghost mode (#69). With it on, a double check button sits at the top of the chat list, next to the ghost.
+Read receipts button	Botão de confirmações de leitura
+# context: that switch's summary. A double check is the two tick marks Telegram shows on a read message.
+A double check at the top of the chat list sends the read receipts Ghost mode is holding for the account you're on, from chats read since Telegram last started. Shows with Ghost mode and No read receipts on.	Um check duplo no topo da lista de chats envia as confirmações de leitura que o Modo fantasma está segurando para a conta em uso, dos chats lidos desde que o Telegram abriu pela última vez. Aparece com o Modo fantasma e Sem confirmação de leitura ativados.
+# context: what a screen reader says for the chat list's double check button.
+Send read receipts	Enviar confirmações de leitura
+# context: short message after a tap on the chat list's double check button sent the held read receipts.
+Read receipts sent	Confirmações de leitura enviadas
+# context: short message after a tap on the chat list's double check button found no held read receipts.
+No read receipts waiting	Nenhuma confirmação pendente
+# context: short message after a tap on the chat list's double check button couldn't send the held read receipts.
+Couldn't send read receipts	Não foi possível enviar as confirmações

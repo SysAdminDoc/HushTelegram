@@ -1559,3 +1559,19 @@ Couldn't crop the photo. Try again.	Zuschneiden fehlgeschlagen. Versuche es noch
 # context: Keep captions with their photos. A switch on Conversations, on by default, for the attach menu: when several picked photos each have their own caption, unpicking or reordering them keeps each caption on its own photo.
 Keep captions with their photos	Bildunterschriften bei ihren Fotos lassen
 When you remove or reorder photos that each have a caption, every caption stays with its own photo.	Wenn du Fotos mit jeweils eigener Bildunterschrift entfernst oder neu ordnest, bleibt jede Bildunterschrift bei ihrem Foto.
+# context: a switch under Ghost mode (#69). With it on, sending a message in a chat also sends the read receipt Ghost mode held back for that chat.
+Read after you reply	Nach dem Antworten gelesen
+# context: that switch's summary. No read receipts is the switch title under Ghost mode, translated the same as that row.
+When you send a message in a chat, the read receipt Ghost mode held back there goes out too, so your other devices stop showing it unread. Works with Ghost mode and No read receipts on.	Sendest du in einem Chat eine Nachricht, geht die dort vom Geistermodus zurückgehaltene Lesebestätigung mit raus, und deine anderen Geräte zeigen den Chat nicht mehr als ungelesen. Wirkt, wenn der Geistermodus und Keine Lesebestätigungen an sind.
+# context: a switch under Ghost mode (#69). With it on, a double check button sits at the top of the chat list, next to the ghost.
+Read receipts button	Lesebestätigungs-Taste
+# context: that switch's summary. A double check is the two tick marks Telegram shows on a read message.
+A double check at the top of the chat list sends the read receipts Ghost mode is holding for the account you're on, from chats read since Telegram last started. Shows with Ghost mode and No read receipts on.	Ein Doppelhaken oben in der Chatliste sendet die Lesebestätigungen, die der Geistermodus für das aktuelle Konto zurückhält, aus Chats, die seit dem letzten Start von Telegram gelesen wurden. Erscheint, wenn der Geistermodus und Keine Lesebestätigungen an sind.
+# context: what a screen reader says for the chat list's double check button.
+Send read receipts	Lesebestätigungen senden
+# context: short message after a tap on the chat list's double check button sent the held read receipts.
+Read receipts sent	Lesebestätigungen gesendet
+# context: short message after a tap on the chat list's double check button found no held read receipts.
+No read receipts waiting	Keine Lesebestätigungen offen
+# context: short message after a tap on the chat list's double check button couldn't send the held read receipts.
+Couldn't send read receipts	Lesebestätigungen nicht gesendet

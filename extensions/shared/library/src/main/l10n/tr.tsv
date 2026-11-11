@@ -1559,3 +1559,19 @@ Couldn't crop the photo. Try again.	Fotoğraf kırpılamadı. Tekrar dene.
 # context: Keep captions with their photos. A switch on Conversations, on by default, for the attach menu: when several picked photos each have their own caption, unpicking or reordering them keeps each caption on its own photo.
 Keep captions with their photos	Açıklamaları fotoğraflarıyla tut
 When you remove or reorder photos that each have a caption, every caption stays with its own photo.	Her birinin kendi açıklaması olan fotoğrafları kaldırdığında veya yeniden sıraladığında, her açıklama kendi fotoğrafında kalır.
+# context: a switch under Ghost mode (#69). With it on, sending a message in a chat also sends the read receipt Ghost mode held back for that chat.
+Read after you reply	Yanıt verince okundu
+# context: that switch's summary. No read receipts is the switch title under Ghost mode, translated the same as that row.
+When you send a message in a chat, the read receipt Ghost mode held back there goes out too, so your other devices stop showing it unread. Works with Ghost mode and No read receipts on.	Bir sohbette mesaj gönderdiğinizde Hayalet modunun orada tuttuğu okundu bilgisi de gönderilir ve diğer cihazlarınız sohbeti okunmamış göstermeyi bırakır. Hayalet modu ve Okundu bilgisi gönderme açıkken çalışır.
+# context: a switch under Ghost mode (#69). With it on, a double check button sits at the top of the chat list, next to the ghost.
+Read receipts button	Okundu bilgisi düğmesi
+# context: that switch's summary. A double check is the two tick marks Telegram shows on a read message.
+A double check at the top of the chat list sends the read receipts Ghost mode is holding for the account you're on, from chats read since Telegram last started. Shows with Ghost mode and No read receipts on.	Sohbet listesinin üstündeki çift tik, Hayalet modunun kullandığınız hesap için tuttuğu okundu bilgilerini, Telegram son açıldığından beri okunan sohbetlerden gönderir. Hayalet modu ve Okundu bilgisi gönderme açıkken görünür.
+# context: what a screen reader says for the chat list's double check button.
+Send read receipts	Okundu bilgilerini gönder
+# context: short message after a tap on the chat list's double check button sent the held read receipts.
+Read receipts sent	Okundu bilgileri gönderildi
+# context: short message after a tap on the chat list's double check button found no held read receipts.
+No read receipts waiting	Bekleyen okundu bilgisi yok
+# context: short message after a tap on the chat list's double check button couldn't send the held read receipts.
+Couldn't send read receipts	Okundu bilgileri gönderilemedi

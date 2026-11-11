@@ -228,6 +228,8 @@ public final class SettingsBackup {
             Settings.GHOST_TYPING,
             Settings.GHOST_ONLINE,
             Settings.GHOST_BUTTON,
+            Settings.GHOST_READ_AFTER_SEND,
+            Settings.GHOST_READS_BUTTON,
             Settings.RECEIVE_ONLY,
             Settings.POWER_OFF_ACCOUNTS,
             Settings.DISABLE_CALL_DEBUG,

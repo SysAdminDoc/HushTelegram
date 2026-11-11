@@ -1326,6 +1326,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     privacy.addPreference(toggle(context, Settings.GHOST_READS, L10n.t("No read receipts"),
                             L10n.t("Messages you read stay unread for the people who sent them, in private chats, groups and secret "
                                     + "chats, and voice messages you play stay unplayed. Works with Ghost mode on.")));
+                    privacy.addPreference(toggle(context, Settings.GHOST_READ_AFTER_SEND, L10n.t("Read after you reply"),
+                            L10n.t("When you send a message in a chat, the read receipt Ghost mode held back there goes out too, so your "
+                                    + "other devices stop showing it unread. Works with Ghost mode and No read receipts on.")));
                     privacy.addPreference(toggle(context, Settings.GHOST_STORIES, L10n.t("View stories anonymously"),
                             L10n.t("Stories you watch don't add you to their viewer list. Works with Ghost mode on.")));
                     privacy.addPreference(toggle(context, Settings.GHOST_TYPING, L10n.t("Hide typing"),
@@ -1334,6 +1337,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             L10n.t("Telegram isn't told that you're online while you use it. Going offline still goes out. Works with Ghost mode on.")));
                     privacy.addPreference(toggle(context, Settings.GHOST_BUTTON, L10n.t("Ghost mode button"),
                             L10n.t("A ghost at the top of the chat list turns Ghost mode on and off with a tap. It's filled while Ghost mode is on.")));
+                    privacy.addPreference(toggle(context, Settings.GHOST_READS_BUTTON, L10n.t("Read receipts button"),
+                            L10n.t("A double check at the top of the chat list sends the read receipts Ghost mode is holding for the "
+                                    + "account you're on, from chats read since Telegram last started. Shows with Ghost mode and No "
+                                    + "read receipts on.")));
                 }
                 if (PatchFamily.Capability.RECEIVE_ONLY.installed()) {
                     privacy.addPreference(toggle(context, Settings.RECEIVE_ONLY, L10n.t("Receive only mode"),

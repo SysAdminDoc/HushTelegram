@@ -6,7 +6,10 @@ package app.hushtelegram.extension.telegram.misc;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Set;
 
 import app.hushtelegram.extension.shared.Utils;
@@ -31,6 +34,9 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * off). Going offline still goes out, so the account shows as offline.
  *
  * <p>Sending a message into a chat tells the server it was read anyway, which this can't change.
+ * The newest read kept back in each chat waits here until Telegram restarts (#69). With Read
+ * after you reply on, a message sent into that chat lets it out, and the chat list's read receipts
+ * button lets out every one the account on screen has. A read sent that way passes the gate once.
  *
  * <p>A broadcast channel's read still goes out. Nobody in a channel sees who read what, so holding
  * it back hid nothing and only left the channel unread on the account's other devices (#65).
@@ -61,11 +67,80 @@ public final class GhostMode {
     /** The read request of a channel or supergroup, which has an input channel field named channel. */
     private static final String CHANNEL_READ = "org.telegram.tgnet.TLRPC$TL_channels_readHistory";
 
+    /** A private chat's or basic group's read, whose peer field is an input peer. */
+    private static final String CHAT_READ = "org.telegram.tgnet.TLRPC$TL_messages_readHistory";
+
+    /** A secret chat's read, whose peer field is an input encrypted chat. */
+    private static final String SECRET_READ = "org.telegram.tgnet.TLRPC$TL_messages_readEncryptedHistory";
+
+    /** Messages sent into a chat, each with a peer field like the read of that chat. */
+    private static final Set<String> SENDS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            "org.telegram.tgnet.TLRPC$TL_messages_sendMessage",
+            "org.telegram.tgnet.TLRPC$TL_messages_sendMedia",
+            "org.telegram.tgnet.TLRPC$TL_messages_sendMultiMedia",
+            "org.telegram.tgnet.TLRPC$TL_messages_sendInlineBotResult")));
+
+    /** Messages sent into a secret chat. */
+    private static final Set<String> SECRET_SENDS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            "org.telegram.tgnet.TLRPC$TL_messages_sendEncrypted",
+            "org.telegram.tgnet.TLRPC$TL_messages_sendEncryptedFile",
+            "org.telegram.tgnet.TLRPC$TL_messages_sendEncryptedMultiMedia")));
+
     /** The request that sets the account online or offline, which has a boolean field named offline. */
     private static final String STATUS = "org.telegram.tgnet.tl.TL_account$updateStatus";
 
+    /** Telegram's mark on a secret chat's dialog ID, {@code DialogObject.makeEncryptedDialogId}. */
+    private static final long SECRET_CHAT = 0x4000000000000000L;
+
     /** What a request is to Ghost mode. */
-    enum Kind { READ, STORY, TYPING, ONLINE, OTHER }
+    enum Kind { READ, STORY, TYPING, ONLINE, SEND, OTHER }
+
+    /** A kept-back read and the callback Telegram gave it, which runs once the read goes out. */
+    private static final class Held {
+        final Object request;
+        final Object callback;
+
+        Held(Object request, Object callback) {
+            this.request = request;
+            this.callback = callback;
+        }
+    }
+
+    /** The newest read kept back in each chat, by account and then chat, until it's sent. */
+    private static final Map<Integer, Map<Long, Held>> HELD = new HashMap<>();
+
+    /** Reads this class is sending itself, each let through the gate once. */
+    private static final Set<Object> OURS = Collections.newSetFromMap(new IdentityHashMap<>());
+
+    /** Telegram's side of sending a held read; a test swaps it. */
+    interface Requests {
+        /** The account on screen. */
+        int account() throws ReflectiveOperationException;
+
+        /**
+         * Sends [request] from [account] the way Telegram sends any other, [callback] getting the
+         * answer; false when this build can't.
+         */
+        boolean send(int account, Object request, Object callback);
+    }
+
+    static volatile Requests requests = new Requests() {
+        @Override public int account() throws ReflectiveOperationException {
+            return HostNames.field(Class.forName("org.telegram.messenger.UserConfig"), "selectedAccount").getInt(null);
+        }
+
+        @Override public boolean send(int account, Object request, Object callback) {
+            return sendRequest(account, request, callback);
+        }
+    };
+
+    /**
+     * {@code ConnectionsManager.getInstance(account).sendRequest(request, callback, 0)}, true once
+     * it's sent. The patch writes it; unpatched it sends nothing.
+     */
+    public static boolean sendRequest(int account, Object request, Object callback) {
+        return false;
+    }
 
     /** What a kept-back typing status's callback is told. Telegram ignores the error itself. */
     static final int ERROR_CODE = 400;
@@ -78,11 +153,163 @@ public final class GhostMode {
      */
     public static boolean drop(Object request, Object callback) {
         if (request == null) return false;
-        Kind kind = kind(request.getClass().getName());
+        String name = request.getClass().getName();
+        Kind kind = kind(name);
+        if (kind == Kind.SEND) {
+            afterSend(name, request);
+            return false;
+        }
+        if (kind == Kind.READ && ours(request)) return false;
         if (kind == Kind.ONLINE && !goingOnline(request)) return false;
         if (!keepBack(kind, request)) return false;
+        if (kind == Kind.READ) hold(name, request, callback);
         if (kind == Kind.TYPING && callback != null) answer(callback);
         return true;
+    }
+
+    /** Whether [request] is a read this class sent, which goes out this once. */
+    private static boolean ours(Object request) {
+        synchronized (OURS) {
+            return OURS.remove(request);
+        }
+    }
+
+    /**
+     * Keeps a kept-back chat read as that chat's newest, for a reply or the read receipts button to
+     * send. Nothing is kept while both of those are off.
+     */
+    private static void hold(String name, Object request, Object callback) {
+        if (!CHAT_READ.equals(name) && !CHANNEL_READ.equals(name) && !SECRET_READ.equals(name)) return;
+        try {
+            if (!Settings.GHOST_READ_AFTER_SEND.get() && !Settings.GHOST_READS_BUTTON.get()) return;
+        } catch (Throwable t) {
+            HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "ghost mode held read switch read", t);
+            return;
+        }
+        try {
+            Long chat = chat(name, request);
+            if (chat == null) return;
+            int account = requests.account();
+            synchronized (HELD) {
+                Map<Long, Held> reads = HELD.get(account);
+                if (reads == null) HELD.put(account, reads = new HashMap<>());
+                reads.put(chat, new Held(request, callback));
+            }
+        } catch (ReflectiveOperationException | RuntimeException unreadable) {
+            HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "ghost mode held read", unreadable);
+        }
+    }
+
+    /** With Read after you reply on, a message going into a chat lets out the read held there. */
+    private static void afterSend(String name, Object request) {
+        try {
+            if (!Utils.settingsReady() || !Settings.GHOST_MODE.get() || !Settings.GHOST_READS.get()
+                    || !Settings.GHOST_READ_AFTER_SEND.get()) return;
+        } catch (Throwable t) {
+            HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "ghost mode reply switch read", t);
+            return;
+        }
+        try {
+            Long chat = chat(name, request);
+            if (chat == null) return;
+            int account = requests.account();
+            Held read;
+            synchronized (HELD) {
+                Map<Long, Held> reads = HELD.get(account);
+                read = reads == null ? null : reads.remove(chat);
+            }
+            if (read != null && send(account, Collections.singletonMap(chat, read)) > 0) {
+                HookStatus.counted(FamilyNames.DISABLE_ANALYTICS, "reads sent after a reply");
+            }
+        } catch (ReflectiveOperationException | RuntimeException unreadable) {
+            HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "ghost mode reply read", unreadable);
+        }
+    }
+
+    /**
+     * Sends every read held for the account on screen, for the read receipts button: how many
+     * chats they covered, or -1 when this build can't send them, which keeps them held.
+     */
+    static int sendHeld() {
+        try {
+            int account = requests.account();
+            Map<Long, Held> reads;
+            synchronized (HELD) {
+                reads = HELD.remove(account);
+            }
+            if (reads == null) return 0;
+            int sent = send(account, reads);
+            for (int i = 0; i < sent; i++) HookStatus.counted(FamilyNames.DISABLE_ANALYTICS, "reads sent from the button");
+            return sent < reads.size() ? -1 : sent;
+        } catch (ReflectiveOperationException | RuntimeException unreadable) {
+            HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "ghost mode held reads", unreadable);
+            return -1;
+        }
+    }
+
+    /** Sends [reads] past the gate, putting back any that didn't go so the next try has them: how many went. */
+    private static int send(int account, Map<Long, Held> reads) {
+        int sent = 0;
+        for (Map.Entry<Long, Held> read : reads.entrySet()) {
+            Object request = read.getValue().request;
+            synchronized (OURS) {
+                OURS.add(request);
+            }
+            if (requests.send(account, request, read.getValue().callback)) {
+                sent++;
+                continue;
+            }
+            synchronized (OURS) {
+                OURS.remove(request);
+            }
+            synchronized (HELD) {
+                Map<Long, Held> held = HELD.get(account);
+                if (held == null) HELD.put(account, held = new HashMap<>());
+                if (!held.containsKey(read.getKey())) held.put(read.getKey(), read.getValue());
+            }
+        }
+        return sent;
+    }
+
+    /** Drops every held read, for a test. */
+    static void forgetHeld() {
+        synchronized (HELD) {
+            HELD.clear();
+        }
+        synchronized (OURS) {
+            OURS.clear();
+        }
+    }
+
+    /**
+     * The dialog ID of the chat a read or a send is for, the way Telegram numbers them: a person's
+     * own ID, a group's or channel's negated, a secret chat's with its mark. Null for anything else,
+     * like Saved Messages, whose peer names no one.
+     */
+    static Long chat(String name, Object request) throws ReflectiveOperationException {
+        boolean channel = CHANNEL_READ.equals(name);
+        Object peer = HostNames.field(request.getClass(), channel ? "channel" : "peer").get(request);
+        if (peer == null) return null;
+        if (SECRET_READ.equals(name) || SECRET_SENDS.contains(name)) {
+            long id = ((Number) HostNames.field(peer.getClass(), "chat_id").get(peer)).longValue();
+            return id == 0 ? null : SECRET_CHAT | (id & 0xFFFFFFFFL);
+        }
+        long id = idOf(peer, "channel_id");
+        if (id != 0) return -id;
+        if (channel) return null;
+        id = idOf(peer, "user_id");
+        if (id != 0) return id;
+        id = idOf(peer, "chat_id");
+        return id != 0 ? -id : null;
+    }
+
+    /** A peer's ID field, 0 when it has none of that name. Telegram's input peers share one class's fields. */
+    private static long idOf(Object peer, String field) throws IllegalAccessException {
+        try {
+            return ((Number) HostNames.field(peer.getClass(), field).get(peer)).longValue();
+        } catch (NoSuchFieldException none) {
+            return 0;
+        }
     }
 
     /**
@@ -192,6 +419,7 @@ public final class GhostMode {
         if (STORIES.contains(className)) return Kind.STORY;
         if (TYPING.contains(className)) return Kind.TYPING;
         if (STATUS.equals(className)) return Kind.ONLINE;
+        if (SENDS.contains(className) || SECRET_SENDS.contains(className)) return Kind.SEND;
         return Kind.OTHER;
     }
 }

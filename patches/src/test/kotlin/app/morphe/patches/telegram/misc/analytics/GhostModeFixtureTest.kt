@@ -36,6 +36,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstructio
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
@@ -76,7 +77,7 @@ class GhostModeFixtureTest {
             .mapNotNull { ((it as? ReferenceInstruction)?.reference as? StringReference)?.string }
             .filter { it.startsWith("org.telegram.tgnet.") }
             .map { "L" + it.replace('.', '/') + ";" }.toSet()
-        assertEquals("the extension's request names", 12, named.size)
+        assertEquals("the extension's request names", 19, named.size)
         for (build in Fixtures.declaredBuilds()) {
             assertEquals("${build.name}: every named request", named, FixtureDex.classes(build, named).keys)
         }
@@ -131,6 +132,11 @@ class GhostModeFixtureTest {
             assertFlag(context, "powerOff", true)
             assertFlag(context, "ghostMode", true)
             assertFlag(context, "disableAnalytics", true)
+            // A read Ghost mode held goes out later through Telegram's own send, with its callback (#69).
+            val held = context.tgMutableClassDefBy(GHOST_MODE).methods.single { it.origName == "sendRequest" }.instructions()
+                .mapNotNull { ((it as? ReferenceInstruction)?.reference as? MethodReference)?.origString() }
+            assertEquals(build.name, listOf("$CONNECTIONS_MANAGER->getInstance(I)$CONNECTIONS_MANAGER",
+                "$CONNECTIONS_MANAGER->sendRequest(Lorg/telegram/tgnet/TLObject;Lorg/telegram/tgnet/RequestDelegate;I)I"), held)
         }
     }
 
