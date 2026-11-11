@@ -15,6 +15,7 @@ Every HushTelegram release, newest first.
 
 ### Added
 
+* **Tooling:** `scripts/name-table.ps1` writes a Telegram build's name table, the map from 13.1.1's names to the ones R8 gave the build. Run it again on a build that already has a table and it keeps the rows people added by hand and lets them win over anything it matched, so 72919's table comes back unchanged.
 * **Telegram:** **Suppress screenshot notification**, a new patch with its switch in HushTelegram settings > Privacy, off by default. Telegram stops telling the other person you took a screenshot, in regular and secret chats.
 * **Telegram:** **Unlock Premium features**, in Privacy and off by default. Telegram on your phone treats your account as Premium, so the parts the app itself locks open up. Telegram's servers still know your real plan, so their limits stay the same.
 * **Telegram:** **Bypass channel restrictions**, in Privacy and off by default. Channels and chats that turn off forwarding, copying and saving let you do all three. Its second switch, **Open restricted channels**, opens channels, groups and messages Telegram marks unavailable for copyright or local law, as long as Telegram still sends them (#58).
