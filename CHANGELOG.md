@@ -11,6 +11,7 @@ Every HushTelegram release, newest first.
 * The patch bundle is signed now. Morphe Manager shows "Signed by d7d6 bd99 8faf 7bcc" on the HushTelegram source and remembers that key, so a later bundle signed with any other key, or not signed at all, gets refused instead of loaded.
 * **Tooling:** The build signs the bundle when `HUSHTELEGRAM_BUNDLE_SIGNING_KEY` holds the private key (Morphe's shared `MORPHE_SIGNING_KEY` is the fallback), and refuses a key that isn't the one `morphe-signing.pub` publishes. Without one the build still works and says the bundle is unsigned. `verifyBundle` checks the signature with Morphe's own verifier and fails a bundle signed by another key, or an unsigned one when the build had a key. A release won't go out with a bundle the published key didn't sign, and the index gains `public_key`.
 * **Tooling:** `verifyBundle` fails a bundle holding any class file newer than Java 17 (major 61), which Morphe's patcher won't load. The bundle's classes are Java 8 and 11 today, so a toolchain change that crosses the line now stops the build instead of reaching Manager.
+* **Tooling:** The host test runner's Netty moves from 4.1.138.Final to 4.1.140.Final, which carries Netty's HTTP smuggling and decoder fixes. Only the tests on the build machine use it. Nothing in the bundle does.
 
 ### Added
 
