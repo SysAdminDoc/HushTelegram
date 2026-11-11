@@ -1038,7 +1038,8 @@
         "jiuwei-huli/MightyMichs-Patches",
         "Mr-Rex69/MightyMichs-Patches",
         "letsseemf2025-ship-it/MightyMichs-Patches",
-        "ozeroztas/MightyMichs-Patches"
+        "ozeroztas/MightyMichs-Patches",
+        "smed79/MightyMichs-Patches"
       ],
       "contentHashes": [],
       "mirrors": [],
@@ -2586,7 +2587,7 @@
       "contaminatedBy": null,
       "disposition": "behavior-only",
       "reason": "An Xposed module shipped as release APKs, with no source in the repository. 1.5.4 and later are all rights reserved (1.5.3 and earlier were GPL-3.0), so nothing is taken. Its changelog is a useful warning list: 1.4 dropped its download speed-up because free accounts got slower, 1.5 had to repair its stories hook after 13.1 moved stories, and its ghost mode broke after a restart and with ads hidden. HushTelegram's research notes carry those cases into the matching items.",
-      "archived": false,
+      "archived": true,
       "forks": [
         "john-yu268/Re-TeleVIP"
       ],
