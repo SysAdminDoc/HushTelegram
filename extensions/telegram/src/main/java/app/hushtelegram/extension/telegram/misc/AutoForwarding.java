@@ -368,8 +368,8 @@ public final class AutoForwarding {
 
     /**
      * When [message]'s original was first sent, and its photo or file, without who sent it. Without
-     * either, the poll, place, contact or dice roll it holds stands in, and then its text, or every
-     * one of them sent in that second would look the same.
+     * either, whatever else it holds stands in, and then its text, or every one of them sent in that
+     * second would look the same.
      */
     private static String moment(Object message) {
         int date = telegram.forwarded(message) ? telegram.originDate(message) : telegram.date(message);
@@ -381,7 +381,12 @@ public final class AutoForwarding {
         return date + "/t" + (text == null ? 0 : text.hashCode());
     }
 
-    /** The poll, place, contact or dice roll [message] holds, each of which a forward keeps, or null. */
+    /**
+     * The poll, dice roll, contact, place, story, game, giveaway, checklist or invoice [message]
+     * holds, each of which a forward keeps, or null. Two same-face rolls, or the same contact,
+     * place, checklist title or invoice, from one author's second still look alike, and a live
+     * location is known by the fix it carries.
+     */
     @Nullable
     private static String held(Object message) {
         long poll = telegram.pollId(message);
@@ -392,7 +397,20 @@ public final class AutoForwarding {
         if (phone != null && !phone.isEmpty()) return "c" + phone;
         double latitude = telegram.latitude(message);
         double longitude = telegram.longitude(message);
-        if (latitude != 0 || longitude != 0) return "g" + latitude + "," + longitude;
+        String title = telegram.title(message);
+        // A venue's name tells it from a plain location on the same spot.
+        if (latitude != 0 || longitude != 0) return "g" + latitude + "," + longitude + (title == null ? "" : "/" + title);
+        // Story ids count up per chat, so two chats' stories can share one.
+        int story = telegram.storyId(message);
+        if (story != 0) return "s" + telegram.storyPeer(message) + "/" + story;
+        long game = telegram.gameId(message);
+        if (game != 0) return "m" + game;
+        int end = telegram.giveawayEnd(message);
+        if (end != 0) return "v" + end + "x" + telegram.giveawayCount(message);
+        String checklist = telegram.checklist(message);
+        if (checklist != null) return "k" + checklist;
+        // Only an invoice is left with a title.
+        if (title != null) return "i" + title + "/" + telegram.amount(message);
         return null;
     }
 
@@ -465,6 +483,24 @@ public final class AutoForwarding {
 
         int diceValue(Object message);
 
+        int storyId(Object message);
+
+        long storyPeer(Object message);
+
+        long gameId(Object message);
+
+        int giveawayEnd(Object message);
+
+        int giveawayCount(Object message);
+
+        @Nullable
+        String checklist(Object message);
+
+        @Nullable
+        String title(Object message);
+
+        long amount(Object message);
+
         @Nullable
         String text(Object message);
 
@@ -513,6 +549,14 @@ public final class AutoForwarding {
         @Override public String phone(Object message) { return AutoForwarding.phone(message); }
         @Override public String emoticon(Object message) { return AutoForwarding.emoticon(message); }
         @Override public int diceValue(Object message) { return AutoForwarding.diceValue(message); }
+        @Override public int storyId(Object message) { return AutoForwarding.storyId(message); }
+        @Override public long storyPeer(Object message) { return AutoForwarding.storyPeer(message); }
+        @Override public long gameId(Object message) { return AutoForwarding.gameId(message); }
+        @Override public int giveawayEnd(Object message) { return AutoForwarding.giveawayEnd(message); }
+        @Override public int giveawayCount(Object message) { return AutoForwarding.giveawayCount(message); }
+        @Override public String checklist(Object message) { return AutoForwarding.checklist(message); }
+        @Override public String title(Object message) { return AutoForwarding.title(message); }
+        @Override public long amount(Object message) { return AutoForwarding.amount(message); }
         @Override public String text(Object message) { return AutoForwarding.text(message); }
         @Override public boolean service(Object message) { return AutoForwarding.service(message); }
         @Override public boolean media(Object message) { return AutoForwarding.media(message); }
@@ -585,6 +629,32 @@ public final class AutoForwarding {
 
     /** {@code TL_messageMediaDice.value}: what a dice roll landed on, or 0. */
     public static int diceValue(Object message) { return 0; }
+
+    /** {@code media.id}: a shared story's id, or 0 when it isn't one. */
+    public static int storyId(Object message) { return 0; }
+
+    /** {@code media.peer}, or an older layer's {@code media.user_id}: whose story it is, or 0. */
+    public static long storyPeer(Object message) { return 0L; }
+
+    /** {@code media.game.id}: a game's id, or 0 when it isn't one. */
+    public static long gameId(Object message) { return 0L; }
+
+    /** {@code until_date} of a giveaway or its results, or 0 when it's neither. */
+    public static int giveawayEnd(Object message) { return 0; }
+
+    /** A giveaway's {@code quantity}, or its results' {@code winners_count}, or 0. */
+    public static int giveawayCount(Object message) { return 0; }
+
+    /** {@code TL_messageMediaToDo.todo.title.text}: a checklist's title, or null when it isn't one. */
+    @Nullable
+    public static String checklist(Object message) { return null; }
+
+    /** {@code media.title}: an invoice or venue's title, or null. */
+    @Nullable
+    public static String title(Object message) { return null; }
+
+    /** {@code media.total_amount}: what an invoice asks for, or 0. */
+    public static long amount(Object message) { return 0L; }
 
     /** {@code message.messageOwner.message}: its text, or a photo or file's caption, or null. */
     @Nullable

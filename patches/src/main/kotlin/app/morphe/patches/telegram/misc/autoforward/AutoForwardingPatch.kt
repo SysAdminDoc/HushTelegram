@@ -47,6 +47,12 @@ private const val MEDIA_POLL = "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaPoll;"
 private const val POLL = "Lorg/telegram/tgnet/TLRPC\$Poll;"
 private const val GEO = "Lorg/telegram/tgnet/TLRPC\$GeoPoint;"
 private const val MEDIA_DICE = "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaDice;"
+private const val TL_GAME = "Lorg/telegram/tgnet/TLRPC\$TL_game;"
+private const val MEDIA_GIVEAWAY = "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaGiveaway;"
+private const val MEDIA_GIVEAWAY_RESULTS = "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaGiveawayResults;"
+private const val MEDIA_TODO = "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaToDo;"
+private const val TODO_LIST = "Lorg/telegram/tgnet/TLRPC\$TodoList;"
+private const val TEXT_WITH_ENTITIES = "Lorg/telegram/tgnet/TLRPC\$TL_textWithEntities;"
 private const val TL_CHAT = "Lorg/telegram/tgnet/TLRPC\$Chat;"
 private const val CHAT_OBJECT = "Lorg/telegram/messenger/ChatObject;"
 private const val TL_USER = "Lorg/telegram/tgnet/TLRPC\$User;"
@@ -93,11 +99,17 @@ val autoForwardingPatch = bytecodePatch(
 internal fun BytecodePatchContext.resolveAutoForwarding(): MutableMethod {
     requireStatusMethod("autoForwarding")
     controlHook(AUTO_FORWARDING, "onNewMessages", listOf(OBJECT, "I"), "V")
-    for (name in listOf("account", "id", "date", "originDate", "diceValue")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "I")
+    for (name in listOf("account", "id", "date", "originDate", "diceValue", "storyId", "giveawayEnd", "giveawayCount")) {
+        controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "I")
+    }
     for (name in listOf("out", "forwarded", "service", "media")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "Z")
-    for (name in listOf("dialog", "dialogId", "sender", "origin", "mediaId", "pollId")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "J")
+    for (name in listOf("dialog", "dialogId", "sender", "origin", "mediaId", "pollId", "storyPeer", "gameId", "amount")) {
+        controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "J")
+    }
     for (name in listOf("latitude", "longitude")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "D")
-    for (name in listOf("originName", "text", "phone", "emoticon")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), STRING)
+    for (name in listOf("originName", "text", "phone", "emoticon", "checklist", "title")) {
+        controlHook(AUTO_FORWARDING, name, listOf(OBJECT), STRING)
+    }
     controlHook(AUTO_FORWARDING, "selectedAccount", emptyList(), "I")
     controlHook(AUTO_FORWARDING, "userId", listOf("I"), "J")
     controlHook(AUTO_FORWARDING, "dialogs", listOf("I", "I"), LIST)
@@ -110,13 +122,20 @@ internal fun BytecodePatchContext.resolveAutoForwarding(): MutableMethod {
         "isForwarded()Z", "isMediaEmpty()Z", "getFromChatId()J", "static getPeerId($PEER)J")
     controlMembers(TL_MESSAGE, "action:$ACTION", "fwd_from:$FWD_HEADER", "date:I", "media:$MEDIA", "message:$STRING")
     controlMembers(FWD_HEADER, "from_id:$PEER", "date:I", "from_name:$STRING")
-    controlMembers(MEDIA, "photo:$PHOTO", "document:$DOCUMENT", "geo:$GEO", "phone_number:$STRING")
+    controlMembers(MEDIA, "photo:$PHOTO", "document:$DOCUMENT", "geo:$GEO", "phone_number:$STRING", "id:I", "peer:$PEER",
+        "user_id:J", "game:$TL_GAME", "title:$STRING", "total_amount:J")
     controlMembers(PHOTO, "id:J")
     controlMembers(DOCUMENT, "id:J")
     controlMembers(MEDIA_POLL, "poll:$POLL")
     controlMembers(POLL, "id:J")
     controlMembers(GEO, "lat:D", "_long:D")
     controlMembers(MEDIA_DICE, "emoticon:$STRING", "value:I")
+    controlMembers(TL_GAME, "id:J")
+    controlMembers(MEDIA_GIVEAWAY, "until_date:I", "quantity:I")
+    controlMembers(MEDIA_GIVEAWAY_RESULTS, "until_date:I", "winners_count:I")
+    controlMembers(MEDIA_TODO, "todo:$TODO_LIST")
+    controlMembers(TODO_LIST, "title:$TEXT_WITH_ENTITIES")
+    controlMembers(TEXT_WITH_ENTITIES, "text:$STRING")
     controlMembers(ACTION_EMPTY)
     controlMembers(USER_CONFIG, "static selectedAccount:I", "static getInstance(I)$USER_CONFIG", "getClientUserId()J")
     controlMembers(CONTROLLER, "static getInstance(I)$CONTROLLER", "getDialogs(I)$LIST", "getPeerName(J)$STRING",
@@ -277,18 +296,21 @@ internal fun BytecodePatchContext.writeAutoForwardingStubs() {
             return-wide v0
         """)
     }
-    writeStub(AUTO_FORWARDING, "phone", 2, """
-        check-cast p0, $MESSAGE
-        iget-object v0, p0, $MESSAGE->messageOwner:$TL_MESSAGE
-        if-eqz v0, :hush_none
-        iget-object v0, v0, $TL_MESSAGE->media:$MEDIA
-        if-eqz v0, :hush_none
-        iget-object v0, v0, $MEDIA->phone_number:$STRING
-        return-object v0
-        :hush_none
-        const/4 v0, 0x0
-        return-object v0
-    """)
+    // Of what reaches the server, only a venue and an invoice fill the shared title.
+    for ((name, field) in listOf("phone" to "phone_number", "title" to "title")) {
+        writeStub(AUTO_FORWARDING, name, 2, """
+            check-cast p0, $MESSAGE
+            iget-object v0, p0, $MESSAGE->messageOwner:$TL_MESSAGE
+            if-eqz v0, :hush_none
+            iget-object v0, v0, $TL_MESSAGE->media:$MEDIA
+            if-eqz v0, :hush_none
+            iget-object v0, v0, $MEDIA->$field:$STRING
+            return-object v0
+            :hush_none
+            const/4 v0, 0x0
+            return-object v0
+        """)
+    }
     writeStub(AUTO_FORWARDING, "emoticon", 3, """
         check-cast p0, $MESSAGE
         iget-object v0, p0, $MESSAGE->messageOwner:$TL_MESSAGE
@@ -316,6 +338,105 @@ internal fun BytecodePatchContext.writeAutoForwardingStubs() {
         :hush_none
         const/4 v0, 0x0
         return v0
+    """)
+    // Only a story fills the shared id. Its older layer isn't a TL_messageMediaStory and names the
+    // owner by user_id instead of peer, so neither is tested by class.
+    writeStub(AUTO_FORWARDING, "storyId", 2, """
+        check-cast p0, $MESSAGE
+        iget-object v0, p0, $MESSAGE->messageOwner:$TL_MESSAGE
+        if-eqz v0, :hush_none
+        iget-object v0, v0, $TL_MESSAGE->media:$MEDIA
+        if-eqz v0, :hush_none
+        iget v0, v0, $MEDIA->id:I
+        return v0
+        :hush_none
+        const/4 v0, 0x0
+        return v0
+    """)
+    writeStub(AUTO_FORWARDING, "storyPeer", 4, """
+        check-cast p0, $MESSAGE
+        iget-object v2, p0, $MESSAGE->messageOwner:$TL_MESSAGE
+        if-eqz v2, :hush_none
+        iget-object v2, v2, $TL_MESSAGE->media:$MEDIA
+        if-eqz v2, :hush_none
+        iget-object v0, v2, $MEDIA->peer:$PEER
+        if-eqz v0, :hush_user
+        invoke-static {v0}, $MESSAGE->getPeerId($PEER)J
+        move-result-wide v0
+        return-wide v0
+        :hush_user
+        iget-wide v0, v2, $MEDIA->user_id:J
+        return-wide v0
+        :hush_none
+        const-wide/16 v0, 0x0
+        return-wide v0
+    """)
+    writeStub(AUTO_FORWARDING, "gameId", 4, """
+        check-cast p0, $MESSAGE
+        iget-object v2, p0, $MESSAGE->messageOwner:$TL_MESSAGE
+        if-eqz v2, :hush_none
+        iget-object v2, v2, $TL_MESSAGE->media:$MEDIA
+        if-eqz v2, :hush_none
+        iget-object v2, v2, $MEDIA->game:$TL_GAME
+        if-eqz v2, :hush_none
+        iget-wide v0, v2, $TL_GAME->id:J
+        return-wide v0
+        :hush_none
+        const-wide/16 v0, 0x0
+        return-wide v0
+    """)
+    // The giveaway's layer classes extend these two, so instance-of takes them too.
+    for ((name, fields) in listOf("giveawayEnd" to ("until_date" to "until_date"), "giveawayCount" to ("quantity" to "winners_count"))) {
+        writeStub(AUTO_FORWARDING, name, 3, """
+            check-cast p0, $MESSAGE
+            iget-object v0, p0, $MESSAGE->messageOwner:$TL_MESSAGE
+            if-eqz v0, :hush_none
+            iget-object v0, v0, $TL_MESSAGE->media:$MEDIA
+            instance-of v1, v0, $MEDIA_GIVEAWAY
+            if-eqz v1, :hush_results
+            check-cast v0, $MEDIA_GIVEAWAY
+            iget v0, v0, $MEDIA_GIVEAWAY->${fields.first}:I
+            return v0
+            :hush_results
+            instance-of v1, v0, $MEDIA_GIVEAWAY_RESULTS
+            if-eqz v1, :hush_none
+            check-cast v0, $MEDIA_GIVEAWAY_RESULTS
+            iget v0, v0, $MEDIA_GIVEAWAY_RESULTS->${fields.second}:I
+            return v0
+            :hush_none
+            const/4 v0, 0x0
+            return v0
+        """)
+    }
+    writeStub(AUTO_FORWARDING, "checklist", 3, """
+        check-cast p0, $MESSAGE
+        iget-object v0, p0, $MESSAGE->messageOwner:$TL_MESSAGE
+        if-eqz v0, :hush_none
+        iget-object v0, v0, $TL_MESSAGE->media:$MEDIA
+        instance-of v1, v0, $MEDIA_TODO
+        if-eqz v1, :hush_none
+        check-cast v0, $MEDIA_TODO
+        iget-object v0, v0, $MEDIA_TODO->todo:$TODO_LIST
+        if-eqz v0, :hush_none
+        iget-object v0, v0, $TODO_LIST->title:$TEXT_WITH_ENTITIES
+        if-eqz v0, :hush_none
+        iget-object v0, v0, $TEXT_WITH_ENTITIES->text:$STRING
+        return-object v0
+        :hush_none
+        const/4 v0, 0x0
+        return-object v0
+    """)
+    writeStub(AUTO_FORWARDING, "amount", 4, """
+        check-cast p0, $MESSAGE
+        iget-object v2, p0, $MESSAGE->messageOwner:$TL_MESSAGE
+        if-eqz v2, :hush_none
+        iget-object v2, v2, $TL_MESSAGE->media:$MEDIA
+        if-eqz v2, :hush_none
+        iget-wide v0, v2, $MEDIA->total_amount:J
+        return-wide v0
+        :hush_none
+        const-wide/16 v0, 0x0
+        return-wide v0
     """)
     writeStub(AUTO_FORWARDING, "service", 2, """
         check-cast p0, $MESSAGE

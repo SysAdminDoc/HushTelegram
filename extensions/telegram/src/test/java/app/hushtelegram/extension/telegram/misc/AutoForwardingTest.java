@@ -380,6 +380,80 @@ public class AutoForwardingTest {
         assertEquals(3, telegram.sent.size());
     }
 
+    /**
+     * The [i]th story, game, giveaway, checklist, invoice and place person 8000 sent at second 70,
+     * forwarded into A by [sender] as messages [firstId] on. Each pair differs only in the part of
+     * its key that's checked: the story's chat, the giveaway's winner count, the invoice's amount,
+     * and a venue's name on a plain location's spot.
+     */
+    private static List<Object> heldMore(int firstId, long sender, int i) {
+        List<Object> six = new ArrayList<>();
+        for (int kind = 0; kind < 6; kind++) {
+            AutoForwardingForTests.Message message = message(A, firstId + kind);
+            message.forwarded = true;
+            message.sender = sender;
+            message.origin = 8000;
+            message.originDate = 70;
+            message.media = true;
+            if (kind == 0) {
+                message.storyId = 5;
+                message.storyPeer = 300 + i;
+            }
+            if (kind == 1) message.gameId = 600 + i;
+            if (kind == 2) {
+                message.giveawayEnd = 1_800_000_000;
+                message.giveawayCount = 10 + i;
+            }
+            if (kind == 3) message.checklist = "Groceries " + i;
+            if (kind == 4) {
+                message.title = "Ticket";
+                message.amount = 500 + i;
+            }
+            if (kind == 5) {
+                message.latitude = 51.5;
+                message.longitude = -0.12;
+                if (i == 1) message.title = "Cafe";
+            }
+            six.add(message);
+        }
+        return six;
+    }
+
+    @Test public void differentStoriesGamesGiveawaysChecklistsInvoicesAndVenuesFromOneSecondEachGoOnce() {
+        Settings.AUTO_FORWARDING.save(true);
+        assertTrue(AutoForwarding.add(new AutoForwarding.Rule(1000, A, B, false)));
+        arrive(heldMore(1, 7000, 0).toArray());
+        arrive(heldMore(7, 7000, 1).toArray());
+        assertEquals(Arrays.asList("0: [11/1, 11/2, 11/3, 11/4, 11/5, 11/6] to 12",
+                "0: [11/7, 11/8, 11/9, 11/10, 11/11, 11/12] to 12"), telegram.sent);
+        // B's copies of all twelve, coming back into A, stay.
+        List<Object> back = new ArrayList<>(heldMore(21, B, 0));
+        back.addAll(heldMore(27, B, 1));
+        arrive(back.toArray());
+        assertEquals(2, telegram.sent.size());
+        // A hidden author's own story from that second goes, and a hidden author's copy of one stays.
+        AutoForwardingForTests.Message other = message(A, 41);
+        other.forwarded = true;
+        other.sender = 7001;
+        other.originName = "Pat";
+        other.originDate = 70;
+        other.media = true;
+        other.storyId = 5;
+        other.storyPeer = 399;
+        arrive(other);
+        assertEquals("0: [11/41] to 12", telegram.sent.get(2));
+        AutoForwardingForTests.Message copy = message(A, 42);
+        copy.forwarded = true;
+        copy.sender = 7001;
+        copy.originName = "Pat";
+        copy.originDate = 70;
+        copy.media = true;
+        copy.storyId = 5;
+        copy.storyPeer = 300;
+        arrive(copy);
+        assertEquals(3, telegram.sent.size());
+    }
+
     @Test public void aRuleAddedWhilePausedKeepsTheOthers() {
         assertTrue(AutoForwarding.add(new AutoForwarding.Rule(1000, A, B, false)));
         PauseForTests.pause(HushTelegramPause.Reason.SWITCH);

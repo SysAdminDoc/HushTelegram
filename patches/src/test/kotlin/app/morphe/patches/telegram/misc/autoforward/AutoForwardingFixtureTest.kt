@@ -39,7 +39,10 @@ class AutoForwardingFixtureTest {
         "Lorg/telegram/messenger/ChatObject;", "Lorg/telegram/messenger/UserObject;", "Lorg/telegram/tgnet/TLRPC\$User;",
         "Lorg/telegram/tgnet/TLRPC\$MessageMedia;", "Lorg/telegram/tgnet/TLRPC\$Photo;", "Lorg/telegram/tgnet/TLRPC\$Document;",
         "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaPoll;", "Lorg/telegram/tgnet/TLRPC\$Poll;", "Lorg/telegram/tgnet/TLRPC\$GeoPoint;",
-        "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaDice;",
+        "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaDice;", "Lorg/telegram/tgnet/TLRPC\$TL_game;",
+        "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaGiveaway;", "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaGiveawayResults;",
+        "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaToDo;", "Lorg/telegram/tgnet/TLRPC\$TodoList;",
+        "Lorg/telegram/tgnet/TLRPC\$TL_textWithEntities;",
     )
 
     @Test
@@ -105,6 +108,25 @@ class AutoForwardingFixtureTest {
             assertTrue("$name: emoticon",
                 "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaDice;->emoticon:Ljava/lang/String;" in refs("emoticon"))
             assertTrue("$name: diceValue", "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaDice;->value:I" in refs("diceValue"))
+            assertTrue("$name: storyId", "Lorg/telegram/tgnet/TLRPC\$MessageMedia;->id:I" in refs("storyId"))
+            assertTrue("$name: storyPeer", refs("storyPeer").containsAll(listOf(
+                "Lorg/telegram/tgnet/TLRPC\$MessageMedia;->peer:Lorg/telegram/tgnet/TLRPC\$Peer;",
+                "Lorg/telegram/messenger/MessageObject;->getPeerId(Lorg/telegram/tgnet/TLRPC\$Peer;)J",
+                "Lorg/telegram/tgnet/TLRPC\$MessageMedia;->user_id:J")))
+            assertTrue("$name: gameId", refs("gameId").containsAll(listOf(
+                "Lorg/telegram/tgnet/TLRPC\$MessageMedia;->game:Lorg/telegram/tgnet/TLRPC\$TL_game;",
+                "Lorg/telegram/tgnet/TLRPC\$TL_game;->id:J")))
+            for ((stub, fields) in listOf("giveawayEnd" to ("until_date" to "until_date"), "giveawayCount" to ("quantity" to "winners_count"))) {
+                assertTrue("$name: $stub", refs(stub).containsAll(listOf(
+                    "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaGiveaway;->${fields.first}:I",
+                    "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaGiveawayResults;->${fields.second}:I")))
+            }
+            assertTrue("$name: checklist", refs("checklist").containsAll(listOf(
+                "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaToDo;->todo:Lorg/telegram/tgnet/TLRPC\$TodoList;",
+                "Lorg/telegram/tgnet/TLRPC\$TodoList;->title:Lorg/telegram/tgnet/TLRPC\$TL_textWithEntities;",
+                "Lorg/telegram/tgnet/TLRPC\$TL_textWithEntities;->text:Ljava/lang/String;")))
+            assertTrue("$name: title", "Lorg/telegram/tgnet/TLRPC\$MessageMedia;->title:Ljava/lang/String;" in refs("title"))
+            assertTrue("$name: amount", "Lorg/telegram/tgnet/TLRPC\$MessageMedia;->total_amount:J" in refs("amount"))
             assertTrue("$name: canPost", refs("canPost").containsAll(listOf(
                 "Lorg/telegram/messenger/MessagesController;->getChat(Ljava/lang/Long;)Lorg/telegram/tgnet/TLRPC\$Chat;",
                 "Lorg/telegram/messenger/ChatObject;->isNotInChat(Lorg/telegram/tgnet/TLRPC\$Chat;)Z",

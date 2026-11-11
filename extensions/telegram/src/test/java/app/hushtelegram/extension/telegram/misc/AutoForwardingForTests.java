@@ -46,6 +46,19 @@ public final class AutoForwardingForTests {
         /** A dice roll's emoji and what it landed on, or null and 0. */
         public String emoticon;
         public int diceValue;
+        /** A shared story's id and whose story it is, or 0 and 0. */
+        public int storyId;
+        public long storyPeer;
+        /** Its game, or 0. */
+        public long gameId;
+        /** A giveaway's end and how many win, or 0 and 0. */
+        public int giveawayEnd;
+        public int giveawayCount;
+        /** A checklist's title, or null. */
+        public String checklist;
+        /** An invoice or venue's title, or null, and what an invoice asks for. */
+        public String title;
+        public long amount;
         /** Its text, or null. */
         public String text;
         public boolean service;
@@ -103,6 +116,14 @@ public final class AutoForwardingForTests {
         @Override public String phone(Object message) { return ((Message) message).phone; }
         @Override public String emoticon(Object message) { return ((Message) message).emoticon; }
         @Override public int diceValue(Object message) { return ((Message) message).diceValue; }
+        @Override public int storyId(Object message) { return ((Message) message).storyId; }
+        @Override public long storyPeer(Object message) { return ((Message) message).storyPeer; }
+        @Override public long gameId(Object message) { return ((Message) message).gameId; }
+        @Override public int giveawayEnd(Object message) { return ((Message) message).giveawayEnd; }
+        @Override public int giveawayCount(Object message) { return ((Message) message).giveawayCount; }
+        @Override public String checklist(Object message) { return ((Message) message).checklist; }
+        @Override public String title(Object message) { return ((Message) message).title; }
+        @Override public long amount(Object message) { return ((Message) message).amount; }
         @Override public String text(Object message) { return ((Message) message).text; }
         @Override public boolean service(Object message) { return ((Message) message).service; }
         @Override public boolean media(Object message) { return ((Message) message).media; }
