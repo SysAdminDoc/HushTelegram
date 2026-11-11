@@ -8,6 +8,8 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** The telegram.org web build moves from 13.2.0 (72809) to 13.2.1 (72919). Both builds now track Telegram 13.2.1.
 * **Telegram:** **Ghost mode** lets channel reads go out now, so a channel you read on this phone shows as read on your other devices too. Nobody in a channel can see who read what, so they learn nothing. Groups and private chats stay unread everywhere else, since there the read is what people would see (#65).
+* The patch bundle is signed now. Morphe Manager shows "Signed by d7d6 bd99 8faf 7bcc" on the HushTelegram source and remembers that key, so a later bundle signed with any other key, or not signed at all, gets refused instead of loaded.
+* **Tooling:** The build signs the bundle when `HUSHTELEGRAM_BUNDLE_SIGNING_KEY` holds the private key (Morphe's shared `MORPHE_SIGNING_KEY` is the fallback), and refuses a key that isn't the one `morphe-signing.pub` publishes. Without one the build still works and says the bundle is unsigned. `verifyBundle` checks the signature with Morphe's own verifier and fails a bundle signed by another key, or an unsigned one when the build had a key. A release won't go out with a bundle the published key didn't sign, and the index gains `public_key`.
 
 ### Added
 

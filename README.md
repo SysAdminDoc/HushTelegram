@@ -194,6 +194,8 @@ play   1d444a7ee2579257b4a86530e5014ee066c5690c4ff505e3a43b3658af2aea22
 
 On Windows, check yours with `Get-FileHash -Algorithm SHA256 .\Telegram.apk`. Each [release](https://github.com/SysAdminDoc/HushTelegram/releases) also ships `SHA256SUMS.txt` for its `.mpp` bundle, which is a patch bundle and not a Telegram APK.
 
+Releases after v0.0.24 are signed. Morphe Manager shows the signer when you add or update the source, and it should read `d7d6 bd99 8faf 7bcc`. Manager remembers that key from then on and refuses an update signed by any other, or by none. The full public key is in [`morphe-signing.pub`](morphe-signing.pub).
+
 ## Building from source
 
 You need JDK 21, the Android SDK and a GitHub token with `read:packages`, since the Morphe patcher comes from GitHub Packages.
@@ -205,7 +207,7 @@ export GITHUB_TOKEN=<a token with read:packages>
 ./gradlew :patches:buildAndroid
 ```
 
-Run `generatePatchesList` first, or the bundle loses its Android payload. It lands in `patches/build/release/patches-<version>.mpp` with its SHA-256 and a CycloneDX SBOM. Tests are `./gradlew :patches:test :extensions:telegram:test`. Before you push a patch change, point `HUSHTELEGRAM_FIXTURE_DIR` at a folder holding every APK named in `AppCompatibilities.kt` and `patches-list.json`. Keep older catalog inputs while a release is held. The [Telegram app reference](docs/telegram-app-reference.md) covers moving to a new Telegram build and the anchors that hold up across updates.
+Run `generatePatchesList` first, or the bundle loses its Android payload. It lands in `patches/build/release/patches-<version>.mpp` with its SHA-256 and a CycloneDX SBOM. A bundle you build comes out unsigned, so it differs from a release's only in the signature at the end of the file. Tests are `./gradlew :patches:test :extensions:telegram:test`. Before you push a patch change, point `HUSHTELEGRAM_FIXTURE_DIR` at a folder holding every APK named in `AppCompatibilities.kt` and `patches-list.json`. Keep older catalog inputs while a release is held. The [Telegram app reference](docs/telegram-app-reference.md) covers moving to a new Telegram build and the anchors that hold up across updates.
 
 Where things live:
 
