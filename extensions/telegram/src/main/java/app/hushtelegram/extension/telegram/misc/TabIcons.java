@@ -28,7 +28,7 @@ import app.hushtelegram.extension.telegram.settings.Settings;
 /**
  * Icons in front of the folder tab names above the chat list (#68). Telegram 13.2 draws a tab as
  * its name only. With the switch on, each tab's title gets one leading character drawn as an icon,
- * the way other Telegram clients show them: two bubbles for All Chats, and a person, group, channel
+ * the way other Telegram clients show them: a chat bubble for All Chats, and a person, group, channel
  * or bot for a folder that holds only that kind of chat, from Telegram's own drawables. With a pack
  * picked under Folder icons (#53), the tabs take that pack's icon for the folder's name instead.
  *

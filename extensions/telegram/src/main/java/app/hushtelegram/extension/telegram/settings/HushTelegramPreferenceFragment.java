@@ -598,7 +598,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             }
             if (PatchFamily.Capability.TAB_ICONS.installed()) {
                 folderTabs.addPreference(toggle(context, Settings.FOLDER_TAB_ICONS, L10n.t("Folder icons on tabs"),
-                        L10n.t("Puts a small icon in front of each folder tab's name: two bubbles for All Chats, and a person, "
+                        L10n.t("Puts a small icon in front of each folder tab's name: a chat bubble for All Chats, and a person, "
                                 + "group, channel or bot for a folder of that kind of chat. Other folders get a folder icon. "
                                 + "With a pack picked under Folder icons, the tabs use that pack instead.")));
             }
