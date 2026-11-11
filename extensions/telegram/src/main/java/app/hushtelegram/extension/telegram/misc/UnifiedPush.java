@@ -30,6 +30,7 @@ import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.ECPoint;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashSet;
@@ -394,22 +395,28 @@ public final class UnifiedPush {
                 return;
             }
             List<String> installed = distributors(context);
-            String chosen = prefs.getString(CHOSEN, null);
+            // A pick is one write, so it's read in one go: a pick landing now is seen whole or not at all.
+            String chosen;
+            String picked;
+            String problem;
+            synchronized (SAVING) {
+                chosen = prefs.getString(CHOSEN, null);
+                picked = prefs.getString(PICKED, null);
+                problem = prefs.getString(PROBLEM, null);
+            }
             // An end holds back everything but a pick of another app that's still there, which can
             // land between the pick and this sign-up. A pick counts once, so an old one can't undo a
             // later end when its app comes back.
-            String picked = prefs.getString(PICKED, null);
-            if (picked != null && !save(prefs, PICKED, null)) {
-                HookStatus.counted(FamilyNames.UNIFIED_PUSH, "app pick not cleared");
+            if (ENDED.equals(problem) && (picked == null || picked.equals(current) || !installed.contains(picked))) {
+                if (!saveTaking(prefs, picked)) HookStatus.counted(FamilyNames.UNIFIED_PUSH, "app pick not cleared");
+                return;
             }
-            if (ENDED.equals(prefs.getString(PROBLEM, null))
-                    && (picked == null || picked.equals(current) || !installed.contains(picked))) return;
             String distributor = pick(installed, chosen != null ? chosen : current);
             if (distributor == null) {
                 // The app is gone, or there are several and none is picked yet. An address nothing
                 // answers any more would keep Firebase out for good, so the sign-up goes with it.
                 String endpoint = prefs.getString(ENDPOINT, null);
-                boolean forgotten = save(prefs, DISTRIBUTOR, null, TOKEN, null, ENDPOINT, null);
+                boolean forgotten = saveTaking(prefs, picked, DISTRIBUTOR, null, TOKEN, null, ENDPOINT, null);
                 if (token != null && current != null && installed.contains(current)) {
                     unregister(context, current, token, forgotten);
                 }
@@ -427,8 +434,9 @@ public final class UnifiedPush {
                 String fresh = UUID.randomUUID().toString();
                 String endpoint = prefs.getString(ENDPOINT, null);
                 // The token goes out only once it's on disk. An app holding a token this side forgot
-                // would have its answers dropped as a stranger's.
-                boolean saved = save(prefs, DISTRIBUTOR, distributor, TOKEN, fresh, ENDPOINT, null, PROBLEM, null);
+                // would have its answers dropped as a stranger's. The pick is spent in the same write,
+                // so one that doesn't reach the disk is still there for the next try.
+                boolean saved = saveTaking(prefs, picked, DISTRIBUTOR, distributor, TOKEN, fresh, ENDPOINT, null, PROBLEM, null);
                 if (token != null && current != null && !ending) unregister(context, current, token, saved);
                 if (!saved) {
                     HookStatus.counted(FamilyNames.UNIFIED_PUSH, "sign-up not saved, tried again at the next start");
@@ -438,6 +446,8 @@ public final class UnifiedPush {
                 // Telegram goes back to Firebase until it does.
                 if (endpoint != null) telegram.release(endpoint);
                 token = fresh;
+            } else if (!saveTaking(prefs, picked)) {
+                HookStatus.counted(FamilyNames.UNIFIED_PUSH, "app pick not cleared");
             }
             send(context, new Intent(REGISTER)
                     .putExtra("application", context.getPackageName())
@@ -741,6 +751,21 @@ public final class UnifiedPush {
     }
 
     private static final Object SAVING = new Object();
+
+    /**
+     * {@link #save} that also spends [picked] in the same write, unless a newer pick has replaced
+     * it since, and true with nothing to write.
+     */
+    private static boolean saveTaking(SharedPreferences prefs, @Nullable String picked, String... keysAndValues) {
+        synchronized (SAVING) {
+            if (picked != null && picked.equals(prefs.getString(PICKED, null))) {
+                // The copy's last value is already null.
+                keysAndValues = Arrays.copyOf(keysAndValues, keysAndValues.length + 2);
+                keysAndValues[keysAndValues.length - 2] = PICKED;
+            }
+            return keysAndValues.length == 0 || save(prefs, keysAndValues);
+        }
+    }
 
     private static void put(SharedPreferences.Editor writes, String key, @Nullable String value) {
         if (value == null) {
