@@ -61,6 +61,7 @@ final class ManagerCategories {
             case DISABLE_UPDATE_CHECKS:
                 return "Updates";
             case CROP_GUARD:
+            case CAPTION_ORDER:
                 return "Conversations";
             case REPAIR_FIREBASE_PUSH:
                 return "Notifications";

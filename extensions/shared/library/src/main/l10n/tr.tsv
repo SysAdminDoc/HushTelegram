@@ -1549,3 +1549,6 @@ photos and videos in their best quality	en iyi kalitede fotoğraf ve videolar
 Never send an uncropped photo	Kırpılmamış fotoğrafı asla gönderme
 When Telegram can't finish a crop, the editor stays open and asks you to try again, so the part you cropped out never gets sent. Covers photos and profile pictures. Videos crop as usual.	Telegram bir kırpmayı bitiremezse düzenleyici açık kalır ve tekrar denemeni ister, böylece kırptığın kısım asla gönderilmez. Fotoğrafları ve profil fotoğraflarını kapsar. Videolar her zamanki gibi kırpılır.
 Couldn't crop the photo. Try again.	Fotoğraf kırpılamadı. Tekrar dene.
+# context: Keep captions with their photos. A switch on Conversations, on by default, for the attach menu: when several picked photos each have their own caption, unpicking or reordering them keeps each caption on its own photo.
+Keep captions with their photos	Açıklamaları fotoğraflarıyla tut
+When you remove or reorder photos that each have a caption, every caption stays with its own photo.	Her birinin kendi açıklaması olan fotoğrafları kaldırdığında veya yeniden sıraladığında, her açıklama kendi fotoğrafında kalır.

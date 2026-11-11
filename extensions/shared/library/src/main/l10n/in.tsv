@@ -1549,3 +1549,6 @@ photos and videos in their best quality	foto dan video dalam kualitas terbaik
 Never send an uncropped photo	Jangan pernah kirim foto yang belum dipotong
 When Telegram can't finish a crop, the editor stays open and asks you to try again, so the part you cropped out never gets sent. Covers photos and profile pictures. Videos crop as usual.	Saat Telegram tidak bisa menyelesaikan pemotongan, editor tetap terbuka dan memintamu mencoba lagi, jadi bagian yang kamu potong tidak pernah terkirim. Berlaku untuk foto dan foto profil. Video dipotong seperti biasa.
 Couldn't crop the photo. Try again.	Foto tidak bisa dipotong. Coba lagi.
+# context: Keep captions with their photos. A switch on Conversations, on by default, for the attach menu: when several picked photos each have their own caption, unpicking or reordering them keeps each caption on its own photo.
+Keep captions with their photos	Pertahankan keterangan pada fotonya
+When you remove or reorder photos that each have a caption, every caption stays with its own photo.	Saat kamu menghapus atau mengurutkan ulang foto yang masing-masing punya keterangan, setiap keterangan tetap pada fotonya sendiri.

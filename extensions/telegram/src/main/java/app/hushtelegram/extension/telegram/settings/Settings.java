@@ -532,6 +532,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_crop_guard", TRUE);
 
     /**
+     * Unpicking the first of several photos that each have a caption, or dragging another photo in
+     * front of it, has the comment field show the new first photo's caption, so every caption goes
+     * out on its own photo. On by default.
+     */
+    public static final BooleanSetting CAPTION_ORDER =
+            new BooleanSetting("hushtelegram_caption_order", TRUE);
+
+    /**
      * Translate a message or a whole chat with Google's web translate, beside Telegram's own Premium
      * translation. Off by default, and nothing leaves the phone until a chat or message is turned on.
      */

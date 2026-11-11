@@ -250,7 +250,8 @@ public final class SettingsBackup {
             Settings.OPEN_RESTRICTED_CHATS,
             Settings.BYPASS_INTEGRITY_CHECK,
             Settings.AUTO_FORWARDING,
-            Settings.CROP_GUARD));
+            Settings.CROP_GUARD,
+            Settings.CAPTION_ORDER));
 
     /**
      * The text a file carries besides the switches: the message filters, each list as a JSON array

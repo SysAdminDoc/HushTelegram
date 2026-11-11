@@ -386,7 +386,9 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/SpecialContactsStore.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/MediaQuality.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/CropGuard.java",
-        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/crop/**"
+        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/crop/**",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/CaptionOrder.java",
+        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/caption/**"
       ],
       "origin": "original",
       "upstream": "https://github.com/SysAdminDoc/HushTelegram",

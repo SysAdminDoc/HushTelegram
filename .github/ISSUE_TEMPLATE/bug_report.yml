@@ -139,6 +139,7 @@ body:
         - Test server sign-in
         - Bot token sign-in
         - Never send an uncropped photo
+        - Keep captions with their photos
         - HushTelegram settings
     validations:
       required: true

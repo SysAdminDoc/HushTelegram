@@ -473,6 +473,13 @@ public class PausedHooksTest {
                 () -> app.hushtelegram.extension.telegram.misc.IntegrityBypass.spoofSignature(1)));
         probes.put(PatchFamily.CROP_GUARD, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.CropGuard.missing(null)));
+        // Unpicking the first of several captioned photos asks for the new first photo's caption.
+        probes.put(PatchFamily.CAPTION_ORDER, Collections.singletonList(() -> {
+            ArrayList<Object> order = new ArrayList<>(Arrays.asList(1, 2));
+            app.hushtelegram.extension.telegram.misc.CaptionOrder.before(order, 0, new Object());
+            order.remove(0);
+            return app.hushtelegram.extension.telegram.misc.CaptionOrder.after(order) != null;
+        }));
         // New messages are looked at for forwarding.
         probes.put(PatchFamily.AUTO_FORWARDING, Collections.singletonList(() -> {
             List<String> before = HookStatus.report();

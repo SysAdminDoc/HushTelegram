@@ -92,6 +92,7 @@ public final class FamilyNames {
     public static final String BYPASS_INTEGRITY_CHECK = "Bypass integrity check";
     public static final String AUTO_FORWARDING = "Auto-forwarding rules";
     public static final String CROP_GUARD = "Never send an uncropped photo";
+    public static final String CAPTION_ORDER = "Keep captions with their photos";
 
     private FamilyNames() {
     }
