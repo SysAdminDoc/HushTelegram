@@ -48,6 +48,7 @@ object BundleVerifier {
                     require(classDefinitions > 0) { "Bundle DEX has no classes: $name" }
                 }
             }
+            requireClassVersions(jar)
             require(jar.manifest.mainAttributes.getValue("Version") == args[2]) {
                 "Bundle version does not match ${args[2]}"
             }
@@ -96,6 +97,29 @@ object BundleVerifier {
                 "(${PatchBundleSignature.fingerprint(published)})"
         }
         return signer
+    }
+
+    /**
+     * Every class file in [jar] at major [highest] (Java 17) or older. Morphe's patcher refuses
+     * newer class files, so a toolchain bump that crossed the line would otherwise go unnoticed
+     * until Manager turned the bundle down. The bundle's classes are majors 52 and 55 today.
+     */
+    fun requireClassVersions(jar: JarFile, highest: Int = 61) {
+        val newer = jar.entries().asSequence()
+            .filter { !it.isDirectory && it.name.endsWith(".class") }
+            .mapNotNull { entry ->
+                val header = jar.getInputStream(entry).use { it.readNBytes(8) }
+                require(header.size == 8 && ByteBuffer.wrap(header).int == 0xCAFEBABE.toInt()) {
+                    "Bundle entry is not a class file: ${entry.name}"
+                }
+                val major = ByteBuffer.wrap(header, 6, 2).short.toInt() and 0xFFFF
+                if (major > highest) "${entry.name} ($major)" else null
+            }
+            .toList()
+        require(newer.isEmpty()) {
+            "Bundle has ${newer.size} class files above major $highest, which Morphe's patcher refuses: " +
+                newer.take(5).joinToString()
+        }
     }
 
     /**
