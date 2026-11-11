@@ -716,7 +716,8 @@ public class HushTelegramPreferenceFragmentTest {
                     ((SwitchPreference) page.findPreference(Settings.CHAT_TYPE_FOLDERS.key)).isChecked());
             assertEquals("Hide sender names when forwarding", String.valueOf(page.findPreference(Settings.FORWARD_HIDE_SENDER.key).getTitle()));
             assertEquals("Each new forward starts with Hide sender's name turned on, so copies arrive without the "
-                    + "original author. You can still turn it off before sending.",
+                    + "original author, even when you pick several chats at once. You can still turn it off in the forward "
+                    + "preview, or by holding the send button in the Share sheet. Forwards to Saved Messages keep the sender.",
                     String.valueOf(page.findPreference(Settings.FORWARD_HIDE_SENDER.key).getSummary()));
             // Forwards show the sender until the switch is turned on.
             assertFalse(Settings.FORWARD_HIDE_SENDER.key,

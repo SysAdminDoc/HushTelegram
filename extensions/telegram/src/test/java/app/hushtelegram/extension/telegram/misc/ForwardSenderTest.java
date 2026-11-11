@@ -52,6 +52,31 @@ public class ForwardSenderTest {
         assertTrue(ForwardSender.hides(false, 36));
     }
 
+    @Test public void thePickersOwnForwardsGoWithoutTheSenderExceptToSavedMessages() {
+        ArrayList<Object> messages = new ArrayList<>(Collections.singletonList(new Object()));
+        // Off, a send keeps Telegram's own flag.
+        assertFalse(ForwardSender.picked(messages, 5L, 0));
+        assertTrue(ForwardSender.picked(messages, 5L, 1));
+        Settings.FORWARD_HIDE_SENDER.save(true);
+        assertTrue(ForwardSender.picked(messages, 5L, 0));
+        assertTrue(ForwardSender.picked(messages, 5L, 1));
+        // The unpatched stub gives account ID 0, so chat 0 stands for Saved Messages here.
+        assertFalse(ForwardSender.picked(messages, 0L, 0));
+        assertFalse(ForwardSender.picked(new ArrayList<>(), 5L, 0));
+        assertFalse(ForwardSender.picked(null, 5L, 0));
+        assertTrue(String.join("\n", HookStatus.report()).contains("sender hidden 1"));
+    }
+
+    @Test public void aShareSheetWithNothingForwardedIsLeftAlone() {
+        Settings.FORWARD_HIDE_SENDER.save(true);
+        // The unpatched stub holds no messages, the way a sheet sharing a link does.
+        ForwardSender.shares(new Object());
+        ForwardSender.sharePopup(new Object(), new Object());
+        String report = String.join("\n", HookStatus.report());
+        assertFalse(report, report.contains("threw"));
+        assertFalse(report, report.contains("sender hidden"));
+    }
+
     @Test public void pausingAnEarlyStartOrAnUnreadableSwitchKeepsTheSender() {
         Settings.FORWARD_HIDE_SENDER.save(true);
         for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {

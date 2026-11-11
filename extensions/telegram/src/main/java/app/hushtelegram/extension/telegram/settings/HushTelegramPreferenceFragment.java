@@ -739,7 +739,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (build.contains(PatchFamily.FORWARD_HIDE_SENDER)) {
             on(pages, PatchFamily.FORWARD_HIDE_SENDER).addPreference(toggle(context, Settings.FORWARD_HIDE_SENDER, L10n.t("Hide sender names when forwarding"),
                     PatchFamily.FORWARD_HIDE_SENDER.coverageSummary(L10n.t("Each new forward starts with Hide sender's name turned on, so copies arrive "
-                            + "without the original author. You can still turn it off before sending."))));
+                            + "without the original author, even when you pick several chats at once. You can still turn it off in the "
+                            + "forward preview, or by holding the send button in the Share sheet. Forwards to Saved Messages keep the sender."))));
         }
         if (build.contains(PatchFamily.REAR_CAMERA_FIRST)) {
             on(pages, PatchFamily.REAR_CAMERA_FIRST).addPreference(toggle(context, Settings.REAR_CAMERA_FIRST, L10n.t("Start the camera on the rear lens"),

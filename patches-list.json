@@ -2286,7 +2286,7 @@
     },
     {
       "name": "Hide sender names when forwarding",
-      "description": "Turns on Telegram's Hide sender's name option each time you forward, so copies arrive without the original author. You can turn it off before sending. Starts off. Turn it on in HushTelegram settings > Conversations.",
+      "description": "Turns on Telegram's Hide sender's name option each time you forward, from the forward preview, the Share sheet or the chat picker when you pick several chats, so copies arrive without the original author. You can still turn it off in the preview or the Share sheet's send menu. Forwards to Saved Messages keep the sender. Starts off. Turn it on in HushTelegram settings > Conversations.",
       "category": "Conversations",
       "use": true,
       "dependencies": [

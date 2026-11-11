@@ -28,6 +28,7 @@ Every HushTelegram release, newest first.
 
 ### Fixed
 
+* **Telegram:** **Hide sender names when forwarding** covers the Share sheet now, and forwards to several chats at once, which still went out with the original author (#70). The Share sheet's send menu starts on Hide sender's name, and you can switch it back there. Forwards to Saved Messages keep the sender.
 * **Telegram:** With **Turn videos only from the full screen button** on, a video you put in full screen with the button stays sideways on 13.2 instead of standing back up as soon as you turn the phone (#27).
 * **Telegram:** **Save to Downloads** in the message menu saves every photo of an album, not just the one you long-pressed (#46).
 * **Telegram:** **Save downloaded files** no longer logs an error in its diagnostics whenever a profile photo or a sticker finishes downloading (#27).
