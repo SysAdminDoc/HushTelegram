@@ -89,17 +89,28 @@ class CropGuardFixtureTest {
                 stockBody[it].opcode == Opcode.IPUT_OBJECT && stockBody[it].controlRef() == sites.viewCrop &&
                     stockBody[it].namedRegisters() == listOf(cropArgument, sites.viewState)
             })
+            // The cropped drawing and stickers go to the viewer the same way, straight off the photo's state.
+            for ((field, view) in listOf(CROPPED_PAINT_PATH to sites.viewPaint, CROPPED_ENTITIES to sites.viewEntities)) {
+                assertEquals("$name: $field handed to the viewer", 1, (cropRead + 1 until sites.bake).count {
+                    stockBody[it].opcode == Opcode.IPUT_OBJECT && stockBody[it].controlRef() == view &&
+                        stockBody[it - 1].controlRef() == field && stockBody[it - 1].namedRegisters()[1] == sites.photoState &&
+                        stockBody[it].namedRegisters() == listOf(stockBody[it - 1].namedRegisters()[0], sites.viewState)
+                })
+            }
             assertNotEquals("$name: viewer kept", sites.viewState, bakeScratch)
             assertNotEquals("$name: photo state kept", sites.photoState, bakeScratch)
             assertEquals("$name: crops cleared",
-                listOf(listOf(bakeScratch), listOf(bakeScratch, sites.photoState), listOf(bakeScratch, sites.viewState)),
-                after.subList(bake + 5, bake + 8).map { it.namedRegisters() })
+                listOf(listOf(bakeScratch)) + List(4) { listOf(bakeScratch, sites.photoState) } + List(3) { listOf(bakeScratch, sites.viewState) },
+                after.subList(bake + 5, bake + 13).map { it.namedRegisters() })
             assertEquals(0L, (after[bake + 5] as WideLiteralInstruction).wideLiteral)
-            assertEquals(listOf(CROP_STATE_WRITE, sites.viewCrop), after.subList(bake + 6, bake + 8).map { it.controlRef() })
+            assertEquals(listOf(CROP_STATE_WRITE, CROPPED_PAINT_PATH, CROPPED_ENTITIES, IS_CROPPED, sites.viewCrop, sites.viewPaint, sites.viewEntities),
+                after.subList(bake + 6, bake + 13).map { it.controlRef() })
 
             val flow = ControlFlow.of(sites.apply).normal
             for (branch in listOf(entry + 1, entry + 7)) assertEquals("$name: photo check $branch", setOf(branch + 1, entry + 9), flow[branch].toSet())
-            for (branch in listOf(bake + 1, bake + 4)) assertEquals("$name: copy check $branch", setOf(branch + 1, bake + 9), flow[branch].toSet())
+            for (branch in listOf(bake + 1, bake + 4)) {
+                assertEquals("$name: copy check $branch", setOf(branch + 1, bake + BAKE_SHAPE.size - 1), flow[branch].toSet())
+            }
             assertKept("$name apply", apply, sites.apply, setOf(0) + (entry until entry + ENTRY_SHAPE.size) + (bake until bake + BAKE_SHAPE.size),
                 landsOn = mapOf(sites.entry to entry, sites.bake + 2 to bake))
 
@@ -181,7 +192,8 @@ class CropGuardFixtureTest {
         )
         val BAKE_SHAPE = listOf(
             Opcode.IGET_BOOLEAN, Opcode.IF_NEZ, Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT, Opcode.IF_EQZ,
-            Opcode.CONST_4, Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.RETURN_VOID, Opcode.NOP,
+            Opcode.CONST_4, Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.IPUT_BOOLEAN,
+            Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.RETURN_VOID, Opcode.NOP,
         )
         val HELD_SHAPE = listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.RETURN_VOID)
     }

@@ -57,6 +57,9 @@ private const val CROP_STATE = "Lorg/telegram/messenger/MediaController\$CropSta
 private const val EDIT_STATE = "Lorg/telegram/messenger/MediaController\$MediaEditState;"
 internal const val CROP_STATE_WRITE = "$EDIT_STATE->cropState:$CROP_STATE"
 internal const val PAINT_PATH = "$EDIT_STATE->paintPath:Ljava/lang/String;"
+internal const val CROPPED_PAINT_PATH = "$EDIT_STATE->croppedPaintPath:Ljava/lang/String;"
+internal const val CROPPED_ENTITIES = "$EDIT_STATE->croppedMediaEntities:Ljava/util/ArrayList;"
+internal const val IS_CROPPED = "$EDIT_STATE->isCropped:Z"
 internal const val GET_BITMAP = "Lorg/telegram/messenger/ImageReceiver;->getBitmap()$BITMAP"
 internal val CROPPED_BITMAP_PARAMETERS = listOf(BITMAP, CROP_STATE, "[I", "Z")
 internal val SEND_PRESSED_PARAMETERS = listOf("Z", "I", "I", "Z", "Z", "Z")
@@ -98,9 +101,11 @@ val cropGuardPatch = bytecodePatch(
  * Videos are cropped by the encoder when they're sent, so both checks leave them alone.
  *
  * A failure at [bake] comes after Telegram has deleted the photo's earlier edited copy and handed the
- * new crop to the photo's edit state and the viewer's ([photoState], [viewState]). The check takes
- * the crop back off both, so the photo reads as uncropped, the way it would now be sent. The editor
- * is still open, and the next Done runs the crop again from the start.
+ * new crop, with the drawing and stickers cropped to it, to the photo's edit state and the viewer's
+ * ([photoState], [viewState]). The check takes all of that back off both and clears the photo's
+ * cropped flag, which an earlier crop may have left set, so the photo reads as uncropped, the way it
+ * would now be sent, even when the editor is cancelled next. The editor is still open, and the next
+ * Done runs the crop again from the start.
  */
 internal class CropGuardSites(
     val apply: MutableMethod,
@@ -115,6 +120,8 @@ internal class CropGuardSites(
     val photoState: Int,
     val viewState: Int,
     val viewCrop: String,
+    val viewPaint: String,
+    val viewEntities: String,
     val video: String,
     val photo: String,
     val doneAt: Int,
@@ -132,7 +139,12 @@ internal class CropGuardSites(
             if-eqz v$bakeFree, :hush_baked
             const/4 v$bakeFree, 0x0
             iput-object v$bakeFree, v$photoState, $CROP_STATE_WRITE
+            iput-object v$bakeFree, v$photoState, $CROPPED_PAINT_PATH
+            iput-object v$bakeFree, v$photoState, $CROPPED_ENTITIES
+            iput-boolean v$bakeFree, v$photoState, $IS_CROPPED
             iput-object v$bakeFree, v$viewState, $viewCrop
+            iput-object v$bakeFree, v$viewState, $viewPaint
+            iput-object v$bakeFree, v$viewState, $viewEntities
             return-void
             :hush_baked
             nop
@@ -238,6 +250,16 @@ internal fun BytecodePatchContext.resolveCropGuard(): CropGuardSites {
         (cropRead + 1..bake + 2).all { at ->
             flow.normal.indices.filter { at in flow.normal[it] || at in flow.exceptional[it] } == listOf(at - 1)
         }, "the photo editor's edit states may change between its crop read and its cropped copy")
+    // The drawing and stickers cropped with the photo go to the viewer's state next to the crop.
+    val viewCopy = { field: String, what: String ->
+        (cropRead + 1 until bake).filter { at ->
+            body[at].opcode == Opcode.IPUT_OBJECT && (body[at] as TwoRegisterInstruction).registerB == viewState &&
+                body[at - 1].opcode == Opcode.IGET_OBJECT && body[at - 1].controlRef() == field && body[at - 1].reads(photoState) &&
+                (body[at - 1] as OneRegisterInstruction).registerA == (body[at] as OneRegisterInstruction).registerA
+        }.controlSingle(what).let { body[it].controlRef()!! }
+    }
+    val viewPaint = viewCopy(CROPPED_PAINT_PATH, "the viewer's copy of the photo's cropped drawing")
+    val viewEntities = viewCopy(CROPPED_ENTITIES, "the viewer's copy of the photo's cropped stickers")
 
     val applyRef = "$CROP_VIEWER->${apply.origName}()V"
     val doneSites = mutableListOf<Triple<ClassDef, Method, Int>>()
@@ -274,7 +296,7 @@ internal fun BytecodePatchContext.resolveCropGuard(): CropGuardSites {
         // The check reads the copy and both edit states after its scratch register is written, so none can share it.
         bake, apply.freeLocalsAt("Never send an uncropped photo", bake + 2, 4).first { it != cropped && it != viewState && it != photoState },
         cropped,
-        photoState, viewState, body[viewShare].controlRef()!!,
+        photoState, viewState, body[viewShare].controlRef()!!, viewPaint, viewEntities,
         body[video].controlRef()!!, photo,
         doneCall + 1, done.freeLocalsAt("Never send an uncropped photo", doneCall + 1, 1, highest = 255).single(),
         sendCall + 1, send.freeLocalsAt("Never send an uncropped photo", sendCall + 1, 1, highest = 255).single(),
