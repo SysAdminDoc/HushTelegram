@@ -55,7 +55,7 @@ internal const val CROP_VIEWER = "Lorg/telegram/ui/PhotoViewer;"
 internal const val CROP_AREA_VIEW = "Lorg/telegram/ui/Components/Crop/CropAreaView;"
 private const val BITMAP = "Landroid/graphics/Bitmap;"
 private const val CROP_STATE = "Lorg/telegram/messenger/MediaController\$CropState;"
-private const val EDIT_STATE = "Lorg/telegram/messenger/MediaController\$MediaEditState;"
+internal const val EDIT_STATE = "Lorg/telegram/messenger/MediaController\$MediaEditState;"
 internal const val CROP_STATE_WRITE = "$EDIT_STATE->cropState:$CROP_STATE"
 internal const val PAINT_PATH = "$EDIT_STATE->paintPath:Ljava/lang/String;"
 internal const val CROPPED_PAINT_PATH = "$EDIT_STATE->croppedPaintPath:Ljava/lang/String;"
@@ -63,6 +63,7 @@ internal const val CROPPED_ENTITIES = "$EDIT_STATE->croppedMediaEntities:Ljava/u
 internal const val IS_CROPPED = "$EDIT_STATE->isCropped:Z"
 internal const val IS_LIVE_PHOTO = "$EDIT_STATE->isLivePhoto()Z"
 internal const val GET_BITMAP = "Lorg/telegram/messenger/ImageReceiver;->getBitmap()$BITMAP"
+internal const val LOAD_BITMAP = "Lorg/telegram/messenger/ImageLoader;->loadBitmap(Ljava/lang/String;Landroid/net/Uri;FFZ)$BITMAP"
 internal val CROPPED_BITMAP_PARAMETERS = listOf(BITMAP, CROP_STATE, "[I", "Z")
 internal val SEND_PRESSED_PARAMETERS = listOf("Z", "I", "I", "Z", "Z", "Z")
 
@@ -102,8 +103,10 @@ val cropGuardPatch = bytecodePatch(
  * right after their call to it ([doneAt], [sendAt]), keep the editor open instead of going on.
  * Videos are cropped by the encoder when they're sent, so both checks leave them alone. The viewer
  * counts a live photo as a video too, but its still goes out as the cropped copy the way a photo's
- * does, so the copy check covers it. The photo check doesn't need to: a live photo's still is read
- * from its file right there, not from the viewer's photo that may still be loading.
+ * does, so the copy check covers it. The photo check doesn't, since a live photo's still isn't the
+ * viewer's photo: it's read from its file after the crop is set, from the filter's copy or the
+ * photo's own path ([reads]). A read that comes back empty fails there, for a live photo only, and
+ * Telegram returns without a copy as it does for a missing photo.
  *
  * A failure at [bake] comes after Telegram has deleted the photo's earlier edited copy and handed the
  * new crop, with the drawing and stickers cropped to it, to the photo's edit state and the viewer's
@@ -120,6 +123,7 @@ internal class CropGuardSites(
     val self: Int,
     val entry: Int,
     val entryFree: Int,
+    val reads: List<StillRead>,
     val bake: Int,
     val bakeFree: Int,
     val cropped: Int,
@@ -161,6 +165,15 @@ internal class CropGuardSites(
             :hush_baked
             nop
         """)
+        for (read in reads.sortedByDescending { it.at }) apply.addInstructionsAtControlFlowLabel(read.at, """
+            if-nez v${read.still}, :hush_read
+            invoke-virtual {v${read.owner}}, $IS_LIVE_PHOTO
+            move-result v${read.free}
+            if-eqz v${read.free}, :hush_read
+            invoke-static/range {v${read.still} .. v${read.still}}, $CROP_GUARD_MISSING
+            :hush_read
+            nop
+        """)
         apply.addInstructionsAtControlFlowLabel(entry, """
             iget-boolean v$entryFree, v$self, $video
             if-nez v$entryFree, :hush_crop
@@ -187,6 +200,13 @@ internal class CropGuardSites(
         return-void
     """, ExternalLabel("hush_keep", method.getInstruction(index)))
 }
+
+/**
+ * A read of a live photo's still in applyCurrentEditMode's video branch. The check goes in front of
+ * instruction [at], right after the read's result lands in [still]; [owner] holds the edit state
+ * the file's path came off, and [free] is the check's scratch register.
+ */
+internal class StillRead(val at: Int, val still: Int, val owner: Int, val free: Int)
 
 internal fun BytecodePatchContext.resolveCropGuard(): CropGuardSites {
     requireStatusMethod("cropGuard")
@@ -240,11 +260,15 @@ internal fun BytecodePatchContext.resolveCropGuard(): CropGuardSites {
     }.controlSingle("the photo editor's is-a-video check")
     controlShape(body.any { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef() == IS_LIVE_PHOTO },
         "the photo editor no longer tells a live photo from a video")
+    // A live photo's still is read from its file in the video branch: the filter's copy, else the photo's own path.
+    val reads = (makeCrop + 1 until bitmap).filter { body[it].controlRef() == LOAD_BITMAP }.map { apply.stillRead(body, flow, it) }
+    controlShape(reads.size == 2 && reads.all { it != null }, "the photo editor no longer reads a live photo's still from its file")
 
     val bake = body.indices.filter { at ->
         body[at].opcode in listOf(Opcode.INVOKE_STATIC, Opcode.INVOKE_STATIC_RANGE) && body[at].isCroppedBitmap() &&
             body.getOrNull(at + 1)?.opcode == Opcode.MOVE_RESULT_OBJECT && body.getOrNull(at + 2)?.controlRef() == PAINT_PATH
     }.controlSingle("the photo editor's cropped copy")
+    controlShape(bake > bitmap, "the photo editor draws its cropped copy before reading the photo")
     controlShape(flow.normal.indices.filter { bake + 2 in flow.normal[it] || bake + 2 in flow.exceptional[it] } == listOf(bake + 1),
         "something jumps past the photo editor's cropped copy")
     val cropped = (body[bake + 1] as OneRegisterInstruction).registerA
@@ -308,6 +332,7 @@ internal fun BytecodePatchContext.resolveCropGuard(): CropGuardSites {
     return CropGuardSites(
         apply, done, send, self,
         entry!!, apply.freeLocalsAt("Never send an uncropped photo", entry, 1).single(),
+        reads.filterNotNull(),
         // The check reads the copy and both edit states after its scratch register is written, so none can share it.
         bake, apply.freeLocalsAt("Never send an uncropped photo", bake + 2, 4).first { it != cropped && it != viewState && it != photoState },
         cropped,
@@ -316,6 +341,30 @@ internal fun BytecodePatchContext.resolveCropGuard(): CropGuardSites {
         doneCall + 1, done.freeLocalsAt("Never send an uncropped photo", doneCall + 1, 1, highest = 255).single(),
         sendCall + 1, send.freeLocalsAt("Never send an uncropped photo", sendCall + 1, 1, highest = 255).single(),
     )
+}
+
+/**
+ * The still read at [at], or null unless its path comes straight off an edit state: a field of it or
+ * a call on it, with nothing jumping in and nothing writing that register before the result lands.
+ */
+private fun MutableMethod.stillRead(body: List<Instruction>, flow: ControlFlow, at: Int): StillRead? {
+    val call = body[at] as? FiveRegisterInstruction ?: return null
+    if (body.getOrNull(at + 1)?.opcode != Opcode.MOVE_RESULT_OBJECT) return null
+    val written = (0 until at).lastOrNull { body[it].writes(call.registerC) } ?: return null
+    val fromState = { ref: String? -> ref?.startsWith("$EDIT_STATE->") == true }
+    val (from, owner) = when {
+        body[written].opcode == Opcode.IGET_OBJECT && fromState(body[written].controlRef()) ->
+            written to (body[written] as TwoRegisterInstruction).registerB
+        body[written].opcode == Opcode.MOVE_RESULT_OBJECT && body[written - 1].opcode == Opcode.INVOKE_VIRTUAL &&
+            (body[written - 1] as FiveRegisterInstruction).registerCount == 1 &&
+            fromState(body[written - 1].controlRef()) && body[written - 1].controlRef()!!.endsWith("()Ljava/lang/String;") ->
+            written - 1 to (body[written - 1] as FiveRegisterInstruction).registerC
+        else -> return null
+    }
+    val straight = (from + 1..at + 2).all { x -> flow.normal.indices.filter { x in flow.normal[it] || x in flow.exceptional[it] } == listOf(x - 1) }
+    if (!straight || (written..at + 1).any { body[it].writes(owner) }) return null
+    val still = (body[at + 1] as OneRegisterInstruction).registerA
+    return StillRead(at + 2, still, owner, freeLocalsAt("Never send an uncropped photo", at + 2, 3).first { it != still && it != owner })
 }
 
 /** applyCurrentEditMode: sets an edit state's crop, reads the shown photo and draws the cropped copy. */

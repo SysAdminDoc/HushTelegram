@@ -51,7 +51,7 @@ class CropGuardFixtureTest {
             assertEquals("$name: one begin", 1, after.count { it.controlRef() == CROP_GUARD_BEGIN })
 
             // The photo check, in front of the crop branch's first read and taking its jumps.
-            val entry = after.single { it.controlRef() == CROP_GUARD_MISSING }.let(after::indexOf) - 5
+            val entry = after.indices.single { after[it].controlRef() == CROP_GUARD_MISSING && after[it - 2].controlRef() == GET_BITMAP } - 5
             assertEquals("$name: photo check", ENTRY_SHAPE, after.subList(entry, entry + ENTRY_SHAPE.size).map { it.opcode })
             val photoScratch = after[entry].namedRegisters().first()
             assertNotEquals("$name: photo check keeps this", self, photoScratch)
@@ -62,6 +62,33 @@ class CropGuardFixtureTest {
             assertEquals("$name: reads the shown photo", sites.photo, after[entry + 2].controlRef())
             assertEquals(GET_BITMAP, after[entry + 3].controlRef())
             assertEquals("$name: stock read after the check", apply.controlBody()[sites.entry].origRef(), after[entry + 10].origRef())
+
+            // A live photo's still is read from the filter's copy, else its own path; each read is checked as it lands.
+            val reads = after.indices.filter { after[it].controlRef() == CROP_GUARD_MISSING && after[it - 3].controlRef() == IS_LIVE_PHOTO }.map { it - 4 }
+            assertEquals("$name: both still reads checked", 2, reads.size)
+            val pathFrom = reads.map { read ->
+                assertEquals("$name: still read $read", READ_SHAPE, after.subList(read, read + READ_SHAPE.size).map { it.opcode })
+                assertEquals(listOf(LOAD_BITMAP, null), after.subList(read - 2, read).map { it.controlRef() })
+                assertEquals(Opcode.MOVE_RESULT_OBJECT, after[read - 1].opcode)
+                val still = after[read - 1].namedRegisters().single()
+                val scratch = after[read + 2].namedRegisters().single()
+                assertEquals("$name: still read $read registers",
+                    listOf(listOf(still), listOf(sites.photoState), listOf(scratch), listOf(scratch), listOf(still)),
+                    after.subList(read, read + 5).map { it.namedRegisters() })
+                assertEquals("$name: still kept", false, scratch == still || scratch == sites.photoState)
+                assertEquals(Opcode.GOTO, kind(after[read + READ_SHAPE.size]))
+                // Where the read's path came from.
+                val path = after[read - 2].namedRegisters().first()
+                val written = (0 until read - 2).last { after[it].opcode.setsRegister() && after[it].namedRegisters().first() == path }
+                if (after[written].opcode == Opcode.IGET_OBJECT) after[written].controlRef() to after[written].namedRegisters()[1]
+                else after[written - 1].controlRef() to after[written - 1].namedRegisters().single()
+            }
+            assertEquals("$name: the filter's copy first", "$EDIT_STATE->filterPath:Ljava/lang/String;" to sites.photoState, pathFrom[0])
+            assertEquals("$name: then the photo's own path", sites.photoState, pathFrom[1].second)
+            assertEquals(true, pathFrom[1].first!!.let { it.startsWith("$EDIT_STATE->") && it.endsWith("()Ljava/lang/String;") })
+            assertEquals("$name: Telegram reads the photo's own path for a live photo", 1, (reads[0] + READ_SHAPE.size until reads[1]).count {
+                after[it].controlRef() == IS_LIVE_PHOTO && after[it].namedRegisters() == listOf(sites.photoState)
+            })
 
             // The copy check, between the copy's move-result and the paint path read.
             val bake = after.single { it.controlRef() == CROP_GUARD_NOT_MADE }.let(after::indexOf) - 5
@@ -117,8 +144,13 @@ class CropGuardFixtureTest {
             val baked = bake + BAKE_SHAPE.size - 1
             assertEquals("$name: a still photo goes to the copy check", setOf(bake + 2, bake + 5), flow[bake + 1].toSet())
             for (branch in listOf(bake + 4, bake + 7)) assertEquals("$name: copy check $branch", setOf(branch + 1, baked), flow[branch].toSet())
-            assertKept("$name apply", apply, sites.apply, setOf(0) + (entry until entry + ENTRY_SHAPE.size) + (bake until bake + BAKE_SHAPE.size),
-                landsOn = mapOf(sites.entry to entry, sites.bake + 2 to bake))
+            for (read in reads) {
+                assertEquals("$name: a still that loaded goes on $read", setOf(read + 1, read + 5), flow[read].toSet())
+                assertEquals("$name: a video's goes on $read", setOf(read + 4, read + 5), flow[read + 3].toSet())
+            }
+            assertKept("$name apply", apply, sites.apply, setOf(0) + (entry until entry + ENTRY_SHAPE.size) + (bake until bake + BAKE_SHAPE.size) +
+                reads.flatMap { it until it + READ_SHAPE.size },
+                landsOn = mapOf(sites.entry to entry, sites.bake + 2 to bake) + sites.reads.map { it.at }.sorted().zip(reads))
 
             // Done and Send hold right after their apply call; a jump past it still lands on the stock code.
             for ((stock, patched, next) in listOf(Triple(done, sites.done, sites.doneAt), Triple(send, sites.send, sites.sendAt))) {
@@ -201,6 +233,9 @@ class CropGuardFixtureTest {
             Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.IGET_OBJECT, Opcode.INVOKE_STATIC_RANGE,
             Opcode.CONST_4, Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.IPUT_BOOLEAN,
             Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.RETURN_VOID, Opcode.NOP,
+        )
+        val READ_SHAPE = listOf(
+            Opcode.IF_NEZ, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.INVOKE_STATIC_RANGE, Opcode.NOP,
         )
         val HELD_SHAPE = listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.RETURN_VOID)
     }
