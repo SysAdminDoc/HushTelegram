@@ -393,7 +393,11 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/CaptionOrder.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/caption/**",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ProxyMenu.java",
-        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/proxymenu/**"
+        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/proxymenu/**",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FreeProxies.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FreeProxyTransport.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/TelegramProxies.java",
+        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/freeproxies/**"
       ],
       "origin": "original",
       "upstream": "https://github.com/SysAdminDoc/HushTelegram",

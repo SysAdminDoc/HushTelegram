@@ -45,13 +45,14 @@ class ExtensionHostsTest {
     }
 
     @Test
-    fun `only the release check and the two translators open a connection themselves`() {
+    fun `only the release check, the two translators and the free proxy finder open a connection themselves`() {
         val openers = sources().filter { (_, source) -> NETWORK.containsMatchIn(split(source).second) }
             .map { it.first }.filter { it != FIREBASE_HEADER }.toSortedSet()
         assertEquals(
             "The README says the extension goes online itself only to ask GitHub for the newest " +
-                "release and to send text the person turned on to Google's translate or the AI service they set " +
-                "up. These files open connections",
+                "release, to send text the person turned on to Google's translate or the AI service they set " +
+                "up, and for Free proxies to download a proxy list and time a connect to each proxy. These files " +
+                "open connections",
             TRANSPORTS.toSortedSet(),
             openers,
         )
@@ -93,6 +94,15 @@ class ExtensionHostsTest {
         val translator = sources().single { it.first == AI_TRANSLATOR }.second
         val hosts = split(translator).first.flatMap { literal -> URL.findAll(literal).map { it.groupValues[1] }.toList() }
         assertEquals(listOf("api.openai.com"), hosts)
+    }
+
+    @Test
+    fun `the free proxy finder downloads its lists from GitHub's raw files and jsDelivr over https only`() {
+        val finder = sources().single { it.first == FREE_PROXIES }.second
+        val literals = split(finder).first
+        val hosts = literals.flatMap { literal -> URL.findAll(literal).map { it.groupValues[1] }.toList() }.toSet()
+        assertEquals(setOf("raw.githubusercontent.com", "cdn.jsdelivr.net"), hosts)
+        assertFalse("a list address isn't https", literals.any { it.startsWith("http://") })
     }
 
     @Test
@@ -158,10 +168,11 @@ class ExtensionHostsTest {
          * Telegram's event logs: the phone itself, on a port nothing listens on.
          * translate.googleapis.com is Translate with an outside service, and api.openai.com is the
          * AI service's address until the person types another (the one they type isn't in the code).
-         * ko-fi.com is the Support HushTelegram row, opened in the browser.
+         * ko-fi.com is the Support HushTelegram row, opened in the browser. raw.githubusercontent.com
+         * and cdn.jsdelivr.net are where Free proxies downloads its public proxy lists.
          */
         val ALLOWED_HOSTS = setOf("github.com", "api.github.com", "gitlab.com", "www.gnu.org", "127.0.0.1",
-            "translate.googleapis.com", "api.openai.com", "ko-fi.com")
+            "translate.googleapis.com", "api.openai.com", "ko-fi.com", "raw.githubusercontent.com", "cdn.jsdelivr.net")
         const val RELEASE_CHECK =
             "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/ReleaseCheck.java"
         const val FIREBASE_HEADER =
@@ -170,11 +181,14 @@ class ExtensionHostsTest {
             "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/ReleaseTransport.java",
             TRANSLATOR,
             AI_TRANSLATOR,
+            "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FreeProxyTransport.java",
         )
         const val TRANSLATOR =
             "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/GoogleTranslate.java"
         const val AI_TRANSLATOR =
             "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/AiTranslate.java"
+        const val FREE_PROXIES =
+            "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FreeProxies.java"
         /** A host starts and ends with a letter or digit, so a sentence that ends in `https://.` names none. */
         val URL = Regex("""(?:https?|wss?)://([A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?)""")
         val NO_REDIRECTS = Regex("""\bsetInstanceFollowRedirects\s*\(\s*false\s*\)""")

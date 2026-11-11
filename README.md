@@ -72,6 +72,7 @@ A few descriptions are behind the app. Since 0.0.20, `Save downloaded files` has
 | `Disable pull to archive` | Stops pulling down the chat list from opening the hidden archive. Open it from Archived chats in the chat list's menu instead. Starts off. Turn it on in HushTelegram settings > Chat list, then restart Telegram. |
 | `Hide Contacts tab` | Removes the Contacts tab from the bar at the bottom of the main screen, and swiping doesn't open its page either. The Calls or Settings tab stays as Telegram has it, and the chat list's new message button still opens your contacts. A second switch, Compact bottom bar, makes that bar shorter and only as wide as its tabs need. A third, Side menu, brings back a menu that slides in when you swipe right on the chat list. All three start off. Turn them on in HushTelegram settings > Chat list. |
 | `Proxy in the chat list menu` | Keeps Proxy in the chat list's menu, which Telegram only shows while a proxy is on or where Telegram is blocked. Starts off. Turn it on in HushTelegram settings > Chat list. |
+| `Free proxies` | Downloads a public list of MTProto proxies, times them and keeps the 10 fastest in Telegram's proxy list, refreshed every 6 hours. Telegram connects through them unless you use a proxy of your own. The phone number screen also always has the proxy button, so you can add one before you sign in. Finding proxies starts off. Turn it on in HushTelegram settings > Chat list. |
 | `Test server sign-in` | Shows Telegram's Test Backend box on the sign-in screen for every new account. Tick it to sign that account in on Telegram's test servers, kept apart from your other accounts. Starts off. Turn it on in HushTelegram settings > Chat list. |
 | `Bot token sign-in` | Adds a Sign in with a bot token button to the phone number screen, so an account can sign in as a bot made with @BotFather. The bot sees a chat once someone messages it, without older history, contacts or stickers. Starts off. Turn it on in HushTelegram settings > Chat list. |
 | `Hide greeting stickers` | Hides the sticker that an empty private chat offers to send as a greeting. Starts off. Turn it on in HushTelegram settings > Conversations. |
@@ -177,10 +178,11 @@ A bare "ERROR" page usually goes away with your VPN or ad blocker off, in a priv
 
 ## Privacy
 
-HushTelegram collects nothing and has no server. It goes online by itself for two things, and both start off.
+HushTelegram collects nothing and has no server. It goes online by itself for three things, and all of them start off.
 
 - **The release check** asks `api.github.com` for the newest release at most once a day when Telegram starts, and when you tap **Check now**. It's a plain HTTPS request with no cookies and nothing about you. GitHub sees your IP address, like any site does.
 - **Translate with an outside service** sends a message you translate, or each message you open in a chat you turned it on for, to Google's web translate at `translate.googleapis.com`. Set up an AI service with your own key and the text goes to the address you typed instead, which starts out as `api.openai.com` and takes any service with OpenAI's chat format. The key stays out of backups, reports and logs, and neither service is followed through a redirect. A chat you turn on is on only in the Telegram account you turned it on in.
+- **Free proxies** downloads a public list of proxies from `raw.githubusercontent.com` (or its copy on `cdn.jsdelivr.net`) every 6 hours while it's on, and when you tap **Find free proxies now**. It then opens a plain connection to each proxy it tries, just to time it. Strangers run these proxies. Whoever runs the one Telegram connects through sees your IP address and when you use Telegram, though your messages stay encrypted. The switch never goes in a settings file.
 
 The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.org`, and Support HushTelegram links to `ko-fi.com`. They open in your browser only when you tap one. Diagnostic reports leave out API IDs and hashes, but read one before you share it.
 

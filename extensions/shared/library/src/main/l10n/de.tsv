@@ -1578,3 +1578,15 @@ Couldn't send read receipts	Lesebestätigungen nicht gesendet
 # context: Proxy in the chat list menu (#67). A switch on Chat list, off by default: the menu that opens from the top of the chat list (New Group, Saved Messages and so on) always gets Telegram's own Proxy row, which Telegram otherwise shows only while a proxy is on or where Telegram is blocked.
 Proxy in the chat list menu	Proxy im Chatlisten-Menü
 The menu at the top of the chat list always has Proxy, so your proxies are one tap away even where Telegram isn't blocked.	Das Menü oben in der Chatliste hat immer Proxy, so sind deine Proxys nur einen Tipp entfernt, auch wo Telegram nicht gesperrt ist.
+# context: Free proxies (#66), on Chat list. A switch, off by default, that every 6 hours downloads a public list of MTProto proxies, times a connect to each and puts the 10 fastest in Telegram's own proxy list. A row runs it now and says what the last try found. A second switch, on by default, keeps Telegram's proxy button on the phone number screen before sign-in.
+Free proxies	Kostenlose Proxys
+Every 6 hours, downloads a public list of proxies and adds the 10 fastest to Telegram's proxy list, and Telegram connects through them unless you use a proxy of your own. Whoever runs a proxy can see your IP address. Turning this off leaves them in the list.	Lädt alle 6 Stunden eine öffentliche Proxy-Liste herunter und fügt die 10 schnellsten zur Proxy-Liste von Telegram hinzu. Telegram verbindet sich über sie, außer du nutzt einen eigenen Proxy. Wer einen Proxy betreibt, kann deine IP-Adresse sehen. Schaltest du das aus, bleiben sie in der Liste.
+Find free proxies now	Jetzt kostenlose Proxys suchen
+Proxy button when signing in	Proxy-Schaltfläche bei der Anmeldung
+The phone number screen always has the proxy button, so you can add a proxy before you sign in.	Der Bildschirm für die Telefonnummer hat immer die Proxy-Schaltfläche, damit du vor der Anmeldung einen Proxy hinzufügen kannst.
+Looking for free proxies now.	Suche gerade nach kostenlosen Proxys.
+Downloads a public list of proxies now, times them and adds the fastest to Telegram's proxy list, even with the switch above off.	Lädt jetzt eine öffentliche Proxy-Liste herunter, misst die Proxys und fügt die schnellsten zur Proxy-Liste von Telegram hinzu, auch wenn der Schalter oben aus ist.
+Proxies added last time: %1$s. They're in Telegram's proxy list.	Beim letzten Mal hinzugefügte Proxys: %1$s. Sie sind in der Proxy-Liste von Telegram.
+Couldn't download a proxy list last time. Check your connection and try again.	Beim letzten Mal ließ sich keine Proxy-Liste herunterladen. Prüfe deine Verbindung und versuche es noch einmal.
+None of the listed proxies answered last time. Try again later.	Beim letzten Mal hat keiner der aufgeführten Proxys geantwortet. Versuche es später noch einmal.
+Telegram didn't take the proxies last time.	Telegram hat die Proxys beim letzten Mal nicht übernommen.

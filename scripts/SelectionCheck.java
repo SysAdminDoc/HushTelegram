@@ -496,6 +496,7 @@ public final class SelectionCheck {
         hook(calls, flags, "cropGuard", "misc/CropGuard", "begin", "missing", "notMade", "held");
         hook(calls, flags, "captionOrder", "misc/CaptionOrder", "before", "after");
         hook(calls, flags, "proxyMenu", "misc/ProxyMenu", "show");
+        hook(calls, flags, "freeProxies", "misc/FreeProxies", "signInButton");
         for (String[] bridge : List.of(
                 new String[]{"nativeTokenPresence", names.method("Lorg/telegram/messenger/SharedConfig;->hushTelegramTokenPresence()I")},
                 new String[]{"nativeAccountCounts", names.method("Lorg/telegram/messenger/UserConfig;->hushTelegramAccountCounts()I")})) {

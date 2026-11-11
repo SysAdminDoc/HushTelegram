@@ -141,6 +141,7 @@ body:
         - Never send an uncropped photo
         - Keep captions with their photos
         - Proxy in the chat list menu
+        - Free proxies
         - HushTelegram settings
     validations:
       required: true

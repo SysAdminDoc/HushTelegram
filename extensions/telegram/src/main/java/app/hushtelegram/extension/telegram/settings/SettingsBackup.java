@@ -71,7 +71,8 @@ import app.hushtelegram.extension.telegram.misc.TranslateTarget;
  * preference commit. A file that is too large, isn't JSON, names something twice, holds a value of
  * the wrong type or comes from a newer version changes nothing.
  * <p>The release check stays out of the file: it puts the phone online, so it's switched on
- * from the phone's own screen, never by a file. So does Folders by chat type: flipping it makes or
+ * from the phone's own screen, never by a file. Free proxies stays out for the same reason, and
+ * it connects Telegram through strangers' proxies besides. So does Folders by chat type: flipping it makes or
  * removes folders on your account, and an import would flip it without doing either.
  * The chats picked under Hide picked chats stay out too, though the switch goes in: they name the
  * account and the chats someone chose to hide, and settings files get passed around to help others.
@@ -255,7 +256,8 @@ public final class SettingsBackup {
             Settings.AUTO_FORWARDING,
             Settings.CROP_GUARD,
             Settings.CAPTION_ORDER,
-            Settings.PROXY_MENU));
+            Settings.PROXY_MENU,
+            Settings.SIGN_IN_PROXY));
 
     /**
      * The text a file carries besides the switches: the message filters, each list as a JSON array

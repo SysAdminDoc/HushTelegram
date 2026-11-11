@@ -555,6 +555,22 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_proxy_menu", FALSE);
 
     /**
+     * Every six hours, a public list of MTProto proxies is downloaded and the fastest ten go in
+     * Telegram's proxy list, and Telegram connects through them unless a proxy of your own is in
+     * use (#66). Off by default, since it goes online and a proxy's operator sees your address.
+     */
+    public static final BooleanSetting FREE_PROXIES =
+            new BooleanSetting("hushtelegram_free_proxies", FALSE);
+
+    /**
+     * The phone number screen always shows Telegram's proxy button, which it otherwise keeps for
+     * countries where Telegram is blocked, so a proxy can be set before signing in (#66). On by
+     * default.
+     */
+    public static final BooleanSetting SIGN_IN_PROXY =
+            new BooleanSetting("hushtelegram_sign_in_proxy", TRUE);
+
+    /**
      * Translate a message or a whole chat with Google's web translate, beside Telegram's own Premium
      * translation. Off by default, and nothing leaves the phone until a chat or message is turned on.
      */

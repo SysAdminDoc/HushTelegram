@@ -1202,6 +1202,63 @@
       "options": []
     },
     {
+      "name": "Free proxies",
+      "description": "Downloads a public list of MTProto proxies, times them and keeps the 10 fastest in Telegram's proxy list, refreshed every 6 hours. Telegram connects through them unless you use a proxy of your own. The phone number screen also always has the proxy button, so you can add one before you sign in. Finding proxies starts off. Turn it on in HushTelegram settings > Chat list.",
+      "category": "Chats",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushTelegram settings"
+      ],
+      "compatiblePackages": {
+        "org.telegram.messenger": [
+          "13.2.1"
+        ],
+        "org.telegram.messenger.web": [
+          "13.2.1"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Telegram",
+          "packageName": "org.telegram.messenger",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.2.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 72911
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telegram (telegram.org)",
+          "packageName": "org.telegram.messenger.web",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.2.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 72919
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Gallery camera on tap",
       "description": "Keeps the attachment gallery from starting the camera or asking for camera access when it opens. The camera starts when you tap its tile. Starts off. Turn it on in HushTelegram settings > Privacy.",
       "category": "Privacy",

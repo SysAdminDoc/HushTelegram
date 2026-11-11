@@ -94,6 +94,7 @@ public final class FamilyNames {
     public static final String CROP_GUARD = "Never send an uncropped photo";
     public static final String CAPTION_ORDER = "Keep captions with their photos";
     public static final String PROXY_MENU = "Proxy in the chat list menu";
+    public static final String FREE_PROXIES = "Free proxies";
 
     private FamilyNames() {
     }

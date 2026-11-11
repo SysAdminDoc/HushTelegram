@@ -200,6 +200,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.CROP_GUARD, "Never send an uncropped photo");
         ROW_TITLES.put(PatchFamily.CAPTION_ORDER, "Keep captions with their photos");
         ROW_TITLES.put(PatchFamily.PROXY_MENU, "Proxy in the chat list menu");
+        ROW_TITLES.put(PatchFamily.FREE_PROXIES, "Free proxies");
     }
 
     /** The sections every build has, in the order they're drawn. */

@@ -91,6 +91,7 @@ import app.hushtelegram.extension.telegram.misc.ChatTypeFolders;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.FirebasePush;
 import app.hushtelegram.extension.telegram.misc.FolderIcons;
+import app.hushtelegram.extension.telegram.misc.FreeProxies;
 import app.hushtelegram.extension.telegram.misc.GalleryFolder;
 import app.hushtelegram.extension.telegram.misc.HiddenAccounts;
 import app.hushtelegram.extension.telegram.misc.HiddenChats;
@@ -117,7 +118,7 @@ import app.hushtelegram.extension.telegram.misc.UnifiedPush;
  */
 @SuppressWarnings("deprecation")
 public final class HushTelegramPreferenceFragment extends AbstractPreferenceFragment
-        implements ReleaseCheck.Listener {
+        implements ReleaseCheck.Listener, FreeProxies.Listener {
     /** The repository as a link, and as a person reads it. ExtensionHostsTest reads the link. */
     static final String SOURCE_URL = "https://github.com/SysAdminDoc/HushTelegram";
     static final String SOURCE_ADDRESS = SOURCE_URL.substring(SOURCE_URL.indexOf("://") + 3);
@@ -130,6 +131,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String STAYS_WHILE_PAUSED = "Stays in while paused";
     /** The Check now row's key. It stores nothing: no setting has this name. */
     static final String CHECK_NOW = "action_check_for_release";
+    static final String FIND_PROXIES_NOW = "action_find_free_proxies";
     /** The Supported links row's key. It stores nothing either. */
     static final String SUPPORTED_LINKS = "action_supported_links";
     /** The Clear kept messages row's key, which stores nothing. */
@@ -163,6 +165,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     /** The row that asks GitHub for the newest release now, and says what the last try found. */
     @Nullable
     private Preference checkNowRow;
+
+    /** The row that looks for free proxies now, and says what the last try found. */
+    @Nullable
+    private Preference findProxiesRow;
 
     @Nullable
     private Preference localNotificationStatus;
@@ -266,6 +272,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         for (Dialog dialog : new ArrayList<>(shownDialogs)) dialog.dismiss();
         shownDialogs.clear();
         ReleaseCheck.unwatch(this);
+        FreeProxies.unwatch(this);
         if (navigation != null) navigation.close();
         navigation = null;
         super.onDestroyView();
@@ -278,6 +285,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (context == null) return;
         if (statusCard != null) showStatus(statusCard, context);
         if (checkNowRow != null) checkNowRow.setSummary(ReleaseCheck.checkNowSummary());
+    }
+
+    /** A free proxy try ended: the Find free proxies now row says what it found. */
+    @Override
+    public void freeProxiesFinished() {
+        if (getContext() == null) return;
+        if (findProxiesRow != null) findProxiesRow.setSummary(FreeProxies.summary());
     }
 
     /**
@@ -670,6 +684,19 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.PROXY_MENU).addPreference(toggle(context, Settings.PROXY_MENU, L10n.t("Proxy in the chat list menu"),
                     PatchFamily.PROXY_MENU.coverageSummary(L10n.t("The menu at the top of the chat list always has Proxy, so your "
                             + "proxies are one tap away even where Telegram isn't blocked."))));
+        }
+        if (build.contains(PatchFamily.FREE_PROXIES)) {
+            PreferenceGroup proxies = on(pages, PatchFamily.FREE_PROXIES);
+            proxies.addPreference(toggle(context, Settings.FREE_PROXIES, L10n.t("Free proxies"),
+                    PatchFamily.FREE_PROXIES.coverageSummary(L10n.t("Every 6 hours, downloads a public list of proxies and "
+                            + "adds the 10 fastest to Telegram's proxy list, and Telegram connects through them unless "
+                            + "you use a proxy of your own. Whoever runs a proxy can see your IP address. Turning this "
+                            + "off leaves them in the list."))));
+            proxies.addPreference(findProxiesRow(context));
+            proxies.addPreference(toggle(context, Settings.SIGN_IN_PROXY, L10n.t("Proxy button when signing in"),
+                    PatchFamily.FREE_PROXIES.coverageSummary(L10n.t("The phone number screen always has the proxy "
+                            + "button, so you can add a proxy before you sign in."))));
+            FreeProxies.watch(this);
         }
         if (build.contains(PatchFamily.TEST_SERVER_SIGN_IN)) {
             on(pages, PatchFamily.TEST_SERVER_SIGN_IN).addPreference(toggle(context, Settings.TEST_SERVER_SIGN_IN, L10n.t("Test server sign-in"),
@@ -1585,6 +1612,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 L10n.t("Settings look")));
         if (build.contains(PatchFamily.UNIFIED_PUSH)) leftOut.add(L10n.t("UnifiedPush notifications"));
         if (build.contains(PatchFamily.CHAT_TYPE_FOLDERS)) leftOut.add(L10n.t("Folders by chat type"));
+        if (build.contains(PatchFamily.FREE_PROXIES)) leftOut.add(L10n.t("Free proxies"));
         if (build.contains(PatchFamily.OUTSIDE_TRANSLATE)) {
             leftOut.add(L10n.t("the translation service, its key and the chats you turned translation on for"));
         }
@@ -1939,6 +1967,26 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             return true;
         });
         checkNowRow = row;
+        return row;
+    }
+
+    /**
+     * Looks for free proxies now, and says what the last try found. The tap asks for that one try,
+     * so it runs with the Free proxies switch off too, and only adds them to the list then.
+     */
+    private Preference findProxiesRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(FIND_PROXIES_NOW);
+        row.setTitle(L10n.t("Find free proxies now"));
+        row.setPersistent(false);
+        row.actsAtOnce = true;
+        row.setSummary(FreeProxies.summary());
+        row.setOnPreferenceClickListener(p -> {
+            if (!FreeProxies.findNow()) Utils.showToastLong(L10n.t("Couldn't start that. Try again in a moment."));
+            p.setSummary(FreeProxies.summary());
+            return true;
+        });
+        findProxiesRow = row;
         return row;
     }
 
