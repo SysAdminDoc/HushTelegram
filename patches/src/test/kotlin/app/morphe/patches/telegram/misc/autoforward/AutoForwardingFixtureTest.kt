@@ -36,7 +36,7 @@ class AutoForwardingFixtureTest {
         "Lorg/telegram/messenger/UserConfig;", "Lorg/telegram/messenger/MessagesController;", "Lorg/telegram/tgnet/TLRPC\$Dialog;",
         "Lorg/telegram/messenger/DialogObject;", "Lorg/telegram/messenger/SendMessagesHelper;",
         "Lorg/telegram/tgnet/TLRPC\$MessageFwdHeader;", "Lorg/telegram/tgnet/TLRPC\$Peer;", "Lorg/telegram/tgnet/TLRPC\$Chat;",
-        "Lorg/telegram/messenger/ChatObject;",
+        "Lorg/telegram/messenger/ChatObject;", "Lorg/telegram/messenger/UserObject;", "Lorg/telegram/tgnet/TLRPC\$User;",
     )
 
     @Test
@@ -76,10 +76,19 @@ class AutoForwardingFixtureTest {
                 "Lorg/telegram/tgnet/TLRPC\$MessageFwdHeader;->from_id:Lorg/telegram/tgnet/TLRPC\$Peer;",
                 "Lorg/telegram/messenger/MessageObject;->getPeerId(Lorg/telegram/tgnet/TLRPC\$Peer;)J")))
             assertTrue("$name: folder", "Lorg/telegram/messenger/DialogObject;->isFolderDialogId(J)Z" in refs("folder"))
+            assertTrue("$name: date", "Lorg/telegram/tgnet/TLRPC\$Message;->date:I" in refs("date"))
+            assertTrue("$name: originDate", refs("originDate").containsAll(listOf(
+                "Lorg/telegram/tgnet/TLRPC\$Message;->fwd_from:Lorg/telegram/tgnet/TLRPC\$MessageFwdHeader;",
+                "Lorg/telegram/tgnet/TLRPC\$MessageFwdHeader;->date:I")))
             assertTrue("$name: canPost", refs("canPost").containsAll(listOf(
                 "Lorg/telegram/messenger/MessagesController;->getChat(Ljava/lang/Long;)Lorg/telegram/tgnet/TLRPC\$Chat;",
                 "Lorg/telegram/messenger/ChatObject;->isNotInChat(Lorg/telegram/tgnet/TLRPC\$Chat;)Z",
-                "Lorg/telegram/messenger/ChatObject;->canSendMessages(Lorg/telegram/tgnet/TLRPC\$Chat;)Z")))
+                "Lorg/telegram/messenger/ChatObject;->isMonoForum(Lorg/telegram/tgnet/TLRPC\$Chat;)Z",
+                "Lorg/telegram/messenger/ChatObject;->canSendMessages(Lorg/telegram/tgnet/TLRPC\$Chat;)Z",
+                "Lorg/telegram/messenger/UserObject;->isReplyUser(J)Z",
+                "Lorg/telegram/messenger/UserObject;->isService(J)Z",
+                "Lorg/telegram/messenger/MessagesController;->getUser(Ljava/lang/Long;)Lorg/telegram/tgnet/TLRPC\$User;",
+                "Lorg/telegram/messenger/UserObject;->isDeleted(Lorg/telegram/tgnet/TLRPC\$User;)Z")))
 
             // Telegram's own forward, with the sender shown, captions kept and notifying.
             val forward = stub("forward")

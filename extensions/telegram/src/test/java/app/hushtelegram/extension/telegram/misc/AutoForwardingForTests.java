@@ -28,6 +28,10 @@ public final class AutoForwardingForTests {
         public long sender;
         /** Where a forward came from, as a dialog id, or 0. */
         public long origin;
+        /** When it was sent: second [id], unless a test says otherwise. */
+        public int date;
+        /** When the message a forward copies was first sent, or 0. */
+        public int originDate;
         public boolean service;
         public boolean media;
 
@@ -35,6 +39,7 @@ public final class AutoForwardingForTests {
             this.account = account;
             this.dialog = dialog;
             this.id = id;
+            this.date = id;
         }
 
         @Override public String toString() {
@@ -72,6 +77,8 @@ public final class AutoForwardingForTests {
         @Override public boolean forwarded(Object message) { return ((Message) message).forwarded; }
         @Override public long sender(Object message) { return ((Message) message).sender; }
         @Override public long origin(Object message) { return ((Message) message).origin; }
+        @Override public int date(Object message) { return ((Message) message).date; }
+        @Override public int originDate(Object message) { return ((Message) message).originDate; }
         @Override public boolean service(Object message) { return ((Message) message).service; }
         @Override public boolean media(Object message) { return ((Message) message).media; }
         @Override public int selectedAccount() { return selected; }

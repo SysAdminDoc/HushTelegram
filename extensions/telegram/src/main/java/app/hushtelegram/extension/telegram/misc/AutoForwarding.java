@@ -29,9 +29,10 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * Auto-forwarding rules. A new message someone else sends in a rule's first chat is forwarded to
  * its second chat on the same account, the way Forward sends it, and a rule can take only photos,
  * videos and files. Your own messages stay, scheduled ones included. A forward one of your signed-in
- * accounts sent, or one that came from the destination, isn't forwarded, so rules pointing at each
- * other don't loop, on one account or across two. A message that comes in twice goes out once, and
- * each account sends at most {@link #PER_MINUTE} forwards a minute. Notifications built from a push
+ * accounts sent, or one that came from the destination, isn't forwarded, and neither is a copy of a
+ * message a rule already sent into its chat or its destination, so rules pointing at each other
+ * don't loop, on one account or across two, channels included. A message that comes in twice goes
+ * out once, and each account sends at most {@link #PER_MINUTE} forwards a minute. Notifications built from a push
  * aren't forwarded: Telegram hands the same messages over again once it connects. Telegram hands
  * over only unread messages, so one already read on another device before this one connects stays.
  */
@@ -45,6 +46,17 @@ public final class AutoForwarding {
     static Telegram telegram = new Stubs();
 
     private static final Map<String, Boolean> forwarded = new LinkedHashMap<String, Boolean>() {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, Boolean> eldest) {
+            return size() > REMEMBERED;
+        }
+    };
+    /**
+     * Each original a rule forwarded, with the chat it went to, on any account. A forward keeps
+     * its original's author and date through every copy, so a copy coming round again is known by
+     * them even when its sender is a channel and its header names a third chat.
+     */
+    private static final Map<String, Boolean> copies = new LinkedHashMap<String, Boolean>() {
         @Override
         protected boolean removeEldestEntry(Map.Entry<String, Boolean> eldest) {
             return size() > REMEMBERED;
@@ -285,6 +297,9 @@ public final class AutoForwarding {
         // Every account a rule is for: a forward one of them sent is a rule's, on whichever account it lands.
         Set<Long> owners = new HashSet<>();
         for (Rule rule : rules) owners.add(rule.user);
+        // Remembered once the batch is read: an album's parts share an original, and one part
+        // mustn't hold back the next.
+        List<String> sending = new ArrayList<>();
         for (Object message : messages) {
             if (message == null) continue;
             int account = telegram.account(message);
@@ -305,6 +320,11 @@ public final class AutoForwarding {
                         && (owners.contains(telegram.sender(message)) || telegram.origin(message) == rule.destination)) continue;
                 if (telegram.service(message)) continue;
                 if (rule.mediaOnly && !telegram.media(message)) continue;
+                // A copy a rule made, back in a chat it went to or on its way there again. Across two
+                // accounts through channels its sender is the channel and its header can name a third chat.
+                String original = original(message);
+                if (telegram.forwarded(message) && (copies.containsKey(original + "@" + dialog)
+                        || copies.containsKey(original + "@" + rule.destination))) continue;
                 String key = account + ":" + dialog + ":" + id + ":" + rule.destination;
                 if (forwarded.containsKey(key)) continue;
                 if (!allowed(account)) {
@@ -312,6 +332,7 @@ public final class AutoForwarding {
                     continue;
                 }
                 forwarded.put(key, Boolean.TRUE);
+                sending.add(original + "@" + rule.destination);
                 String to = account + ":" + rule.destination;
                 Batch batch = batches.get(to);
                 if (batch == null) {
@@ -321,7 +342,15 @@ public final class AutoForwarding {
                 batch.messages.add(message);
             }
         }
+        for (String copy : sending) copies.put(copy, Boolean.TRUE);
         return batches;
+    }
+
+    /** Who first sent [message] and when: the forward header's author and date, or its own. */
+    private static String original(Object message) {
+        return telegram.forwarded(message)
+                ? telegram.origin(message) + "/" + telegram.originDate(message)
+                : telegram.sender(message) + "/" + telegram.date(message);
     }
 
     /** Whether [account] may send one more forward this minute, and if so, counts it. */
@@ -350,6 +379,7 @@ public final class AutoForwarding {
     /** Forgets what was forwarded and when, for tests. */
     static synchronized void reset() {
         forwarded.clear();
+        copies.clear();
         sentAt.clear();
     }
 
@@ -368,6 +398,10 @@ public final class AutoForwarding {
         long sender(Object message);
 
         long origin(Object message);
+
+        int date(Object message);
+
+        int originDate(Object message);
 
         boolean service(Object message);
 
@@ -404,6 +438,8 @@ public final class AutoForwarding {
         @Override public boolean forwarded(Object message) { return AutoForwarding.forwarded(message); }
         @Override public long sender(Object message) { return AutoForwarding.sender(message); }
         @Override public long origin(Object message) { return AutoForwarding.origin(message); }
+        @Override public int date(Object message) { return AutoForwarding.date(message); }
+        @Override public int originDate(Object message) { return AutoForwarding.originDate(message); }
         @Override public boolean service(Object message) { return AutoForwarding.service(message); }
         @Override public boolean media(Object message) { return AutoForwarding.media(message); }
         @Override public int selectedAccount() { return AutoForwarding.selectedAccount(); }
@@ -443,6 +479,12 @@ public final class AutoForwarding {
     /** The dialog id the forward header names as where it came from, or 0 when it names none. */
     public static long origin(Object message) { return 0L; }
 
+    /** {@code message.messageOwner.date}, in seconds. */
+    public static int date(Object message) { return 0; }
+
+    /** The forward header's date, when the message it copies was first sent, or 0 when it has none. */
+    public static int originDate(Object message) { return 0; }
+
     /** Whether the message is a service message: an action other than TL_messageActionEmpty. */
     public static boolean service(Object message) { return false; }
 
@@ -469,8 +511,9 @@ public final class AutoForwarding {
     public static boolean folder(long dialog) { return false; }
 
     /**
-     * Whether you can post in the chat: a user's chat always, a group or channel when you're in it
-     * and {@code ChatObject.canSendMessages} says so.
+     * Whether you can post in the chat: a user's chat unless it's Replies, Telegram's service
+     * account or a deleted account, a group or channel when you're in it, it isn't a channel's
+     * direct messages and {@code ChatObject.canSendMessages} says so.
      */
     public static boolean canPost(int account, long id) { return true; }
 

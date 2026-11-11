@@ -160,6 +160,81 @@ public class AutoForwardingTest {
         assertEquals(Collections.singletonList("0: [11/2] to 12"), telegram.sent);
     }
 
+    @Test public void channelsOnTwoAccountsDontLoop() {
+        Settings.AUTO_FORWARDING.save(true);
+        assertTrue(AutoForwarding.add(new AutoForwarding.Rule(1000, A, B, false)));
+        assertTrue(AutoForwarding.add(new AutoForwarding.Rule(2000, B, A, false)));
+        // A post in channel A that was itself forwarded from channel C at second 500.
+        AutoForwardingForTests.Message post = message(A, 1);
+        post.forwarded = true;
+        post.sender = A;
+        post.origin = C;
+        post.originDate = 500;
+        arrive(post);
+        assertEquals(Collections.singletonList("0: [11/1] to 12"), telegram.sent);
+        // Account 1 sees the copy in channel B, posted as B and still naming C, and leaves it.
+        AutoForwardingForTests.Message copy = new AutoForwardingForTests.Message(1, B, 2);
+        copy.forwarded = true;
+        copy.sender = B;
+        copy.origin = C;
+        copy.originDate = 500;
+        arrive(copy);
+        assertEquals(1, telegram.sent.size());
+        // Had it gone round, the next copy in A wouldn't go to B a second time either.
+        AutoForwardingForTests.Message again = message(A, 3);
+        again.forwarded = true;
+        again.sender = A;
+        again.origin = C;
+        again.originDate = 500;
+        arrive(again);
+        assertEquals(1, telegram.sent.size());
+        // Another post forwarded from C, sent at another time, still goes.
+        AutoForwardingForTests.Message other = message(A, 4);
+        other.forwarded = true;
+        other.sender = A;
+        other.origin = C;
+        other.originDate = 501;
+        arrive(other);
+        assertEquals("0: [11/4] to 12", telegram.sent.get(1));
+    }
+
+    @Test public void aDiscussionCopyOfAForwardStays() {
+        Settings.AUTO_FORWARDING.save(true);
+        assertTrue(AutoForwarding.add(new AutoForwarding.Rule(1000, A, B, false)));
+        // Someone writes in group A at second 40, and the rule sends it to channel B.
+        AutoForwardingForTests.Message written = message(A, 1);
+        written.sender = 7000;
+        written.date = 40;
+        arrive(written);
+        assertEquals(Collections.singletonList("0: [11/1] to 12"), telegram.sent);
+        // B's discussion group is A, and the post comes back there naming its first author.
+        AutoForwardingForTests.Message discussion = message(A, 2);
+        discussion.forwarded = true;
+        discussion.sender = B;
+        discussion.origin = 7000;
+        discussion.originDate = 40;
+        arrive(discussion);
+        assertEquals(1, telegram.sent.size());
+    }
+
+    @Test public void anAlbumsPartsGoTogether() {
+        Settings.AUTO_FORWARDING.save(true);
+        assertTrue(AutoForwarding.add(new AutoForwarding.Rule(1000, A, B, false)));
+        // Three photos forwarded from one person's album share an author and a date.
+        List<Object> parts = new ArrayList<>();
+        for (int id = 1; id <= 3; id++) {
+            AutoForwardingForTests.Message part = message(A, id);
+            part.forwarded = true;
+            part.sender = 7000;
+            part.origin = 8000;
+            part.originDate = 90;
+            part.media = true;
+            parts.add(part);
+        }
+        arrive(parts.toArray());
+        assertEquals(Collections.singletonList("0: [11/1, 11/2, 11/3] to 12"), telegram.sent);
+    }
+
     @Test public void aRuleAddedWhilePausedKeepsTheOthers() {
         assertTrue(AutoForwarding.add(new AutoForwarding.Rule(1000, A, B, false)));
         PauseForTests.pause(HushTelegramPause.Reason.SWITCH);

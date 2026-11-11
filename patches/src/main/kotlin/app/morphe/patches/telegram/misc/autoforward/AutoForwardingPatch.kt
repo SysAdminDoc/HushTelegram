@@ -42,6 +42,8 @@ private const val FWD_HEADER = "Lorg/telegram/tgnet/TLRPC\$MessageFwdHeader;"
 private const val PEER = "Lorg/telegram/tgnet/TLRPC\$Peer;"
 private const val TL_CHAT = "Lorg/telegram/tgnet/TLRPC\$Chat;"
 private const val CHAT_OBJECT = "Lorg/telegram/messenger/ChatObject;"
+private const val TL_USER = "Lorg/telegram/tgnet/TLRPC\$User;"
+private const val USER_OBJECT = "Lorg/telegram/messenger/UserObject;"
 private const val ACTION = "Lorg/telegram/tgnet/TLRPC\$MessageAction;"
 private const val ACTION_EMPTY = "Lorg/telegram/tgnet/TLRPC\$TL_messageActionEmpty;"
 private const val TL_DIALOG = "Lorg/telegram/tgnet/TLRPC\$Dialog;"
@@ -84,7 +86,7 @@ val autoForwardingPatch = bytecodePatch(
 internal fun BytecodePatchContext.resolveAutoForwarding(): MutableMethod {
     requireStatusMethod("autoForwarding")
     controlHook(AUTO_FORWARDING, "onNewMessages", listOf(OBJECT, "I"), "V")
-    for (name in listOf("account", "id")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "I")
+    for (name in listOf("account", "id", "date", "originDate")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "I")
     for (name in listOf("out", "forwarded", "service", "media")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "Z")
     for (name in listOf("dialog", "dialogId", "sender", "origin")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "J")
     controlHook(AUTO_FORWARDING, "selectedAccount", emptyList(), "I")
@@ -97,15 +99,16 @@ internal fun BytecodePatchContext.resolveAutoForwarding(): MutableMethod {
 
     controlMembers(MESSAGE, "currentAccount:I", "messageOwner:$TL_MESSAGE", "getDialogId()J", "getId()I", "isOut()Z",
         "isForwarded()Z", "isMediaEmpty()Z", "getFromChatId()J", "static getPeerId($PEER)J")
-    controlMembers(TL_MESSAGE, "action:$ACTION", "fwd_from:$FWD_HEADER")
-    controlMembers(FWD_HEADER, "from_id:$PEER")
+    controlMembers(TL_MESSAGE, "action:$ACTION", "fwd_from:$FWD_HEADER", "date:I")
+    controlMembers(FWD_HEADER, "from_id:$PEER", "date:I")
     controlMembers(ACTION_EMPTY)
     controlMembers(USER_CONFIG, "static selectedAccount:I", "static getInstance(I)$USER_CONFIG", "getClientUserId()J")
     controlMembers(CONTROLLER, "static getInstance(I)$CONTROLLER", "getDialogs(I)$LIST", "getPeerName(J)$STRING",
-        "getChat(Ljava/lang/Long;)$TL_CHAT")
+        "getChat(Ljava/lang/Long;)$TL_CHAT", "getUser(Ljava/lang/Long;)$TL_USER")
     controlMembers(TL_DIALOG, "id:J")
     controlMembers(DIALOG_OBJECT, "static isEncryptedDialog(J)Z", "static isFolderDialogId(J)Z")
-    controlMembers(CHAT_OBJECT, "static isNotInChat($TL_CHAT)Z", "static canSendMessages($TL_CHAT)Z")
+    controlMembers(CHAT_OBJECT, "static isNotInChat($TL_CHAT)Z", "static isMonoForum($TL_CHAT)Z", "static canSendMessages($TL_CHAT)Z")
+    controlMembers(USER_OBJECT, "static isReplyUser(J)Z", "static isService(J)Z", "static isDeleted($TL_USER)Z")
     controlMembers(SEND_HELPER, "static getInstance(I)$SEND_HELPER", FORWARD_SEND.substringAfter("->"))
 
     val owner = tgMutableClassDefByOrNull(NOTIFICATIONS_CONTROLLER)
@@ -155,6 +158,30 @@ internal fun BytecodePatchContext.writeAutoForwardingStubs() {
         :hush_none
         const-wide/16 v1, 0x0
         return-wide v1
+    """)
+    // When the message was sent, and when the one a forward copies was first sent: a forward keeps
+    // that date, so it and the header's author name the original through every copy.
+    writeStub(AUTO_FORWARDING, "date", 2, """
+        check-cast p0, $MESSAGE
+        iget-object v0, p0, $MESSAGE->messageOwner:$TL_MESSAGE
+        if-eqz v0, :hush_none
+        iget v0, v0, $TL_MESSAGE->date:I
+        return v0
+        :hush_none
+        const/4 v0, 0x0
+        return v0
+    """)
+    writeStub(AUTO_FORWARDING, "originDate", 2, """
+        check-cast p0, $MESSAGE
+        iget-object v0, p0, $MESSAGE->messageOwner:$TL_MESSAGE
+        if-eqz v0, :hush_none
+        iget-object v0, v0, $TL_MESSAGE->fwd_from:$FWD_HEADER
+        if-eqz v0, :hush_none
+        iget v0, v0, $FWD_HEADER->date:I
+        return v0
+        :hush_none
+        const/4 v0, 0x0
+        return v0
     """)
     writeStub(AUTO_FORWARDING, "service", 2, """
         check-cast p0, $MESSAGE
@@ -207,14 +234,15 @@ internal fun BytecodePatchContext.writeAutoForwardingStubs() {
         move-result v0
         return v0
     """)
-    // p0 is the account, p1-p2 the dialog id. A user's chat is always open to you; a group or
-    // channel needs you in it and allowed to send.
+    // p0 is the account, p1-p2 the dialog id. A group or channel needs you in it and allowed to
+    // send, and isn't a channel's direct messages. A user's chat is open unless it's Replies,
+    // Telegram's service account or a deleted account, the ones Forward's own picker leaves out.
     writeStub(AUTO_FORWARDING, "canPost", 6, """
-        const-wide/16 v0, 0x0
-        cmp-long v0, p1, v0
-        if-gez v0, :hush_yes
         invoke-static {p0}, $CONTROLLER->getInstance(I)$CONTROLLER
         move-result-object v0
+        const-wide/16 v1, 0x0
+        cmp-long v1, p1, v1
+        if-gez v1, :hush_user
         neg-long v1, p1
         invoke-static {v1, v2}, Ljava/lang/Long;->valueOf(J)Ljava/lang/Long;
         move-result-object v1
@@ -224,14 +252,31 @@ internal fun BytecodePatchContext.writeAutoForwardingStubs() {
         invoke-static {v0}, $CHAT_OBJECT->isNotInChat($TL_CHAT)Z
         move-result v1
         if-nez v1, :hush_no
+        invoke-static {v0}, $CHAT_OBJECT->isMonoForum($TL_CHAT)Z
+        move-result v1
+        if-nez v1, :hush_no
         invoke-static {v0}, $CHAT_OBJECT->canSendMessages($TL_CHAT)Z
         move-result v0
         return v0
+        :hush_user
+        invoke-static {p1, p2}, $USER_OBJECT->isReplyUser(J)Z
+        move-result v1
+        if-nez v1, :hush_no
+        invoke-static {p1, p2}, $USER_OBJECT->isService(J)Z
+        move-result v1
+        if-nez v1, :hush_no
+        invoke-static {p1, p2}, Ljava/lang/Long;->valueOf(J)Ljava/lang/Long;
+        move-result-object v1
+        invoke-virtual {v0, v1}, $CONTROLLER->getUser(Ljava/lang/Long;)$TL_USER
+        move-result-object v0
+        if-eqz v0, :hush_no
+        invoke-static {v0}, $USER_OBJECT->isDeleted($TL_USER)Z
+        move-result v1
+        if-nez v1, :hush_no
+        const/4 v0, 0x1
+        return v0
         :hush_no
         const/4 v0, 0x0
-        return v0
-        :hush_yes
-        const/4 v0, 0x1
         return v0
     """)
     writeStub(AUTO_FORWARDING, "peerName", 4, """
