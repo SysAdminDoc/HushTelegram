@@ -240,7 +240,8 @@ public class PausedHooksTest {
                 app.hushtelegram.extension.telegram.misc.DoubleTapReactions::stopReaction,
                 () -> app.hushtelegram.extension.telegram.misc.DoubleTapReactions.rows(new Object(), false, false) == null,
                 () -> app.hushtelegram.extension.telegram.misc.DoubleTapReactions.spoken(new org.telegram.tgnet.TLRPC.TL_messageReactions()) == null,
-                () -> !app.hushtelegram.extension.telegram.misc.DoubleTapReactions.picker(true)));
+                () -> !app.hushtelegram.extension.telegram.misc.DoubleTapReactions.picker(true),
+                app.hushtelegram.extension.telegram.misc.DoubleTapReactions::hideEffect));
         probes.put(PatchFamily.HIDE_CONTACTS_BLOCK, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.ContactsBlock.rows(new java.util.ArrayList<>(Collections.singletonList("contact"))) == null,
                 () -> !app.hushtelegram.extension.telegram.misc.ContactsBlock.placeholder(true)));

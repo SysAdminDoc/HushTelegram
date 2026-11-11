@@ -37,6 +37,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** With Telegram set to Português (Brasil), HushTelegram settings and messages come out in Portuguese. They were in English, because Telegram runs that language with no region and only the Brazilian table had Portuguese text.
 * **Telegram:** In German, the text under **Receive only mode** and **Power off accounts** says "du" like the rest of HushTelegram settings.
 * **Telegram:** A settings search while an import, an export or a diagnostic report is running shows the same rows it shows the rest of the time. Searching "Import settings" during an import used to list **Export settings** too, since that row said "Importing settings" for the moment.
+* **Telegram:** With **Hide reactions under messages** on, a new reaction to your message gets marked as seen once you scroll to it. The heart in the chat list and the reactions button in the chat used to stay there for good. Telegram's pop-up animation for that reaction no longer plays over the hidden row either (#48).
 
 ## 0.0.24 (2026-11-08)
 
