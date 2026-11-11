@@ -744,6 +744,57 @@ public class UnifiedPushTest {
         assertTrue(String.join("\n", HookStatus.report()).contains("ended sign-up not saved"));
     }
 
+    /** Off whose save failed still ends the sign-up, and the app's answer to that isn't the app ending it. */
+    @Test public void theAnswerToAnOffWhoseSaveFailedLetsTheSwitchSignUpAgain() {
+        String token = signedUp();
+        Flaky flaky = new Flaky(UnifiedPush.prefs(context));
+        UnifiedPush.store = ignored -> flaky;
+        flaky.failWrites = true;
+        flaky.failedWritesStay = true;
+        Settings.UNIFIED_PUSH.save(false);
+        UnifiedPush.sync(context, false);
+        assertEquals(token, last(UnifiedPush.UNREGISTER).getStringExtra("token"));
+        assertEquals("the file still holds it", token, token());
+
+        flaky.failWrites = false;
+        UnifiedPush.receive(context, from(UnifiedPush.UNREGISTERED, token), () -> {});
+        assertNull(token());
+        assertNull(flaky.getString(UnifiedPush.ENDPOINT, null));
+        assertNull("not shown as the app ending it", flaky.getString(UnifiedPush.PROBLEM, null));
+        int registers = count(UnifiedPush.REGISTER);
+        Settings.UNIFIED_PUSH.save(true);
+        UnifiedPush.sync(context, true);
+        assertEquals("back on, it signs up again", registers + 1, count(UnifiedPush.REGISTER));
+        assertEquals(token(), last(UnifiedPush.REGISTER).getStringExtra("token"));
+        assertFalse(UnifiedPush.status(context, true).contains("ended"));
+    }
+
+    /** The same for the old app's answer when moving to another app couldn't be saved. */
+    @Test public void theOldAppsAnswerToAMoveWhoseSaveFailedLetsTheNextStartSignUp() {
+        install(OTHER);
+        String token = signedUp();
+        UnifiedPush.prefs(context).edit().putString(UnifiedPush.CHOSEN, OTHER).commit();
+        Flaky flaky = new Flaky(UnifiedPush.prefs(context));
+        UnifiedPush.store = ignored -> flaky;
+        flaky.failWrites = true;
+        flaky.failedWritesStay = true;
+        UnifiedPush.sync(context, true);
+        Intent ended = last(UnifiedPush.UNREGISTER);
+        assertEquals(UnifiedPush.NTFY, ended.getPackage());
+        assertEquals(token, ended.getStringExtra("token"));
+        assertEquals(token, token());
+
+        flaky.failWrites = false;
+        UnifiedPush.receive(context, from(UnifiedPush.UNREGISTERED, token), () -> {});
+        assertNull(token());
+        assertNull(flaky.getString(UnifiedPush.PROBLEM, null));
+        int registers = count(UnifiedPush.REGISTER);
+        UnifiedPush.sync(context, true);
+        assertEquals(registers + 1, count(UnifiedPush.REGISTER));
+        assertEquals(OTHER, last(UnifiedPush.REGISTER).getPackage());
+        assertEquals(token(), last(UnifiedPush.REGISTER).getStringExtra("token"));
+    }
+
     private int count(String action) {
         int n = 0;
         for (Intent intent : sent()) if (action.equals(intent.getAction())) n++;

@@ -32,7 +32,9 @@ import java.security.spec.ECPoint;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -222,6 +224,12 @@ public final class UnifiedPush {
     private static final Object KEYS = new Object();
 
     /**
+     * Tokens this run asked an app to let go of while the file still held them, after a save that
+     * didn't land. The app's UNREGISTERED for one of them is that answer, not the app ending it.
+     */
+    private static final Set<String> ENDING = Collections.synchronizedSet(new HashSet<>());
+
+    /**
      * Injected at the top of {@code sendRegistrationToServer}, before {@link #type}. While the
      * switch is on and an address is saved, any sign-up Telegram starts, Firebase's included,
      * signs up that address instead, as a Web Push token.
@@ -377,7 +385,7 @@ public final class UnifiedPush {
                 // The choice of app stays. Everything about the sign-up goes, before the app hears,
                 // so a broadcast with the old token is somebody else's from here on.
                 boolean forgotten = save(prefs, DISTRIBUTOR, null, TOKEN, null, ENDPOINT, null, PROBLEM, null);
-                if (token != null && current != null) send(context, new Intent(UNREGISTER), current, token);
+                if (token != null && current != null) unregister(context, current, token, forgotten);
                 if (endpoint != null) telegram.release(endpoint);
                 // Still on disk, it's ended again at the next start with the switch off. The app ignores a token it no longer knows.
                 if (!forgotten) HookStatus.counted(FamilyNames.UNIFIED_PUSH, "sign-up not forgotten, ended again at the next start");
@@ -389,11 +397,12 @@ public final class UnifiedPush {
             if (distributor == null) {
                 // The app is gone, or there are several and none is picked yet. An address nothing
                 // answers any more would keep Firebase out for good, so the sign-up goes with it.
-                if (token != null && current != null && installed.contains(current)) {
-                    send(context, new Intent(UNREGISTER), current, token);
-                }
                 String endpoint = prefs.getString(ENDPOINT, null);
-                if (!save(prefs, DISTRIBUTOR, null, TOKEN, null, ENDPOINT, null)) {
+                boolean forgotten = save(prefs, DISTRIBUTOR, null, TOKEN, null, ENDPOINT, null);
+                if (token != null && current != null && installed.contains(current)) {
+                    unregister(context, current, token, forgotten);
+                }
+                if (!forgotten) {
                     HookStatus.counted(FamilyNames.UNIFIED_PUSH, "sign-up not forgotten, ended again at the next start");
                 }
                 // Telegram's servers may still hold the dead address, from before or from a sign-up
@@ -402,11 +411,12 @@ public final class UnifiedPush {
                 return;
             }
             if (token == null || !distributor.equals(current)) {
-                if (token != null && current != null) send(context, new Intent(UNREGISTER), current, token);
                 String fresh = UUID.randomUUID().toString();
                 // The token goes out only once it's on disk. An app holding a token this side forgot
                 // would have its answers dropped as a stranger's.
-                if (!save(prefs, DISTRIBUTOR, distributor, TOKEN, fresh, ENDPOINT, null, PROBLEM, null)) {
+                boolean saved = save(prefs, DISTRIBUTOR, distributor, TOKEN, fresh, ENDPOINT, null, PROBLEM, null);
+                if (token != null && current != null) unregister(context, current, token, saved);
+                if (!saved) {
                     HookStatus.counted(FamilyNames.UNIFIED_PUSH, "sign-up not saved, tried again at the next start");
                     return;
                 }
@@ -419,6 +429,12 @@ public final class UnifiedPush {
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.UNIFIED_PUSH, "sign-up", failure);
         }
+    }
+
+    /** Asks [distributor] to end [token]'s sign-up. Unless the file let the token go, its answer is one this side asked for. */
+    private static void unregister(Context context, String distributor, String token, boolean forgotten) {
+        if (!forgotten) ENDING.add(token);
+        send(context, new Intent(UNREGISTER), distributor, token);
     }
 
     /**
@@ -526,10 +542,19 @@ public final class UnifiedPush {
                     break;
                 case UNREGISTERED: {
                     String ended = prefs.getString(ENDPOINT, null);
-                    if (!save(prefs, TOKEN, null, ENDPOINT, null, PROBLEM, ENDED)) {
-                        HookStatus.counted(FamilyNames.UNIFIED_PUSH, "ended sign-up not saved");
+                    if (ENDING.remove(token)) {
+                        // The end this side asked for, whose save didn't land: the sign-up goes now,
+                        // and the row doesn't say the app ended it.
+                        if (!save(prefs, TOKEN, null, ENDPOINT, null)) {
+                            HookStatus.counted(FamilyNames.UNIFIED_PUSH, "sign-up not forgotten, ended again at the next start");
+                        }
+                        Logger.printInfo(() -> "UnifiedPush: the app let go of a sign-up as asked");
+                    } else {
+                        if (!save(prefs, TOKEN, null, ENDPOINT, null, PROBLEM, ENDED)) {
+                            HookStatus.counted(FamilyNames.UNIFIED_PUSH, "ended sign-up not saved");
+                        }
+                        Logger.printInfo(() -> "UnifiedPush: the app ended the sign-up");
                     }
-                    Logger.printInfo(() -> "UnifiedPush: the app ended the sign-up");
                     // Nothing answers at that address now, so Telegram is pointed back at Firebase.
                     if (ended != null) telegram.release(ended);
                     break;
