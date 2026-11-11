@@ -410,12 +410,14 @@ public final class UnifiedPush {
                 if (endpoint != null) telegram.release(endpoint);
                 return;
             }
-            if (token == null || !distributor.equals(current)) {
+            // A token whose end is still on its way isn't signed up again, or the app's answer would end the new sign-up.
+            boolean ending = token != null && ENDING.contains(token);
+            if (token == null || ending || !distributor.equals(current)) {
                 String fresh = UUID.randomUUID().toString();
                 // The token goes out only once it's on disk. An app holding a token this side forgot
                 // would have its answers dropped as a stranger's.
                 boolean saved = save(prefs, DISTRIBUTOR, distributor, TOKEN, fresh, ENDPOINT, null, PROBLEM, null);
-                if (token != null && current != null) unregister(context, current, token, saved);
+                if (token != null && current != null && !ending) unregister(context, current, token, saved);
                 if (!saved) {
                     HookStatus.counted(FamilyNames.UNIFIED_PUSH, "sign-up not saved, tried again at the next start");
                     return;
@@ -545,10 +547,16 @@ public final class UnifiedPush {
                     if (ENDING.remove(token)) {
                         // The end this side asked for, whose save didn't land: the sign-up goes now,
                         // and the row doesn't say the app ended it.
-                        if (!save(prefs, TOKEN, null, ENDPOINT, null)) {
+                        boolean forgotten = save(prefs, TOKEN, null, ENDPOINT, null);
+                        if (!forgotten) {
                             HookStatus.counted(FamilyNames.UNIFIED_PUSH, "sign-up not forgotten, ended again at the next start");
                         }
                         Logger.printInfo(() -> "UnifiedPush: the app let go of a sign-up as asked");
+                        // A move to another app that couldn't be saved goes ahead now, with the switch still on.
+                        if (forgotten && Utils.settingsReady() && Settings.UNIFIED_PUSH.savedValue()) {
+                            Context app = context.getApplicationContext() != null ? context.getApplicationContext() : context;
+                            work.execute(() -> sync(app, true));
+                        }
                     } else {
                         if (!save(prefs, TOKEN, null, ENDPOINT, null, PROBLEM, ENDED)) {
                             HookStatus.counted(FamilyNames.UNIFIED_PUSH, "ended sign-up not saved");

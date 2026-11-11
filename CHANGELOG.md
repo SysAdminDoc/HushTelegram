@@ -24,7 +24,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** **Save to Downloads** in the message menu saves every photo of an album, not just the one you long-pressed (#46).
 * **Telegram:** **Save downloaded files** no longer logs an error in its diagnostics whenever a profile photo or a sticker finishes downloading (#27).
 * **Telegram:** The account rows in HushTelegram settings and the checks that tell your own accounts apart no longer log an error on 13.2.1 from Google Play. They only look at the four account slots that build has.
-* **Telegram:** Turning **UnifiedPush notifications** off, or picking another push app, when your phone couldn't save the change (a full phone, say) no longer leaves the row saying the push app ended the sign-up. It signs up again as soon as you turn it back on.
+* **Telegram:** Turning **UnifiedPush notifications** off, or picking another push app, when your phone couldn't save the change (a full phone, say) no longer leaves the row saying the push app ended the sign-up. Turning it back on signs up again, and a move to another app goes ahead once the old one lets go.
 
 ## 0.0.24 (2026-11-08)
 

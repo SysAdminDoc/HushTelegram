@@ -769,8 +769,33 @@ public class UnifiedPushTest {
         assertFalse(UnifiedPush.status(context, true).contains("ended"));
     }
 
-    /** The same for the old app's answer when moving to another app couldn't be saved. */
-    @Test public void theOldAppsAnswerToAMoveWhoseSaveFailedLetsTheNextStartSignUp() {
+    /** Back on before the app answered an off whose save failed: the new sign-up gets its own token, which the answer can't end. */
+    @Test public void onAgainBeforeTheAppAnsweredSignsUpWithANewToken() {
+        String token = signedUp();
+        Flaky flaky = new Flaky(UnifiedPush.prefs(context));
+        UnifiedPush.store = ignored -> flaky;
+        flaky.failWrites = true;
+        flaky.failedWritesStay = true;
+        Settings.UNIFIED_PUSH.save(false);
+        UnifiedPush.sync(context, false);
+        int unregisters = count(UnifiedPush.UNREGISTER);
+
+        flaky.failWrites = false;
+        Settings.UNIFIED_PUSH.save(true);
+        UnifiedPush.sync(context, true);
+        String fresh = token();
+        assertNotEquals(token, fresh);
+        assertEquals(fresh, last(UnifiedPush.REGISTER).getStringExtra("token"));
+        assertEquals("the old token isn't asked to end twice", unregisters, count(UnifiedPush.UNREGISTER));
+        UnifiedPush.receive(context, from(UnifiedPush.UNREGISTERED, token), () -> {});
+        assertEquals(fresh, token());
+        UnifiedPush.receive(context, from(UnifiedPush.NEW_ENDPOINT, fresh).putExtra("endpoint", ENDPOINT), () -> {});
+        assertEquals(ENDPOINT, UnifiedPush.activeEndpoint());
+        assertNull(flaky.getString(UnifiedPush.PROBLEM, null));
+    }
+
+    /** The same for the old app's answer when moving to another app couldn't be saved, which signs up with the new one then. */
+    @Test public void theOldAppsAnswerToAMoveWhoseSaveFailedSignsUpWithTheNewApp() {
         install(OTHER);
         String token = signedUp();
         UnifiedPush.prefs(context).edit().putString(UnifiedPush.CHOSEN, OTHER).commit();
@@ -785,13 +810,12 @@ public class UnifiedPushTest {
         assertEquals(token, token());
 
         flaky.failWrites = false;
-        UnifiedPush.receive(context, from(UnifiedPush.UNREGISTERED, token), () -> {});
-        assertNull(token());
-        assertNull(flaky.getString(UnifiedPush.PROBLEM, null));
         int registers = count(UnifiedPush.REGISTER);
-        UnifiedPush.sync(context, true);
-        assertEquals(registers + 1, count(UnifiedPush.REGISTER));
+        UnifiedPush.receive(context, from(UnifiedPush.UNREGISTERED, token), () -> {});
+        assertNull(flaky.getString(UnifiedPush.PROBLEM, null));
+        assertEquals("the move goes ahead without waiting for a start", registers + 1, count(UnifiedPush.REGISTER));
         assertEquals(OTHER, last(UnifiedPush.REGISTER).getPackage());
+        assertNotEquals(token, token());
         assertEquals(token(), last(UnifiedPush.REGISTER).getStringExtra("token"));
     }
 
