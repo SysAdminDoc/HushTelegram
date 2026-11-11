@@ -271,8 +271,9 @@ internal fun BytecodePatchContext.resolveCropGuard(): CropGuardSites {
     return CropGuardSites(
         apply, done, send, self,
         entry!!, apply.freeLocalsAt("Never send an uncropped photo", entry, 1).single(),
-        // The check reads the copy and the viewer's edit state after its scratch register is written, so none can share it.
-        bake, apply.freeLocalsAt("Never send an uncropped photo", bake + 2, 3).first { it != cropped && it != viewState }, cropped,
+        // The check reads the copy and both edit states after its scratch register is written, so none can share it.
+        bake, apply.freeLocalsAt("Never send an uncropped photo", bake + 2, 4).first { it != cropped && it != viewState && it != photoState },
+        cropped,
         photoState, viewState, body[viewShare].controlRef()!!,
         body[video].controlRef()!!, photo,
         doneCall + 1, done.freeLocalsAt("Never send an uncropped photo", doneCall + 1, 1, highest = 255).single(),

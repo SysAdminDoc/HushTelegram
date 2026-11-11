@@ -90,6 +90,7 @@ class CropGuardFixtureTest {
                     stockBody[it].namedRegisters() == listOf(cropArgument, sites.viewState)
             })
             assertNotEquals("$name: viewer kept", sites.viewState, bakeScratch)
+            assertNotEquals("$name: photo state kept", sites.photoState, bakeScratch)
             assertEquals("$name: crops cleared",
                 listOf(listOf(bakeScratch), listOf(bakeScratch, sites.photoState), listOf(bakeScratch, sites.viewState)),
                 after.subList(bake + 5, bake + 8).map { it.namedRegisters() })
