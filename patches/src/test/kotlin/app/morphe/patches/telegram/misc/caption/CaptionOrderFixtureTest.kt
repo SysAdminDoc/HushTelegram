@@ -56,37 +56,36 @@ class CaptionOrderFixtureTest {
                 val method = site.method
                 val label = "$name ${method.name}"
                 val after = method.controlBody()
-                val ask = if (sites.captionForAllStatic) Opcode.INVOKE_STATIC else Opcode.INVOKE_VIRTUAL
-                assertEquals("$label: start", listOf(Opcode.MOVE_OBJECT_FROM16, Opcode.IGET_OBJECT, ask, Opcode.MOVE_RESULT,
-                    Opcode.SGET_OBJECT, Opcode.INVOKE_STATIC), after.take(6).map { it.opcode })
+                assertEquals("$label: start", listOf(Opcode.MOVE_OBJECT_FROM16, Opcode.IGET_OBJECT, Opcode.INVOKE_STATIC,
+                    Opcode.MOVE_RESULT, Opcode.SGET_OBJECT, Opcode.INVOKE_STATIC), after.take(6).map { it.opcode })
                 assertEquals("$label: start registers",
-                    listOf(listOf(0, site.layout), listOf(1, 0), if (sites.captionForAllStatic) emptyList() else listOf(0),
-                        listOf(2), listOf(0), listOf(0, 2, 1)),
+                    listOf(listOf(0, site.layout), listOf(1, 0), emptyList<Int>(), listOf(2), listOf(0), listOf(0, 2, 1)),
                     after.take(6).map { it.namedRegisters() })
                 assertEquals("$label: start refs", listOf(sites.provider, sites.captionForAll, sites.order, CAPTION_ORDER_BEFORE),
                     listOf(1, 2, 4, 5).map { after[it].controlRef() })
                 assertEquals("$label: one before", 1, after.count { it.controlRef() == CAPTION_ORDER_BEFORE })
 
-                // Each return asks first, with two registers the return doesn't read.
+                // Each return asks first, with captionForAllMedia's answer then and two registers the return doesn't read.
                 val stockBody = before.controlBody()
                 val stockReturns = stockBody.indices.filter { stockBody[it].opcode in RETURNS }
-                val asks = after.indices.filter { after[it].controlRef() == CAPTION_ORDER_AFTER }.map { it - 1 }
+                val asks = after.indices.filter { after[it].controlRef() == CAPTION_ORDER_AFTER }.map { it - 3 }
                 assertEquals("$label: one ask per return", stockReturns.size, asks.size)
                 val flow = ControlFlow.of(method).normal
                 for (at in asks) {
                     assertEquals("$label: ask $at", ASK_SHAPE, after.subList(at, at + ASK_SHAPE.size).map { it.opcode })
                     assertTrue("$label: ask $at ends on a return", after[at + ASK_SHAPE.size].opcode in RETURNS)
-                    val (answer, nothing) = listOf(after[at].namedRegisters().single(), after[at + 5].namedRegisters().single())
+                    val (answer, nothing) = listOf(after[at + 2].namedRegisters().single(), after[at + 1].namedRegisters().single())
                     assertTrue("$label: ask $at keeps the returned value", after[at + ASK_SHAPE.size].namedRegisters().none { it == answer || it == nothing })
                     assertTrue("$label: ask $at registers", answer != nothing && answer < 16 && nothing < 16 &&
                         answer < method.implementation!!.registerCount - method.parameterTypes.size - 1)
                     assertEquals("$label: ask $at registers",
-                        listOf(listOf(answer), listOf(answer), listOf(answer), listOf(answer), listOf(answer), listOf(nothing), listOf(answer, nothing)),
-                        after.subList(at, at + 7).map { it.namedRegisters() })
-                    assertEquals(listOf(sites.order, CAPTION_ORDER_AFTER, sites.providerType, sites.apply),
-                        listOf(0, 1, 4, 6).map { after[at + it].controlRef() })
-                    assertEquals(0L, (after[at + 5] as WideLiteralInstruction).wideLiteral)
-                    assertEquals("$label: same first photo skips the reload", setOf(at + 4, at + 7), flow[at + 3].toSet())
+                        listOf(emptyList<Int>(), listOf(nothing), listOf(answer), listOf(answer, nothing), listOf(answer), listOf(answer),
+                            listOf(answer), listOf(nothing), listOf(answer, nothing)),
+                        after.subList(at, at + 9).map { it.namedRegisters() })
+                    assertEquals(listOf(sites.captionForAll, sites.order, CAPTION_ORDER_AFTER, sites.providerType, sites.apply),
+                        listOf(0, 2, 3, 6, 8).map { after[at + it].controlRef() })
+                    assertEquals(0L, (after[at + 7] as WideLiteralInstruction).wideLiteral)
+                    assertEquals("$label: same first photo skips the reload", setOf(at + 6, at + 9), flow[at + 5].toSet())
                 }
 
                 val added = (0 until 6).toSet() + asks.flatMap { it until it + ASK_SHAPE.size }
@@ -140,8 +139,8 @@ class CaptionOrderFixtureTest {
     private companion object {
         val RETURNS = setOf(Opcode.RETURN_VOID, Opcode.RETURN, Opcode.RETURN_WIDE, Opcode.RETURN_OBJECT)
         val ASK_SHAPE = listOf(
-            Opcode.SGET_OBJECT, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT, Opcode.IF_EQZ, Opcode.CHECK_CAST,
-            Opcode.CONST_4, Opcode.INVOKE_VIRTUAL, Opcode.NOP,
+            Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.SGET_OBJECT, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT,
+            Opcode.IF_EQZ, Opcode.CHECK_CAST, Opcode.CONST_4, Opcode.INVOKE_VIRTUAL, Opcode.NOP,
         )
     }
 }

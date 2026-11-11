@@ -37,7 +37,7 @@ public class CaptionOrderTest {
         PauseForTests.resume();
         SettingReadsForTests.mend(Settings.CAPTION_ORDER);
         Settings.CAPTION_ORDER.resetToDefault();
-        CaptionOrder.after(null);
+        CaptionOrder.after(null, 0);
         HookStatus.clear();
     }
 
@@ -50,19 +50,19 @@ public class CaptionOrderTest {
         ArrayList<Object> order = order(1, 2, 3);
         CaptionOrder.before(order, 0, PROVIDER);
         order.remove(0);
-        assertSame(PROVIDER, CaptionOrder.after(order));
+        assertSame(PROVIDER, CaptionOrder.after(order, 0));
         assertTrue(String.join("\n", HookStatus.report()).contains(FamilyNames.CAPTION_ORDER));
 
         // A drag that puts another photo in front.
         CaptionOrder.before(order, 0, PROVIDER);
         Collections.swap(order, 0, 1);
-        assertSame(PROVIDER, CaptionOrder.after(order));
+        assertSame(PROVIDER, CaptionOrder.after(order, 0));
 
         // Unpicking the last photo.
         order = order(7);
         CaptionOrder.before(order, 0, PROVIDER);
         order.clear();
-        assertSame(PROVIDER, CaptionOrder.after(order));
+        assertSame(PROVIDER, CaptionOrder.after(order, 0));
     }
 
     @Test public void theSameFirstPhotoLeavesTheFieldAlone() {
@@ -70,28 +70,47 @@ public class CaptionOrderTest {
         CaptionOrder.before(order, 0, PROVIDER);
         order.remove(2);
         order.add(4);
-        assertNull(CaptionOrder.after(order));
+        assertNull(CaptionOrder.after(order, 0));
 
         // The first photo unpicked and picked again in one change.
         CaptionOrder.before(order, 0, PROVIDER);
         order.remove(0);
         order.add(0, 1);
-        assertNull(CaptionOrder.after(order));
+        assertNull(CaptionOrder.after(order, 0));
     }
 
     @Test public void oneCaptionForAllPhotosStaysInTheField() {
         ArrayList<Object> order = order(1, 2);
         CaptionOrder.before(order, 1, PROVIDER);
         order.remove(0);
-        assertNull(CaptionOrder.after(order));
+        assertNull(CaptionOrder.after(order, 1));
+    }
+
+    @Test public void aChangeBetweenOneCaptionAndOwnCaptionsStillReloads() {
+        // Undo of a removal in the preview: one caption for the photo left, then that photo and
+        // the captioned one put back in front of it.
+        ArrayList<Object> order = order(2);
+        CaptionOrder.before(order, 1, PROVIDER);
+        order.add(0, 1);
+        assertSame(PROVIDER, CaptionOrder.after(order, 0));
+
+        // Own captions until the change leaves one caption for all.
+        CaptionOrder.before(order, 0, PROVIDER);
+        order.remove(0);
+        assertSame(PROVIDER, CaptionOrder.after(order, 1));
+
+        // Across modes, the same first photo still leaves the field alone.
+        CaptionOrder.before(order, 1, PROVIDER);
+        order.add(3);
+        assertNull(CaptionOrder.after(order, 0));
     }
 
     @Test public void eachChangeAnswersOnce() {
         ArrayList<Object> order = order(1, 2);
         CaptionOrder.before(order, 0, PROVIDER);
         order.remove(0);
-        assertSame(PROVIDER, CaptionOrder.after(order));
-        assertNull("answered once", CaptionOrder.after(order));
+        assertSame(PROVIDER, CaptionOrder.after(order, 0));
+        assertNull("answered once", CaptionOrder.after(order, 0));
 
         // An inner change (unpicking past the limit while adding) answers for itself, and the
         // outer one then has nothing left to answer.
@@ -99,39 +118,39 @@ public class CaptionOrderTest {
         CaptionOrder.before(order, 0, PROVIDER);
         CaptionOrder.before(order, 0, PROVIDER);
         order.remove(0);
-        assertSame(PROVIDER, CaptionOrder.after(order));
-        assertNull(CaptionOrder.after(order));
+        assertSame(PROVIDER, CaptionOrder.after(order, 0));
+        assertNull(CaptionOrder.after(order, 0));
 
         // Nothing to answer without a provider or a first photo.
         CaptionOrder.before(order(1), 0, null);
-        assertNull(CaptionOrder.after(order()));
+        assertNull(CaptionOrder.after(order(), 0));
         CaptionOrder.before(order(), 0, PROVIDER);
-        assertNull(CaptionOrder.after(order(1)));
+        assertNull(CaptionOrder.after(order(1), 0));
         CaptionOrder.before(null, 0, PROVIDER);
-        assertNull(CaptionOrder.after(order(1)));
+        assertNull(CaptionOrder.after(order(1), 0));
     }
 
     @Test public void offPausedOrUnreadableTelegramGoesOnAsBefore() {
         Settings.CAPTION_ORDER.save(false);
         ArrayList<Object> order = order(1, 2);
         CaptionOrder.before(order, 0, PROVIDER);
-        assertNull(CaptionOrder.after(order(2)));
+        assertNull(CaptionOrder.after(order(2), 0));
 
         Settings.CAPTION_ORDER.save(true);
         for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
             if (reason == HushTelegramPause.Reason.NONE) continue;
             PauseForTests.pause(reason);
             CaptionOrder.before(order, 0, PROVIDER);
-            assertNull(reason.name(), CaptionOrder.after(order(2)));
+            assertNull(reason.name(), CaptionOrder.after(order(2), 0));
             PauseForTests.resume();
         }
         SettingsContextRule.withoutContext(() -> {
             CaptionOrder.before(order, 0, PROVIDER);
-            assertNull(CaptionOrder.after(order(2)));
+            assertNull(CaptionOrder.after(order(2), 0));
         });
         SettingReadsForTests.breakReads(Settings.CAPTION_ORDER);
         CaptionOrder.before(order, 0, PROVIDER);
-        assertNull(CaptionOrder.after(order(2)));
+        assertNull(CaptionOrder.after(order(2), 0));
         assertFalse(HookStatus.missing(FamilyNames.CAPTION_ORDER).isEmpty());
     }
 }

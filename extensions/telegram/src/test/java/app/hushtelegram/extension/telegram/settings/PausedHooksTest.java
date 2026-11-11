@@ -478,7 +478,7 @@ public class PausedHooksTest {
             ArrayList<Object> order = new ArrayList<>(Arrays.asList(1, 2));
             app.hushtelegram.extension.telegram.misc.CaptionOrder.before(order, 0, new Object());
             order.remove(0);
-            return app.hushtelegram.extension.telegram.misc.CaptionOrder.after(order) != null;
+            return app.hushtelegram.extension.telegram.misc.CaptionOrder.after(order, 0) != null;
         }));
         // New messages are looked at for forwarding.
         probes.put(PatchFamily.AUTO_FORWARDING, Collections.singletonList(() -> {

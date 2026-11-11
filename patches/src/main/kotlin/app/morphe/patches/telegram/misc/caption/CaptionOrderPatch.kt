@@ -40,7 +40,7 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 
 internal const val CAPTION_ORDER = "$EXTENSION_PACKAGE/misc/CaptionOrder;"
 internal const val CAPTION_ORDER_BEFORE = "$CAPTION_ORDER->before(Ljava/util/ArrayList;ILjava/lang/Object;)V"
-internal const val CAPTION_ORDER_AFTER = "$CAPTION_ORDER->after(Ljava/util/ArrayList;)Ljava/lang/Object;"
+internal const val CAPTION_ORDER_AFTER = "$CAPTION_ORDER->after(Ljava/util/ArrayList;I)Ljava/lang/Object;"
 internal const val CAPTION_LAYOUT = "Lorg/telegram/ui/Components/ChatAttachAlertPhotoLayout;"
 internal const val CAPTION_PHOTO_ENTRY = "Lorg/telegram/messenger/MediaController\$PhotoEntry;"
 internal const val CAPTION_IS_EMPTY = "Landroid/text/TextUtils;->isEmpty(Ljava/lang/CharSequence;)Z"
@@ -84,8 +84,9 @@ internal class CaptionOrderSite(val method: MutableMethod, val layout: Int, val 
  * back to the gallery), which takes the preview's order after a drag or a removal there.
  *
  * Each one hands the extension the first key and the captionForAllMedia answer as it starts, and
- * asks at each return whether the first key changed. When it did, it calls onApplyCaption, which
- * shows the new first photo's caption in the field.
+ * at each return asks again with captionForAllMedia's answer then: Undo of a removal in the preview
+ * can bring per-photo captions back. When the first key changed and either answer was false, it
+ * calls onApplyCaption, which shows the new first photo's caption in the field.
  */
 internal class CaptionOrderSites(
     val add: CaptionOrderSite,
@@ -93,7 +94,6 @@ internal class CaptionOrderSites(
     val order: String,
     val selected: String,
     val captionForAll: String,
-    val captionForAllStatic: Boolean,
     val provider: String,
     val providerType: String,
     val apply: String,
@@ -108,8 +108,10 @@ internal class CaptionOrderSites(
         for ((at, free) in site.returns.sortedByDescending { it.first }) {
             val (answer, nothing) = free
             method.addInstructionsAtControlFlowLabel(at, """
+                invoke-static {}, $captionForAll
+                move-result v$nothing
                 sget-object v$answer, $order
-                invoke-static {v$answer}, $CAPTION_ORDER_AFTER
+                invoke-static {v$answer, v$nothing}, $CAPTION_ORDER_AFTER
                 move-result-object v$answer
                 if-eqz v$answer, :hush_same
                 check-cast v$answer, $providerType
@@ -120,11 +122,10 @@ internal class CaptionOrderSites(
             """)
         }
         // Nothing is read before the method's first instruction, so v0 to v2 are free there.
-        val ask = if (captionForAllStatic) "invoke-static {}, $captionForAll" else "invoke-virtual {v0}, $captionForAll"
         method.addInstructions(0, """
             move-object/from16 v0, v${site.layout}
             iget-object v1, v0, $provider
-            $ask
+            invoke-static {}, $captionForAll
             move-result v2
             sget-object v0, $order
             invoke-static {v0, v2, v1}, $CAPTION_ORDER_BEFORE
@@ -135,7 +136,7 @@ internal class CaptionOrderSites(
 internal fun BytecodePatchContext.resolveCaptionOrder(): CaptionOrderSites {
     requireStatusMethod("captionOrder")
     controlHook(CAPTION_ORDER, "before", listOf(ARRAY_LIST, "I", "Ljava/lang/Object;"), "V")
-    controlHook(CAPTION_ORDER, "after", listOf(ARRAY_LIST), "Ljava/lang/Object;")
+    controlHook(CAPTION_ORDER, "after", listOf(ARRAY_LIST, "I"), "Ljava/lang/Object;")
     val layout = tgMutableClassDefByOrNull(CAPTION_LAYOUT)
     controlShape(layout != null, "the attach menu's gallery is missing")
 
@@ -157,6 +158,8 @@ internal fun BytecodePatchContext.resolveCaptionOrder(): CaptionOrderSites {
         m.parameterTypes.isEmpty() && m.returnType == "Z" && m.readsBoth() &&
             m.controlBody().any { it.opcode == Opcode.INVOKE_STATIC && it.controlRef() == CAPTION_IS_EMPTY }
     }.controlSingle("the gallery's captionForAllMedia")
+    // Asked at returns too, where no register is sure to still hold the gallery.
+    controlShape(AccessFlags.STATIC.isSet(forAll.accessFlags), "the gallery's captionForAllMedia is no longer static")
 
     // The photo viewer provider: the field whose class loads the first photo's caption into the comment field.
     val providers = layout.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) }.mapNotNull { field ->
@@ -192,7 +195,7 @@ internal fun BytecodePatchContext.resolveCaptionOrder(): CaptionOrderSites {
         site(add, add.localRegisterCount()),
         site(update, layoutRegister(update, updateClass.type)),
         order, selected,
-        "${forAll.definingClass}->${forAll.name}()Z", AccessFlags.STATIC.isSet(forAll.accessFlags),
+        "${forAll.definingClass}->${forAll.name}()Z",
         "${providerField.definingClass}->${providerField.name}:${providerField.type}", providerType.type,
         "${apply.definingClass}->${apply.name}(Ljava/lang/CharSequence;)V",
     )
