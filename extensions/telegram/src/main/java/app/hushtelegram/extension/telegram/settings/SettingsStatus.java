@@ -236,4 +236,5 @@ public final class SettingsStatus {
     public static boolean openRestrictedChats() { return false; }
     public static boolean bypassIntegrityCheck() { return false; }
     public static boolean autoForwarding() { return false; }
+    public static boolean cropGuard() { return false; }
 }

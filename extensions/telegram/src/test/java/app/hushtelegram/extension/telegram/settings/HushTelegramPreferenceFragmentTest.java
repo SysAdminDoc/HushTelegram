@@ -197,6 +197,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.BYPASS_CHANNEL_RESTRICTIONS, "Bypass channel restrictions");
         ROW_TITLES.put(PatchFamily.BYPASS_INTEGRITY_CHECK, "Bypass integrity check");
         ROW_TITLES.put(PatchFamily.AUTO_FORWARDING, "Auto-forwarding rules");
+        ROW_TITLES.put(PatchFamily.CROP_GUARD, "Never send an uncropped photo");
     }
 
     /** The sections every build has, in the order they're drawn. */

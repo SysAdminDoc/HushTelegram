@@ -1545,3 +1545,7 @@ channels restricted for copyright or local law	saluran yang dibatasi karena hak 
 Send photos and videos in the best quality	Kirim foto dan video dengan kualitas terbaik
 Photos go out in HD and videos at their own size and quality, without touching the quality button first. You can still lower one before sending. Only sending as a file keeps a photo exactly as it is.	Foto terkirim dalam HD dan video dengan ukuran serta kualitas aslinya, tanpa menyentuh tombol kualitas dulu. Kamu masih bisa menurunkannya sebelum mengirim. Hanya mengirim sebagai file yang menjaga foto persis seperti aslinya.
 photos and videos in their best quality	foto dan video dalam kualitas terbaik
+# context: Never send an uncropped photo. A switch on Conversations, on by default, and the toast shown when Telegram's photo editor can't finish a crop and stays open.
+Never send an uncropped photo	Jangan pernah kirim foto yang belum dipotong
+When Telegram can't finish a crop, the editor stays open and asks you to try again, so the part you cropped out never gets sent. Covers photos and profile pictures. Videos crop as usual.	Saat Telegram tidak bisa menyelesaikan pemotongan, editor tetap terbuka dan memintamu mencoba lagi, jadi bagian yang kamu potong tidak pernah terkirim. Berlaku untuk foto dan foto profil. Video dipotong seperti biasa.
+Couldn't crop the photo. Try again.	Foto tidak bisa dipotong. Coba lagi.

@@ -1545,3 +1545,7 @@ channels restricted for copyright or local law	canales restringidos por derechos
 Send photos and videos in the best quality	Enviar fotos y videos en la mejor calidad
 Photos go out in HD and videos at their own size and quality, without touching the quality button first. You can still lower one before sending. Only sending as a file keeps a photo exactly as it is.	Las fotos salen en HD y los videos con su propio tamaño y calidad, sin tocar antes el botón de calidad. Aún puedes bajar la de alguno antes de enviarlo. Solo enviarla como archivo deja una foto exactamente como es.
 photos and videos in their best quality	fotos y videos en su mejor calidad
+# context: Never send an uncropped photo. A switch on Conversations, on by default, and the toast shown when Telegram's photo editor can't finish a crop and stays open.
+Never send an uncropped photo	Nunca enviar una foto sin recortar
+When Telegram can't finish a crop, the editor stays open and asks you to try again, so the part you cropped out never gets sent. Covers photos and profile pictures. Videos crop as usual.	Si Telegram no puede terminar un recorte, el editor sigue abierto y te pide que lo intentes de nuevo, para que la parte que recortaste nunca se envíe. Cubre fotos y fotos de perfil. Los videos se recortan como siempre.
+Couldn't crop the photo. Try again.	No se pudo recortar. Inténtalo de nuevo.

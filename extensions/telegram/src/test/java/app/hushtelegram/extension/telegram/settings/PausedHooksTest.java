@@ -471,6 +471,8 @@ public class PausedHooksTest {
         probes.put(PatchFamily.BYPASS_INTEGRITY_CHECK, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.IntegrityBypass.skipIntegrityCheck(1),
                 () -> app.hushtelegram.extension.telegram.misc.IntegrityBypass.spoofSignature(1)));
+        probes.put(PatchFamily.CROP_GUARD, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.CropGuard.missing(null)));
         // New messages are looked at for forwarding.
         probes.put(PatchFamily.AUTO_FORWARDING, Collections.singletonList(() -> {
             List<String> before = HookStatus.report();

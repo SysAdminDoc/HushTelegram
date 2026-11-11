@@ -525,6 +525,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_ask_before_sticker", FALSE);
 
     /**
+     * A photo whose crop Telegram can't finish stays in the editor with a try again toast, instead of
+     * going out uncropped. On by default.
+     */
+    public static final BooleanSetting CROP_GUARD =
+            new BooleanSetting("hushtelegram_crop_guard", TRUE);
+
+    /**
      * Translate a message or a whole chat with Google's web translate, beside Telegram's own Premium
      * translation. Off by default, and nothing leaves the phone until a chat or message is turned on.
      */

@@ -138,6 +138,7 @@ body:
         - Strip link tracking
         - Test server sign-in
         - Bot token sign-in
+        - Never send an uncropped photo
         - HushTelegram settings
     validations:
       required: true

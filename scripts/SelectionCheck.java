@@ -493,6 +493,7 @@ public final class SelectionCheck {
         hook(calls, flags, "disableUpdateChecks", "misc/UpdateChecks", "skipUpdateCheck");
         hook(calls, flags, "testServerSignIn", "misc/TestServers", "shown", "countryState");
         hook(calls, flags, "botTokenSignIn", "misc/BotSignIn", "phoneScreen", "drop");
+        hook(calls, flags, "cropGuard", "misc/CropGuard", "begin", "missing", "notMade", "held");
         for (String[] bridge : List.of(
                 new String[]{"nativeTokenPresence", names.method("Lorg/telegram/messenger/SharedConfig;->hushTelegramTokenPresence()I")},
                 new String[]{"nativeAccountCounts", names.method("Lorg/telegram/messenger/UserConfig;->hushTelegramAccountCounts()I")})) {

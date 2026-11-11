@@ -49,8 +49,9 @@ final class ManagerCategories {
 
     /**
      * The families whose switches live on a page named for something other than their category:
-     * the link switches have the Links page, update checks the Updates page, and the push repair
-     * (a fix) sits with the other notification switches.
+     * the link switches have the Links page, update checks the Updates page, the push repair
+     * (a fix) sits with the other notification switches and the crop guard (a fix) with the
+     * other sending switches.
      */
     static String pageOf(PatchFamily family) throws Exception {
         switch (family) {
@@ -59,6 +60,8 @@ final class ManagerCategories {
                 return "Links";
             case DISABLE_UPDATE_CHECKS:
                 return "Updates";
+            case CROP_GUARD:
+                return "Conversations";
             case REPAIR_FIREBASE_PUSH:
                 return "Notifications";
             default:

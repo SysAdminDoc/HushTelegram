@@ -850,6 +850,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.ASK_BEFORE_STICKER.coverageSummary(L10n.t("Asks Call or Cancel before the call button in a chat or on a profile starts a "
                             + "call."))));
         }
+        if (build.contains(PatchFamily.CROP_GUARD)) {
+            on(pages, PatchFamily.CROP_GUARD).addPreference(toggle(context, Settings.CROP_GUARD, L10n.t("Never send an uncropped photo"),
+                    PatchFamily.CROP_GUARD.coverageSummary(L10n.t("When Telegram can't finish a crop, the editor stays open and asks you to try "
+                            + "again, so the part you cropped out never gets sent. Covers photos and profile pictures. Videos crop as usual."))));
+        }
         if (build.contains(PatchFamily.OUTSIDE_TRANSLATE)) {
             SwitchPreference outside = toggle(context, Settings.OUTSIDE_TRANSLATE, L10n.t("Translate with an outside service"),
                     PatchFamily.OUTSIDE_TRANSLATE.coverageSummary(L10n.t("Adds Translate here to a message's menu and Translate this chat to a chat's menu, "
