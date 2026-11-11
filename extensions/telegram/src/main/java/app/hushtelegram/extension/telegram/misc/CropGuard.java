@@ -18,7 +18,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * word: Done closes the crop view and Send goes on, so the photo goes out whole, cropped-out part
  * included. With the switch on, either failure stops the crop where it is instead. Done and Send
  * leave the editor open and say to try again, and the next tap runs the crop from the start.
- * Videos are cropped as they're sent, so they're left as they are.
+ * Videos are cropped as they're sent, so they're left as they are. A live photo's still is a
+ * cropped copy like a photo's, so a copy that fails holds it too.
  */
 public final class CropGuard {
     private CropGuard() {}

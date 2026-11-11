@@ -60,6 +60,7 @@ internal const val PAINT_PATH = "$EDIT_STATE->paintPath:Ljava/lang/String;"
 internal const val CROPPED_PAINT_PATH = "$EDIT_STATE->croppedPaintPath:Ljava/lang/String;"
 internal const val CROPPED_ENTITIES = "$EDIT_STATE->croppedMediaEntities:Ljava/util/ArrayList;"
 internal const val IS_CROPPED = "$EDIT_STATE->isCropped:Z"
+internal const val IS_LIVE_PHOTO = "$EDIT_STATE->isLivePhoto()Z"
 internal const val GET_BITMAP = "Lorg/telegram/messenger/ImageReceiver;->getBitmap()$BITMAP"
 internal val CROPPED_BITMAP_PARAMETERS = listOf(BITMAP, CROP_STATE, "[I", "Z")
 internal val SEND_PRESSED_PARAMETERS = listOf("Z", "I", "I", "Z", "Z", "Z")
@@ -98,7 +99,10 @@ val cropGuardPatch = bytecodePatch(
  * The guard asks before the crop is set ([entry]) whether the photo is there, and after the copy is
  * drawn ([bake]) whether there is one. A failure returns from the method there, and Done and Send,
  * right after their call to it ([doneAt], [sendAt]), keep the editor open instead of going on.
- * Videos are cropped by the encoder when they're sent, so both checks leave them alone.
+ * Videos are cropped by the encoder when they're sent, so both checks leave them alone. The viewer
+ * counts a live photo as a video too, but its still goes out as the cropped copy the way a photo's
+ * does, so the copy check covers it. The photo check doesn't need to: a live photo's still is read
+ * from its file right there, not from the viewer's photo that may still be loading.
  *
  * A failure at [bake] comes after Telegram has deleted the photo's earlier edited copy and handed the
  * new crop, with the drawing and stickers cropped to it, to the photo's edit state and the viewer's
@@ -133,7 +137,11 @@ internal class CropGuardSites(
         // Highest index first, so the ones still to come keep their place.
         apply.addInstructionsAtControlFlowLabel(bake + 2, """
             iget-boolean v$bakeFree, v$self, $video
-            if-nez v$bakeFree, :hush_baked
+            if-eqz v$bakeFree, :hush_still
+            invoke-virtual {v$photoState}, $IS_LIVE_PHOTO
+            move-result v$bakeFree
+            if-eqz v$bakeFree, :hush_baked
+            :hush_still
             invoke-static/range {v$cropped .. v$cropped}, $CROP_GUARD_NOT_MADE
             move-result v$bakeFree
             if-eqz v$bakeFree, :hush_baked
@@ -225,6 +233,8 @@ internal fun BytecodePatchContext.resolveCropGuard(): CropGuardSites {
             body[at + 1].opcode == Opcode.IF_EQZ && (body[at + 1] as OneRegisterInstruction).registerA == (body[at] as OneRegisterInstruction).registerA &&
             flow.normal[at + 1].any { it in bitmap - 2 until bitmap }
     }.controlSingle("the photo editor's is-a-video check")
+    controlShape(body.any { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef() == IS_LIVE_PHOTO },
+        "the photo editor no longer tells a live photo from a video")
 
     val bake = body.indices.filter { at ->
         body[at].opcode in listOf(Opcode.INVOKE_STATIC, Opcode.INVOKE_STATIC_RANGE) && body[at].isCroppedBitmap() &&

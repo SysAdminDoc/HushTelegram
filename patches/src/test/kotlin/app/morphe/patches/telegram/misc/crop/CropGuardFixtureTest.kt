@@ -64,7 +64,7 @@ class CropGuardFixtureTest {
             assertEquals("$name: stock read after the check", apply.controlBody()[sites.entry].origRef(), after[entry + 10].origRef())
 
             // The copy check, between the copy's move-result and the paint path read.
-            val bake = after.single { it.controlRef() == CROP_GUARD_NOT_MADE }.let(after::indexOf) - 2
+            val bake = after.single { it.controlRef() == CROP_GUARD_NOT_MADE }.let(after::indexOf) - 5
             assertEquals("$name: copy check", BAKE_SHAPE, after.subList(bake, bake + BAKE_SHAPE.size).map { it.opcode })
             val bakeScratch = after[bake].namedRegisters().first()
             assertEquals(Opcode.MOVE_RESULT_OBJECT, after[bake - 1].opcode)
@@ -72,9 +72,11 @@ class CropGuardFixtureTest {
             assertNotEquals("$name: copy kept", sites.cropped, bakeScratch)
             assertNotEquals("$name: this kept", self, bakeScratch)
             assertEquals("$name: copy check registers",
-                listOf(listOf(bakeScratch, self), listOf(bakeScratch), listOf(sites.cropped), listOf(bakeScratch), listOf(bakeScratch)),
-                after.subList(bake, bake + 5).map { it.namedRegisters() })
+                listOf(listOf(bakeScratch, self), listOf(bakeScratch), listOf(sites.photoState), listOf(bakeScratch), listOf(bakeScratch),
+                    listOf(sites.cropped), listOf(bakeScratch), listOf(bakeScratch)),
+                after.subList(bake, bake + 8).map { it.namedRegisters() })
             assertEquals("$name: skips videos", sites.video, after[bake].controlRef())
+            assertEquals("$name: but not live photos", IS_LIVE_PHOTO, after[bake + 2].controlRef())
             assertEquals(PAINT_PATH, after[bake + BAKE_SHAPE.size].controlRef())
 
             // A failed copy takes the crop off the photo's edit state and the viewer's, the two the stock code just set.
@@ -101,16 +103,16 @@ class CropGuardFixtureTest {
             assertNotEquals("$name: photo state kept", sites.photoState, bakeScratch)
             assertEquals("$name: crops cleared",
                 listOf(listOf(bakeScratch)) + List(4) { listOf(bakeScratch, sites.photoState) } + List(3) { listOf(bakeScratch, sites.viewState) },
-                after.subList(bake + 5, bake + 13).map { it.namedRegisters() })
-            assertEquals(0L, (after[bake + 5] as WideLiteralInstruction).wideLiteral)
+                after.subList(bake + 8, bake + 16).map { it.namedRegisters() })
+            assertEquals(0L, (after[bake + 8] as WideLiteralInstruction).wideLiteral)
             assertEquals(listOf(CROP_STATE_WRITE, CROPPED_PAINT_PATH, CROPPED_ENTITIES, IS_CROPPED, sites.viewCrop, sites.viewPaint, sites.viewEntities),
-                after.subList(bake + 6, bake + 13).map { it.controlRef() })
+                after.subList(bake + 9, bake + 16).map { it.controlRef() })
 
             val flow = ControlFlow.of(sites.apply).normal
             for (branch in listOf(entry + 1, entry + 7)) assertEquals("$name: photo check $branch", setOf(branch + 1, entry + 9), flow[branch].toSet())
-            for (branch in listOf(bake + 1, bake + 4)) {
-                assertEquals("$name: copy check $branch", setOf(branch + 1, bake + BAKE_SHAPE.size - 1), flow[branch].toSet())
-            }
+            val baked = bake + BAKE_SHAPE.size - 1
+            assertEquals("$name: a still photo goes to the copy check", setOf(bake + 2, bake + 5), flow[bake + 1].toSet())
+            for (branch in listOf(bake + 4, bake + 7)) assertEquals("$name: copy check $branch", setOf(branch + 1, baked), flow[branch].toSet())
             assertKept("$name apply", apply, sites.apply, setOf(0) + (entry until entry + ENTRY_SHAPE.size) + (bake until bake + BAKE_SHAPE.size),
                 landsOn = mapOf(sites.entry to entry, sites.bake + 2 to bake))
 
@@ -191,7 +193,8 @@ class CropGuardFixtureTest {
             Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.RETURN_VOID, Opcode.NOP,
         )
         val BAKE_SHAPE = listOf(
-            Opcode.IGET_BOOLEAN, Opcode.IF_NEZ, Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT, Opcode.IF_EQZ,
+            Opcode.IGET_BOOLEAN, Opcode.IF_EQZ, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT, Opcode.IF_EQZ,
+            Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT, Opcode.IF_EQZ,
             Opcode.CONST_4, Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.IPUT_BOOLEAN,
             Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.IPUT_OBJECT, Opcode.RETURN_VOID, Opcode.NOP,
         )
