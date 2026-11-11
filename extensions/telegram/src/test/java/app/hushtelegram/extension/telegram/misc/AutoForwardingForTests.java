@@ -36,6 +36,16 @@ public final class AutoForwardingForTests {
         public String originName;
         /** Its photo or file, or 0. */
         public long mediaId;
+        /** Its poll, or 0. */
+        public long pollId;
+        /** Where a location or venue is, or 0 and 0. */
+        public double latitude;
+        public double longitude;
+        /** A shared contact's phone number, or null. */
+        public String phone;
+        /** A dice roll's emoji and what it landed on, or null and 0. */
+        public String emoticon;
+        public int diceValue;
         /** Its text, or null. */
         public String text;
         public boolean service;
@@ -87,6 +97,12 @@ public final class AutoForwardingForTests {
         @Override public int originDate(Object message) { return ((Message) message).originDate; }
         @Override public String originName(Object message) { return ((Message) message).originName; }
         @Override public long mediaId(Object message) { return ((Message) message).mediaId; }
+        @Override public long pollId(Object message) { return ((Message) message).pollId; }
+        @Override public double latitude(Object message) { return ((Message) message).latitude; }
+        @Override public double longitude(Object message) { return ((Message) message).longitude; }
+        @Override public String phone(Object message) { return ((Message) message).phone; }
+        @Override public String emoticon(Object message) { return ((Message) message).emoticon; }
+        @Override public int diceValue(Object message) { return ((Message) message).diceValue; }
         @Override public String text(Object message) { return ((Message) message).text; }
         @Override public boolean service(Object message) { return ((Message) message).service; }
         @Override public boolean media(Object message) { return ((Message) message).media; }

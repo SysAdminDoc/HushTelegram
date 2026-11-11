@@ -320,6 +320,66 @@ public class AutoForwardingTest {
         assertEquals(2, telegram.sent.size());
     }
 
+    /**
+     * The [i]th poll, place, contact and dice roll person 8000 sent at second 70, forwarded into A
+     * by [sender] as messages [firstId] on. None has a photo, a file or text.
+     */
+    private static List<Object> held(int firstId, long sender, int i) {
+        List<Object> four = new ArrayList<>();
+        for (int kind = 0; kind < 4; kind++) {
+            AutoForwardingForTests.Message message = message(A, firstId + kind);
+            message.forwarded = true;
+            message.sender = sender;
+            message.origin = 8000;
+            message.originDate = 70;
+            message.media = true;
+            if (kind == 0) message.pollId = 900 + i;
+            if (kind == 1) {
+                message.latitude = 40.7128;
+                message.longitude = -74.006 + i;
+            }
+            if (kind == 2) message.phone = "+1555010" + i;
+            if (kind == 3) {
+                message.emoticon = "die";
+                message.diceValue = 3 + i;
+            }
+            four.add(message);
+        }
+        return four;
+    }
+
+    @Test public void differentPollsPlacesContactsAndDiceFromOneSecondEachGoOnce() {
+        Settings.AUTO_FORWARDING.save(true);
+        assertTrue(AutoForwarding.add(new AutoForwarding.Rule(1000, A, B, false)));
+        arrive(held(1, 7000, 0).toArray());
+        arrive(held(5, 7000, 1).toArray());
+        assertEquals(Arrays.asList("0: [11/1, 11/2, 11/3, 11/4] to 12", "0: [11/5, 11/6, 11/7, 11/8] to 12"), telegram.sent);
+        // B's copies of all eight, coming back into A, stay.
+        List<Object> back = new ArrayList<>(held(11, B, 0));
+        back.addAll(held(15, B, 1));
+        arrive(back.toArray());
+        assertEquals(2, telegram.sent.size());
+        // A hidden author's own poll from that second goes, and a hidden author's copy of one stays.
+        AutoForwardingForTests.Message other = message(A, 21);
+        other.forwarded = true;
+        other.sender = 7001;
+        other.originName = "Pat";
+        other.originDate = 70;
+        other.media = true;
+        other.pollId = 950;
+        arrive(other);
+        assertEquals("0: [11/21] to 12", telegram.sent.get(2));
+        AutoForwardingForTests.Message copy = message(A, 22);
+        copy.forwarded = true;
+        copy.sender = 7001;
+        copy.originName = "Pat";
+        copy.originDate = 70;
+        copy.media = true;
+        copy.pollId = 900;
+        arrive(copy);
+        assertEquals(3, telegram.sent.size());
+    }
+
     @Test public void aRuleAddedWhilePausedKeepsTheOthers() {
         assertTrue(AutoForwarding.add(new AutoForwarding.Rule(1000, A, B, false)));
         PauseForTests.pause(HushTelegramPause.Reason.SWITCH);

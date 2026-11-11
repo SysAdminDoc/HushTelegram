@@ -38,6 +38,8 @@ class AutoForwardingFixtureTest {
         "Lorg/telegram/tgnet/TLRPC\$MessageFwdHeader;", "Lorg/telegram/tgnet/TLRPC\$Peer;", "Lorg/telegram/tgnet/TLRPC\$Chat;",
         "Lorg/telegram/messenger/ChatObject;", "Lorg/telegram/messenger/UserObject;", "Lorg/telegram/tgnet/TLRPC\$User;",
         "Lorg/telegram/tgnet/TLRPC\$MessageMedia;", "Lorg/telegram/tgnet/TLRPC\$Photo;", "Lorg/telegram/tgnet/TLRPC\$Document;",
+        "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaPoll;", "Lorg/telegram/tgnet/TLRPC\$Poll;", "Lorg/telegram/tgnet/TLRPC\$GeoPoint;",
+        "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaDice;",
     )
 
     @Test
@@ -91,6 +93,18 @@ class AutoForwardingFixtureTest {
                 "Lorg/telegram/tgnet/TLRPC\$MessageMedia;->document:Lorg/telegram/tgnet/TLRPC\$Document;",
                 "Lorg/telegram/tgnet/TLRPC\$Photo;->id:J",
                 "Lorg/telegram/tgnet/TLRPC\$Document;->id:J")))
+            assertTrue("$name: pollId", refs("pollId").containsAll(listOf(
+                "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaPoll;->poll:Lorg/telegram/tgnet/TLRPC\$Poll;",
+                "Lorg/telegram/tgnet/TLRPC\$Poll;->id:J")))
+            for ((stub, field) in listOf("latitude" to "lat", "longitude" to "_long")) {
+                assertTrue("$name: $stub", refs(stub).containsAll(listOf(
+                    "Lorg/telegram/tgnet/TLRPC\$MessageMedia;->geo:Lorg/telegram/tgnet/TLRPC\$GeoPoint;",
+                    "Lorg/telegram/tgnet/TLRPC\$GeoPoint;->$field:D")))
+            }
+            assertTrue("$name: phone", "Lorg/telegram/tgnet/TLRPC\$MessageMedia;->phone_number:Ljava/lang/String;" in refs("phone"))
+            assertTrue("$name: emoticon",
+                "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaDice;->emoticon:Ljava/lang/String;" in refs("emoticon"))
+            assertTrue("$name: diceValue", "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaDice;->value:I" in refs("diceValue"))
             assertTrue("$name: canPost", refs("canPost").containsAll(listOf(
                 "Lorg/telegram/messenger/MessagesController;->getChat(Ljava/lang/Long;)Lorg/telegram/tgnet/TLRPC\$Chat;",
                 "Lorg/telegram/messenger/ChatObject;->isNotInChat(Lorg/telegram/tgnet/TLRPC\$Chat;)Z",

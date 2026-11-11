@@ -43,6 +43,10 @@ private const val PEER = "Lorg/telegram/tgnet/TLRPC\$Peer;"
 private const val MEDIA = "Lorg/telegram/tgnet/TLRPC\$MessageMedia;"
 private const val PHOTO = "Lorg/telegram/tgnet/TLRPC\$Photo;"
 private const val DOCUMENT = "Lorg/telegram/tgnet/TLRPC\$Document;"
+private const val MEDIA_POLL = "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaPoll;"
+private const val POLL = "Lorg/telegram/tgnet/TLRPC\$Poll;"
+private const val GEO = "Lorg/telegram/tgnet/TLRPC\$GeoPoint;"
+private const val MEDIA_DICE = "Lorg/telegram/tgnet/TLRPC\$TL_messageMediaDice;"
 private const val TL_CHAT = "Lorg/telegram/tgnet/TLRPC\$Chat;"
 private const val CHAT_OBJECT = "Lorg/telegram/messenger/ChatObject;"
 private const val TL_USER = "Lorg/telegram/tgnet/TLRPC\$User;"
@@ -89,10 +93,11 @@ val autoForwardingPatch = bytecodePatch(
 internal fun BytecodePatchContext.resolveAutoForwarding(): MutableMethod {
     requireStatusMethod("autoForwarding")
     controlHook(AUTO_FORWARDING, "onNewMessages", listOf(OBJECT, "I"), "V")
-    for (name in listOf("account", "id", "date", "originDate")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "I")
+    for (name in listOf("account", "id", "date", "originDate", "diceValue")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "I")
     for (name in listOf("out", "forwarded", "service", "media")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "Z")
-    for (name in listOf("dialog", "dialogId", "sender", "origin", "mediaId")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "J")
-    for (name in listOf("originName", "text")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), STRING)
+    for (name in listOf("dialog", "dialogId", "sender", "origin", "mediaId", "pollId")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "J")
+    for (name in listOf("latitude", "longitude")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), "D")
+    for (name in listOf("originName", "text", "phone", "emoticon")) controlHook(AUTO_FORWARDING, name, listOf(OBJECT), STRING)
     controlHook(AUTO_FORWARDING, "selectedAccount", emptyList(), "I")
     controlHook(AUTO_FORWARDING, "userId", listOf("I"), "J")
     controlHook(AUTO_FORWARDING, "dialogs", listOf("I", "I"), LIST)
@@ -105,9 +110,13 @@ internal fun BytecodePatchContext.resolveAutoForwarding(): MutableMethod {
         "isForwarded()Z", "isMediaEmpty()Z", "getFromChatId()J", "static getPeerId($PEER)J")
     controlMembers(TL_MESSAGE, "action:$ACTION", "fwd_from:$FWD_HEADER", "date:I", "media:$MEDIA", "message:$STRING")
     controlMembers(FWD_HEADER, "from_id:$PEER", "date:I", "from_name:$STRING")
-    controlMembers(MEDIA, "photo:$PHOTO", "document:$DOCUMENT")
+    controlMembers(MEDIA, "photo:$PHOTO", "document:$DOCUMENT", "geo:$GEO", "phone_number:$STRING")
     controlMembers(PHOTO, "id:J")
     controlMembers(DOCUMENT, "id:J")
+    controlMembers(MEDIA_POLL, "poll:$POLL")
+    controlMembers(POLL, "id:J")
+    controlMembers(GEO, "lat:D", "_long:D")
+    controlMembers(MEDIA_DICE, "emoticon:$STRING", "value:I")
     controlMembers(ACTION_EMPTY)
     controlMembers(USER_CONFIG, "static selectedAccount:I", "static getInstance(I)$USER_CONFIG", "getClientUserId()J")
     controlMembers(CONTROLLER, "static getInstance(I)$CONTROLLER", "getDialogs(I)$LIST", "getPeerName(J)$STRING",
@@ -233,6 +242,80 @@ internal fun BytecodePatchContext.writeAutoForwardingStubs() {
         :hush_none
         const-wide/16 v0, 0x0
         return-wide v0
+    """)
+    // Without a photo, a file or text, a forward still keeps the poll, place, contact or dice roll,
+    // which tells two of them from one author's same second apart.
+    writeStub(AUTO_FORWARDING, "pollId", 4, """
+        check-cast p0, $MESSAGE
+        iget-object v2, p0, $MESSAGE->messageOwner:$TL_MESSAGE
+        if-eqz v2, :hush_none
+        iget-object v2, v2, $TL_MESSAGE->media:$MEDIA
+        instance-of v0, v2, $MEDIA_POLL
+        if-eqz v0, :hush_none
+        check-cast v2, $MEDIA_POLL
+        iget-object v2, v2, $MEDIA_POLL->poll:$POLL
+        if-eqz v2, :hush_none
+        iget-wide v0, v2, $POLL->id:J
+        return-wide v0
+        :hush_none
+        const-wide/16 v0, 0x0
+        return-wide v0
+    """)
+    for ((name, field) in listOf("latitude" to "lat", "longitude" to "_long")) {
+        writeStub(AUTO_FORWARDING, name, 4, """
+            check-cast p0, $MESSAGE
+            iget-object v2, p0, $MESSAGE->messageOwner:$TL_MESSAGE
+            if-eqz v2, :hush_none
+            iget-object v2, v2, $TL_MESSAGE->media:$MEDIA
+            if-eqz v2, :hush_none
+            iget-object v2, v2, $MEDIA->geo:$GEO
+            if-eqz v2, :hush_none
+            iget-wide v0, v2, $GEO->$field:D
+            return-wide v0
+            :hush_none
+            const-wide/16 v0, 0x0
+            return-wide v0
+        """)
+    }
+    writeStub(AUTO_FORWARDING, "phone", 2, """
+        check-cast p0, $MESSAGE
+        iget-object v0, p0, $MESSAGE->messageOwner:$TL_MESSAGE
+        if-eqz v0, :hush_none
+        iget-object v0, v0, $TL_MESSAGE->media:$MEDIA
+        if-eqz v0, :hush_none
+        iget-object v0, v0, $MEDIA->phone_number:$STRING
+        return-object v0
+        :hush_none
+        const/4 v0, 0x0
+        return-object v0
+    """)
+    writeStub(AUTO_FORWARDING, "emoticon", 3, """
+        check-cast p0, $MESSAGE
+        iget-object v0, p0, $MESSAGE->messageOwner:$TL_MESSAGE
+        if-eqz v0, :hush_none
+        iget-object v0, v0, $TL_MESSAGE->media:$MEDIA
+        instance-of v1, v0, $MEDIA_DICE
+        if-eqz v1, :hush_none
+        check-cast v0, $MEDIA_DICE
+        iget-object v0, v0, $MEDIA_DICE->emoticon:$STRING
+        return-object v0
+        :hush_none
+        const/4 v0, 0x0
+        return-object v0
+    """)
+    writeStub(AUTO_FORWARDING, "diceValue", 3, """
+        check-cast p0, $MESSAGE
+        iget-object v0, p0, $MESSAGE->messageOwner:$TL_MESSAGE
+        if-eqz v0, :hush_none
+        iget-object v0, v0, $TL_MESSAGE->media:$MEDIA
+        instance-of v1, v0, $MEDIA_DICE
+        if-eqz v1, :hush_none
+        check-cast v0, $MEDIA_DICE
+        iget v0, v0, $MEDIA_DICE->value:I
+        return v0
+        :hush_none
+        const/4 v0, 0x0
+        return v0
     """)
     writeStub(AUTO_FORWARDING, "service", 2, """
         check-cast p0, $MESSAGE

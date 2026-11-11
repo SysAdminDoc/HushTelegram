@@ -368,14 +368,32 @@ public final class AutoForwarding {
 
     /**
      * When [message]'s original was first sent, and its photo or file, without who sent it. Without
-     * either, its text stands in, or every text message sent in that second would look the same.
+     * either, the poll, place, contact or dice roll it holds stands in, and then its text, or every
+     * one of them sent in that second would look the same.
      */
     private static String moment(Object message) {
         int date = telegram.forwarded(message) ? telegram.originDate(message) : telegram.date(message);
         long media = telegram.mediaId(message);
         if (media != 0) return date + "/" + media;
+        String held = held(message);
+        if (held != null) return date + "/" + held;
         String text = telegram.text(message);
         return date + "/t" + (text == null ? 0 : text.hashCode());
+    }
+
+    /** The poll, place, contact or dice roll [message] holds, each of which a forward keeps, or null. */
+    @Nullable
+    private static String held(Object message) {
+        long poll = telegram.pollId(message);
+        if (poll != 0) return "p" + poll;
+        String emoticon = telegram.emoticon(message);
+        if (emoticon != null) return "d" + emoticon + telegram.diceValue(message);
+        String phone = telegram.phone(message);
+        if (phone != null && !phone.isEmpty()) return "c" + phone;
+        double latitude = telegram.latitude(message);
+        double longitude = telegram.longitude(message);
+        if (latitude != 0 || longitude != 0) return "g" + latitude + "," + longitude;
+        return null;
     }
 
     /** Whether [account] may send one more forward this minute, and if so, counts it. */
@@ -433,6 +451,20 @@ public final class AutoForwarding {
 
         long mediaId(Object message);
 
+        long pollId(Object message);
+
+        double latitude(Object message);
+
+        double longitude(Object message);
+
+        @Nullable
+        String phone(Object message);
+
+        @Nullable
+        String emoticon(Object message);
+
+        int diceValue(Object message);
+
         @Nullable
         String text(Object message);
 
@@ -475,6 +507,12 @@ public final class AutoForwarding {
         @Override public int originDate(Object message) { return AutoForwarding.originDate(message); }
         @Override public String originName(Object message) { return AutoForwarding.originName(message); }
         @Override public long mediaId(Object message) { return AutoForwarding.mediaId(message); }
+        @Override public long pollId(Object message) { return AutoForwarding.pollId(message); }
+        @Override public double latitude(Object message) { return AutoForwarding.latitude(message); }
+        @Override public double longitude(Object message) { return AutoForwarding.longitude(message); }
+        @Override public String phone(Object message) { return AutoForwarding.phone(message); }
+        @Override public String emoticon(Object message) { return AutoForwarding.emoticon(message); }
+        @Override public int diceValue(Object message) { return AutoForwarding.diceValue(message); }
         @Override public String text(Object message) { return AutoForwarding.text(message); }
         @Override public boolean service(Object message) { return AutoForwarding.service(message); }
         @Override public boolean media(Object message) { return AutoForwarding.media(message); }
@@ -527,6 +565,26 @@ public final class AutoForwarding {
 
     /** The id of the message's photo or file, which a forward keeps, or 0 when it has neither. */
     public static long mediaId(Object message) { return 0L; }
+
+    /** {@code TL_messageMediaPoll.poll.id}: the poll's id, which a forward keeps, or 0 when it isn't a poll. */
+    public static long pollId(Object message) { return 0L; }
+
+    /** {@code media.geo.lat}: a location or venue's latitude, or 0 when it has none. */
+    public static double latitude(Object message) { return 0d; }
+
+    /** {@code media.geo._long}: a location or venue's longitude, or 0 when it has none. */
+    public static double longitude(Object message) { return 0d; }
+
+    /** {@code media.phone_number}: a shared contact's phone number, or null. */
+    @Nullable
+    public static String phone(Object message) { return null; }
+
+    /** {@code TL_messageMediaDice.emoticon}: the emoji a dice roll was thrown with, or null when it isn't one. */
+    @Nullable
+    public static String emoticon(Object message) { return null; }
+
+    /** {@code TL_messageMediaDice.value}: what a dice roll landed on, or 0. */
+    public static int diceValue(Object message) { return 0; }
 
     /** {@code message.messageOwner.message}: its text, or a photo or file's caption, or null. */
     @Nullable
