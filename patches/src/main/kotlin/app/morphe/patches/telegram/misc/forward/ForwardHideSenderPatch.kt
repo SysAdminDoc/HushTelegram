@@ -30,6 +30,7 @@ import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.definitionReaches
 import app.morphe.util.literalReads
 import app.morphe.util.namedRegisters
+import app.morphe.util.readsAfter
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -51,6 +52,7 @@ import app.morphe.util.names.tgMutableClassDefByOrNull
 internal const val FORWARD_SENDER = "$EXTENSION_PACKAGE/misc/ForwardSender;"
 internal const val STARTS = "$FORWARD_SENDER->starts(Ljava/lang/Object;Ljava/util/ArrayList;)V"
 internal const val PICKED = "$FORWARD_SENDER->picked(Ljava/util/ArrayList;JI)Z"
+internal const val SHARED = "$FORWARD_SENDER->shared(Ljava/util/ArrayList;JI)Z"
 internal const val SHARES = "$FORWARD_SENDER->shares(Ljava/lang/Object;)V"
 internal const val SHARE_POPUP = "$FORWARD_SENDER->sharePopup(Ljava/lang/Object;Ljava/lang/Object;)V"
 internal const val PREVIEW_PARAMS = "Lorg/telegram/messenger/MessagePreviewParams;"
@@ -86,9 +88,10 @@ val forwardHideSenderPatch = bytecodePatch(
     execute {
         val site = resolveForwardHideSender()
         val share = site.share
+        val flagged = (site.picks + share.sends).groupBy { it.method }
         // Assembled on copies first, so a refusal leaves the app untouched.
         insertForwardStart(MutableMethod(ImmutableMethod.of(site.update)))
-        site.picks.groupBy { it.method }.forEach { (method, sends) -> insertPicked(MutableMethod(ImmutableMethod.of(method)), sends) }
+        flagged.forEach { (method, sends) -> insertSendFlags(MutableMethod(ImmutableMethod.of(method)), sends) }
         insertShares(MutableMethod(ImmutableMethod.of(share.made)), share)
         insertSharePopup(MutableMethod(ImmutableMethod.of(share.popup)), share)
         writeStub(FORWARD_SENDER, "fresh", 2, """
@@ -156,7 +159,7 @@ val forwardHideSenderPatch = bytecodePatch(
             return-void
         """)
         insertForwardStart(site.update)
-        site.picks.groupBy { it.method }.forEach { (method, sends) -> insertPicked(method, sends) }
+        flagged.forEach { (method, sends) -> insertSendFlags(method, sends) }
         insertShares(share.made, share)
         insertSharePopup(share.popup, share)
         enableStatus("forwardHideSender")
@@ -167,20 +170,21 @@ val forwardHideSenderPatch = bytecodePatch(
  * The preview's [update] for a new forward, the message type Telegram keeps behind Premium, the
  * chat picker's own forwards and the Share sheet.
  */
-internal class ForwardHideSenderSite(val update: MutableMethod, val article: Int, val picks: List<PickerSend>, val share: ShareSheet)
+internal class ForwardHideSenderSite(val update: MutableMethod, val article: Int, val picks: List<FlagSend>, val share: ShareSheet)
 
-/** A forward the chat picker sends by itself at [at] in [method], its registers from [first], Hide sender's name a plain false. */
-internal class PickerSend(val method: MutableMethod, val at: Int, val first: Int)
+/** A forward send at [at] in [method], its registers from [first], whose Hide sender's name [hook] picks. */
+internal class FlagSend(val method: MutableMethod, val at: Int, val first: Int, val hook: String)
 
 /**
- * The Share sheet [alert], whose Show sender's name [flag] the send turns around and whose
- * [messages] it forwards. [made] stores the messages right before [madeAt] with the sheet in [self], and
+ * The Share sheet [alert], whose Show sender's name [flag] its [sends] turn around and whose
+ * [messages] they forward. [made] stores the messages right before [madeAt] with the sheet in [self], and
  * [popup] ticks [uncheck]'s item [item] in the send menu right before [popupAt], the sheet in [popupAlert].
  */
 internal class ShareSheet(
     val alert: String,
     val flag: String,
     val messages: String,
+    val sends: List<FlagSend>,
     val made: MutableMethod,
     val madeAt: Int,
     val self: Int,
@@ -198,10 +202,10 @@ internal fun insertForwardStart(target: MutableMethod) {
 }
 
 /** The extension picks the flag each of [sends] goes with, last first so the earlier indexes hold. */
-internal fun insertPicked(target: MutableMethod, sends: List<PickerSend>) {
+internal fun insertSendFlags(target: MutableMethod, sends: List<FlagSend>) {
     sends.sortedByDescending { it.at }.forEach {
         target.addInstructionsAtControlFlowLabel(it.at, """
-            invoke-static/range {v${it.first + 1} .. v${it.first + 4}}, $PICKED
+            invoke-static/range {v${it.first + 1} .. v${it.first + 4}}, ${it.hook}
             move-result v${it.first + 4}
         """)
     }
@@ -229,6 +233,7 @@ internal fun BytecodePatchContext.resolveForwardHideSender(): ForwardHideSenderS
     controlHook(FORWARD_SENDER, "article", listOf(), "I")
     controlHook(FORWARD_SENDER, "hide", listOf("Ljava/lang/Object;"), "V")
     controlHook(FORWARD_SENDER, "picked", listOf("Ljava/util/ArrayList;", "J", "I"), "Z")
+    controlHook(FORWARD_SENDER, "shared", listOf("Ljava/util/ArrayList;", "J", "I"), "Z")
     controlHook(FORWARD_SENDER, "shares", listOf("Ljava/lang/Object;"), "V")
     controlHook(FORWARD_SENDER, "sharePopup", listOf("Ljava/lang/Object;", "Ljava/lang/Object;"), "V")
     controlHook(FORWARD_SENDER, "self", listOf("Ljava/lang/Object;"), "J")
@@ -294,7 +299,7 @@ internal fun Method.pickerShaped(): Boolean {
  * turn Hide sender's name on in: a send in the picker's callback, or in a lambda the callback
  * makes, whose flag is a plain false that only the send reads.
  */
-private fun BytecodePatchContext.pickerSends(sends: List<ForwardSend>): List<PickerSend> {
+private fun BytecodePatchContext.pickerSends(sends: List<ForwardSend>): List<FlagSend> {
     val lambdas = mutableMapOf<String, Boolean>()
     fun madeByPicker(cls: ClassDef) = lambdas.getOrPut(cls.origType) {
         var made = false
@@ -316,7 +321,7 @@ private fun BytecodePatchContext.pickerSends(sends: List<ForwardSend>): List<Pic
         }.singleOrNull() ?: return@mapNotNull null
         // move-result takes the flag back, so it needs a register an 8-bit operand reaches.
         if (flag > 255 || send.method.literalReads(zero) != listOf(send.at)) return@mapNotNull null
-        PickerSend(mutableMethod(send.owner, send.method), send.at, send.first)
+        FlagSend(mutableMethod(send.owner, send.method), send.at, send.first, PICKED)
     }
 }
 
@@ -326,7 +331,7 @@ private fun BytecodePatchContext.pickerSends(sends: List<ForwardSend>): List<Pic
  * made, and its send menu sets the flag again each time it opens, ticking the item that says so.
  */
 private fun BytecodePatchContext.resolveShareSheet(sends: List<ForwardSend>): ShareSheet {
-    val (alert, flag, messages) = sends.mapNotNull { send ->
+    val found = sends.mapNotNull { send ->
         val body = send.flow.instructions
         val turn = send.flow.writer(send.at, send.first + 4)
         val turned = body.getOrNull(turn)
@@ -337,8 +342,15 @@ private fun BytecodePatchContext.resolveShareSheet(sends: List<ForwardSend>): Sh
         val messages = list?.takeIf { it.opcode == Opcode.IGET_OBJECT }?.controlRef() ?: return@mapNotNull null
         val owner = flag.substringBefore("->")
         if (!messages.startsWith("$owner->") || !messages.endsWith(":Ljava/util/ArrayList;")) return@mapNotNull null
-        Triple(owner, flag, messages)
-    }.distinct().controlSingle("the Share sheet's forward")
+        Triple(owner, flag, messages) to send
+    }
+    val (alert, flag, messages) = found.map { it.first }.distinct().controlSingle("the Share sheet's forward")
+    val shared = found.map { (_, send) ->
+        // The send to each chat takes the extension's answer in place of the turned flag, so nothing after it may read that.
+        controlShape(send.first + 4 <= 255 && send.method.readsAfter(send.at, send.first + 4).isEmpty(),
+            "the Share sheet reads its forward's flag again after sending")
+        FlagSend(mutableMethod(send.owner, send.method), send.at, send.first, SHARED)
+    }
 
     val sheet = tgClassDefByOrNull(alert)
     controlShape(sheet != null && AccessFlags.PUBLIC.isSet(sheet.accessFlags), "the Share sheet isn't public")
@@ -383,8 +395,11 @@ private fun BytecodePatchContext.resolveShareSheet(sends: List<ForwardSend>): Sh
     val popup = popups.controlSingle("the Share sheet's send menu ticking Show sender's name")
     controlShape(popup.alert <= 15 && popup.item <= 15, "the Share sheet's send menu holds the sheet in a high register")
     requireReachable(popup.uncheck, false)
-    return ShareSheet(alert, flag, messages, mutableMethod(sheet, made), store + 1, self,
-        mutableMethod(popup.owner, popup.method), popup.at, popup.alert, popup.item, popup.uncheck)
+    val madeMethod = mutableMethod(sheet, made)
+    val popupMethod = mutableMethod(popup.owner, popup.method)
+    controlShape(shared.none { it.method === madeMethod || it.method === popupMethod }, "the Share sheet sends from where it's made or its menu")
+    return ShareSheet(alert, flag, messages, shared, madeMethod, store + 1, self,
+        popupMethod, popup.at, popup.alert, popup.item, popup.uncheck)
 }
 
 /** [method] of [owner] as the patch edits it. */

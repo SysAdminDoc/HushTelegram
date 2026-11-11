@@ -15,8 +15,8 @@ import java.util.ArrayList;
  * With the switch on it starts on, so the copies arrive without the original author, and you can
  * still turn it back off before sending. The Share sheet's send menu starts the same way. A forward
  * the chat picker sends by itself, to several chats at once, has no option to turn and goes without
- * the sender, except to Saved Messages (#70). Telegram keeps the option behind Premium for article
- * messages, and those forwards stay as Telegram sets them.
+ * the sender. Forwards from the picker or the Share sheet to Saved Messages keep it (#70). Telegram
+ * keeps the option behind Premium for article messages, and those forwards stay as Telegram sets them.
  */
 public final class ForwardSender {
     private ForwardSender() {}
@@ -70,6 +70,28 @@ public final class ForwardSender {
             HookStatus.counted(FamilyNames.FORWARD_HIDE_SENDER, "sender hidden");
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.FORWARD_HIDE_SENDER, "share", failure);
+        }
+    }
+
+    /**
+     * Asked right before the Share sheet forwards to each chat it was given. The sheet has one
+     * flag for every chat, so Saved Messages gets the sender back here.
+     *
+     * @param messages the messages being forwarded
+     * @param peer the chat they go to
+     * @param flag the sheet's Hide sender's name flag for the send, 0 for off
+     * @return the flag the send goes with
+     */
+    public static boolean shared(ArrayList<?> messages, long peer, int flag) {
+        boolean stock = flag != 0;
+        if (!stock || messages == null || messages.isEmpty() || !on()) return stock;
+        try {
+            if (peer != self(messages.get(0))) return true;
+            HookStatus.counted(FamilyNames.FORWARD_HIDE_SENDER, "sender kept for Saved Messages");
+            return false;
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.FORWARD_HIDE_SENDER, "share send", failure);
+            return true;
         }
     }
 

@@ -67,6 +67,23 @@ public class ForwardSenderTest {
         assertTrue(String.join("\n", HookStatus.report()).contains("sender hidden 1"));
     }
 
+    @Test public void theShareSheetKeepsTheSenderOnlyForSavedMessages() {
+        ArrayList<Object> messages = new ArrayList<>(Collections.singletonList(new Object()));
+        // Off, every chat goes with the sheet's own flag.
+        assertTrue(ForwardSender.shared(messages, 0L, 1));
+        assertFalse(ForwardSender.shared(messages, 5L, 0));
+        Settings.FORWARD_HIDE_SENDER.save(true);
+        assertTrue(ForwardSender.shared(messages, 5L, 1));
+        // The unpatched stub gives account ID 0, so chat 0 stands for Saved Messages here.
+        assertFalse(ForwardSender.shared(messages, 0L, 1));
+        // Show sender's name picked in the send menu stays for every chat.
+        assertFalse(ForwardSender.shared(messages, 5L, 0));
+        assertFalse(ForwardSender.shared(messages, 0L, 0));
+        assertTrue(ForwardSender.shared(new ArrayList<>(), 0L, 1));
+        assertTrue(ForwardSender.shared(null, 0L, 1));
+        assertTrue(String.join("\n", HookStatus.report()).contains("sender kept for Saved Messages 1"));
+    }
+
     @Test public void aShareSheetWithNothingForwardedIsLeftAlone() {
         Settings.FORWARD_HIDE_SENDER.save(true);
         // The unpatched stub holds no messages, the way a sheet sharing a link does.

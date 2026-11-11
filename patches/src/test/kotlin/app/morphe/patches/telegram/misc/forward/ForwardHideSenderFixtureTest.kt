@@ -68,6 +68,10 @@ class ForwardHideSenderFixtureTest {
             assertEquals("$name: the picker's own forwards", 5, site.picks.size)
             assertEquals("$name: one in each callback", 5, site.picks.map { it.method }.distinct().size)
             val picks = site.picks.map { it to ImmutableMethod.of(it.method).controlBody() }
+            // The Share sheet's sends, one for each chat it was given, none of them the picker's.
+            assertTrue("$name: the Share sheet's sends", share.sends.isNotEmpty())
+            assertTrue("$name: apart from the picker's", share.sends.none { s -> site.picks.any { it.method === s.method } })
+            val shares = share.sends.map { it to ImmutableMethod.of(it.method).controlBody() }
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { forwardHideSenderPatch.execute(context) })
 
             for ((pick, stock) in picks) {
@@ -81,6 +85,18 @@ class ForwardHideSenderFixtureTest {
                 assertEquals(FORWARD_SEND, code[pick.at + 2].controlRef())
                 assertEquals("$name: the flag starts false", 0, (stock.subList(0, pick.at).last { it.opcode in setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST) &&
                     it.namedRegisters().first() == pick.first + 4 } as NarrowLiteralInstruction).narrowLiteral)
+            }
+            for ((send, stock) in shares) {
+                val code = send.method.controlBody()
+                val siblings = share.sends.filter { it.method === send.method }
+                val at = send.at + 2 * siblings.count { it.at < send.at }
+                assertEquals("$name: two instructions in front of each Share sheet send", stock.counted() + 2 * siblings.size, code.counted())
+                assertEquals(Opcode.INVOKE_STATIC_RANGE, code[at].opcode)
+                assertEquals(SHARED, code[at].controlRef())
+                assertEquals("$name: the messages, the chat and the turned flag", (send.first + 1..send.first + 4).toList(), code[at].namedRegisters())
+                assertEquals(Opcode.MOVE_RESULT, code[at + 1].opcode)
+                assertEquals(listOf(send.first + 4), code[at + 1].namedRegisters())
+                assertEquals(FORWARD_SEND, code[at + 2].controlRef())
             }
 
             val sheet = share.made.controlBody()
