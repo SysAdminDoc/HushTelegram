@@ -221,7 +221,7 @@ internal class CropGuardSites(
 private val BAKE_FILES = listOf(CROPPED_PAINT_PATH)
 
 /** What a failed still read deletes: Telegram deletes the earlier edited copy and its thumbnail only after the read. */
-private val READ_FILES =listOf(THUMB_PATH, IMAGE_PATH, CROPPED_PAINT_PATH)
+private val READ_FILES = listOf(THUMB_PATH, IMAGE_PATH, CROPPED_PAINT_PATH)
 
 /**
  * A read of a live photo's still in applyCurrentEditMode's video branch. The check goes in front of
