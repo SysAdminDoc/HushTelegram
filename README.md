@@ -185,6 +185,8 @@ The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.o
 
 The current release patches two Telegram builds, and the patched app needs Android 9 or newer. telegram.org's build is Telegram 13.2.1, `org.telegram.messenger.web` with version code 72919, and its APK carries every phone architecture. The Google Play build is Telegram 13.2.1, `org.telegram.messenger` with version code 72911, the one most people already have on their phone. The two don't always share a version, since telegram.org updates its download on its own schedule. Morphe Manager warns about any other build, the public beta included.
 
+HushTelegram changes Telegram's app code and leaves its native libraries alone, so fixes for those come only with Telegram's own updates. CVE-2026-111105 ([ZDI-26-757](https://www.zerodayinitiative.com/advisories/ZDI-26-757/)) is one of those, a bug in rlottie, the library Telegram used to draw animated stickers. Telegram for Android swapped rlottie for its own renderer in 12.10.0 ([4e1a61e](https://github.com/DrKLO/Telegram/commit/4e1a61eca6)) and 13.2.1 still uses that one ([7be672e](https://github.com/DrKLO/Telegram/commit/7be672ead2)), so neither build above carries rlottie.
+
 SHA-256 of the stock APKs the release was checked against:
 
 ```text
