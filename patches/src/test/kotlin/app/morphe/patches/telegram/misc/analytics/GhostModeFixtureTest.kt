@@ -77,7 +77,7 @@ class GhostModeFixtureTest {
             .mapNotNull { ((it as? ReferenceInstruction)?.reference as? StringReference)?.string }
             .filter { it.startsWith("org.telegram.tgnet.") }
             .map { "L" + it.replace('.', '/') + ";" }.toSet()
-        assertEquals("the extension's request names", 19, named.size)
+        assertEquals("the extension's request names", 20, named.size)
         for (build in Fixtures.declaredBuilds()) {
             assertEquals("${build.name}: every named request", named, FixtureDex.classes(build, named).keys)
         }
@@ -91,6 +91,14 @@ class GhostModeFixtureTest {
             assertEquals("${build.name}: offline", listOf("offline:Z"),
                 request.fields.filter { it.origName == "offline" }.map { "${it.name}:${it.type}" })
             assertTrue("${build.name}: public", AccessFlags.PUBLIC.isSet(request.fields.single { it.origName == "offline" }.accessFlags))
+            assertTrue("${build.name}: built with no arguments", request.methods.any {
+                it.name == "<init>" && it.parameterTypes.isEmpty() && AccessFlags.PUBLIC.isSet(it.accessFlags)
+            })
+            // Ghost mode turns a view count request's increment off in place.
+            val views = "Lorg/telegram/tgnet/TLRPC\$TL_messages_getMessagesViews;"
+            val increment = FixtureDex.classes(build, setOf(views)).getValue(views).fields.filter { it.origName == "increment" }
+            assertEquals("${build.name}: increment", listOf("increment:Z"), increment.map { "${it.name}:${it.type}" })
+            assertTrue("${build.name}: increment public", AccessFlags.PUBLIC.isSet(increment.single().accessFlags))
             // The typing requests are TLRPC classes under the names the extension holds back.
             assertEquals(setOf("Lorg/telegram/tgnet/TLRPC\$TL_messages_setTyping;", "Lorg/telegram/tgnet/TLRPC\$TL_messages_setEncryptedTyping;"),
                 FixtureDex.classes(build, setOf("Lorg/telegram/tgnet/TLRPC\$TL_messages_setTyping;",

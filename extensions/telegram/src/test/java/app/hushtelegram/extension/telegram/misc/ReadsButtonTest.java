@@ -84,6 +84,10 @@ public class ReadsButtonTest {
                 sent.add(request);
                 return !GhostMode.drop(request, null);
             }
+
+            @Override public List<Integer> signedIn() {
+                return new ArrayList<>();
+            }
         };
         ShadowToast.reset();
     }

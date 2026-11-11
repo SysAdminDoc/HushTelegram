@@ -76,9 +76,14 @@ public class GhostModeTest {
         final List<Object> requests = new ArrayList<>();
         final List<Integer> accounts = new ArrayList<>();
         final List<Object> callbacks = new ArrayList<>();
+        final List<Integer> signedIn = new ArrayList<>();
 
         @Override public int account() {
             return account;
+        }
+
+        @Override public List<Integer> signedIn() {
+            return signedIn;
         }
 
         @Override public boolean send(int from, Object request, Object callback) {
@@ -300,6 +305,81 @@ public class GhostModeTest {
         assertFalse(GhostMode.drop(new TLRPC.TL_messages_setTyping(), null));
         assertEquals(Arrays.asList("Disable analytics: invoked 4, 0 found, 0 missing. Counted: online statuses kept back 2"),
                 HookStatus.report());
+    }
+
+    private static void idle() {
+        org.robolectric.shadows.ShadowLooper.idleMainLooper();
+    }
+
+    @Test public void turningTheOnlinePartOnSendsEverySignedInAccountOfflineAtOnce() {
+        sent.signedIn.addAll(Arrays.asList(0, 2));
+        // Ghost mode watches its switches from the first status Telegram sends.
+        assertFalse(GhostMode.drop(status(true), null));
+        Settings.GHOST_MODE.save(true);
+        idle();
+        assertTrue("the online part is still off", sent.requests.isEmpty());
+        Settings.GHOST_ONLINE.save(true);
+        idle();
+        assertEquals(Arrays.asList(0, 2), sent.accounts);
+        for (Object request : sent.requests) assertTrue(((TL_account.updateStatus) request).offline);
+        assertTrue(HookStatus.report().toString(), HookStatus.report().get(0).endsWith("Counted: accounts sent offline 2"));
+    }
+
+    @Test public void turningGhostModeOnWithTheOnlinePartAlreadyOnSendsOfflineAndNothingElseDoes() {
+        sent.signedIn.add(1);
+        Settings.GHOST_ONLINE.save(true);
+        assertFalse(GhostMode.drop(status(true), null));
+        Settings.GHOST_MODE.save(true);
+        idle();
+        assertEquals(Arrays.asList(1), sent.accounts);
+        Settings.GHOST_TYPING.save(true);
+        Settings.GHOST_ONLINE.save(false);
+        Settings.GHOST_MODE.save(false);
+        idle();
+        assertEquals(1, sent.requests.size());
+    }
+
+    @Test public void goingOfflineSendsNothingWhilePausedOrWithoutSettings() {
+        sent.signedIn.add(0);
+        Settings.GHOST_MODE.save(true);
+        Settings.GHOST_ONLINE.save(true);
+        for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
+            if (reason == HushTelegramPause.Reason.NONE) continue;
+            PauseForTests.pause(reason);
+            assertEquals(reason.name(), 0, GhostMode.goOffline());
+            PauseForTests.resume();
+        }
+        SettingsContextRule.withoutContext(() -> assertEquals(0, GhostMode.goOffline()));
+        sent.works = false;
+        assertEquals(0, GhostMode.goOffline());
+        sent.works = true;
+        assertEquals(1, GhostMode.goOffline());
+    }
+
+    private static TLRPC.TL_messages_getMessagesViews views(boolean increment) {
+        TLRPC.TL_messages_getMessagesViews request = new TLRPC.TL_messages_getMessagesViews();
+        request.peer = supergroup(5);
+        request.increment = increment;
+        return request;
+    }
+
+    @Test public void aChannelPostsViewCountStillLoadsButThisViewIsntAdded() {
+        TLRPC.TL_messages_getMessagesViews off = views(true);
+        assertFalse(GhostMode.drop(off, null));
+        assertTrue("Ghost mode off counts the view as usual", off.increment);
+        Settings.GHOST_MODE.save(true);
+        TLRPC.TL_messages_getMessagesViews on = views(true);
+        assertFalse(GhostMode.drop(on, null));
+        assertFalse(on.increment);
+        // A fetch that never counted is left alone, and with read receipts off the view counts again.
+        assertFalse(GhostMode.drop(views(false), null));
+        Settings.GHOST_READS.save(false);
+        TLRPC.TL_messages_getMessagesViews reads = views(true);
+        assertFalse(GhostMode.drop(reads, null));
+        assertTrue(reads.increment);
+        assertEquals(Arrays.asList("Disable analytics: invoked 3, 0 found, 0 missing. Counted: post views not counted 1"),
+                HookStatus.report());
+        assertEquals(GhostMode.Kind.VIEW, GhostMode.kind("org.telegram.tgnet.TLRPC$TL_messages_getMessagesViews"));
     }
 
     /** A request's callback that keeps what Telegram would have been told. */

@@ -4,17 +4,23 @@
  */
 package app.hushtelegram.extension.telegram.misc;
 
+import android.content.SharedPreferences;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
+import app.hushtelegram.extension.shared.settings.Setting;
 import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
 
@@ -31,7 +37,13 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  *
  * <p>Two more parts hold back what the account says about itself: the typing, recording and
  * uploading status a chat shows, and the online status ({@code account.updateStatus} with offline
- * off). Going offline still goes out, so the account shows as offline.
+ * off). Going offline still goes out, so the account shows as offline. Turning Ghost mode on with
+ * its online part, or that part on under Ghost mode, sends every signed-in account offline right
+ * away, so nobody sees it online until the server would have timed it out.
+ *
+ * <p>Opening a channel post, or a channel post forwarded into a chat, counts a view on it. A post
+ * someone forwards to just one person counts that person's view, so the view request still goes
+ * out under the read receipts part, for the counts, but asks the server not to add this view.
  *
  * <p>Sending a message into a chat tells the server it was read anyway, which this can't change.
  * The newest read kept back in each chat waits here until Telegram restarts (#69). With Read
@@ -89,11 +101,14 @@ public final class GhostMode {
     /** The request that sets the account online or offline, which has a boolean field named offline. */
     private static final String STATUS = "org.telegram.tgnet.tl.TL_account$updateStatus";
 
+    /** The request that fetches posts' view counts, adding a view when its boolean field increment is set. */
+    private static final String VIEWS = "org.telegram.tgnet.TLRPC$TL_messages_getMessagesViews";
+
     /** Telegram's mark on a secret chat's dialog ID, {@code DialogObject.makeEncryptedDialogId}. */
     private static final long SECRET_CHAT = 0x4000000000000000L;
 
     /** What a request is to Ghost mode. */
-    enum Kind { READ, STORY, TYPING, ONLINE, SEND, OTHER }
+    enum Kind { READ, STORY, TYPING, ONLINE, VIEW, SEND, OTHER }
 
     /** A kept-back read and the callback Telegram gave it, which runs once the read goes out. */
     private static final class Held {
@@ -122,11 +137,20 @@ public final class GhostMode {
          * answer; false when this build can't.
          */
         boolean send(int account, Object request, Object callback);
+
+        /** The accounts that are signed in. */
+        List<Integer> signedIn();
     }
 
     static volatile Requests requests = new Requests() {
         @Override public int account() throws ReflectiveOperationException {
             return HostNames.field(Class.forName("org.telegram.messenger.UserConfig"), "selectedAccount").getInt(null);
+        }
+
+        @Override public List<Integer> signedIn() {
+            List<Integer> found = new ArrayList<>();
+            for (Accounts.Entry account : Accounts.signedIn()) found.add(account.index);
+            return found;
         }
 
         @Override public boolean send(int account, Object request, Object callback) {
@@ -159,7 +183,12 @@ public final class GhostMode {
             afterSend(name, request);
             return false;
         }
+        if (kind == Kind.VIEW) {
+            uncount(request);
+            return false;
+        }
         if (kind == Kind.READ && ours(request)) return false;
+        if (kind == Kind.ONLINE) watch();
         if (kind == Kind.ONLINE && !goingOnline(request)) return false;
         if (!keepBack(kind, request)) return false;
         if (kind == Kind.READ) hold(name, request, callback);
@@ -339,6 +368,64 @@ public final class GhostMode {
         }
     }
 
+    /** Asks a view count request not to add this view, while Ghost mode keeps reads back. It still goes out for the counts. */
+    private static void uncount(Object request) {
+        try {
+            Field increment = HostNames.field(request.getClass(), "increment");
+            if (!increment.getBoolean(request) || !keepBack(Kind.VIEW)) return;
+            increment.setBoolean(request, false);
+        } catch (ReflectiveOperationException | RuntimeException unreadable) {
+            HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "ghost mode channel views", unreadable);
+        }
+    }
+
+    /** The settings store {@link #WATCH} listens to. SharedPreferences keeps its listeners weakly, so the listener is a constant. */
+    private static SharedPreferences watched;
+
+    private static final SharedPreferences.OnSharedPreferenceChangeListener WATCH = (store, changed) -> {
+        if (Settings.GHOST_MODE.key.equals(changed) || Settings.GHOST_ONLINE.key.equals(changed)) goOffline();
+    };
+
+    /** Listens for Ghost mode's switches, once settings can be read, so turning them on can send the accounts offline. */
+    static void watch() {
+        try {
+            if (!Utils.settingsReady()) return;
+            SharedPreferences store = Setting.preferences.preferences;
+            synchronized (WATCH) {
+                if (store == null || store == watched) return;
+                store.registerOnSharedPreferenceChangeListener(WATCH);
+                watched = store;
+            }
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "ghost mode switch watch", failure);
+        }
+    }
+
+    /**
+     * With Ghost mode and its online part on, tells the server every signed-in account is offline,
+     * which the gate lets out: how many accounts it went for.
+     */
+    static int goOffline() {
+        try {
+            if (!Utils.settingsReady() || !Settings.GHOST_MODE.get() || !Settings.GHOST_ONLINE.get()) return 0;
+        } catch (Throwable t) {
+            HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "ghost mode offline switch read", t);
+            return 0;
+        }
+        int sent = 0;
+        try {
+            for (int account : requests.signedIn()) {
+                Object status = Class.forName(STATUS).getConstructor().newInstance();
+                HostNames.field(status.getClass(), "offline").setBoolean(status, true);
+                if (requests.send(account, status, null)) sent++;
+            }
+        } catch (ReflectiveOperationException | RuntimeException unreadable) {
+            HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "ghost mode going offline", unreadable);
+        }
+        for (int i = 0; i < sent; i++) HookStatus.counted(FamilyNames.DISABLE_ANALYTICS, "accounts sent offline");
+        return sent;
+    }
+
     /** Finds a chat in Telegram's tables; a test swaps it. */
     interface Chats {
         /** The chat the selected account knows by this ID, or null when it knows none. */
@@ -397,7 +484,8 @@ public final class GhostMode {
 
     private static BooleanSetting part(Kind kind) {
         switch (kind) {
-            case READ: return Settings.GHOST_READS;
+            case READ:
+            case VIEW: return Settings.GHOST_READS;
             case TYPING: return Settings.GHOST_TYPING;
             case ONLINE: return Settings.GHOST_ONLINE;
             default: return Settings.GHOST_STORIES;
@@ -409,6 +497,7 @@ public final class GhostMode {
             case READ: return "read receipts kept back";
             case TYPING: return "typing statuses kept back";
             case ONLINE: return "online statuses kept back";
+            case VIEW: return "post views not counted";
             default: return "story views kept back";
         }
     }
@@ -419,6 +508,7 @@ public final class GhostMode {
         if (STORIES.contains(className)) return Kind.STORY;
         if (TYPING.contains(className)) return Kind.TYPING;
         if (STATUS.equals(className)) return Kind.ONLINE;
+        if (VIEWS.equals(className)) return Kind.VIEW;
         if (SENDS.contains(className) || SECRET_SENDS.contains(className)) return Kind.SEND;
         return Kind.OTHER;
     }

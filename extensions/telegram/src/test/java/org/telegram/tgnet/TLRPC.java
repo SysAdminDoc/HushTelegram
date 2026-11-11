@@ -76,6 +76,12 @@ public final class TLRPC {
         public int max_id;
     }
 
+    /** Fetches posts' view counts; increment also counts a view on each. */
+    public static class TL_messages_getMessagesViews {
+        public InputPeer peer;
+        public boolean increment;
+    }
+
     public static class TL_messages_sendMessage {
         public InputPeer peer;
         public String message;
