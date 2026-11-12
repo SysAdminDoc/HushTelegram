@@ -146,6 +146,11 @@ body:
         - Text direction
         - Lyrics and song dates
         - Chat preview buttons
+        - Suppress screenshot notification
+        - Unlock Premium features
+        - Bypass channel restrictions
+        - Bypass integrity check
+        - Auto-forwarding rules
         - HushTelegram settings
     validations:
       required: true
