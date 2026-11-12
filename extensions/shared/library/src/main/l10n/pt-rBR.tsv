@@ -1143,7 +1143,7 @@ Couldn't save the call recording.	Não foi possível salvar a gravação da cham
 # context: a switch on the Privacy page under Record calls (#39), off by default. Turned on, it puts a round record button on Telegram's call screen, right under the minimize arrow in the top left corner.
 Record button on calls	Botão de gravar nas chamadas
 # context: that switch's summary. "Record calls" is the name of the switch above it, which records every call. A tap on the button records only the call on screen, or, with Record calls on, skips recording that one call.
-A button on the call screen records just that call, or stops recording it when Record calls is on.	Um botão na tela da chamada grava só aquela chamada, ou para de gravá-la quando Gravar chamadas está ligado.
+A button on the call and voice chat screens records just that call, or stops recording it when Record calls is on.	Um botão na tela da chamada e do chat de voz grava só aquela chamada, ou para de gravá-la quando Gravar chamadas está ligado.
 # context: a short toast shown when the record button on the call screen is tapped and the call starts recording.
 Recording this call	Gravando esta chamada
 # context: a short toast shown when the record button on the call screen is tapped again and the call stops recording. What was already recorded is still saved.

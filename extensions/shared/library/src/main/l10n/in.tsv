@@ -1146,7 +1146,7 @@ Couldn't save the call recording.	Rekaman panggilan tidak dapat disimpan.
 # context: a switch on the Privacy page under Record calls (#39), off by default. Turned on, it puts a round record button on Telegram's call screen, right under the minimize arrow in the top left corner.
 Record button on calls	Tombol rekam saat panggilan
 # context: that switch's summary. "Record calls" is the name of the switch above it, which records every call. A tap on the button records only the call on screen, or, with Record calls on, skips recording that one call.
-A button on the call screen records just that call, or stops recording it when Record calls is on.	Tombol di layar panggilan merekam panggilan itu saja, atau berhenti merekamnya saat Rekam panggilan aktif.
+A button on the call and voice chat screens records just that call, or stops recording it when Record calls is on.	Tombol di layar panggilan dan obrolan suara merekam panggilan itu saja, atau berhenti merekamnya saat Rekam panggilan aktif.
 # context: a short toast shown when the record button on the call screen is tapped and the call starts recording.
 Recording this call	Merekam panggilan ini
 # context: a short toast shown when the record button on the call screen is tapped again and the call stops recording. What was already recorded is still saved.

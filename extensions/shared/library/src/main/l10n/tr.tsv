@@ -1146,7 +1146,7 @@ Couldn't save the call recording.	Arama kaydı kaydedilemedi.
 # context: a switch on the Privacy page under Record calls (#39), off by default. Turned on, it puts a round record button on Telegram's call screen, right under the minimize arrow in the top left corner.
 Record button on calls	Aramalarda kayıt düğmesi
 # context: that switch's summary. "Record calls" is the name of the switch above it, which records every call. A tap on the button records only the call on screen, or, with Record calls on, skips recording that one call.
-A button on the call screen records just that call, or stops recording it when Record calls is on.	Arama ekranındaki bir düğme yalnızca o aramayı kaydeder ya da Aramaları kaydet açıkken o aramanın kaydını durdurur.
+A button on the call and voice chat screens records just that call, or stops recording it when Record calls is on.	Arama ve sesli sohbet ekranındaki bir düğme yalnızca o aramayı kaydeder ya da Aramaları kaydet açıkken o aramanın kaydını durdurur.
 # context: a short toast shown when the record button on the call screen is tapped and the call starts recording.
 Recording this call	Bu arama kaydediliyor
 # context: a short toast shown when the record button on the call screen is tapped again and the call stops recording. What was already recorded is still saved.

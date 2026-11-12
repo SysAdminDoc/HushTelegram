@@ -15,6 +15,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** **Notify when a call is saved** puts up a notification after each recording. Tap it to play the recording, or use its buttons to share it or send it straight to your Saved Messages. It's off until you turn it on, and it needs Android 10 or newer. (#72)
 * **Telegram:** **Save recordings as Opus** saves calls as .ogg files about half the size of the usual .m4a. It's there on Android 10 and newer, and a phone that can't write Opus keeps saving .m4a. (#72)
 * **Telegram:** **Recordings folder** lets you pick any folder on the phone for call recordings. Keep recordings cleans that folder too. If Telegram loses access to it, say after the folder's deleted, recordings go back to the usual folder until you pick another one. (#72)
+* **Telegram:** **Record button on calls** shows on voice chats and live streams too, at the start of the row of buttons in the top right corner. It records and pauses there the same way it does on a call. (#72)
 
 ### Fixed
 
