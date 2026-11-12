@@ -33,7 +33,7 @@ The latest release is [v0.0.25](https://github.com/SysAdminDoc/HushTelegram/rele
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 2.5.0 or newer.
 2. Open the [add-source link](https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram) on your phone to add HushTelegram as a patch source.
-3. Get Telegram 13.2.1 from [Google Play](https://play.google.com/store/apps/details?id=org.telegram.messenger) (version code 72911), or Telegram 13.2.1 from telegram.org (version code 72919) from its [Download button](https://telegram.org/android) or a mirror such as [APKMirror](https://www.apkmirror.com/apk/telegram-fz-llc/telegram/). telegram.org hands out whatever is newest, so check the [checksum](#supported-telegram-builds) before you patch.
+3. Get Telegram 13.2.1 from [Google Play](https://play.google.com/store/apps/details?id=org.telegram.messenger) (version code 72911), or telegram.org's Telegram 13.2.1 (version code 72919). telegram.org's [Download button](https://telegram.org/android) always hands out the newest build and has already moved on to 13.2.2, so get 13.2.1 from Telegram's own [Telegram APKs for Android](https://t.me/TAndroidAPK) channel and check the [checksum](#supported-telegram-builds) before you patch. [APKMirror](https://www.apkmirror.com/apk/telegram-fz-llc/telegram/) carries the Google Play build too.
 4. Pick the file in Morphe Manager, keep the default selection and patch. It has every patch that comes with a switch.
 5. Four patches start unselected: Use registered Telegram API credentials, Use registered Maps API key, HushTelegram icon and name, and Black and white launch logo. To add one, turn on **Settings > Advanced > Expert mode** in Morphe Manager and fill in its options before you patch.
 
