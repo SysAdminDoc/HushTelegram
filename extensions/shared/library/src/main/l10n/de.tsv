@@ -1622,3 +1622,9 @@ Instant lock	Sofortige Sperre
 With a Telegram passcode set, Telegram locks a second or two after you leave it instead of waiting for Auto-lock. Turning this off brings your Auto-lock time back.	Wenn ein Telegram-Code festgelegt ist, sperrt sich Telegram ein, zwei Sekunden nachdem du es verlässt, statt auf die automatische Sperre zu warten. Schaltest du das aus, gilt wieder deine Zeit für die automatische Sperre.
 # context: Lowercase noun phrase naming the Instant lock switch (#71) in the patch status list
 instant lock	sofortige Sperre
+# context: Switch title on the Privacy page (#71), off by default. Signing up a phone number new to Telegram normally tells everyone who has that number saved that it joined; with this on, they aren't told
+Don't notify contacts	Kontakte nicht benachrichtigen
+# context: Summary of Don't notify contacts. It only matters when a new account is created, for example through Add account with a number that has never used Telegram
+When you sign up a phone number that's new to Telegram, people who have it saved aren't told you joined. Accounts that already exist aren't affected.	Wenn du eine Telefonnummer registrierst, die neu bei Telegram ist, erfahren Leute, die sie gespeichert haben, nicht, dass du beigetreten bist. Bestehende Konten sind davon nicht betroffen.
+# context: Lowercase noun phrase naming the Don't notify contacts switch (#71) in the patch status list
+quiet sign-up	stille Registrierung

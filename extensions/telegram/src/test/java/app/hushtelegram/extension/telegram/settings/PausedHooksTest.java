@@ -432,7 +432,9 @@ public class PausedHooksTest {
                 () -> app.hushtelegram.extension.telegram.misc.GhostMode.drop(new org.telegram.tgnet.TLRPC.TL_messages_setEncryptedTyping(), null),
                 () -> app.hushtelegram.extension.telegram.misc.GhostMode.drop(new org.telegram.tgnet.tl.TL_account.updateStatus(), null),
                 // Instant lock shortens Auto-lock, and a pause gives the user's own delay back.
-                () -> app.hushtelegram.extension.telegram.misc.InstantLock.autoLockIn(60) != 60));
+                () -> app.hushtelegram.extension.telegram.misc.InstantLock.autoLockIn(60) != 60,
+                // Don't notify contacts asks for a quiet sign-up, and a pause leaves Telegram's own request.
+                () -> app.hushtelegram.extension.telegram.misc.QuietSignUp.noJoinedNotifications(0)));
         // Links open in the browser, and Mini Apps and web pages inside Telegram get no location.
         probes.put(PatchFamily.OPEN_EXTERNAL_LINKS, Arrays.asList(
                 PausedHooksTest::externalBrowserOpened,

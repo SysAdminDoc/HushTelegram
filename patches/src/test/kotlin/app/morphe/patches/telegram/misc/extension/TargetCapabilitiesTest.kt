@@ -74,9 +74,9 @@ class TargetCapabilitiesTest {
                     assertTrue(failure.message, failure.message.orEmpty().contains("none of the $targetCount"))
                 } else execute(context)
             }
-            // These synthetic builds have no ConnectionsManager and no passcode checks, so Ghost mode,
-            // the account guard and Instant lock each stay out and say so.
-            val ghost = if (family == "disableAnalytics" && present.isNotEmpty()) 3 else 0
+            // These synthetic builds have no ConnectionsManager, no passcode checks and no sign-up request,
+            // so Ghost mode, the account guard, Instant lock and Don't notify contacts each stay out and say so.
+            val ghost = if (family == "disableAnalytics" && present.isNotEmpty()) 4 else 0
             assertEquals("$family subset $present warnings", if (present.isEmpty()) 0 else targetCount - present.size + ghost, warnings.size)
             for (premium in premiumTargets) {
                 assertFlag(context, premium.capability, false)
@@ -87,8 +87,10 @@ class TargetCapabilitiesTest {
                 assertFlag(context, "receiveOnly", false)
                 assertFlag(context, "powerOff", false)
                 assertFlag(context, "instantLock", false)
+                assertFlag(context, "quietSignUp", false)
                 if (present.isNotEmpty()) assertTrue(warnings.toString(), warnings.any { "without Ghost mode" in it })
                 if (present.isNotEmpty()) assertTrue(warnings.toString(), warnings.any { "without Instant lock" in it })
+                if (present.isNotEmpty()) assertTrue(warnings.toString(), warnings.any { "without Don't notify contacts" in it })
             }
             assertFlag(context, family, present.isNotEmpty())
             for (target in Target.entries) assertFlag(context, target.status, target in present)

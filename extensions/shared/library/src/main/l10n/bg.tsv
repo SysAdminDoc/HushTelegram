@@ -1618,3 +1618,9 @@ Instant lock	Незабавно заключване
 With a Telegram passcode set, Telegram locks a second or two after you leave it instead of waiting for Auto-lock. Turning this off brings your Auto-lock time back.	Когато има зададена парола за Telegram, Telegram се заключва секунда-две след като излезеш, вместо да чака автоматичното заключване. Ако го изключиш, времето ти за автоматично заключване се връща.
 # context: Lowercase noun phrase naming the Instant lock switch (#71) in the patch status list
 instant lock	незабавно заключване
+# context: Switch title on the Privacy page (#71), off by default. Signing up a phone number new to Telegram normally tells everyone who has that number saved that it joined; with this on, they aren't told
+Don't notify contacts	Без известие до контактите
+# context: Summary of Don't notify contacts. It only matters when a new account is created, for example through Add account with a number that has never used Telegram
+When you sign up a phone number that's new to Telegram, people who have it saved aren't told you joined. Accounts that already exist aren't affected.	Когато регистрираш телефонен номер, който е нов за Telegram, хората, които са го запазили, не получават известие, че си се присъединил. Вече съществуващите акаунти не се засягат.
+# context: Lowercase noun phrase naming the Don't notify contacts switch (#71) in the patch status list
+quiet sign-up	тиха регистрация

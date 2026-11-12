@@ -232,6 +232,7 @@ public final class SettingsStatus {
     public static boolean receiveOnly() { return false; }
     public static boolean powerOff() { return false; }
     public static boolean instantLock() { return false; }
+    public static boolean quietSignUp() { return false; }
     public static boolean suppressScreenshotNotification() { return false; }
     public static boolean unlockPremium() { return false; }
     public static boolean bypassChannelRestrictions() { return false; }

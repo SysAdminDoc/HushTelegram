@@ -879,6 +879,13 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting INSTANT_LOCK =
             new BooleanSetting("hushtelegram_instant_lock", FALSE);
 
+    /**
+     * Don't notify contacts: a sign-up for a phone number new to Telegram asks the server not to tell
+     * the people who have that number saved (#71). Existing accounts never send this request.
+     */
+    public static final BooleanSetting QUIET_SIGN_UP =
+            new BooleanSetting("hushtelegram_quiet_sign_up", FALSE);
+
     /** Automatic call diagnostics only; the call itself and its cleanup stay stock. */
     public static final BooleanSetting DISABLE_CALL_DEBUG =
             new BooleanSetting("hushtelegram_disable_call_debug", TRUE);

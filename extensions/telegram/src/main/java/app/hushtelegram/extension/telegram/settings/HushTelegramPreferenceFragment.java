@@ -1409,6 +1409,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             L10n.t("With a Telegram passcode set, Telegram locks a second or two after you leave it instead "
                                     + "of waiting for Auto-lock. Turning this off brings your Auto-lock time back.")));
                 }
+                if (PatchFamily.Capability.QUIET_SIGN_UP.installed()) {
+                    privacy.addPreference(toggle(context, Settings.QUIET_SIGN_UP, L10n.t("Don't notify contacts"),
+                            L10n.t("When you sign up a phone number that's new to Telegram, people who have it saved aren't "
+                                    + "told you joined. Accounts that already exist aren't affected.")));
+                }
             }
             if (build.contains(PatchFamily.DISABLE_CALL_DEBUG)) {
                 privacy.addPreference(toggle(context, Settings.DISABLE_CALL_DEBUG, L10n.t("Stop call diagnostics"),

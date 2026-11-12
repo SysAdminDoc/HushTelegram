@@ -1622,3 +1622,9 @@ Instant lock	Anında kilit
 With a Telegram passcode set, Telegram locks a second or two after you leave it instead of waiting for Auto-lock. Turning this off brings your Auto-lock time back.	Bir Telegram parolası ayarlıysa Telegram, otomatik kilidi beklemek yerine çıktıktan bir iki saniye sonra kilitlenir. Kapatırsan otomatik kilit süren geri gelir.
 # context: Lowercase noun phrase naming the Instant lock switch (#71) in the patch status list
 instant lock	anında kilit
+# context: Switch title on the Privacy page (#71), off by default. Signing up a phone number new to Telegram normally tells everyone who has that number saved that it joined; with this on, they aren't told
+Don't notify contacts	Kişilere bildirim gönderme
+# context: Summary of Don't notify contacts. It only matters when a new account is created, for example through Add account with a number that has never used Telegram
+When you sign up a phone number that's new to Telegram, people who have it saved aren't told you joined. Accounts that already exist aren't affected.	Telegram'da yeni olan bir telefon numarasıyla kaydolduğunda, onu kayıtlı tutan kişilere katıldığın bildirilmez. Zaten var olan hesaplar etkilenmez.
+# context: Lowercase noun phrase naming the Don't notify contacts switch (#71) in the patch status list
+quiet sign-up	sessiz kayıt

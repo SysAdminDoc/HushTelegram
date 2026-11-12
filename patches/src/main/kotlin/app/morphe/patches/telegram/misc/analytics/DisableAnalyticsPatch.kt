@@ -119,7 +119,8 @@ val disableAnalyticsPatch = bytecodePatch(
     description = "Stops Telegram from reporting how you use the app, like how long you read channel posts and what you" +
         " tap on Premium screens, and keeps the camera from reporting your phone's maker and model. " +
         "Messages, calls and notifications work as before. On by default. Turn it off in " +
-        "HushTelegram settings > Privacy, where Receive only mode, Power off accounts and Instant lock also live, all off by default.",
+        "HushTelegram settings > Privacy, where Receive only mode, Power off accounts, Instant lock and Don't notify " +
+        "contacts also live, all off by default.",
     default = true,
 ) {
     category("Privacy")
@@ -135,6 +136,8 @@ val disableAnalyticsPatch = bytecodePatch(
         requireStatusMethod("powerOff")
         requireStatusMethod("instantLock")
         controlHook(INSTANT_LOCK, "autoLockIn", listOf("I"), "I")
+        requireStatusMethod("quietSignUp")
+        controlHook(QUIET_SIGN_UP, "noJoinedNotifications", listOf("I"), "Z")
         controlHook(GHOST_MODE, "drop", listOf("Ljava/lang/Object;", "Ljava/lang/Object;"), "Z")
         controlHook(GHOST_MODE, "sendRequest", listOf("I", "Ljava/lang/Object;", "Ljava/lang/Object;"), "Z")
         controlHook(ACCOUNT_GUARD, "drop", listOf("Ljava/lang/Object;", "Ljava/lang/Object;", "Ljava/lang/Object;"), "Z")
@@ -203,6 +206,18 @@ val disableAnalyticsPatch = bytecodePatch(
         if (lock != null) {
             lock.forEach { it.apply() }
             enableCapability("instantLock")
+        }
+
+        // So does Don't notify contacts, which only touches the sign-up request.
+        val quiet = try {
+            resolveQuietSignUp()
+        } catch (unfit: PatchException) {
+            patchLog.warning("$PATCH: ${unfit.message}. The patch goes on without Don't notify contacts.")
+            null
+        }
+        if (quiet != null) {
+            quiet.apply()
+            enableCapability("quietSignUp")
         }
 
         enableStatus("disableAnalytics")

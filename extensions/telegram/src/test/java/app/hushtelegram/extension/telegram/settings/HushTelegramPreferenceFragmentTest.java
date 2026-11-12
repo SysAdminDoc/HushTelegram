@@ -398,6 +398,11 @@ public class HushTelegramPreferenceFragmentTest {
                     + "waiting for Auto-lock. Turning this off brings your Auto-lock time back.",
                     String.valueOf(page.findPreference(Settings.INSTANT_LOCK.key).getSummary()));
             assertFalse(Settings.INSTANT_LOCK.key, ((SwitchPreference) page.findPreference(Settings.INSTANT_LOCK.key)).isChecked());
+            assertEquals("Don't notify contacts", String.valueOf(page.findPreference(Settings.QUIET_SIGN_UP.key).getTitle()));
+            assertEquals("When you sign up a phone number that's new to Telegram, people who have it saved aren't told "
+                    + "you joined. Accounts that already exist aren't affected.",
+                    String.valueOf(page.findPreference(Settings.QUIET_SIGN_UP.key).getSummary()));
+            assertFalse(Settings.QUIET_SIGN_UP.key, ((SwitchPreference) page.findPreference(Settings.QUIET_SIGN_UP.key)).isChecked());
             // Held reads stay held until one of the two ways out is asked for.
             assertFalse(Settings.GHOST_READ_AFTER_SEND.key,
                     ((SwitchPreference) page.findPreference(Settings.GHOST_READ_AFTER_SEND.key)).isChecked());

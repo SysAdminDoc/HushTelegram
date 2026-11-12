@@ -1619,3 +1619,9 @@ Instant lock	Bloqueio instantâneo
 With a Telegram passcode set, Telegram locks a second or two after you leave it instead of waiting for Auto-lock. Turning this off brings your Auto-lock time back.	Com uma senha do Telegram definida, o Telegram bloqueia um ou dois segundos depois que você sai, em vez de esperar o bloqueio automático. Desligar isso traz de volta o seu tempo de bloqueio automático.
 # context: Lowercase noun phrase naming the Instant lock switch (#71) in the patch status list
 instant lock	bloqueio instantâneo
+# context: Switch title on the Privacy page (#71), off by default. Signing up a phone number new to Telegram normally tells everyone who has that number saved that it joined; with this on, they aren't told
+Don't notify contacts	Não notificar contatos
+# context: Summary of Don't notify contacts. It only matters when a new account is created, for example through Add account with a number that has never used Telegram
+When you sign up a phone number that's new to Telegram, people who have it saved aren't told you joined. Accounts that already exist aren't affected.	Ao cadastrar um número de telefone novo no Telegram, quem tem ele salvo não é avisado de que você entrou. Contas que já existem não são afetadas.
+# context: Lowercase noun phrase naming the Don't notify contacts switch (#71) in the patch status list
+quiet sign-up	cadastro silencioso

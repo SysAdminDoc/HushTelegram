@@ -576,7 +576,7 @@
     },
     {
       "name": "Disable analytics",
-      "description": "Stops Telegram from reporting how you use the app, like how long you read channel posts and what you tap on Premium screens, and keeps the camera from reporting your phone's maker and model. Messages, calls and notifications work as before. On by default. Turn it off in HushTelegram settings > Privacy, where Receive only mode, Power off accounts and Instant lock also live, all off by default.",
+      "description": "Stops Telegram from reporting how you use the app, like how long you read channel posts and what you tap on Premium screens, and keeps the camera from reporting your phone's maker and model. Messages, calls and notifications work as before. On by default. Turn it off in HushTelegram settings > Privacy, where Receive only mode, Power off accounts, Instant lock and Don't notify contacts also live, all off by default.",
       "category": "Privacy",
       "use": true,
       "dependencies": [
