@@ -2200,8 +2200,8 @@ public final class L10nTranslations {
                 "\u0422\u043e\u0432\u0430 \u043f\u0430\u0447\u043d\u0430\u0442\u043e \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u043d\u0435 \u043f\u0440\u043e\u043c\u0435\u043d\u044f %1$s.");
         table.put("This phone has no file picker, so you can't choose a file here.",
                 "\u0422\u043e\u0437\u0438 \u0442\u0435\u043b\u0435\u0444\u043e\u043d \u043d\u044f\u043c\u0430 \u0438\u0437\u0431\u0438\u0440\u0430\u0447 \u043d\u0430 \u0444\u0430\u0439\u043b\u043e\u0432\u0435, \u0437\u0430\u0442\u043e\u0432\u0430 \u043d\u0435 \u043c\u043e\u0436\u0435\u0442\u0435 \u0434\u0430 \u0438\u0437\u0431\u0435\u0440\u0435\u0442\u0435 \u0444\u0430\u0439\u043b \u0442\u0443\u043a.");
-        table.put("This phone has no folder picker, so you can't choose a folder here.",
-                "\u0422\u043e\u0437\u0438 \u0442\u0435\u043b\u0435\u0444\u043e\u043d \u043d\u044f\u043c\u0430 \u0438\u0437\u0431\u0438\u0440\u0430\u0447 \u043d\u0430 \u043f\u0430\u043f\u043a\u0438, \u0437\u0430\u0442\u043e\u0432\u0430 \u043d\u0435 \u043c\u043e\u0436\u0435\u0442\u0435 \u0434\u0430 \u0438\u0437\u0431\u0435\u0440\u0435\u0442\u0435 \u043f\u0430\u043f\u043a\u0430 \u0442\u0443\u043a.");
+        table.put("This phone has no folder picker.",
+                "\u0422\u043e\u0437\u0438 \u0442\u0435\u043b\u0435\u0444\u043e\u043d \u043d\u044f\u043c\u0430 \u0438\u0437\u0431\u0438\u0440\u0430\u0447 \u043d\u0430 \u043f\u0430\u043f\u043a\u0438.");
         table.put("This song is instrumental.",
                 "\u0422\u0430\u0437\u0438 \u043f\u0435\u0441\u0435\u043d \u0435 \u0438\u043d\u0441\u0442\u0440\u0443\u043c\u0435\u043d\u0442\u0430\u043b\u043d\u0430.");
         table.put("Those chats already have a rule.",
@@ -4837,8 +4837,8 @@ public final class L10nTranslations {
                 "Diese gepatchte App \u00e4ndert %1$s nicht.");
         table.put("This phone has no file picker, so you can't choose a file here.",
                 "Dieses Handy hat keine Dateiauswahl, du kannst hier keine Datei w\u00e4hlen.");
-        table.put("This phone has no folder picker, so you can't choose a folder here.",
-                "Dieses Handy hat keine Ordnerauswahl, du kannst hier keinen Ordner w\u00e4hlen.");
+        table.put("This phone has no folder picker.",
+                "Dieses Handy hat keine Ordnerauswahl.");
         table.put("This song is instrumental.",
                 "Dieser Song ist instrumental.");
         table.put("Those chats already have a rule.",
@@ -7474,8 +7474,8 @@ public final class L10nTranslations {
                 "Esta app parcheada no modifica %1$s.");
         table.put("This phone has no file picker, so you can't choose a file here.",
                 "Este tel\u00e9fono no tiene selector de archivos, as\u00ed que no puedes elegir uno.");
-        table.put("This phone has no folder picker, so you can't choose a folder here.",
-                "Este tel\u00e9fono no tiene selector de carpetas, as\u00ed que no puedes elegir una.");
+        table.put("This phone has no folder picker.",
+                "Este tel\u00e9fono no tiene selector de carpetas.");
         table.put("This song is instrumental.",
                 "Esta canci\u00f3n es instrumental.");
         table.put("Those chats already have a rule.",
@@ -10111,8 +10111,8 @@ public final class L10nTranslations {
                 "Aplikasi yang ditambal ini tidak mengubah %1$s.");
         table.put("This phone has no file picker, so you can't choose a file here.",
                 "Ponsel ini tidak punya pemilih file, jadi kamu tidak bisa memilih file.");
-        table.put("This phone has no folder picker, so you can't choose a folder here.",
-                "Ponsel ini tidak punya pemilih folder, jadi kamu tidak bisa memilih folder.");
+        table.put("This phone has no folder picker.",
+                "Ponsel ini tidak punya pemilih folder.");
         table.put("This song is instrumental.",
                 "Lagu ini instrumental.");
         table.put("Those chats already have a rule.",
@@ -12748,8 +12748,8 @@ public final class L10nTranslations {
                 "Este app modificado n\u00e3o altera %1$s.");
         table.put("This phone has no file picker, so you can't choose a file here.",
                 "Este celular n\u00e3o tem seletor de arquivos, ent\u00e3o n\u00e3o d\u00e1 para escolher um.");
-        table.put("This phone has no folder picker, so you can't choose a folder here.",
-                "Este celular n\u00e3o tem seletor de pastas, ent\u00e3o n\u00e3o d\u00e1 para escolher uma.");
+        table.put("This phone has no folder picker.",
+                "Este celular n\u00e3o tem seletor de pastas.");
         table.put("This song is instrumental.",
                 "Esta m\u00fasica \u00e9 instrumental.");
         table.put("Those chats already have a rule.",
@@ -15385,8 +15385,8 @@ public final class L10nTranslations {
                 "Yamalanm\u0131\u015f bu uygulamada %1$s de\u011fi\u015fmedi.");
         table.put("This phone has no file picker, so you can't choose a file here.",
                 "Bu telefonda dosya se\u00e7ici yok, o y\u00fczden dosya se\u00e7emezsin.");
-        table.put("This phone has no folder picker, so you can't choose a folder here.",
-                "Bu telefonda klas\u00f6r se\u00e7ici yok, o y\u00fczden klas\u00f6r se\u00e7emezsin.");
+        table.put("This phone has no folder picker.",
+                "Bu telefonda klas\u00f6r se\u00e7ici yok.");
         table.put("This song is instrumental.",
                 "Bu \u015fark\u0131 enstr\u00fcmantal.");
         table.put("Those chats already have a rule.",

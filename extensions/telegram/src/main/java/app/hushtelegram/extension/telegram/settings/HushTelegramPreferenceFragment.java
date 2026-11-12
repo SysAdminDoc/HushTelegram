@@ -3111,7 +3111,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             startActivityForResult(intent, RECORD_FOLDER_REQUEST);
         } catch (ActivityNotFoundException missing) {
             Logger.printInfo(() -> "No folder picker for call recordings");
-            Utils.showToastLong(L10n.t("This phone has no folder picker, so you can't choose a folder here."));
+            Utils.showToastLong(L10n.t("This phone has no folder picker."));
         }
     }
 

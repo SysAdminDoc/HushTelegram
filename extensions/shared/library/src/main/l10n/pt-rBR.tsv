@@ -1857,7 +1857,7 @@ Recordings go to %1$s. The usual folder is %2$s.	As gravações vão para %1$s. 
 Choose another folder	Escolher outra pasta
 Use the usual folder	Usar a pasta padrão
 Couldn't use that folder. Pick another one.	Não foi possível usar essa pasta. Escolha outra.
-This phone has no folder picker, so you can't choose a folder here.	Este celular não tem seletor de pastas, então não dá para escolher uma.
+This phone has no folder picker.	Este celular não tem seletor de pastas.
 Internal storage	Armazenamento interno
 Save recordings as Opus	Salvar gravações em Opus
 Files about half the size, ending in .ogg. Some older players can't open them.	Arquivos com cerca de metade do tamanho, terminando em .ogg. Alguns players antigos não conseguem abri-los.

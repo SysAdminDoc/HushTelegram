@@ -1860,7 +1860,7 @@ Recordings go to %1$s. The usual folder is %2$s.	Kayıtlar %1$s klasörüne gide
 Choose another folder	Başka klasör seç
 Use the usual folder	Olağan klasörü kullan
 Couldn't use that folder. Pick another one.	Bu klasör kullanılamıyor. Başka birini seç.
-This phone has no folder picker, so you can't choose a folder here.	Bu telefonda klasör seçici yok, o yüzden klasör seçemezsin.
+This phone has no folder picker.	Bu telefonda klasör seçici yok.
 Internal storage	Dahili depolama
 Save recordings as Opus	Kayıtları Opus olarak kaydet
 Files about half the size, ending in .ogg. Some older players can't open them.	Dosyalar yaklaşık yarı boyutta olur ve .ogg ile biter. Bazı eski oynatıcılar bunları açamaz.

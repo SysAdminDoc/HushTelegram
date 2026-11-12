@@ -1856,7 +1856,7 @@ Recordings go to %1$s. The usual folder is %2$s.	Записите отиват �
 Choose another folder	Избор на друга папка
 Use the usual folder	Обичайната папка
 Couldn't use that folder. Pick another one.	Тази папка не може да се използва. Изберете друга.
-This phone has no folder picker, so you can't choose a folder here.	Този телефон няма избирач на папки, затова не можете да изберете папка тук.
+This phone has no folder picker.	Този телефон няма избирач на папки.
 Internal storage	Вътрешно хранилище
 Save recordings as Opus	Записи във формат Opus
 Files about half the size, ending in .ogg. Some older players can't open them.	Файлове с около половината размер, с окончание .ogg. Някои по-стари плейъри не могат да ги отворят.

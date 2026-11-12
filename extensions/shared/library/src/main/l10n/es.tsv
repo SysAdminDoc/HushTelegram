@@ -1860,7 +1860,7 @@ Recordings go to %1$s. The usual folder is %2$s.	Las grabaciones van a %1$s. La 
 Choose another folder	Elegir otra carpeta
 Use the usual folder	Usar la carpeta habitual
 Couldn't use that folder. Pick another one.	No se puede usar esa carpeta. Elige otra.
-This phone has no folder picker, so you can't choose a folder here.	Este teléfono no tiene selector de carpetas, así que no puedes elegir una.
+This phone has no folder picker.	Este teléfono no tiene selector de carpetas.
 Internal storage	Almacenamiento interno
 Save recordings as Opus	Guardar grabaciones en Opus
 Files about half the size, ending in .ogg. Some older players can't open them.	Archivos de más o menos la mitad de tamaño, terminados en .ogg. Algunos reproductores antiguos no los abren.
