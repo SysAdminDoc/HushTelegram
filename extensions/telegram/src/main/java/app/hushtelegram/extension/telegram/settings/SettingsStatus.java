@@ -122,6 +122,7 @@ public final class SettingsStatus {
     public static boolean voiceMusicPlayer() { return false; }
     public static boolean playbackPosition() { return false; }
     public static boolean selectBetween() { return false; }
+    public static boolean selectionScreenshot() { return false; }
     public static boolean hideForMe() { return false; }
     public static boolean silenceNonContacts() { return false; }
     public static boolean disableArchivePull() { return false; }

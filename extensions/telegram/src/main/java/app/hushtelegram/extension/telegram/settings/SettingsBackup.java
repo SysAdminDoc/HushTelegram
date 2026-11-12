@@ -168,6 +168,7 @@ public final class SettingsBackup {
             Settings.LYRICS,
             Settings.SONG_DATES,
             Settings.SELECT_BETWEEN,
+            Settings.SELECTION_SCREENSHOT,
             Settings.SILENCE_NON_CONTACTS,
             Settings.REACTION_ALERTS,
             Settings.REACTION_SOUND,

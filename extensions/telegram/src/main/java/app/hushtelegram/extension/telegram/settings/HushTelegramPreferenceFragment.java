@@ -889,6 +889,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("Adds a Select between button to the bar that shows while you pick messages. It selects everything between the first and"
                                 + " last one you picked. Pick one past the end and the gap fills in.")));
             }
+            if (PatchFamily.Capability.SELECTION_SCREENSHOT.installed()) {
+                on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.SELECTION_SCREENSHOT,
+                        L10n.t("Screenshot selected messages"),
+                        L10n.t("Adds a Screenshot button to the bar that shows while you pick messages. It saves a picture of them as the chat"
+                                + " shows them, background, dates and times included, to Pictures/Telegram.")));
+            }
         }
         if (build.contains(PatchFamily.KEEP_DELETED_MESSAGES)) {
             on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(toggle(context, Settings.KEEP_DELETED_MESSAGES, L10n.t("Keep deleted messages"),

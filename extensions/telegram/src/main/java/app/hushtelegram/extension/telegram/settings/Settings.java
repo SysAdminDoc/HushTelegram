@@ -424,6 +424,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting SELECT_BETWEEN =
             new BooleanSetting("hushtelegram_select_between", FALSE);
 
+    /** A Screenshot button in the same bar that saves a picture of the selected messages as the chat shows them (#71). */
+    public static final BooleanSetting SELECTION_SCREENSHOT =
+            new BooleanSetting("hushtelegram_selection_screenshot", FALSE);
+
     public static final BooleanSetting PLAYBACK_POSITION =
             new BooleanSetting("hushtelegram_playback_position", FALSE);
 

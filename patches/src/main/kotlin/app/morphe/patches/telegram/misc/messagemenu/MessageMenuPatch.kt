@@ -152,8 +152,16 @@ val messageMenuPatch = bytecodePatch(
         if (between.missing == null) {
             between.apply(this)
             enableCapability("selectBetween")
+            // Screenshot rides the same bar hooks, so it can only go in beside Select between.
+            val shot = resolveSelectionScreenshot(site.chat)
+            if (shot.missing == null) {
+                shot.apply(this)
+                enableCapability("selectionScreenshot")
+            } else {
+                patchLog.warning("Add Repeat to the message menu: ${shot.missing}. The patch goes on without the Screenshot button.")
+            }
         } else {
-            patchLog.warning("Add Repeat to the message menu: ${between.missing}. The patch goes on without the Select between button.")
+            patchLog.warning("Add Repeat to the message menu: ${between.missing}. The patch goes on without the Select between button or Screenshot.")
         }
         val hide = resolveHideForMe()
         if (hide.missing == null) {

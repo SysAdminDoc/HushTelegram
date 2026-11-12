@@ -1785,3 +1785,19 @@ Close preview	Tutup pratinjau
 Buttons in chat previews	Tombol di pratinjau chat
 # context: Summary of the Buttons in chat previews switch. Open chat and Close preview are the names of the two menu items it adds
 Pressing and holding a chat adds Open chat and Close preview to the menu under its preview.	Saat Anda menekan lama sebuah chat, menu di bawah pratinjaunya mendapat Buka chat dan Tutup pratinjau.
+# context: Title of a switch under Add Repeat to the message menu (#71). Turned on, the bar that shows while messages are selected gets a Screenshot button that saves a picture of them.
+Screenshot selected messages	Tangkapan layar pesan terpilih
+# context: Summary of the Screenshot selected messages switch. Screenshot is the button's own label. Pictures/Telegram is a folder name on the phone, keep it as it is.
+Adds a Screenshot button to the bar that shows while you pick messages. It saves a picture of them as the chat shows them, background, dates and times included, to Pictures/Telegram.	Menambahkan tombol Tangkapan layar ke bilah yang muncul saat kamu memilih pesan. Tombol ini menyimpan gambar pesan seperti yang ditampilkan obrolan, lengkap dengan latar, tanggal, dan jam, ke Pictures/Telegram.
+# context: Label of the button in the bar that shows while messages are selected (#71). Tapping it saves a picture of the selected messages.
+Screenshot	Tangkapan layar
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Screenshot button for selected messages.
+screenshots of selected messages	tangkapan layar pesan terpilih
+# context: Toast from the Screenshot button when a selected message isn't on screen, so it can't be pictured. Two short lines at most.
+Scroll so they're all on screen	Gulir agar semuanya terlihat
+# context: Toast from the Screenshot button in a secret chat, where it never takes a picture. Two short lines at most.
+Not in secret chats	Tidak di obrolan rahasia
+# context: Toast from the Screenshot button in a chat whose owner turned off saving and copying. Two short lines at most.
+This chat doesn't allow saving	Obrolan ini melarang penyimpanan
+# context: Toast once the Screenshot button's picture is saved. Pictures is the phone's pictures folder. Two short lines at most.
+Screenshot saved to Pictures	Tangkapan layar disimpan ke Gambar
