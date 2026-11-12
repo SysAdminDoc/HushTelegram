@@ -247,4 +247,6 @@ public final class SettingsStatus {
     public static boolean proxyOrder() { return false; }
     public static boolean myMessages() { return false; }
     public static boolean textDirection() { return false; }
+    public static boolean lyrics() { return false; }
+    public static boolean songDates() { return false; }
 }

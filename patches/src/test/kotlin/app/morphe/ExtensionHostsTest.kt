@@ -45,13 +45,14 @@ class ExtensionHostsTest {
     }
 
     @Test
-    fun `only the release check, the two translators and the free proxy finder open a connection themselves`() {
+    fun `only the release check, the two translators, the free proxy finder and lyrics open a connection themselves`() {
         val openers = sources().filter { (_, source) -> NETWORK.containsMatchIn(split(source).second) }
             .map { it.first }.filter { it != FIREBASE_HEADER }.toSortedSet()
         assertEquals(
             "The README says the extension goes online itself only to ask GitHub for the newest " +
                 "release, to send text the person turned on to Google's translate or the AI service they set " +
-                "up, and for Free proxies to download a proxy list and time a connect to each proxy. These files " +
+                "up, for Free proxies to download a proxy list and time a connect to each proxy, and for Lyrics " +
+                "to look a song up on lrclib.net. These files " +
                 "open connections",
             TRANSPORTS.toSortedSet(),
             openers,
@@ -103,6 +104,14 @@ class ExtensionHostsTest {
         val hosts = literals.flatMap { literal -> URL.findAll(literal).map { it.groupValues[1] }.toList() }.toSet()
         assertEquals(setOf("raw.githubusercontent.com", "cdn.jsdelivr.net"), hosts)
         assertFalse("a list address isn't https", literals.any { it.startsWith("http://") })
+    }
+
+    @Test
+    fun `lyrics come from lrclib net over https and name the app with its GitHub page`() {
+        val literals = split(sources().single { it.first == LYRICS }.second).first
+        val hosts = literals.flatMap { literal -> URL.findAll(literal).map { it.groupValues[1] }.toList() }.toSet()
+        assertEquals(setOf("lrclib.net", "github.com"), hosts)
+        assertFalse("a lyrics address isn't https", literals.any { it.contains("http://") })
     }
 
     @Test
@@ -169,10 +178,12 @@ class ExtensionHostsTest {
          * translate.googleapis.com is Translate with an outside service, and api.openai.com is the
          * AI service's address until the person types another (the one they type isn't in the code).
          * ko-fi.com is the Support HushTelegram row, opened in the browser. raw.githubusercontent.com
-         * and cdn.jsdelivr.net are where Free proxies downloads its public proxy lists.
+         * and cdn.jsdelivr.net are where Free proxies downloads its public proxy lists. lrclib.net is
+         * where Lyrics looks a song up.
          */
         val ALLOWED_HOSTS = setOf("github.com", "api.github.com", "gitlab.com", "www.gnu.org", "127.0.0.1",
-            "translate.googleapis.com", "api.openai.com", "ko-fi.com", "raw.githubusercontent.com", "cdn.jsdelivr.net")
+            "translate.googleapis.com", "api.openai.com", "ko-fi.com", "raw.githubusercontent.com", "cdn.jsdelivr.net",
+            "lrclib.net")
         const val RELEASE_CHECK =
             "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/ReleaseCheck.java"
         const val FIREBASE_HEADER =
@@ -182,11 +193,14 @@ class ExtensionHostsTest {
             TRANSLATOR,
             AI_TRANSLATOR,
             "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FreeProxyTransport.java",
+            LYRICS,
         )
         const val TRANSLATOR =
             "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/GoogleTranslate.java"
         const val AI_TRANSLATOR =
             "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/AiTranslate.java"
+        const val LYRICS =
+            "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/LyricsSource.java"
         const val FREE_PROXIES =
             "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FreeProxies.java"
         /** A host starts and ends with a letter or digit, so a sentence that ends in `https://.` names none. */

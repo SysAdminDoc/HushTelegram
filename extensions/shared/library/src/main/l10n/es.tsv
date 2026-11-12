@@ -1755,3 +1755,25 @@ Add Delete for them to the message menu	Añadir Eliminar para los demás al men�
 Adds Delete for them to your own messages in chats and groups. It deletes the message for everyone else and keeps it on this phone, marked deleted. Clear kept messages removes it here too.	Añade Eliminar para los demás a tus propios mensajes en chats y grupos. El mensaje se elimina para todos los demás y se queda en este teléfono, marcado como eliminado. Borrar los mensajes conservados también lo quita de aquí.
 # context: Short message shown after Delete for them: the message is gone for everyone else in the chat and stays on this phone
 Deleted for them, kept here.	Eliminado para los demás, guardado aquí.
+# context: Item in the music player's menu (the three dots, #71) that opens the song's lyrics over the player
+Lyrics	Letra
+# context: Line in the lyrics panel while the song's lyrics load
+Looking for the lyrics.	Buscando la letra.
+# context: Line in the lyrics panel when the lyrics couldn't be loaded. Tapping the line tries again
+Couldn't load the lyrics. Tap to try again.	No se pudo cargar la letra. Toca para intentarlo de nuevo.
+# context: Line in the lyrics panel when the lyrics library has nothing for the song playing
+No lyrics found for this song.	No se encontró la letra de esta canción.
+# context: Line in the lyrics panel when the lyrics library lists the song as having no words
+This song is instrumental.	Esta canción es instrumental.
+# context: Small credit line at the bottom of the lyrics panel. lrclib.net is the website's name and stays as it is
+Lyrics from lrclib.net	Letras de lrclib.net
+# context: Title of the switch on the Playback page (#71) that adds Lyrics to the music player's menu
+Lyrics in the music player	Letras en el reproductor de música
+# context: Summary of the Lyrics in the music player switch. Lyrics is the name of the menu item it adds; lrclib.net stays as it is. Timed lyrics are ones that know when each line is sung
+The music player's menu gets Lyrics. They come from lrclib.net, and timed ones follow along with the song.	El menú del reproductor de música incluye Letra. Las letras vienen de lrclib.net, y las sincronizadas avanzan con la canción.
+# context: Title of the switch on the Playback page (#71) that shows the day each song was added to your profile's song list
+Dates on your profile songs	Fechas en las canciones de tu perfil
+# context: Summary of the Dates on your profile songs switch. The day is shown after the song's artist in your profile's song list
+Songs you add to your profile from now on show the day you added them, after the artist. The days are kept on this phone only.	Las canciones que añadas a tu perfil a partir de ahora muestran el día en que las añadiste, después del artista. Las fechas se guardan solo en este teléfono.
+# context: Lowercase noun phrase naming Dates on your profile songs (#71) in the patch status list
+dates on your profile songs	fechas en las canciones del perfil

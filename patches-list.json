@@ -2990,6 +2990,63 @@
       "options": []
     },
     {
+      "name": "Lyrics and song dates",
+      "description": "Adds Lyrics to the music player's menu, found on lrclib.net and scrolling along with the song, and shows when you added each song to your profile. Starts off. Turn it on in HushTelegram settings > Playback.",
+      "category": "Playback",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushTelegram settings"
+      ],
+      "compatiblePackages": {
+        "org.telegram.messenger": [
+          "13.2.1"
+        ],
+        "org.telegram.messenger.web": [
+          "13.2.1"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Telegram",
+          "packageName": "org.telegram.messenger",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.2.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 72911
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telegram (telegram.org)",
+          "packageName": "org.telegram.messenger.web",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.2.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 72919
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Message times with seconds",
       "description": "Shows seconds in each message's time, like 9:41:27 PM, so messages sent close together are easy to tell apart. Starts off. Turn it on in HushTelegram settings > Look and feel.",
       "category": "Interface",

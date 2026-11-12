@@ -1751,3 +1751,25 @@ Add Delete for them to the message menu	Добавяне на Изтриване
 Adds Delete for them to your own messages in chats and groups. It deletes the message for everyone else and keeps it on this phone, marked deleted. Clear kept messages removes it here too.	Добавя Изтриване за другите към вашите собствени съобщения в чатове и групи. Съобщението се изтрива за всички останали и остава на този телефон, отбелязано като изтрито. Изчистване на запазените съобщения го премахва и тук.
 # context: Short message shown after Delete for them: the message is gone for everyone else in the chat and stays on this phone
 Deleted for them, kept here.	Изтрито за другите, запазено тук.
+# context: Item in the music player's menu (the three dots, #71) that opens the song's lyrics over the player
+Lyrics	Текст на песента
+# context: Line in the lyrics panel while the song's lyrics load
+Looking for the lyrics.	Търси се текстът.
+# context: Line in the lyrics panel when the lyrics couldn't be loaded. Tapping the line tries again
+Couldn't load the lyrics. Tap to try again.	Текстът не се зареди. Докоснете, за да опитате отново.
+# context: Line in the lyrics panel when the lyrics library has nothing for the song playing
+No lyrics found for this song.	Не е намерен текст за тази песен.
+# context: Line in the lyrics panel when the lyrics library lists the song as having no words
+This song is instrumental.	Тази песен е инструментална.
+# context: Small credit line at the bottom of the lyrics panel. lrclib.net is the website's name and stays as it is
+Lyrics from lrclib.net	Текстове от lrclib.net
+# context: Title of the switch on the Playback page (#71) that adds Lyrics to the music player's menu
+Lyrics in the music player	Текстове в музикалния плейър
+# context: Summary of the Lyrics in the music player switch. Lyrics is the name of the menu item it adds; lrclib.net stays as it is. Timed lyrics are ones that know when each line is sung
+The music player's menu gets Lyrics. They come from lrclib.net, and timed ones follow along with the song.	Менюто на музикалния плейър получава „Текст на песента“. Текстовете идват от lrclib.net, а тези с времена следват песента.
+# context: Title of the switch on the Playback page (#71) that shows the day each song was added to your profile's song list
+Dates on your profile songs	Дати на песните в профила ви
+# context: Summary of the Dates on your profile songs switch. The day is shown after the song's artist in your profile's song list
+Songs you add to your profile from now on show the day you added them, after the artist. The days are kept on this phone only.	Песните, които добавяте към профила си отсега нататък, показват деня на добавяне след изпълнителя. Датите се пазят само на този телефон.
+# context: Lowercase noun phrase naming Dates on your profile songs (#71) in the patch status list
+dates on your profile songs	дати на песните в профила

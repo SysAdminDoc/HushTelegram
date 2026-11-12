@@ -155,7 +155,8 @@ public enum PatchFamily {
     PROXY_MENU(FamilyNames.PROXY_MENU, "proxyMenu", null, Settings.PROXY_MENU),
     FREE_PROXIES(FamilyNames.FREE_PROXIES, "freeProxies", null, Settings.FREE_PROXIES, Settings.SIGN_IN_PROXY),
     MY_MESSAGES(FamilyNames.MY_MESSAGES, "myMessages", null, Settings.MY_MESSAGES),
-    TEXT_DIRECTION(FamilyNames.TEXT_DIRECTION, "textDirection", null, Settings.TEXT_DIRECTION);
+    TEXT_DIRECTION(FamilyNames.TEXT_DIRECTION, "textDirection", null, Settings.TEXT_DIRECTION),
+    LYRICS(FamilyNames.LYRICS, "lyrics", null, Settings.LYRICS, Settings.SONG_DATES);
 
     /** The patch's name in Morphe Manager. */
     public final String patchName;
@@ -217,7 +218,8 @@ public enum PatchFamily {
                 DISABLE_DOUBLE_TAP_REACTIONS, HIDE_TRANSLATE_BAR, OUTSIDE_TRANSLATE, REVEAL_SPOILERS, FORWARD_HIDE_SENDER,
                 REAR_CAMERA_FIRST, HIDE_GALLERY_CAMERA_TILE, HIDE_BLOCKED_IN_GROUPS, HIDE_BY_KEYWORD, MESSAGE_MENU_REPEAT,
                 KEEP_DELETED_MESSAGES, ASK_BEFORE_STICKER, CROP_GUARD, CAPTION_ORDER, MY_MESSAGES, TEXT_DIRECTION),
-        PLAYBACK("Playback", KEEP_VIDEOS_MUTED, VOICE_ONE_AT_A_TIME, VOICE_MUSIC_PLAYER, FASTER_DOWNLOADS, SAVE_DOWNLOADS),
+        PLAYBACK("Playback", KEEP_VIDEOS_MUTED, VOICE_ONE_AT_A_TIME, VOICE_MUSIC_PLAYER, LYRICS, FASTER_DOWNLOADS,
+                SAVE_DOWNLOADS),
         NOTIFICATIONS("Notifications", REPAIR_FIREBASE_PUSH, UNIFIED_PUSH, SILENCE_NON_CONTACTS, IGNORE_MUTED_MENTIONS),
         LOOK("Look and feel", HIDE_RECOMMENDATIONS, QUIET_CONTACTS_NAG, SHOW_LOCAL_IDS, HOLIDAY_LOOK, USE_SYSTEM_FONT,
                 AMOLED_BLACK, EXACT_NUMBERS, HIDE_KEYBOARD_ON_SCROLL, SWIPE_BACK_ON_PROFILES, MESSAGE_SECONDS,
@@ -451,7 +453,8 @@ public enum PatchFamily {
         KEEP_ALIVE_RUNNING(REPAIR_FIREBASE_PUSH, "keepAliveRunning", "Keep-Alive Service start", true),
         REACTION_ALERTS(UNIFIED_PUSH, "reactionAlerts", "reaction notifications without push", true),
         REACTION_SOUND(UNIFIED_PUSH, "reactionSound", "sound for reaction notifications", true),
-        PROXY_ORDER(FREE_PROXIES, "proxyOrder", "proxy order", true);
+        PROXY_ORDER(FREE_PROXIES, "proxyOrder", "proxy order", true),
+        SONG_DATES(LYRICS, "songDates", "dates on your profile songs", true);
 
         public final PatchFamily family;
         final String statusMethod;

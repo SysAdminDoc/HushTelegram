@@ -1755,3 +1755,25 @@ Add Delete for them to the message menu	Mesaj menüsüne Diğerleri için sil ek
 Adds Delete for them to your own messages in chats and groups. It deletes the message for everyone else and keeps it on this phone, marked deleted. Clear kept messages removes it here too.	Sohbetlerdeki ve gruplardaki kendi mesajlarınıza Diğerleri için sil ekler. Mesaj diğer herkes için silinir ve bu telefonda silindi olarak işaretlenmiş şekilde kalır. Saklanan mesajları temizle onu buradan da kaldırır.
 # context: Short message shown after Delete for them: the message is gone for everyone else in the chat and stays on this phone
 Deleted for them, kept here.	Diğerleri için silindi, burada kaldı.
+# context: Item in the music player's menu (the three dots, #71) that opens the song's lyrics over the player
+Lyrics	Şarkı sözleri
+# context: Line in the lyrics panel while the song's lyrics load
+Looking for the lyrics.	Şarkı sözleri aranıyor.
+# context: Line in the lyrics panel when the lyrics couldn't be loaded. Tapping the line tries again
+Couldn't load the lyrics. Tap to try again.	Şarkı sözleri yüklenemedi. Tekrar denemek için dokunun.
+# context: Line in the lyrics panel when the lyrics library has nothing for the song playing
+No lyrics found for this song.	Bu şarkı için söz bulunamadı.
+# context: Line in the lyrics panel when the lyrics library lists the song as having no words
+This song is instrumental.	Bu şarkı enstrümantal.
+# context: Small credit line at the bottom of the lyrics panel. lrclib.net is the website's name and stays as it is
+Lyrics from lrclib.net	Sözler lrclib.net'ten
+# context: Title of the switch on the Playback page (#71) that adds Lyrics to the music player's menu
+Lyrics in the music player	Müzik çalarda şarkı sözleri
+# context: Summary of the Lyrics in the music player switch. Lyrics is the name of the menu item it adds; lrclib.net stays as it is. Timed lyrics are ones that know when each line is sung
+The music player's menu gets Lyrics. They come from lrclib.net, and timed ones follow along with the song.	Müzik çaların menüsüne Şarkı sözleri eklenir. Sözler lrclib.net'ten gelir ve zamanlı olanlar şarkıyla birlikte ilerler.
+# context: Title of the switch on the Playback page (#71) that shows the day each song was added to your profile's song list
+Dates on your profile songs	Profil şarkılarınızda tarihler
+# context: Summary of the Dates on your profile songs switch. The day is shown after the song's artist in your profile's song list
+Songs you add to your profile from now on show the day you added them, after the artist. The days are kept on this phone only.	Bundan sonra profilinize eklediğiniz şarkılar, sanatçıdan sonra eklediğiniz günü gösterir. Tarihler yalnızca bu telefonda tutulur.
+# context: Lowercase noun phrase naming Dates on your profile songs (#71) in the patch status list
+dates on your profile songs	profil şarkılarında tarihler

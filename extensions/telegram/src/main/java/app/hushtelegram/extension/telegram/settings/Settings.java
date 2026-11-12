@@ -421,6 +421,20 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_playback_position", FALSE);
 
     /**
+     * The music player's menu has Lyrics, which finds the song's words on lrclib.net and shows them
+     * over the player, following along when they're timed (#71). Off by default.
+     */
+    public static final BooleanSetting LYRICS =
+            new BooleanSetting("hushtelegram_lyrics", FALSE);
+
+    /**
+     * Songs added to your profile from now on show the day they were added, after the artist in
+     * your profile's song list (#71). Kept on this phone only. Off by default.
+     */
+    public static final BooleanSetting SONG_DATES =
+            new BooleanSetting("hushtelegram_song_dates", FALSE);
+
+    /**
      * A private message from someone outside your contacts notifies without sound or vibration.
      */
     public static final BooleanSetting SILENCE_NON_CONTACTS =

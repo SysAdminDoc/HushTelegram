@@ -996,6 +996,16 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + " Telegram only does that for long ones.")));
             }
         }
+        if (build.contains(PatchFamily.LYRICS)) {
+            on(pages, PatchFamily.LYRICS).addPreference(toggle(context, Settings.LYRICS, L10n.t("Lyrics in the music player"),
+                    PatchFamily.LYRICS.coverageSummary(L10n.t("The music player's menu gets Lyrics. They come from lrclib.net,"
+                            + " and timed ones follow along with the song."))));
+            if (PatchFamily.Capability.SONG_DATES.installed()) {
+                on(pages, PatchFamily.LYRICS).addPreference(toggle(context, Settings.SONG_DATES,
+                        L10n.t("Dates on your profile songs"), L10n.t("Songs you add to your profile from now on show the day"
+                                + " you added them, after the artist. The days are kept on this phone only.")));
+            }
+        }
         if (build.contains(PatchFamily.FASTER_DOWNLOADS)) {
             on(pages, PatchFamily.FASTER_DOWNLOADS).addPreference(toggle(context, Settings.FASTER_DOWNLOADS, L10n.t("Faster downloads"),
                     PatchFamily.FASTER_DOWNLOADS.coverageSummary(L10n.t("Files download in 512 KB pieces, 8 at a time, instead of 128 KB pieces"
