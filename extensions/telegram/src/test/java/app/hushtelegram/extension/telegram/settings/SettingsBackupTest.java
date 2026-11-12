@@ -208,7 +208,9 @@ public class SettingsBackupTest {
             if (!(setting instanceof BooleanSetting) && !SettingsBackup.FILTER_LISTS.contains(setting)
                     && !SettingsBackup.NUMBERS.contains(setting) && !SettingsBackup.TEXTS.contains(setting)
                     && setting != Settings.RECEIVE_ONLY_ACCOUNTS && setting != Settings.POWERED_OFF_ACCOUNTS
-                    && setting != Settings.AUTO_FORWARDING_RULES) notSwitches.add(setting.key);
+                    && setting != Settings.AUTO_FORWARDING_RULES
+                    // The recordings folder is a permission this phone holds, which another phone can't use.
+                    && setting != Settings.RECORD_CALLS_FOLDER) notSwitches.add(setting.key);
         }
         assertEquals("a setting in Settings isn't a switch, and a settings file has no format for it",
                 Collections.emptyList(), notSwitches);

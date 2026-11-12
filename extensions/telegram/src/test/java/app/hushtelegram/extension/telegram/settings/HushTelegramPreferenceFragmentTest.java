@@ -22,14 +22,18 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.Looper;
+import android.provider.DocumentsContract;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
@@ -57,6 +61,7 @@ import app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceF
 import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 import app.hushtelegram.extension.telegram.misc.AppPasscodeForTests;
+import app.hushtelegram.extension.telegram.misc.CallRecorder;
 import app.hushtelegram.extension.telegram.misc.HiddenAccounts;
 import app.hushtelegram.extension.telegram.misc.HiddenAccountsForTests;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
@@ -84,6 +89,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowAlertDialog;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowToast;
@@ -2168,6 +2174,56 @@ public class HushTelegramPreferenceFragmentTest {
     }
 
     /**
+     * Recordings folder (#72): with none picked a tap goes straight to Android's folder picker. The
+     * picked folder is kept with a lasting permission and named on its row and on Record calls, and
+     * going back to the usual folder lets that permission go.
+     */
+    @Test
+    public void theRecordingsFolderRowPicksAFolderAndGoesBack() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.DISABLE_CALL_DEBUG);
+        Uri tree = DocumentsContract.buildTreeDocumentUri("com.android.externalstorage.documents", "primary:Recordings/Calls");
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            ContentResolver resolver = controller.get().getContentResolver();
+            Preference folder = page.findPreference(HushTelegramPreferenceFragment.RECORD_FOLDER_ROW);
+            Preference record = page.findPreference(Settings.RECORD_CALLS.key);
+            assertEquals("Recordings folder", String.valueOf(folder.getTitle()));
+            assertFalse(folder.isPersistent());
+            assertEquals(CallRecorder.usualFolder(), String.valueOf(folder.getSummary()).replaceAll("[^\\p{ASCII}]", ""));
+
+            assertTrue(folder.getOnPreferenceClickListener().onPreferenceClick(folder));
+            ShadowActivity.IntentForResult picker = shadowOf(controller.get()).getNextStartedActivityForResult();
+            assertEquals(Intent.ACTION_OPEN_DOCUMENT_TREE, picker.intent.getAction());
+            assertTrue((picker.intent.getFlags() & Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION) != 0);
+
+            // Cancelled: nothing changes.
+            shadowOf(controller.get()).receiveResult(picker.intent, Activity.RESULT_CANCELED, null);
+            settle();
+            assertEquals("", Settings.RECORD_CALLS_FOLDER.get());
+
+            shadowOf(controller.get()).receiveResult(picker.intent, Activity.RESULT_OK, new Intent().setData(tree));
+            settle();
+            assertEquals(tree.toString(), Settings.RECORD_CALLS_FOLDER.get());
+            assertEquals("Recordings/Calls", String.valueOf(folder.getSummary()).replaceAll("[^\\p{ASCII}]", ""));
+            assertEquals("Saves both sides of each call to Recordings/Calls on this phone. The other person isn't told.",
+                    String.valueOf(record.getSummary()).replaceAll("[^\\p{ASCII}]", ""));
+            assertEquals(1, resolver.getPersistedUriPermissions().size());
+            assertEquals(tree, resolver.getPersistedUriPermissions().get(0).getUri());
+
+            AlertDialog ask = dialogOf(folder);
+            assertEquals("Recordings folder", String.valueOf(shadowOf(ask).getTitle()));
+            ask.getButton(AlertDialog.BUTTON_NEUTRAL).performClick();
+            ShadowLooper.idleMainLooper();
+            settle();
+            assertEquals("", Settings.RECORD_CALLS_FOLDER.get());
+            assertEquals(CallRecorder.usualFolder(), String.valueOf(folder.getSummary()).replaceAll("[^\\p{ASCII}]", ""));
+            assertTrue(resolver.getPersistedUriPermissions().isEmpty());
+        } finally {
+            Settings.RECORD_CALLS_FOLDER.resetToDefault();
+        }
+    }
+
+    /**
      * Record calls has three rows under it (#72): which calls it saves, the chats picked for it
      * when that's chosen, and how long recordings stay. Picking chats needs Hide picked chats'
      * hooks, so a build without them offers three choices and no chats row.
@@ -2190,11 +2246,13 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals(HushTelegramPreferenceFragment.RECORD_KEEP_ROW, keep.getKey());
             assertEquals("Keep recordings", String.valueOf(keep.getTitle()));
             assertEquals("Recordings stay until you delete them.", String.valueOf(keep.getSummary()));
-            // The format and the notification cover the record button's recordings too, so they come after that switch.
-            Preference opus = rows.get(indexOfKey(rows, Settings.RECORD_CALL_BUTTON.key) + 1);
+            // The folder, the format and the notification cover the record button's recordings too, so they come after that switch.
+            Preference folder = rows.get(indexOfKey(rows, Settings.RECORD_CALL_BUTTON.key) + 1);
+            assertEquals(HushTelegramPreferenceFragment.RECORD_FOLDER_ROW, folder.getKey());
+            Preference opus = rows.get(indexOfKey(rows, Settings.RECORD_CALL_BUTTON.key) + 2);
             assertEquals(Settings.RECORD_CALLS_OPUS.key, opus.getKey());
             assertEquals("Save recordings as Opus", String.valueOf(opus.getTitle()));
-            Preference notify = rows.get(indexOfKey(rows, Settings.RECORD_CALL_BUTTON.key) + 2);
+            Preference notify = rows.get(indexOfKey(rows, Settings.RECORD_CALL_BUTTON.key) + 3);
             assertEquals(Settings.RECORD_CALLS_NOTIFY.key, notify.getKey());
             assertEquals("Notify when a call is saved", String.valueOf(notify.getTitle()));
 

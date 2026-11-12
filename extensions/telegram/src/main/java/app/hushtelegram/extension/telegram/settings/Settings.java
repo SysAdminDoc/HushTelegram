@@ -984,6 +984,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting RECORD_CALLS_OPUS =
             new BooleanSetting("hushtelegram_record_calls_opus", FALSE);
 
+    /**
+     * The folder picked for call recordings (#72), as the address Android's folder picker gave, or
+     * empty for the usual one. Telegram's lasting permission for it belongs to this phone, so it
+     * stays out of settings files.
+     */
+    public static final StringSetting RECORD_CALLS_FOLDER =
+            new StringSetting("hushtelegram_record_calls_folder", "", false, false);
+
     /** Link previews for unsent messages only; sent messages and received previews stay stock. */
     public static final BooleanSetting DISABLE_DRAFT_PREVIEWS =
             new BooleanSetting("hushtelegram_disable_draft_previews", FALSE);

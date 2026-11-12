@@ -164,6 +164,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String RECORD_CHATS_ROW = "action_record_chats";
     /** The Keep recordings row's key. The days are saved under {@link Settings#RECORD_CALLS_KEEP_DAYS}. */
     static final String RECORD_KEEP_ROW = "action_record_calls_keep";
+    /** The Recordings folder row's key. The folder is saved under {@link Settings#RECORD_CALLS_FOLDER}. */
+    static final String RECORD_FOLDER_ROW = "action_record_calls_folder";
+    /** The folder picker's request, next to the settings file's 7311 and 7312. */
+    static final int RECORD_FOLDER_REQUEST = 7313;
     static final String HIDDEN_ACCOUNTS_ROW = "action_hidden_accounts";
     /** The Forwarding rules row's key. The rules themselves are saved under {@link Settings#AUTO_FORWARDING_RULES}. */
     static final String FORWARDING_RULES_ROW = "action_forwarding_rules";
@@ -316,6 +320,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RECORD_FOLDER_REQUEST) {
+            // Cancelled: nothing to do and nothing to say.
+            Uri tree = resultCode == Activity.RESULT_OK && data != null ? data.getData() : null;
+            if (tree != null) recordFolderChosen(tree);
+            return;
+        }
         SettingsBackupPreference.onResult(this, requestCode, resultCode, data);
     }
 
@@ -1489,9 +1499,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "when Telegram's server asks for them."))));
                 // Off as shipped: saving a call is the user's choice, and the other person isn't asked.
                 if (PatchFamily.Capability.CALL_RECORDING.installed()) {
-                    privacy.addPreference(toggle(context, Settings.RECORD_CALLS, L10n.t("Record calls"),
-                            L10n.f("Saves both sides of each call to %1$s on this phone. The other person isn't told.",
-                                    L10n.isolate(CallRecorder.folder()))));
+                    privacy.addPreference(toggle(context, Settings.RECORD_CALLS, L10n.t("Record calls"), recordCallsSummary()));
                     privacy.addPreference(recordWhichRow(context));
                     // The chats are picked from the hidden chats' list and long press item, as Ghost mode exceptions are.
                     if (PatchFamily.Capability.HIDDEN_CHATS.installed()) privacy.addPreference(recordChatsRow(context));
@@ -1502,6 +1510,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             L10n.t("A button on the call screen records just that call, or stops recording it when Record calls is on.")));
                 }
                 if (PatchFamily.Capability.CALL_RECORDING.installed() || PatchFamily.Capability.CALL_RECORD_BUTTON.installed()) {
+                    privacy.addPreference(recordFolderRow(context));
                     // Android 9 can't write an .ogg, so it has nothing to choose.
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         privacy.addPreference(toggle(context, Settings.RECORD_CALLS_OPUS, L10n.t("Save recordings as Opus"),
@@ -3056,6 +3065,109 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (days <= 0 || !RECORD_KEEP_DAYS.contains(days)) return L10n.t("Recordings stay until you delete them.");
         return L10n.quantity(days, "Recordings older than %1$d day are deleted when the next one is saved.",
                 "Recordings older than %1$d days are deleted when the next one is saved.", days);
+    }
+
+    static String recordCallsSummary() {
+        return L10n.f("Saves both sides of each call to %1$s on this phone. The other person isn't told.",
+                L10n.isolate(CallRecorder.folder()));
+    }
+
+    /** Where call recordings are saved: the row names the folder, and a tap picks another. */
+    private Preference recordFolderRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(RECORD_FOLDER_ROW);
+        row.setTitle(L10n.t("Recordings folder"));
+        row.setPersistent(false);
+        row.setSummary(L10n.isolate(CallRecorder.folder()));
+        row.setOnPreferenceClickListener(p -> {
+            showRecordFolder(context);
+            return true;
+        });
+        return row;
+    }
+
+    /** With a folder picked, another or the usual one. With none, straight to the picker. */
+    void showRecordFolder(Context context) {
+        if (SettingsLock.refuses()) return;
+        if (CallRecorder.chosenFolder() == null) {
+            pickRecordFolder();
+            return;
+        }
+        show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("Recordings folder"))
+                .setMessage(L10n.f("Recordings go to %1$s. The usual folder is %2$s.",
+                        L10n.isolate(CallRecorder.folder()), L10n.isolate(CallRecorder.usualFolder())))
+                .setPositiveButton(L10n.t("Choose another folder"), (dialog, which) -> pickRecordFolder())
+                .setNeutralButton(L10n.t("Use the usual folder"), (dialog, which) -> recordFolderChosen(null))
+                .setNegativeButton(L10n.t("Cancel"), null));
+    }
+
+    /** Android's folder picker, asked for a folder Telegram can keep writing to after a restart. */
+    private void pickRecordFolder() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                | Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
+        try {
+            startActivityForResult(intent, RECORD_FOLDER_REQUEST);
+        } catch (ActivityNotFoundException missing) {
+            Logger.printInfo(() -> "No folder picker for call recordings");
+            Utils.showToastLong(L10n.t("This phone has no folder picker, so you can't choose a folder here."));
+        }
+    }
+
+    /**
+     * Saves [tree], the picker's answer, as the recordings folder with a permission that lasts, or
+     * with null goes back to the usual folder. The permission for the folder it replaces is let go
+     * once the new choice is saved, and the one just taken is let go if it isn't.
+     */
+    void recordFolderChosen(@Nullable Uri tree) {
+        Activity activity = getActivity();
+        Context context = activity != null ? activity.getApplicationContext() : Utils.getContext();
+        if (context == null) return;
+        if (tree != null) {
+            try {
+                context.getContentResolver().takePersistableUriPermission(tree, FOLDER_ACCESS);
+            } catch (SecurityException refused) {
+                Logger.printInfo(() -> "The picked folder came without a lasting permission");
+                Utils.showToastLong(L10n.t("Couldn't use that folder. Pick another one."));
+                return;
+            }
+        }
+        Uri before = CallRecorder.chosenFolder();
+        String value = tree == null ? "" : tree.toString();
+        boolean queued = Utils.runInOrderOnBackgroundThread(() -> {
+            boolean saved = false;
+            try {
+                saved = Settings.RECORD_CALLS_FOLDER.saveCommitted(value);
+            } finally {
+                boolean result = saved;
+                Utils.runOnMainThread(() -> recordFolderSaved(context, result, before, tree));
+            }
+        });
+        if (!queued) recordFolderSaved(context, false, before, tree);
+    }
+
+    private static final int FOLDER_ACCESS = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+
+    private void recordFolderSaved(Context context, boolean saved, @Nullable Uri before, @Nullable Uri tree) {
+        Uri kept = saved ? tree : before;
+        Uri dropped = saved ? before : tree;
+        if (dropped != null && !dropped.equals(kept)) {
+            try {
+                context.getContentResolver().releasePersistableUriPermission(dropped, FOLDER_ACCESS);
+            } catch (SecurityException notHeld) {
+                // Already gone with the folder.
+            }
+        }
+        if (!saved) {
+            Utils.showToastLong(L10n.t("Couldn't save the folder. Try again in a moment."));
+            return;
+        }
+        if (getPreferenceScreen() == null) return;
+        Preference row = findPreference(RECORD_FOLDER_ROW);
+        if (row != null) row.setSummary(L10n.isolate(CallRecorder.folder()));
+        Preference record = findPreference(Settings.RECORD_CALLS.key);
+        if (record != null) record.setSummary(recordCallsSummary());
     }
 
     /** The same choice in a few words, for a line in the import preview. */

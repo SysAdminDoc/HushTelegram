@@ -9,6 +9,7 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaCodecList;
+import android.net.Uri;
 import android.os.Build;
 import android.os.SystemClock;
 
@@ -147,7 +148,18 @@ public final class CallRecorder {
 
     /** The folder recordings go to on this phone, as a file manager shows it, for the switch's description. */
     public static String folder() {
+        return CallRecordings.shown();
+    }
+
+    /** The usual folder, where recordings go when none is picked. */
+    public static String usualFolder() {
         return CallRecordings.folder();
+    }
+
+    /** The folder picked under Recordings folder, or null for the usual one. */
+    @Nullable
+    public static Uri chosenFolder() {
+        return CallRecordings.chosen();
     }
 
     /** The newer engine's microphone block, before WebRTC takes it. [bytes] were read from the start of [buffer]. */

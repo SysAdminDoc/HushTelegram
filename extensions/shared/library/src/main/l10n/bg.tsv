@@ -1851,6 +1851,13 @@ Recordings stay until you delete them.	Записите остават, дока
 Recordings older than %1$d day are deleted when the next one is saved.	Записите, по-стари от %1$d ден, се изтриват при запазване на следващия.
 Recordings older than %1$d days are deleted when the next one is saved.	Записите, по-стари от %1$d дни, се изтриват при запазване на следващия.
 Until you delete them	Докато не ги изтриете
+Recordings folder	Папка за записите
+Recordings go to %1$s. The usual folder is %2$s.	Записите отиват в %1$s. Обичайната папка е %2$s.
+Choose another folder	Избор на друга папка
+Use the usual folder	Обичайната папка
+Couldn't use that folder. Pick another one.	Тази папка не може да се използва. Изберете друга.
+This phone has no folder picker, so you can't choose a folder here.	Този телефон няма избирач на папки, затова не можете да изберете папка тук.
+Internal storage	Вътрешно хранилище
 Save recordings as Opus	Записи във формат Opus
 Files about half the size, ending in .ogg. Some older players can't open them.	Файлове с около половината размер, с окончание .ogg. Някои по-стари плейъри не могат да ги отворят.
 Notify when a call is saved	Известие при запазен разговор

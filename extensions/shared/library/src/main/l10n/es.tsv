@@ -1855,6 +1855,13 @@ Recordings stay until you delete them.	Las grabaciones se quedan hasta que las b
 Recordings older than %1$d day are deleted when the next one is saved.	Las grabaciones de más de %1$d día se borran cuando se guarda la siguiente.
 Recordings older than %1$d days are deleted when the next one is saved.	Las grabaciones de más de %1$d días se borran cuando se guarda la siguiente.
 Until you delete them	Hasta que las borres
+Recordings folder	Carpeta de grabaciones
+Recordings go to %1$s. The usual folder is %2$s.	Las grabaciones van a %1$s. La carpeta habitual es %2$s.
+Choose another folder	Elegir otra carpeta
+Use the usual folder	Usar la carpeta habitual
+Couldn't use that folder. Pick another one.	No se puede usar esa carpeta. Elige otra.
+This phone has no folder picker, so you can't choose a folder here.	Este teléfono no tiene selector de carpetas, así que no puedes elegir una.
+Internal storage	Almacenamiento interno
 Save recordings as Opus	Guardar grabaciones en Opus
 Files about half the size, ending in .ogg. Some older players can't open them.	Archivos de más o menos la mitad de tamaño, terminados en .ogg. Algunos reproductores antiguos no los abren.
 Notify when a call is saved	Avisar cuando se guarde una llamada

@@ -1855,6 +1855,13 @@ Recordings stay until you delete them.	Rekaman tetap ada sampai Anda menghapusny
 Recordings older than %1$d day are deleted when the next one is saved.	Rekaman yang lebih lama dari %1$d hari dihapus saat rekaman berikutnya disimpan.
 Recordings older than %1$d days are deleted when the next one is saved.	Rekaman yang lebih lama dari %1$d hari dihapus saat rekaman berikutnya disimpan.
 Until you delete them	Sampai Anda menghapusnya
+Recordings folder	Folder rekaman
+Recordings go to %1$s. The usual folder is %2$s.	Rekaman disimpan ke %1$s. Folder biasanya adalah %2$s.
+Choose another folder	Pilih folder lain
+Use the usual folder	Pakai folder biasa
+Couldn't use that folder. Pick another one.	Folder itu tidak bisa dipakai. Pilih folder lain.
+This phone has no folder picker, so you can't choose a folder here.	Ponsel ini tidak punya pemilih folder, jadi kamu tidak bisa memilih folder.
+Internal storage	Penyimpanan internal
 Save recordings as Opus	Simpan rekaman sebagai Opus
 Files about half the size, ending in .ogg. Some older players can't open them.	File sekitar setengah ukurannya, berakhiran .ogg. Beberapa pemutar lama tidak bisa membukanya.
 Notify when a call is saved	Beri tahu saat panggilan disimpan

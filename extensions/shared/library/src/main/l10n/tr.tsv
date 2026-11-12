@@ -1855,6 +1855,13 @@ Recordings stay until you delete them.	Kayıtlar siz silene kadar kalır.
 Recordings older than %1$d day are deleted when the next one is saved.	%1$d günden eski kayıtlar bir sonraki kaydedildiğinde silinir.
 Recordings older than %1$d days are deleted when the next one is saved.	%1$d günden eski kayıtlar bir sonraki kaydedildiğinde silinir.
 Until you delete them	Siz silene kadar
+Recordings folder	Kayıt klasörü
+Recordings go to %1$s. The usual folder is %2$s.	Kayıtlar %1$s klasörüne gider. Olağan klasör %2$s.
+Choose another folder	Başka klasör seç
+Use the usual folder	Olağan klasörü kullan
+Couldn't use that folder. Pick another one.	Bu klasör kullanılamıyor. Başka birini seç.
+This phone has no folder picker, so you can't choose a folder here.	Bu telefonda klasör seçici yok, o yüzden klasör seçemezsin.
+Internal storage	Dahili depolama
 Save recordings as Opus	Kayıtları Opus olarak kaydet
 Files about half the size, ending in .ogg. Some older players can't open them.	Dosyalar yaklaşık yarı boyutta olur ve .ogg ile biter. Bazı eski oynatıcılar bunları açamaz.
 Notify when a call is saved	Arama kaydedilince bildir

@@ -1852,6 +1852,13 @@ Recordings stay until you delete them.	As gravações ficam até você apagá-la
 Recordings older than %1$d day are deleted when the next one is saved.	Gravações com mais de %1$d dia são apagadas quando a próxima é salva.
 Recordings older than %1$d days are deleted when the next one is saved.	Gravações com mais de %1$d dias são apagadas quando a próxima é salva.
 Until you delete them	Até você apagá-las
+Recordings folder	Pasta das gravações
+Recordings go to %1$s. The usual folder is %2$s.	As gravações vão para %1$s. A pasta padrão é %2$s.
+Choose another folder	Escolher outra pasta
+Use the usual folder	Usar a pasta padrão
+Couldn't use that folder. Pick another one.	Não foi possível usar essa pasta. Escolha outra.
+This phone has no folder picker, so you can't choose a folder here.	Este celular não tem seletor de pastas, então não dá para escolher uma.
+Internal storage	Armazenamento interno
 Save recordings as Opus	Salvar gravações em Opus
 Files about half the size, ending in .ogg. Some older players can't open them.	Arquivos com cerca de metade do tamanho, terminando em .ogg. Alguns players antigos não conseguem abri-los.
 Notify when a call is saved	Avisar quando uma chamada for salva
