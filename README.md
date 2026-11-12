@@ -1,10 +1,10 @@
 ![HushTelegram. Keep the chat. Cut the noise.](assets/readme-hero.png)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.0.24-7CE6C4" alt="Version 0.0.24">
+  <img src="https://img.shields.io/badge/version-0.0.25-7CE6C4" alt="Version 0.0.25">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
-  <img src="https://img.shields.io/badge/Telegram-13.2.1%20Play%20%7C%2013.2.0%20telegram.org-2AABEE" alt="Telegram 13.2.1 from Google Play and 13.2.0 from telegram.org">
+  <img src="https://img.shields.io/badge/Telegram-13.2.1%20Play%20%7C%20telegram.org-2AABEE" alt="Telegram 13.2.1 from Google Play and telegram.org">
   <img src="https://img.shields.io/badge/for-Morphe%20Manager%202.5.0%2B-8A2BE2" alt="For Morphe Manager 2.5.0 or newer">
 </p>
 
@@ -22,7 +22,7 @@
 
 HushTelegram is a set of [Morphe](https://morphe.software) patches for Telegram on Android. It takes the sponsored messages and search ads out of Telegram and keeps the app's usage reports on your phone. Everything else is a switch in its own settings screen, so you can hide Stories and the Premium upsells, keep messages other people delete, translate a whole chat, get notifications through UnifiedPush, go AMOLED black and plenty more. It doesn't give away paid Premium features. A second switch under Save downloaded files, off until you turn it on, also saves downloaded files and songs from chats that don't allow saving. Another one under Add Repeat to the message menu, off to start as well, lets screenshots work in those chats. Two more, also off to start, keep view-once and self-destructing media after you open it and save a copy of it. Secret chats always follow Telegram's rules.
 
-The latest release is [v0.0.24](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.24), with 69 patches for Telegram 13.2.1 from Google Play and Telegram 13.2.0 from telegram.org. It needs Morphe Manager 2.5.0 or newer. The version badge follows the source on main, which can be ahead of the release. What changed in each version is in the [changelog](CHANGELOG.md).
+The latest release is [v0.0.25](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.25), with 82 patches for Telegram 13.2.1 from Google Play and telegram.org. It needs Morphe Manager 2.5.0 or newer. The version badge follows the source on main, which can be ahead of the release. What changed in each version is in the [changelog](CHANGELOG.md).
 
 **[Add HushTelegram to Morphe Manager](https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram)** | [Download a release](https://github.com/SysAdminDoc/HushTelegram/releases/latest) | [Browse the patches](#patches)
 
@@ -51,7 +51,7 @@ The home page is search plus one short list of sections. Tap a section to open i
 
 ## Patches
 
-The current release has 69 patches. Each description is the one Morphe Manager shows, and it says which page of HushTelegram settings holds the switch and whether it starts on or off. The table runs in the order of those pages.
+The current release has 82 patches. Each description is the one Morphe Manager shows, and it says which page of HushTelegram settings holds the switch and whether it starts on or off. The table runs in the order of those pages.
 
 A few descriptions are behind the app. Since 0.0.20, `Save downloaded files` has a second switch under it, **Also save from chats that don't allow saving**, which starts off. With both on, files and songs from those chats get a copy too, and so does each photo and video you open or auto-download there, so only use it where the owner is fine with that. Secret chats always stay in Telegram, and so does self-destructing media unless **Also save view-once and timed media** is on as well. In ordinary chats, photos and videos still go through Save to Gallery. The **What to copy** row right under the main switch narrows the copies down to the kinds you tick: documents, music, photos, videos and voice messages. Below them, the **Gallery folder** row picks where Save to Gallery puts photos and videos on Android 10 and newer. Telegram's Pictures/Telegram and Movies/Telegram are the default, and you can switch to DCIM/Telegram or to DCIM/Telegram/Photos and DCIM/Telegram/Videos. In the Chat list page, **Move All Chats** starts off and keeps the All Chats tab where you drag it, on this phone only. Under **Keep Telegram's files in internal storage**, the **Folder in internal storage** row names the folder those files go in, like Internal storage/Plus. It's Telegram until you change it, and a new name takes a restart. `Keep videos muted on volume keys` has a **Start videos without sound** switch, off to start, that plays each video you open muted until you press a volume key. `Hide Premium, gifts and Stars` also takes Send a Gift out of the three-dot menu on profiles and channels. `Add Repeat to the message menu` has more switches than its four items now, one of them **Allow screenshots in chats that don't allow saving**, off to start.
 
