@@ -4,6 +4,10 @@ Every HushTelegram release, newest first.
 
 ## Unreleased
 
+### Changed
+
+* **Telegram:** Both builds move from Telegram 13.2.1 to 13.2.2, code 73031 from Google Play and 73039 from telegram.org.
+
 ### Fixed
 
 * **Tooling:** Release publish reads the notes GitHub serves back as UTF-8, so a bullet with an accented word like "Português" no longer looks missing after the release is already up.
