@@ -262,7 +262,8 @@ public final class SettingsBackup {
             Settings.CROP_GUARD,
             Settings.CAPTION_ORDER,
             Settings.PROXY_MENU,
-            Settings.SIGN_IN_PROXY));
+            Settings.SIGN_IN_PROXY,
+            Settings.MY_MESSAGES));
 
     /**
      * The text a file carries besides the switches: the message filters, each list as a JSON array

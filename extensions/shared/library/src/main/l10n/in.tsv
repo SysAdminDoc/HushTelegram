@@ -1676,3 +1676,9 @@ Pinned, in use	Disematkan, sedang dipakai
 Pinned	Disematkan
 # context: State line under the proxy Telegram connects through now, in the Proxy order editor
 In use	Sedang dipakai
+# context: Title of the My messages row on the Conversations page (#71), and the item it adds to a group's menu at the top (the three dots), which searches the group for the messages the person sent
+My messages	Pesan saya
+# context: Summary of the My messages row on the Conversations page. My messages is the name of the item it adds
+A group's menu at the top gets My messages, which shows the messages you sent there in the chat's search.	Menu di atas grup mendapat Pesan saya, yang menampilkan pesan yang kamu kirim di sana lewat pencarian chat.
+# context: Short toast when My messages couldn't open the chat's search on the person's messages, at most two short lines
+Couldn't open your messages here.	Tidak bisa membuka pesanmu di sini.

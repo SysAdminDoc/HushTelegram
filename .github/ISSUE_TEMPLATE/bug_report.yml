@@ -142,6 +142,7 @@ body:
         - Keep captions with their photos
         - Proxy in the chat list menu
         - Free proxies
+        - My messages
         - HushTelegram settings
     validations:
       required: true

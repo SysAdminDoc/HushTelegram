@@ -3047,6 +3047,63 @@
       "options": []
     },
     {
+      "name": "My messages",
+      "description": "Adds My messages to a group's menu at the top, which searches the group for the messages you sent. Starts off. Turn it on in HushTelegram settings > Conversations.",
+      "category": "Search",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushTelegram settings"
+      ],
+      "compatiblePackages": {
+        "org.telegram.messenger": [
+          "13.2.1"
+        ],
+        "org.telegram.messenger.web": [
+          "13.2.1"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Telegram",
+          "packageName": "org.telegram.messenger",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.2.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 72911
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telegram (telegram.org)",
+          "packageName": "org.telegram.messenger.web",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.2.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 72919
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Never send an uncropped photo",
       "description": "When Telegram can't finish cropping a photo, keeps the editor open and asks you to try again instead of sending the photo uncropped. On by default. Turn it off in HushTelegram settings > Conversations.",
       "category": "Fixes",

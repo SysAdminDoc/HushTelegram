@@ -500,6 +500,7 @@ public final class SelectionCheck {
         hook(calls, flags, "captionOrder", "misc/CaptionOrder", "before", "after");
         hook(calls, flags, "proxyMenu", "misc/ProxyMenu", "show");
         hook(calls, flags, "freeProxies", "misc/FreeProxies", "signInButton");
+        hook(calls, flags, "myMessages", "misc/MyMessages", "headerMenu", "headerClick");
         for (String[] bridge : List.of(
                 new String[]{"nativeTokenPresence", names.method("Lorg/telegram/messenger/SharedConfig;->hushTelegramTokenPresence()I")},
                 new String[]{"nativeAccountCounts", names.method("Lorg/telegram/messenger/UserConfig;->hushTelegramAccountCounts()I")})) {

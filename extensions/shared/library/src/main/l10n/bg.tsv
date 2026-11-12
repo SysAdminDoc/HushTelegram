@@ -1672,3 +1672,9 @@ Pinned, in use	Закачено, използва се
 Pinned	Закачено
 # context: State line under the proxy Telegram connects through now, in the Proxy order editor
 In use	Използва се
+# context: Title of the My messages row on the Conversations page (#71), and the item it adds to a group's menu at the top (the three dots), which searches the group for the messages the person sent
+My messages	Моите съобщения
+# context: Summary of the My messages row on the Conversations page. My messages is the name of the item it adds
+A group's menu at the top gets My messages, which shows the messages you sent there in the chat's search.	Менюто горе в група получава Моите съобщения, което показва изпратените от теб съобщения там в търсенето на чата.
+# context: Short toast when My messages couldn't open the chat's search on the person's messages, at most two short lines
+Couldn't open your messages here.	Съобщенията ти не можаха да се отворят тук.

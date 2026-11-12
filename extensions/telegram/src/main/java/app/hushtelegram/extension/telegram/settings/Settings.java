@@ -563,6 +563,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_free_proxies", FALSE);
 
     /**
+     * A group's menu at the top has My messages, which searches the group for the messages you
+     * sent the way Telegram's search does once you pick yourself as the sender. Off by default.
+     */
+    public static final BooleanSetting MY_MESSAGES =
+            new BooleanSetting("hushtelegram_my_messages", FALSE);
+
+    /**
      * The phone number screen always shows Telegram's proxy button, which it otherwise keeps for
      * countries where Telegram is blocked, so a proxy can be set before signing in (#66). On by
      * default.

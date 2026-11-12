@@ -774,6 +774,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.REVEAL_SPOILERS.coverageSummary(L10n.t("Spoiler text, photos and videos show right away without a tap. View-once media, "
                             + "sensitive content and login codes stay covered."))));
         }
+        if (build.contains(PatchFamily.MY_MESSAGES)) {
+            on(pages, PatchFamily.MY_MESSAGES).addPreference(toggle(context, Settings.MY_MESSAGES, L10n.t("My messages"),
+                    PatchFamily.MY_MESSAGES.coverageSummary(L10n.t("A group's menu at the top gets My messages, which shows the messages "
+                            + "you sent there in the chat's search."))));
+        }
         if (build.contains(PatchFamily.FORWARD_HIDE_SENDER)) {
             on(pages, PatchFamily.FORWARD_HIDE_SENDER).addPreference(toggle(context, Settings.FORWARD_HIDE_SENDER, L10n.t("Hide sender names when forwarding"),
                     PatchFamily.FORWARD_HIDE_SENDER.coverageSummary(L10n.t("Each new forward starts with Hide sender's name turned on, so copies arrive "

@@ -244,4 +244,5 @@ public final class SettingsStatus {
     public static boolean proxyMenu() { return false; }
     public static boolean freeProxies() { return false; }
     public static boolean proxyOrder() { return false; }
+    public static boolean myMessages() { return false; }
 }
