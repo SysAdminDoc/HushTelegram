@@ -779,6 +779,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.MY_MESSAGES.coverageSummary(L10n.t("A group's menu at the top gets My messages, which shows the messages "
                             + "you sent there in the chat's search."))));
         }
+        if (build.contains(PatchFamily.TEXT_DIRECTION)) {
+            on(pages, PatchFamily.TEXT_DIRECTION).addPreference(toggle(context, Settings.TEXT_DIRECTION, L10n.t("Text direction"),
+                    PatchFamily.TEXT_DIRECTION.coverageSummary(L10n.t("The message box's text menu gets Right to left and Left to right "
+                            + "for the lines you selected, and Control character for invisible marks like RLM or ZWJ."))));
+        }
         if (build.contains(PatchFamily.FORWARD_HIDE_SENDER)) {
             on(pages, PatchFamily.FORWARD_HIDE_SENDER).addPreference(toggle(context, Settings.FORWARD_HIDE_SENDER, L10n.t("Hide sender names when forwarding"),
                     PatchFamily.FORWARD_HIDE_SENDER.coverageSummary(L10n.t("Each new forward starts with Hide sender's name turned on, so copies arrive "

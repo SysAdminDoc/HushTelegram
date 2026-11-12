@@ -1682,3 +1682,43 @@ My messages	Mis mensajes
 A group's menu at the top gets My messages, which shows the messages you sent there in the chat's search.	El menú superior de un grupo añade Mis mensajes, que muestra en la búsqueda del chat los mensajes que enviaste allí.
 # context: Short toast when My messages couldn't open the chat's search on the person's messages, at most two short lines
 Couldn't open your messages here.	No se pudieron abrir tus mensajes aquí.
+# context: Title of the Text direction row on the Conversations page (#71), which adds Right to left, Left to right and Control character to the text selection menu of the message box
+Text direction	Dirección del texto
+# context: Summary of the Text direction row on the Conversations page. Right to left, Left to right and Control character are the names of the items it adds to the message box's text selection menu; RLM and ZWJ stay as they are
+The message box's text menu gets Right to left and Left to right for the lines you selected, and Control character for invisible marks like RLM or ZWJ.	El menú de texto del cuadro de mensaje añade De derecha a izquierda y De izquierda a derecha para las líneas seleccionadas, y Carácter de control para marcas invisibles como RLM o ZWJ.
+# context: Item in the message box's text selection menu, next to Telegram's Bold and Italic, that makes the selected lines read from right to left
+Right to left	De derecha a izquierda
+# context: Item in the message box's text selection menu, next to Telegram's Bold and Italic, that makes the selected lines read from left to right
+Left to right	De izquierda a derecha
+# context: Item in the message box's text selection menu that opens a list of invisible Unicode control characters, and the title of that list
+Control character	Carácter de control
+# context: Short toast when Text direction couldn't change the message box's text, at most two short lines
+Couldn't change the text.	No se pudo cambiar el texto.
+# context: Name of an invisible Unicode control character in the Text direction feature's Control character list, shown after its short code (for example LRM). Keep it close to the character's Unicode name
+Left-to-right mark	Marca de izquierda a derecha
+# context: Name of an invisible Unicode control character in the Text direction feature's Control character list, shown after its short code (for example LRM). Keep it close to the character's Unicode name
+Right-to-left mark	Marca de derecha a izquierda
+# context: Name of an invisible Unicode control character in the Text direction feature's Control character list, shown after its short code (for example LRM). Keep it close to the character's Unicode name
+Zero width joiner	Unión de ancho cero
+# context: Name of an invisible Unicode control character in the Text direction feature's Control character list, shown after its short code (for example LRM). Keep it close to the character's Unicode name
+Zero width non-joiner	No unión de ancho cero
+# context: Name of an invisible Unicode control character in the Text direction feature's Control character list, shown after its short code (for example LRM). Keep it close to the character's Unicode name
+Zero width space	Espacio de ancho cero
+# context: Name of an invisible Unicode control character in the Text direction feature's Control character list, shown after its short code (for example LRM). Keep it close to the character's Unicode name
+Start of left-to-right embedding	Inicio de incrustación de izquierda a derecha
+# context: Name of an invisible Unicode control character in the Text direction feature's Control character list, shown after its short code (for example LRM). Keep it close to the character's Unicode name
+Start of right-to-left embedding	Inicio de incrustación de derecha a izquierda
+# context: Name of an invisible Unicode control character in the Text direction feature's Control character list, shown after its short code (for example LRM). Keep it close to the character's Unicode name
+Start of left-to-right override	Inicio de forzado de izquierda a derecha
+# context: Name of an invisible Unicode control character in the Text direction feature's Control character list, shown after its short code (for example LRM). Keep it close to the character's Unicode name
+Start of right-to-left override	Inicio de forzado de derecha a izquierda
+# context: Name of an invisible Unicode control character in the Text direction feature's Control character list, shown after its short code (for example LRM). Keep it close to the character's Unicode name
+Pop directional formatting	Fin de formato direccional
+# context: Name of an invisible Unicode control character in the Text direction feature's Control character list, shown after its short code (for example LRM). Keep it close to the character's Unicode name
+Left-to-right isolate	Aislamiento de izquierda a derecha
+# context: Name of an invisible Unicode control character in the Text direction feature's Control character list, shown after its short code (for example LRM). Keep it close to the character's Unicode name
+Right-to-left isolate	Aislamiento de derecha a izquierda
+# context: Name of an invisible Unicode control character in the Text direction feature's Control character list, shown after its short code (for example LRM). Keep it close to the character's Unicode name
+First strong isolate	Aislamiento según el primer carácter fuerte
+# context: Name of an invisible Unicode control character in the Text direction feature's Control character list, shown after its short code (for example LRM). Keep it close to the character's Unicode name
+Pop directional isolate	Fin de aislamiento

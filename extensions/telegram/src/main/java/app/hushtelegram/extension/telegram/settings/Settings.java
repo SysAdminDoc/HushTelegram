@@ -570,6 +570,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_my_messages", FALSE);
 
     /**
+     * The message box's text menu has Right to left and Left to right, which start the selected
+     * lines with an invisible direction mark, and Control character, which picks one of the
+     * invisible Unicode marks Telegram Desktop offers. Off by default.
+     */
+    public static final BooleanSetting TEXT_DIRECTION =
+            new BooleanSetting("hushtelegram_text_direction", FALSE);
+
+    /**
      * The phone number screen always shows Telegram's proxy button, which it otherwise keeps for
      * countries where Telegram is blocked, so a proxy can be set before signing in (#66). On by
      * default.

@@ -35,6 +35,7 @@ final class ManagerCategories {
         pages.put("Chats", "Chat list");
         pages.put("Stories", "Chat list");
         pages.put("Conversations", "Conversations");
+        pages.put("Writing", "Conversations");
         pages.put("Playback", "Playback");
         pages.put("Notifications", "Notifications");
         pages.put("Interface", "Look and feel");

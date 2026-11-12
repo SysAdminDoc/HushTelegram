@@ -203,6 +203,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.PROXY_MENU, "Proxy in the chat list menu");
         ROW_TITLES.put(PatchFamily.FREE_PROXIES, "Free proxies");
         ROW_TITLES.put(PatchFamily.MY_MESSAGES, "My messages");
+        ROW_TITLES.put(PatchFamily.TEXT_DIRECTION, "Text direction");
     }
 
     /** The sections every build has, in the order they're drawn. */

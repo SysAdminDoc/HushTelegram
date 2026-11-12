@@ -491,6 +491,8 @@ public class PausedHooksTest {
                 () -> app.hushtelegram.extension.telegram.misc.FreeProxies.signInButton(1)));
         probes.put(PatchFamily.MY_MESSAGES, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.MyMessagesForTests.active()));
+        probes.put(PatchFamily.TEXT_DIRECTION, Collections.singletonList(
+                () -> app.hushtelegram.extension.telegram.misc.TextDirectionForTests.active()));
         // New messages are looked at for forwarding.
         probes.put(PatchFamily.AUTO_FORWARDING, Collections.singletonList(() -> {
             List<String> before = HookStatus.report();

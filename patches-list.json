@@ -3961,6 +3961,63 @@
       "options": []
     },
     {
+      "name": "Text direction",
+      "description": "Adds Right to left, Left to right and Control character to the text menu of the message box, so you can set which way a line reads or add an invisible Unicode mark. Starts off. Turn it on in HushTelegram settings > Conversations.",
+      "category": "Writing",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushTelegram settings"
+      ],
+      "compatiblePackages": {
+        "org.telegram.messenger": [
+          "13.2.1"
+        ],
+        "org.telegram.messenger.web": [
+          "13.2.1"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Telegram",
+          "packageName": "org.telegram.messenger",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.2.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 72911
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telegram (telegram.org)",
+          "packageName": "org.telegram.messenger.web",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.2.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 72919
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Translate with an outside service",
       "description": "Adds Translate here to a message's menu and Translate this chat to a chat's menu. Text you turn on goes to Google's web translate, or to an AI service with your own key if you set one, one message at a time, and nothing is sent before that. With an AI service, a How to translate box lets you say how you want it done. Telegram's own translation and its Premium checks stay as they are. Starts off. Turn it on in HushTelegram settings > Conversations.",
       "category": "Conversations",
@@ -4249,7 +4306,7 @@
     {
       "name": "Use normal paste",
       "description": "Pastes text exactly as you copied it, without Telegram adding formatting, tables or code styling. A second switch, Mention by ID, turns @ and a user ID typed in the message box into a real mention of people the app has already seen. Both start off. Turn them on in HushTelegram settings > Conversations.",
-      "category": "Conversations",
+      "category": "Writing",
       "use": true,
       "dependencies": [
         "BytecodePatch",

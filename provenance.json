@@ -404,6 +404,8 @@
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/proxymenu/**",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/MyMessages.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/mymessages/**",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/TextDirection.java",
+        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/textdirection/**",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FreeProxies.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FreeProxyTransport.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/TelegramProxies.java",

@@ -96,6 +96,7 @@ public final class FamilyNames {
     public static final String PROXY_MENU = "Proxy in the chat list menu";
     public static final String FREE_PROXIES = "Free proxies";
     public static final String MY_MESSAGES = "My messages";
+    public static final String TEXT_DIRECTION = "Text direction";
 
     private FamilyNames() {
     }
