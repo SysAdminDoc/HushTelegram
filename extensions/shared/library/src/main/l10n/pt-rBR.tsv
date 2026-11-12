@@ -1774,3 +1774,11 @@ Dates on your profile songs	Datas nas músicas do seu perfil
 Songs you add to your profile from now on show the day you added them, after the artist. The days are kept on this phone only.	As músicas que você adicionar ao perfil a partir de agora mostram o dia em que foram adicionadas, depois do artista. As datas ficam só neste celular.
 # context: Lowercase noun phrase naming Dates on your profile songs (#71) in the patch status list
 dates on your profile songs	datas nas músicas do perfil
+# context: Item at the end of the menu under a chat's preview (press and hold a chat, #71) that opens the previewed chat fully
+Open chat	Abrir conversa
+# context: Item at the end of the menu under a chat's preview (press and hold a chat, #71) that closes the preview
+Close preview	Fechar prévia
+# context: Title of the switch on the Chat list page (#71) that adds Open chat and Close preview to the menu under a chat's preview
+Buttons in chat previews	Botões na prévia de conversas
+# context: Summary of the Buttons in chat previews switch. Open chat and Close preview are the names of the two menu items it adds
+Pressing and holding a chat adds Open chat and Close preview to the menu under its preview.	Ao tocar e segurar uma conversa, o menu abaixo da prévia ganha Abrir conversa e Fechar prévia.

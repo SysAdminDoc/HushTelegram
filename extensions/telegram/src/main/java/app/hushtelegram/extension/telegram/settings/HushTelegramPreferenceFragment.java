@@ -491,6 +491,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.DISABLE_CHAT_SWIPE.coverageSummary(L10n.t("Swiping a chat in your list no longer archives, mutes, pins, deletes or marks it"
                             + " read. Press and hold still offers every action."))));
         }
+        if (build.contains(PatchFamily.CHAT_PREVIEW_BUTTONS)) {
+            on(pages, PatchFamily.CHAT_PREVIEW_BUTTONS).addPreference(toggle(context, Settings.CHAT_PREVIEW_BUTTONS,
+                    L10n.t("Buttons in chat previews"), PatchFamily.CHAT_PREVIEW_BUTTONS.coverageSummary(L10n.t(
+                            "Pressing and holding a chat adds Open chat and Close preview to the menu under its preview."))));
+        }
         if (build.contains(PatchFamily.HIDE_FOLDER_COUNTERS)) {
             PreferenceCategory folderTabs = on(pages, PatchFamily.HIDE_FOLDER_COUNTERS);
             SwitchPreference counters = toggle(context, Settings.HIDE_FOLDER_COUNTERS, L10n.t("Hide folder tab counters"),

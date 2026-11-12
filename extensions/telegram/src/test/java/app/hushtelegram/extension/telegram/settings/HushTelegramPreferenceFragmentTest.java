@@ -205,6 +205,7 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.MY_MESSAGES, "My messages");
         ROW_TITLES.put(PatchFamily.TEXT_DIRECTION, "Text direction");
         ROW_TITLES.put(PatchFamily.LYRICS, "Lyrics in the music player");
+        ROW_TITLES.put(PatchFamily.CHAT_PREVIEW_BUTTONS, "Buttons in chat previews");
     }
 
     /** The sections every build has, in the order they're drawn. */

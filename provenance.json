@@ -406,6 +406,8 @@
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/mymessages/**",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/TextDirection.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/textdirection/**",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ChatPreview.java",
+        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/chatpreview/**",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/Lyrics.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/LyricsPanel.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/LyricsSource.java",

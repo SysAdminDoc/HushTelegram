@@ -505,6 +505,7 @@ public final class SelectionCheck {
         hook(calls, flags, "textDirection", "misc/TextDirection", "menu", "chosen");
         hook(calls, flags, "lyrics", "misc/Lyrics", "anchor", "menu");
         hook(calls, flags, "songDates", "misc/SongDates", "saving", "author");
+        hook(calls, flags, "chatPreviewButtons", "misc/ChatPreview", "menu");
         for (String[] bridge : List.of(
                 new String[]{"nativeTokenPresence", names.method("Lorg/telegram/messenger/SharedConfig;->hushTelegramTokenPresence()I")},
                 new String[]{"nativeAccountCounts", names.method("Lorg/telegram/messenger/UserConfig;->hushTelegramAccountCounts()I")})) {

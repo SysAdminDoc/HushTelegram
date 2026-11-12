@@ -145,6 +145,7 @@ body:
         - My messages
         - Text direction
         - Lyrics and song dates
+        - Chat preview buttons
         - HushTelegram settings
     validations:
       required: true

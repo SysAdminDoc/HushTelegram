@@ -65,6 +65,7 @@ public final class SettingsStatus {
     public static boolean hideContactsBlock() { return false; }
     public static boolean hideGreetingStickers() { return false; }
     public static boolean disableChatSwipe() { return false; }
+    public static boolean chatPreviewButtons() { return false; }
     public static boolean disableChannelPull() { return false; }
     public static boolean normalPaste() { return false; }
     public static boolean showLocalIds() { return false; }

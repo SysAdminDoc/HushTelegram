@@ -32,6 +32,7 @@ public final class FamilyNames {
     public static final String HIDE_CONTACTS_BLOCK = "Hide contacts on Telegram";
     public static final String HIDE_GREETING_STICKERS = "Hide greeting stickers";
     public static final String DISABLE_CHAT_SWIPE = "Disable chat swipe actions";
+    public static final String CHAT_PREVIEW_BUTTONS = "Chat preview buttons";
     public static final String DISABLE_CHANNEL_PULL = "Disable pull to next channel";
     public static final String NORMAL_PASTE = "Use normal paste";
     public static final String SHOW_LOCAL_IDS = "Show user and chat IDs";

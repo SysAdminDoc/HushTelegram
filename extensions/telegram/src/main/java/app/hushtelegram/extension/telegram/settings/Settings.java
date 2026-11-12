@@ -128,6 +128,13 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting DISABLE_CHAT_SWIPE =
             new BooleanSetting("hushtelegram_disable_chat_swipe", FALSE);
 
+    /**
+     * The menu under a chat's preview, after pressing and holding the chat, ends with Open chat and
+     * Close preview (#71). Telegram's own items stay. Off by default.
+     */
+    public static final BooleanSetting CHAT_PREVIEW_BUTTONS =
+            new BooleanSetting("hushtelegram_chat_preview_buttons", FALSE);
+
     /** Bottom pulls stay in the current channel; explicit chat opening keeps its normal behavior. */
     public static final BooleanSetting DISABLE_CHANNEL_PULL =
             new BooleanSetting("hushtelegram_disable_channel_pull", TRUE);

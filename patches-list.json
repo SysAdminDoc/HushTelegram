@@ -575,6 +575,63 @@
       "options": []
     },
     {
+      "name": "Chat preview buttons",
+      "description": "Adds Open chat and Close preview to the menu under a chat you press and hold, so the preview opens fully or goes away with one tap. Starts off. Turn it on in HushTelegram settings > Chat list.",
+      "category": "Chats",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "HushTelegram settings"
+      ],
+      "compatiblePackages": {
+        "org.telegram.messenger": [
+          "13.2.1"
+        ],
+        "org.telegram.messenger.web": [
+          "13.2.1"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "Telegram",
+          "packageName": "org.telegram.messenger",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.2.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 72911
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telegram (telegram.org)",
+          "packageName": "org.telegram.messenger.web",
+          "description": null,
+          "appIconColor": 2796526,
+          "signatures": [
+            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
+          ],
+          "targets": [
+            {
+              "version": "13.2.1",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 72919
+              }
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Disable analytics",
       "description": "Stops Telegram from reporting how you use the app, like how long you read channel posts and what you tap on Premium screens, and keeps the camera from reporting your phone's maker and model. Messages, calls and notifications work as before. On by default. Turn it off in HushTelegram settings > Privacy, where Receive only mode, Power off accounts, Instant lock and Don't notify contacts also live, all off by default.",
       "category": "Privacy",

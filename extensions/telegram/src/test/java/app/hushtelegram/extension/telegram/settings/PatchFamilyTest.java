@@ -161,6 +161,7 @@ public class PatchFamilyTest {
         Settings.MY_MESSAGES.resetToDefault();
         Settings.TEXT_DIRECTION.resetToDefault();
         Settings.LYRICS.resetToDefault();
+        Settings.CHAT_PREVIEW_BUTTONS.resetToDefault();
         Settings.SONG_DATES.resetToDefault();
         Settings.TEST_SERVER_SIGN_IN.resetToDefault();
         Settings.BOT_TOKEN_SIGN_IN.resetToDefault();
@@ -635,6 +636,20 @@ public class PatchFamilyTest {
         }
         assertEquals(EnumSet.of(PatchFamily.Capability.PLAYBACK_POSITION), family.expectedCapabilities());
         assertEquals("playbackPosition", PatchFamily.Capability.PLAYBACK_POSITION.statusMethod);
+        assertOnItsPage(family);
+    }
+
+    @Test
+    public void chatPreviewButtonsStartOffOnChatListAndApplyAtOnce() {
+        PatchFamily family = PatchFamily.CHAT_PREVIEW_BUTTONS;
+        assertEquals("Chat preview buttons", family.patchName);
+        assertEquals("chatPreviewButtons", family.statusMethod);
+        assertEquals(Collections.singletonList(Settings.CHAT_PREVIEW_BUTTONS), family.switches);
+        assertFalse(Settings.CHAT_PREVIEW_BUTTONS.defaultValue);
+        // Each preview asks the switch as it opens, so it needs no restart.
+        assertFalse(Settings.CHAT_PREVIEW_BUTTONS.rebootApp);
+        assertEquals(EnumSet.noneOf(PatchFamily.Capability.class), family.expectedCapabilities());
+        assertEquals(PatchFamily.Page.CHAT_LIST, PatchFamily.Page.of(family));
         assertOnItsPage(family);
     }
 
@@ -1269,7 +1284,7 @@ public class PatchFamilyTest {
                         + "hushtelegram_ghost_read_receipts=on, hushtelegram_ghost_stories=on, hushtelegram_ghost_typing=off, hushtelegram_ghost_online=off, hushtelegram_ghost_button=off, hushtelegram_ghost_read_after_send=off, hushtelegram_ghost_reads_button=off, hushtelegram_ghost_chats=off, hushtelegram_fake_typing=off, hushtelegram_receive_only=off, hushtelegram_power_off_accounts=off, hushtelegram_instant_lock=off, hushtelegram_quiet_sign_up=off)",
                 "not in this build: Hide Stories, Hide recommendations, Hide Premium, gifts and Stars, Hide promotional banners, Hide sponsored proxy channel, Hide popular apps, Hide contacts on Telegram, Hide greeting stickers, Disable chat swipe actions, Disable pull to next channel, Use normal paste, Show user and chat IDs, Disable double-tap reactions, Quiet contacts nag, Holiday look all year, Use system font, AMOLED black, Hide translate bar, Exact numbers, Reveal spoilers, Hide keyboard on scroll, Keep videos muted on volume keys, Swipe back on profiles, Hide phone number, Message times with seconds, Allow chat blur on slower phones, Play voice messages one at a time, Turn off haptic feedback, Turn off reaction effects, Hide folder tab counters, Hide sender names when forwarding, Voice messages in the music player, Silence people outside your contacts, Disable pull to archive, Start the camera on the rear lens, Hide gallery camera tile, Hide time on stickers, Change sticker size, Ignore mentions in muted chats, Hide blocked users in groups, Hide messages by keyword, Hide Telegram Features and Invite Friends, Add Repeat to the message menu, Keep deleted messages, Ask before sending a sticker, Translate with an outside service, Hide channel bar buttons, Hide Send as button, Hide Contacts tab, Faster downloads, Save downloaded files, Folders by chat type, Disable call debug upload, Disable draft link previews, Gallery camera on tap, Open links externally, Strip link tracking, Disable update checks, Repair Firebase push registration, UnifiedPush notifications, Test server sign-in, Bot token sign-in, "
                         + "Suppress screenshot notification, Unlock Premium features, Bypass channel restrictions, "
-                        + "Bypass integrity check, Auto-forwarding rules, Never send an uncropped photo, Keep captions with their photos, Proxy in the chat list menu, Free proxies, My messages, Text direction, Lyrics and song dates",
+                        + "Bypass integrity check, Auto-forwarding rules, Never send an uncropped photo, Keep captions with their photos, Proxy in the chat list menu, Free proxies, My messages, Text direction, Lyrics and song dates, Chat preview buttons",
                 "Hide ads coverage: channel ads, video ads, search ads",
                 "Disable analytics coverage: channel read metrics, Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures, dual camera reports, read receipts and story views, receive only mode, powering off accounts, instant lock, quiet sign-up"),
                 running);

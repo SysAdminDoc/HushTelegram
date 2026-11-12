@@ -116,6 +116,7 @@ public final class SettingsBackup {
             Settings.HIDE_CONTACTS_BLOCK,
             Settings.HIDE_GREETING_STICKERS,
             Settings.DISABLE_CHAT_SWIPE,
+            Settings.CHAT_PREVIEW_BUTTONS,
             Settings.DISABLE_CHANNEL_PULL,
             Settings.DISABLE_TOPIC_PULL,
             Settings.NORMAL_PASTE,

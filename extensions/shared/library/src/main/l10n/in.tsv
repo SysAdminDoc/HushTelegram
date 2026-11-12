@@ -1777,3 +1777,11 @@ Dates on your profile songs	Tanggal di lagu profil Anda
 Songs you add to your profile from now on show the day you added them, after the artist. The days are kept on this phone only.	Lagu yang Anda tambahkan ke profil mulai sekarang menampilkan hari Anda menambahkannya, setelah nama artis. Tanggalnya hanya disimpan di ponsel ini.
 # context: Lowercase noun phrase naming Dates on your profile songs (#71) in the patch status list
 dates on your profile songs	tanggal di lagu profil
+# context: Item at the end of the menu under a chat's preview (press and hold a chat, #71) that opens the previewed chat fully
+Open chat	Buka chat
+# context: Item at the end of the menu under a chat's preview (press and hold a chat, #71) that closes the preview
+Close preview	Tutup pratinjau
+# context: Title of the switch on the Chat list page (#71) that adds Open chat and Close preview to the menu under a chat's preview
+Buttons in chat previews	Tombol di pratinjau chat
+# context: Summary of the Buttons in chat previews switch. Open chat and Close preview are the names of the two menu items it adds
+Pressing and holding a chat adds Open chat and Close preview to the menu under its preview.	Saat Anda menekan lama sebuah chat, menu di bawah pratinjaunya mendapat Buka chat dan Tutup pratinjau.
