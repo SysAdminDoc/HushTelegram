@@ -203,7 +203,7 @@ public final class GhostMode {
             uncount(request);
             return false;
         }
-        if (kind == Kind.READ && ours(request)) return false;
+        if ((kind == Kind.READ || kind == Kind.TYPING) && ours(request)) return false;
         if (kind == Kind.ONLINE) watch();
         if (kind == Kind.ONLINE && !goingOnline(request)) return false;
         if (!keepBack(kind, request)) return false;
@@ -212,7 +212,7 @@ public final class GhostMode {
         return true;
     }
 
-    /** Whether [request] is a read this class sent, which goes out this once. */
+    /** Whether [request] is a read or typing status sent past the gate, which goes out this once. */
     private static boolean ours(Object request) {
         synchronized (OURS) {
             return OURS.remove(request);
@@ -319,6 +319,21 @@ public final class GhostMode {
             }
         }
         return sent;
+    }
+
+    /**
+     * Sends a typing status this extension made, like Fake typing's, from [account] past the gate:
+     * true once it's sent.
+     */
+    static boolean sendOwn(int account, Object request) {
+        synchronized (OURS) {
+            OURS.add(request);
+        }
+        if (requests.send(account, request, null)) return true;
+        synchronized (OURS) {
+            OURS.remove(request);
+        }
+        return false;
     }
 
     /** Drops every held read, for a test. */

@@ -1382,6 +1382,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                         + "and while it's off the Ghost mode switches above apply there. Long press chats in the chat "
                                         + "list and use the three dots to add them. Online status follows Ghost mode everywhere.")));
                         privacy.addPreference(ghostChatsRow(context));
+                        privacy.addPreference(toggle(context, Settings.FAKE_TYPING, L10n.t("Fake typing"),
+                                L10n.t("Adds Fake typing to the three dots menu when you long press chats in the chat list. The chats you "
+                                        + "pick show you typing for 10 minutes, or until you pick them again, even with Ghost mode on.")));
                     }
                 }
                 if (PatchFamily.Capability.RECEIVE_ONLY.installed()) {

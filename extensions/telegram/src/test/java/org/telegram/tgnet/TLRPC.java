@@ -187,6 +187,7 @@ public final class TLRPC {
     /** The typing, recording or uploading status shown in a chat. */
     public static class TL_messages_setTyping {
         public InputPeer peer;
+        public SendMessageAction action;
     }
 
     /** Marks voice messages and mentions as played or seen, by message id alone. */

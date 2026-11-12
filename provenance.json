@@ -344,6 +344,7 @@
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/apps/NameFoldSupport.kt",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/GhostMode.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/GhostChats.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FakeTyping.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/GhostButton.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ReadsButton.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/extension/SendRequestGate.kt",

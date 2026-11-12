@@ -1606,3 +1606,13 @@ These chats follow Ghost mode again.	Obrolan ini kembali mengikuti Mode hantu.
 Ghost mode is off in these chats.	Mode hantu nonaktif di obrolan ini.
 # context: Toast after Ghost mode exception added the selected chats while Ghost mode is off, so it applies there
 Ghost mode is on in these chats.	Mode hantu aktif di obrolan ini.
+# context: Fake typing (#71), a switch under Ghost mode, off by default, and the item it adds to the chat list's long press menu (the three dots). The picked chats show the account as typing, the way Telegram's own typing status shows
+Fake typing	Mengetik palsu
+# context: that switch's summary. The status keeps going out every few seconds until ten minutes pass or the chats are picked again
+Adds Fake typing to the three dots menu when you long press chats in the chat list. The chats you pick show you typing for 10 minutes, or until you pick them again, even with Ghost mode on.	Menambahkan Mengetik palsu ke menu tiga titik saat Anda menekan lama obrolan di daftar obrolan. Di obrolan yang Anda pilih, Anda terlihat sedang mengetik selama 10 menit atau sampai Anda memilihnya lagi, bahkan saat Mode hantu aktif.
+# context: Toast after Fake typing started the selected chats typing
+Typing in these chats for 10 minutes.	Mengetik di obrolan ini selama 10 menit.
+# context: Toast after Fake typing stopped the selected chats, which were all typing
+Stopped typing in these chats.	Berhenti mengetik di obrolan ini.
+# context: Toast when only secret chats (or archive folders) were selected for Fake typing, which can't carry it
+Secret chats can't show typing.	Obrolan rahasia tidak bisa menampilkan status mengetik.

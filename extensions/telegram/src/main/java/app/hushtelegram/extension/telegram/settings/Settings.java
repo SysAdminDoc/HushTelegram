@@ -844,6 +844,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_ghost_chats", FALSE);
 
     /**
+     * Fake typing: chats picked from the long press menu show you typing for up to ten minutes,
+     * even under {@link #GHOST_TYPING} ({@link app.hushtelegram.extension.telegram.misc.FakeTyping}, #71).
+     */
+    public static final BooleanSetting FAKE_TYPING =
+            new BooleanSetting("hushtelegram_fake_typing", FALSE);
+
+    /**
      * Receive only mode: the accounts on {@link #RECEIVE_ONLY_ACCOUNTS} send nothing that writes.
      * With it off every account sends as in stock Telegram.
      */

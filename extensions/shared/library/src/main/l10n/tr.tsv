@@ -1606,3 +1606,13 @@ These chats follow Ghost mode again.	Bu sohbetler yine Hayalet modunu izliyor.
 Ghost mode is off in these chats.	Bu sohbetlerde Hayalet modu kapalı.
 # context: Toast after Ghost mode exception added the selected chats while Ghost mode is off, so it applies there
 Ghost mode is on in these chats.	Bu sohbetlerde Hayalet modu açık.
+# context: Fake typing (#71), a switch under Ghost mode, off by default, and the item it adds to the chat list's long press menu (the three dots). The picked chats show the account as typing, the way Telegram's own typing status shows
+Fake typing	Sahte yazıyor
+# context: that switch's summary. The status keeps going out every few seconds until ten minutes pass or the chats are picked again
+Adds Fake typing to the three dots menu when you long press chats in the chat list. The chats you pick show you typing for 10 minutes, or until you pick them again, even with Ghost mode on.	Sohbet listesinde sohbetlere uzun bastığınızda üç nokta menüsüne Sahte yazıyor ekler. Seçtiğiniz sohbetlerde 10 dakika boyunca ya da onları yeniden seçene kadar, Hayalet modu açıkken bile yazıyormuş gibi görünürsünüz.
+# context: Toast after Fake typing started the selected chats typing
+Typing in these chats for 10 minutes.	Bu sohbetlerde 10 dakika yazıyorsunuz.
+# context: Toast after Fake typing stopped the selected chats, which were all typing
+Stopped typing in these chats.	Bu sohbetlerde yazma durdu.
+# context: Toast when only secret chats (or archive folders) were selected for Fake typing, which can't carry it
+Secret chats can't show typing.	Gizli sohbetler yazıyor göstermez.

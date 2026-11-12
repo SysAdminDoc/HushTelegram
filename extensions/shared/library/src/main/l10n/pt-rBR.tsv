@@ -1603,3 +1603,13 @@ These chats follow Ghost mode again.	Estas conversas seguem o Modo fantasma de n
 Ghost mode is off in these chats.	O Modo fantasma está desativado nestas conversas.
 # context: Toast after Ghost mode exception added the selected chats while Ghost mode is off, so it applies there
 Ghost mode is on in these chats.	O Modo fantasma está ativado nestas conversas.
+# context: Fake typing (#71), a switch under Ghost mode, off by default, and the item it adds to the chat list's long press menu (the three dots). The picked chats show the account as typing, the way Telegram's own typing status shows
+Fake typing	Digitação falsa
+# context: that switch's summary. The status keeps going out every few seconds until ten minutes pass or the chats are picked again
+Adds Fake typing to the three dots menu when you long press chats in the chat list. The chats you pick show you typing for 10 minutes, or until you pick them again, even with Ghost mode on.	Adiciona Digitação falsa ao menu de três pontos ao tocar e segurar conversas na lista de conversas. Nas conversas que você escolher, você aparece digitando por 10 minutos, ou até escolhê-las de novo, mesmo com o Modo fantasma ativado.
+# context: Toast after Fake typing started the selected chats typing
+Typing in these chats for 10 minutes.	Digitando nestas conversas por 10 minutos.
+# context: Toast after Fake typing stopped the selected chats, which were all typing
+Stopped typing in these chats.	Parou de digitar nestas conversas.
+# context: Toast when only secret chats (or archive folders) were selected for Fake typing, which can't carry it
+Secret chats can't show typing.	Conversas secretas não mostram digitação.

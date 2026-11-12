@@ -307,7 +307,8 @@ public class HushTelegramPreferenceFragmentTest {
                         boolean drawn = page.findPreference(setting.key) != null;
                         // Ghost mode exceptions are picked from Hide picked chats' list and long press menu.
                         boolean expected = build.contains(family)
-                                && (setting != Settings.GHOST_CHATS || build.contains(PatchFamily.HIDE_FOLDER_COUNTERS));
+                                && (setting != Settings.GHOST_CHATS && setting != Settings.FAKE_TYPING
+                                        || build.contains(PatchFamily.HIDE_FOLDER_COUNTERS));
                         if (drawn != expected) wrong.add(build + ": " + setting.key + (drawn ? " is drawn" : " isn't drawn"));
                     }
                 }
@@ -388,6 +389,10 @@ public class HushTelegramPreferenceFragmentTest {
                     + "while it's off the Ghost mode switches above apply there. Long press chats in the chat list and "
                     + "use the three dots to add them. Online status follows Ghost mode everywhere.",
                     String.valueOf(page.findPreference(Settings.GHOST_CHATS.key).getSummary()));
+            assertEquals("Fake typing", String.valueOf(page.findPreference(Settings.FAKE_TYPING.key).getTitle()));
+            assertEquals("Adds Fake typing to the three dots menu when you long press chats in the chat list. The chats "
+                    + "you pick show you typing for 10 minutes, or until you pick them again, even with Ghost mode on.",
+                    String.valueOf(page.findPreference(Settings.FAKE_TYPING.key).getSummary()));
             // Held reads stay held until one of the two ways out is asked for.
             assertFalse(Settings.GHOST_READ_AFTER_SEND.key,
                     ((SwitchPreference) page.findPreference(Settings.GHOST_READ_AFTER_SEND.key)).isChecked());
