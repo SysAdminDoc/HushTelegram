@@ -1836,3 +1836,24 @@ Couldn't save the lists. Try again in a moment.	Listeler kaydedilemedi. Birazdan
 Downloads your proxy lists now, times them and adds the fastest to Telegram's proxy list, even with the switch above off.	Proxy listelerinizi şimdi indirir, proxy'lerin hızını ölçer ve en hızlılarını Telegram'ın proxy listesine ekler, yukarıdaki anahtar kapalı olsa bile.
 # context: Toast and dialog note when Open a chat by ID couldn't look the ID up or couldn't start the chat. Two short lines at most.
 Couldn't open that. Try again.	Açılamadı. Tekrar deneyin.
+# context: Record calls (#72). The chat list long press item and its toasts, the call screen's pause button and toasts, and three settings rows: which calls are recorded, the chats picked for it, and how long recordings are kept.
+Record calls here	Aramaları burada kaydet
+Calls in these chats aren't recorded anymore.	Bu sohbetlerdeki aramalar artık kaydedilmiyor.
+Calls in these chats are recorded.	Bu sohbetlerdeki aramalar kaydediliyor.
+Recording paused	Kayıt duraklatıldı
+Recording resumed	Kayıt devam ediyor
+Pause recording	Kaydı duraklat
+Resume recording	Kayda devam et
+Calls to record	Kaydedilecek aramalar
+Every call	Her arama
+Private calls only	Yalnızca özel aramalar
+Voice chats and live streams only	Yalnızca sesli sohbetler ve canlı yayınlar
+Only calls in the chats you pick below	Yalnızca aşağıda seçtiğiniz sohbetlerdeki aramalar
+Chats to record	Kaydedilecek sohbetler
+Keep recordings	Kayıtları sakla
+Recordings stay until you delete them.	Kayıtlar siz silene kadar kalır.
+Recordings older than %1$d day are deleted when the next one is saved.	%1$d günden eski kayıtlar bir sonraki kaydedildiğinde silinir.
+Recordings older than %1$d days are deleted when the next one is saved.	%1$d günden eski kayıtlar bir sonraki kaydedildiğinde silinir.
+Until you delete them	Siz silene kadar
+%1$d day	%1$d gün
+%1$d days	%1$d gün

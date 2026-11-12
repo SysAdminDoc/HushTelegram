@@ -1836,3 +1836,24 @@ Couldn't save the lists. Try again in a moment.	Listen nicht gespeichert. Versuc
 Downloads your proxy lists now, times them and adds the fastest to Telegram's proxy list, even with the switch above off.	Lädt jetzt deine Proxy-Listen herunter, misst die Proxys und fügt die schnellsten zur Proxy-Liste von Telegram hinzu, auch wenn der Schalter oben aus ist.
 # context: Toast and dialog note when Open a chat by ID couldn't look the ID up or couldn't start the chat. Two short lines at most.
 Couldn't open that. Try again.	Ließ sich nicht öffnen. Versuch es noch mal.
+# context: Record calls (#72). The chat list long press item and its toasts, the call screen's pause button and toasts, and three settings rows: which calls are recorded, the chats picked for it, and how long recordings are kept.
+Record calls here	Anrufe hier aufnehmen
+Calls in these chats aren't recorded anymore.	Anrufe in diesen Chats werden nicht mehr aufgenommen.
+Calls in these chats are recorded.	Anrufe in diesen Chats werden aufgenommen.
+Recording paused	Aufnahme pausiert
+Recording resumed	Aufnahme fortgesetzt
+Pause recording	Aufnahme pausieren
+Resume recording	Aufnahme fortsetzen
+Calls to record	Aufzunehmende Anrufe
+Every call	Jeder Anruf
+Private calls only	Nur private Anrufe
+Voice chats and live streams only	Nur Sprachchats und Livestreams
+Only calls in the chats you pick below	Nur Anrufe in den Chats, die du unten auswählst
+Chats to record	Chats zum Aufnehmen
+Keep recordings	Aufnahmen behalten
+Recordings stay until you delete them.	Aufnahmen bleiben, bis du sie löschst.
+Recordings older than %1$d day are deleted when the next one is saved.	Aufnahmen, die älter als %1$d Tag sind, werden gelöscht, wenn die nächste gespeichert wird.
+Recordings older than %1$d days are deleted when the next one is saved.	Aufnahmen, die älter als %1$d Tage sind, werden gelöscht, wenn die nächste gespeichert wird.
+Until you delete them	Bis du sie löschst
+%1$d day	%1$d Tag
+%1$d days	%1$d Tage

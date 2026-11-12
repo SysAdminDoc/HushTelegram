@@ -1836,3 +1836,24 @@ Couldn't save the lists. Try again in a moment.	No se guardaron las listas. Int�
 Downloads your proxy lists now, times them and adds the fastest to Telegram's proxy list, even with the switch above off.	Descarga ahora tus listas de proxies, los mide y agrega los más rápidos a la lista de proxies de Telegram, aunque el interruptor de arriba esté apagado.
 # context: Toast and dialog note when Open a chat by ID couldn't look the ID up or couldn't start the chat. Two short lines at most.
 Couldn't open that. Try again.	No se pudo abrir. Inténtalo de nuevo.
+# context: Record calls (#72). The chat list long press item and its toasts, the call screen's pause button and toasts, and three settings rows: which calls are recorded, the chats picked for it, and how long recordings are kept.
+Record calls here	Grabar llamadas aquí
+Calls in these chats aren't recorded anymore.	Las llamadas de estos chats ya no se graban.
+Calls in these chats are recorded.	Las llamadas de estos chats se graban.
+Recording paused	Grabación en pausa
+Recording resumed	Grabación reanudada
+Pause recording	Pausar grabación
+Resume recording	Reanudar grabación
+Calls to record	Llamadas que se graban
+Every call	Todas las llamadas
+Private calls only	Solo llamadas privadas
+Voice chats and live streams only	Solo chats de voz y transmisiones en directo
+Only calls in the chats you pick below	Solo las llamadas de los chats que elijas abajo
+Chats to record	Chats que se graban
+Keep recordings	Conservar grabaciones
+Recordings stay until you delete them.	Las grabaciones se quedan hasta que las borres.
+Recordings older than %1$d day are deleted when the next one is saved.	Las grabaciones de más de %1$d día se borran cuando se guarda la siguiente.
+Recordings older than %1$d days are deleted when the next one is saved.	Las grabaciones de más de %1$d días se borran cuando se guarda la siguiente.
+Until you delete them	Hasta que las borres
+%1$d day	%1$d día
+%1$d days	%1$d días

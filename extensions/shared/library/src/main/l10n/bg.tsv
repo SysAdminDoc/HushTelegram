@@ -1832,3 +1832,24 @@ Couldn't save the lists. Try again in a moment.	Списъците не се з�
 Downloads your proxy lists now, times them and adds the fastest to Telegram's proxy list, even with the switch above off.	Изтегля вашите списъци с проксита сега, измерва ги и добавя най-бързите в списъка с проксита на Telegram, дори ако превключвателят по-горе е изключен.
 # context: Toast and dialog note when Open a chat by ID couldn't look the ID up or couldn't start the chat. Two short lines at most.
 Couldn't open that. Try again.	Не можа да се отвори. Опитайте пак.
+# context: Record calls (#72). The chat list long press item and its toasts, the call screen's pause button and toasts, and three settings rows: which calls are recorded, the chats picked for it, and how long recordings are kept.
+Record calls here	Записване на обажданията тук
+Calls in these chats aren't recorded anymore.	Обажданията в тези чатове вече не се записват.
+Calls in these chats are recorded.	Обажданията в тези чатове се записват.
+Recording paused	Записът е на пауза
+Recording resumed	Записът продължава
+Pause recording	Пауза на записа
+Resume recording	Продължаване на записа
+Calls to record	Кои обаждания да се записват
+Every call	Всяко обаждане
+Private calls only	Само лични обаждания
+Voice chats and live streams only	Само гласови чатове и предавания на живо
+Only calls in the chats you pick below	Само обажданията в чатовете, избрани по-долу
+Chats to record	Чатове за записване
+Keep recordings	Пазене на записите
+Recordings stay until you delete them.	Записите остават, докато не ги изтриете.
+Recordings older than %1$d day are deleted when the next one is saved.	Записите, по-стари от %1$d ден, се изтриват при запазване на следващия.
+Recordings older than %1$d days are deleted when the next one is saved.	Записите, по-стари от %1$d дни, се изтриват при запазване на следващия.
+Until you delete them	Докато не ги изтриете
+%1$d day	%1$d ден
+%1$d days	%1$d дни

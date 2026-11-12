@@ -1836,3 +1836,24 @@ Couldn't save the lists. Try again in a moment.	Daftar tidak tersimpan. Coba lag
 Downloads your proxy lists now, times them and adds the fastest to Telegram's proxy list, even with the switch above off.	Mengunduh daftar proxy Anda sekarang, mengukur kecepatannya, lalu menambahkan yang tercepat ke daftar proxy Telegram, meski sakelar di atas nonaktif.
 # context: Toast and dialog note when Open a chat by ID couldn't look the ID up or couldn't start the chat. Two short lines at most.
 Couldn't open that. Try again.	Tidak dapat dibuka. Coba lagi.
+# context: Record calls (#72). The chat list long press item and its toasts, the call screen's pause button and toasts, and three settings rows: which calls are recorded, the chats picked for it, and how long recordings are kept.
+Record calls here	Rekam panggilan di sini
+Calls in these chats aren't recorded anymore.	Panggilan di obrolan ini tidak direkam lagi.
+Calls in these chats are recorded.	Panggilan di obrolan ini direkam.
+Recording paused	Perekaman dijeda
+Recording resumed	Perekaman dilanjutkan
+Pause recording	Jeda perekaman
+Resume recording	Lanjutkan perekaman
+Calls to record	Panggilan yang direkam
+Every call	Semua panggilan
+Private calls only	Hanya panggilan pribadi
+Voice chats and live streams only	Hanya obrolan suara dan siaran langsung
+Only calls in the chats you pick below	Hanya panggilan di obrolan yang Anda pilih di bawah
+Chats to record	Obrolan yang direkam
+Keep recordings	Simpan rekaman
+Recordings stay until you delete them.	Rekaman tetap ada sampai Anda menghapusnya.
+Recordings older than %1$d day are deleted when the next one is saved.	Rekaman yang lebih lama dari %1$d hari dihapus saat rekaman berikutnya disimpan.
+Recordings older than %1$d days are deleted when the next one is saved.	Rekaman yang lebih lama dari %1$d hari dihapus saat rekaman berikutnya disimpan.
+Until you delete them	Sampai Anda menghapusnya
+%1$d day	%1$d hari
+%1$d days	%1$d hari
