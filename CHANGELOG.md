@@ -17,6 +17,8 @@ Every HushTelegram release, newest first.
 * **Telegram:** **Recordings folder** lets you pick any folder on the phone for call recordings. Keep recordings cleans that folder too. If Telegram loses access to it, say after the folder's deleted, recordings go back to the usual folder until you pick another one. (#72)
 * **Telegram:** **Record button on calls** shows on voice chats and live streams too, at the start of the row of buttons in the top right corner. It records and pauses there the same way it does on a call. (#72)
 * **Telegram:** **Delete account** on the Privacy page deletes the account you're signed in with, right from the app. It asks first. When the account has a cloud password, Telegram waits a week before it deletes anything. (#71)
+* **Telegram:** **Show all spoilers and quotes**, under **Reveal spoilers**, adds two items to a chat's menu at the top. **Show all spoilers** uncovers every spoiler in the messages loaded so far, as if you'd tapped each one, and **Expand all quotes** opens every collapsed quote. View-once and sensitive media keep their blur. (#71)
+* **Telegram:** With **Open quotes on search hits** on, a chat search that lands on a match inside a collapsed quote opens the quote, so the match Telegram highlights is right there to see. (#71)
 
 ### Fixed
 

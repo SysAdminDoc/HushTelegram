@@ -177,6 +177,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/TranslateBar.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ExactNumbers.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/Spoilers.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ChatReveal.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ScrollKeyboard.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/VolumeKeys.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/VideoTurn.java",

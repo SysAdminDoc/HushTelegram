@@ -92,6 +92,8 @@ public final class SettingsStatus {
     public static boolean hideTranslateBar() { return false; }
     public static boolean exactNumbers() { return false; }
     public static boolean revealSpoilers() { return false; }
+    public static boolean chatRevealMenu() { return false; }
+    public static boolean searchHitQuotes() { return false; }
     public static boolean hideKeyboardOnScroll() { return false; }
     public static boolean keepVideosMuted() { return false; }
     public static boolean videoEitherLandscape() { return false; }

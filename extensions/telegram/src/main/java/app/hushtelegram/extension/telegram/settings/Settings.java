@@ -232,6 +232,18 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_reveal_spoilers", FALSE);
 
     /**
+     * Show all spoilers and Expand all quotes in a chat's menu at the top, for the messages it has loaded.
+     */
+    public static final BooleanSetting REVEAL_MENU =
+            new BooleanSetting("hushtelegram_reveal_menu", FALSE);
+
+    /**
+     * A chat search that lands inside a collapsed quote opens it, so the highlighted match shows.
+     */
+    public static final BooleanSetting SEARCH_OPENS_QUOTES =
+            new BooleanSetting("hushtelegram_search_opens_quotes", FALSE);
+
+    /**
      * The keyboard closes when a finger starts scrolling through a chat, not only during a search.
      */
     public static final BooleanSetting HIDE_KEYBOARD_ON_SCROLL =

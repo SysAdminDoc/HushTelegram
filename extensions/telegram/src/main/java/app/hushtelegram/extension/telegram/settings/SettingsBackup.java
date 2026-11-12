@@ -135,6 +135,8 @@ public final class SettingsBackup {
             Settings.HIDE_TRANSLATE_BAR,
             Settings.EXACT_NUMBERS,
             Settings.REVEAL_SPOILERS,
+            Settings.REVEAL_MENU,
+            Settings.SEARCH_OPENS_QUOTES,
             Settings.HIDE_KEYBOARD_ON_SCROLL,
             Settings.KEEP_VIDEOS_MUTED,
             Settings.VIDEO_EITHER_LANDSCAPE,

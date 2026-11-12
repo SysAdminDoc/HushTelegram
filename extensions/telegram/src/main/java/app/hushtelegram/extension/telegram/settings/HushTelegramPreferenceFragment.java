@@ -808,6 +808,16 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.REVEAL_SPOILERS).addPreference(toggle(context, Settings.REVEAL_SPOILERS, L10n.t("Reveal spoilers"),
                     PatchFamily.REVEAL_SPOILERS.coverageSummary(L10n.t("Spoiler text, photos and videos show right away without a tap. View-once media, "
                             + "sensitive content and login codes stay covered."))));
+            if (PatchFamily.Capability.CHAT_REVEAL_MENU.installed()) {
+                on(pages, PatchFamily.REVEAL_SPOILERS).addPreference(toggle(context, Settings.REVEAL_MENU,
+                        L10n.t("Show all spoilers and quotes"), L10n.t("A chat's menu at the top gets Show all spoilers and Expand"
+                                + " all quotes, for the messages loaded so far.")));
+            }
+            if (PatchFamily.Capability.SEARCH_HIT_QUOTES.installed()) {
+                on(pages, PatchFamily.REVEAL_SPOILERS).addPreference(toggle(context, Settings.SEARCH_OPENS_QUOTES,
+                        L10n.t("Open quotes on search hits"), L10n.t("When a chat search lands on a match inside a collapsed"
+                                + " quote, the quote opens so the highlighted match stays in view.")));
+            }
         }
         if (build.contains(PatchFamily.MY_MESSAGES)) {
             on(pages, PatchFamily.MY_MESSAGES).addPreference(toggle(context, Settings.MY_MESSAGES, L10n.t("My messages"),

@@ -1882,3 +1882,17 @@ Account deleted.	Akun dihapus.
 Telegram deletes the account in %1$d day.	Telegram menghapus akun ini dalam %1$d hari.
 Telegram deletes the account in %1$d days.	Telegram menghapus akun ini dalam %1$d hari.
 Telegram didn't delete the account.	Telegram tidak menghapus akun ini.
+# context: Show all spoilers and quotes (#71). Two items in a chat's menu at the top (the three dots), the toasts they show, and two switches on the Reveal spoilers page. The summary names the two menu items, so use the same words for them there. A collapsed quote is a long quote Telegram shows folded, with a button to expand it.
+Show all spoilers	Tampilkan semua spoiler
+Expand all quotes	Bentangkan semua kutipan
+Couldn't update the messages here.	Tidak bisa memperbarui pesan di sini.
+No hidden spoilers in the loaded messages.	Tidak ada spoiler tersembunyi di pesan yang dimuat.
+No collapsed quotes in the loaded messages.	Tidak ada kutipan yang diciutkan di pesan yang dimuat.
+Show all spoilers and quotes	Tampilkan semua spoiler dan kutipan
+A chat's menu at the top gets Show all spoilers and Expand all quotes, for the messages loaded so far.	Menu di bagian atas chat mendapat Tampilkan semua spoiler dan Bentangkan semua kutipan, untuk pesan yang sudah dimuat.
+Open quotes on search hits	Buka kutipan pada hasil pencarian
+When a chat search lands on a match inside a collapsed quote, the quote opens so the highlighted match stays in view.	Saat pencarian chat menemukan kecocokan di dalam kutipan yang diciutkan, kutipan itu terbuka agar kecocokan yang disorot tetap terlihat.
+# context: Lowercase noun phrase naming the Show all spoilers and quotes switch (#71) in the patch status list
+spoiler and quote items in the chat menu	item spoiler dan kutipan di menu chat
+# context: Lowercase noun phrase naming the Open quotes on search hits switch (#71) in the patch status list
+quotes opened on search hits	kutipan yang dibuka pada hasil pencarian

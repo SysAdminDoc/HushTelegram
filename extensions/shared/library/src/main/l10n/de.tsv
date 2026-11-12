@@ -1882,3 +1882,17 @@ Account deleted.	Konto gelöscht.
 Telegram deletes the account in %1$d day.	Telegram löscht das Konto in %1$d Tag.
 Telegram deletes the account in %1$d days.	Telegram löscht das Konto in %1$d Tagen.
 Telegram didn't delete the account.	Telegram hat das Konto nicht gelöscht.
+# context: Show all spoilers and quotes (#71). Two items in a chat's menu at the top (the three dots), the toasts they show, and two switches on the Reveal spoilers page. The summary names the two menu items, so use the same words for them there. A collapsed quote is a long quote Telegram shows folded, with a button to expand it.
+Show all spoilers	Alle Spoiler zeigen
+Expand all quotes	Alle Zitate aufklappen
+Couldn't update the messages here.	Die Nachrichten hier ließen sich nicht aktualisieren.
+No hidden spoilers in the loaded messages.	Keine verborgenen Spoiler in den geladenen Nachrichten.
+No collapsed quotes in the loaded messages.	Keine eingeklappten Zitate in den geladenen Nachrichten.
+Show all spoilers and quotes	Alle Spoiler und Zitate zeigen
+A chat's menu at the top gets Show all spoilers and Expand all quotes, for the messages loaded so far.	Das Menü oben in einem Chat bekommt „Alle Spoiler zeigen“ und „Alle Zitate aufklappen“, für die bisher geladenen Nachrichten.
+Open quotes on search hits	Zitate bei Suchtreffern aufklappen
+When a chat search lands on a match inside a collapsed quote, the quote opens so the highlighted match stays in view.	Landet eine Chatsuche auf einem Treffer in einem eingeklappten Zitat, klappt das Zitat auf, damit der markierte Treffer sichtbar bleibt.
+# context: Lowercase noun phrase naming the Show all spoilers and quotes switch (#71) in the patch status list
+spoiler and quote items in the chat menu	Spoiler- und Zitat-Einträge im Chatmenü
+# context: Lowercase noun phrase naming the Open quotes on search hits switch (#71) in the patch status list
+quotes opened on search hits	bei Suchtreffern aufgeklappte Zitate

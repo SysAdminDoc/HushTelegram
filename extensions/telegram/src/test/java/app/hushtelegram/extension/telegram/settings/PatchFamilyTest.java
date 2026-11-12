@@ -96,6 +96,8 @@ public class PatchFamilyTest {
         Settings.HIDE_TRANSLATE_BAR.resetToDefault();
         Settings.EXACT_NUMBERS.resetToDefault();
         Settings.REVEAL_SPOILERS.resetToDefault();
+        Settings.REVEAL_MENU.resetToDefault();
+        Settings.SEARCH_OPENS_QUOTES.resetToDefault();
         Settings.HIDE_KEYBOARD_ON_SCROLL.resetToDefault();
         Settings.KEEP_VIDEOS_MUTED.resetToDefault();
         Settings.VIDEO_EITHER_LANDSCAPE.resetToDefault();
@@ -1005,10 +1007,15 @@ public class PatchFamilyTest {
     public void revealSpoilersHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
         PatchFamily family = PatchFamily.REVEAL_SPOILERS;
         assertEquals("Reveal spoilers", family.patchName);
-        assertEquals(Collections.singletonList(Settings.REVEAL_SPOILERS), family.switches);
-        assertFalse(Settings.REVEAL_SPOILERS.defaultValue);
-        assertFalse(Settings.REVEAL_SPOILERS.rebootApp);
-        assertTrue(family.expectedCapabilities().isEmpty());
+        assertEquals(Arrays.asList(Settings.REVEAL_SPOILERS, Settings.REVEAL_MENU, Settings.SEARCH_OPENS_QUOTES), family.switches);
+        for (BooleanSetting setting : Arrays.asList(Settings.REVEAL_SPOILERS, Settings.REVEAL_MENU, Settings.SEARCH_OPENS_QUOTES)) {
+            assertFalse(setting.key, setting.defaultValue);
+            assertFalse(setting.key, setting.rebootApp);
+        }
+        assertEquals(EnumSet.of(PatchFamily.Capability.CHAT_REVEAL_MENU, PatchFamily.Capability.SEARCH_HIT_QUOTES),
+                family.expectedCapabilities());
+        assertEquals("chatRevealMenu", PatchFamily.Capability.CHAT_REVEAL_MENU.statusMethod);
+        assertEquals("searchHitQuotes", PatchFamily.Capability.SEARCH_HIT_QUOTES.statusMethod);
         assertOnItsPage(family);
     }
 

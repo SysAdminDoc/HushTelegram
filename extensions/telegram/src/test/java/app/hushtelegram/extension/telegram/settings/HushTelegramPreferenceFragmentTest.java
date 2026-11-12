@@ -628,6 +628,17 @@ public class HushTelegramPreferenceFragmentTest {
             // Spoilers stay covered until the switch is turned on.
             assertFalse(Settings.REVEAL_SPOILERS.key,
                     ((SwitchPreference) page.findPreference(Settings.REVEAL_SPOILERS.key)).isChecked());
+            assertEquals("Show all spoilers and quotes", String.valueOf(page.findPreference(Settings.REVEAL_MENU.key).getTitle()));
+            assertEquals("A chat's menu at the top gets Show all spoilers and Expand all quotes, for the messages loaded "
+                    + "so far.",
+                    String.valueOf(page.findPreference(Settings.REVEAL_MENU.key).getSummary()));
+            assertEquals("Open quotes on search hits", String.valueOf(page.findPreference(Settings.SEARCH_OPENS_QUOTES.key).getTitle()));
+            assertEquals("When a chat search lands on a match inside a collapsed quote, the quote opens so the "
+                    + "highlighted match stays in view.",
+                    String.valueOf(page.findPreference(Settings.SEARCH_OPENS_QUOTES.key).getSummary()));
+            // The chat's menu and its search stay as Telegram has them until each switch is turned on.
+            assertFalse(Settings.REVEAL_MENU.key, ((SwitchPreference) page.findPreference(Settings.REVEAL_MENU.key)).isChecked());
+            assertFalse(Settings.SEARCH_OPENS_QUOTES.key, ((SwitchPreference) page.findPreference(Settings.SEARCH_OPENS_QUOTES.key)).isChecked());
             assertEquals("Hide keyboard on scroll", String.valueOf(page.findPreference(Settings.HIDE_KEYBOARD_ON_SCROLL.key).getTitle()));
             assertEquals("The keyboard closes when you start scrolling a chat. The emoji and sticker panel stays open.",
                     String.valueOf(page.findPreference(Settings.HIDE_KEYBOARD_ON_SCROLL.key).getSummary()));

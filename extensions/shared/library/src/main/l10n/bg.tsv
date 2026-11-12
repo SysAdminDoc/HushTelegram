@@ -1878,3 +1878,17 @@ Account deleted.	Профилът е изтрит.
 Telegram deletes the account in %1$d day.	Telegram ще изтрие профила след %1$d ден.
 Telegram deletes the account in %1$d days.	Telegram ще изтрие профила след %1$d дни.
 Telegram didn't delete the account.	Telegram не изтри профила.
+# context: Show all spoilers and quotes (#71). Two items in a chat's menu at the top (the three dots), the toasts they show, and two switches on the Reveal spoilers page. The summary names the two menu items, so use the same words for them there. A collapsed quote is a long quote Telegram shows folded, with a button to expand it.
+Show all spoilers	Показване на всички спойлери
+Expand all quotes	Разгъване на всички цитати
+Couldn't update the messages here.	Съобщенията тук не можаха да бъдат обновени.
+No hidden spoilers in the loaded messages.	Няма скрити спойлери в заредените съобщения.
+No collapsed quotes in the loaded messages.	Няма свити цитати в заредените съобщения.
+Show all spoilers and quotes	Показване на всички спойлери и цитати
+A chat's menu at the top gets Show all spoilers and Expand all quotes, for the messages loaded so far.	Менюто в горната част на чата получава „Показване на всички спойлери“ и „Разгъване на всички цитати“ за заредените досега съобщения.
+Open quotes on search hits	Разгъване на цитати при резултати от търсене
+When a chat search lands on a match inside a collapsed quote, the quote opens so the highlighted match stays in view.	Когато търсенето в чата попадне на съвпадение в свит цитат, цитатът се разгъва, така че маркираното съвпадение остава видимо.
+# context: Lowercase noun phrase naming the Show all spoilers and quotes switch (#71) in the patch status list
+spoiler and quote items in the chat menu	елементи за спойлери и цитати в менюто на чата
+# context: Lowercase noun phrase naming the Open quotes on search hits switch (#71) in the patch status list
+quotes opened on search hits	цитати, разгънати при резултати от търсене

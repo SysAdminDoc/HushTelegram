@@ -1882,3 +1882,17 @@ Account deleted.	Hesap silindi.
 Telegram deletes the account in %1$d day.	Telegram hesabı %1$d gün içinde silecek.
 Telegram deletes the account in %1$d days.	Telegram hesabı %1$d gün içinde silecek.
 Telegram didn't delete the account.	Telegram hesabı silmedi.
+# context: Show all spoilers and quotes (#71). Two items in a chat's menu at the top (the three dots), the toasts they show, and two switches on the Reveal spoilers page. The summary names the two menu items, so use the same words for them there. A collapsed quote is a long quote Telegram shows folded, with a button to expand it.
+Show all spoilers	Tüm spoilerları göster
+Expand all quotes	Tüm alıntıları genişlet
+Couldn't update the messages here.	Buradaki mesajlar güncellenemedi.
+No hidden spoilers in the loaded messages.	Yüklenen mesajlarda gizli spoiler yok.
+No collapsed quotes in the loaded messages.	Yüklenen mesajlarda daraltılmış alıntı yok.
+Show all spoilers and quotes	Tüm spoilerları ve alıntıları göster
+A chat's menu at the top gets Show all spoilers and Expand all quotes, for the messages loaded so far.	Bir sohbetin üstteki menüsüne, şimdiye kadar yüklenen mesajlar için Tüm spoilerları göster ve Tüm alıntıları genişlet eklenir.
+Open quotes on search hits	Arama sonuçlarında alıntıları aç
+When a chat search lands on a match inside a collapsed quote, the quote opens so the highlighted match stays in view.	Sohbet araması daraltılmış bir alıntının içindeki bir eşleşmeye denk geldiğinde, vurgulanan eşleşme görünür kalsın diye alıntı açılır.
+# context: Lowercase noun phrase naming the Show all spoilers and quotes switch (#71) in the patch status list
+spoiler and quote items in the chat menu	sohbet menüsünde spoiler ve alıntı öğeleri
+# context: Lowercase noun phrase naming the Open quotes on search hits switch (#71) in the patch status list
+quotes opened on search hits	arama sonuçlarında açılan alıntılar
