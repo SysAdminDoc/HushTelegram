@@ -764,7 +764,7 @@ public class PatchFamilyTest {
         assertEquals("disableCallDebug", family.statusMethod);
         // Record calls (#39) starts off and is read on every block of call audio, so no restart is needed.
         assertEquals(Arrays.asList(Settings.DISABLE_CALL_DEBUG, Settings.RECORD_CALLS, Settings.RECORD_CALL_BUTTON,
-                Settings.RECORD_CALLS_NOTIFY), family.switches);
+                Settings.RECORD_CALLS_NOTIFY, Settings.RECORD_CALLS_OPUS), family.switches);
         assertTrue(Settings.DISABLE_CALL_DEBUG.defaultValue);
         assertFalse(Settings.RECORD_CALLS.defaultValue);
         assertFalse(Settings.RECORD_CALLS.rebootApp);
@@ -772,6 +772,8 @@ public class PatchFamilyTest {
         assertFalse(Settings.RECORD_CALL_BUTTON.rebootApp);
         assertFalse(Settings.RECORD_CALLS_NOTIFY.defaultValue);
         assertFalse(Settings.RECORD_CALLS_NOTIFY.rebootApp);
+        assertFalse(Settings.RECORD_CALLS_OPUS.defaultValue);
+        assertFalse(Settings.RECORD_CALLS_OPUS.rebootApp);
         assertEquals(EnumSet.of(PatchFamily.Capability.CALL_DEBUG_UPLOAD, PatchFamily.Capability.CALL_LOG_FILE_UPLOAD,
                         PatchFamily.Capability.CALL_LOG_UPLOAD, PatchFamily.Capability.CALL_RECORDING,
                         PatchFamily.Capability.CALL_RECORD_BUTTON),

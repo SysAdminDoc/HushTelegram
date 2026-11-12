@@ -1855,6 +1855,8 @@ Recordings stay until you delete them.	Aufnahmen bleiben, bis du sie löschst.
 Recordings older than %1$d day are deleted when the next one is saved.	Aufnahmen, die älter als %1$d Tag sind, werden gelöscht, wenn die nächste gespeichert wird.
 Recordings older than %1$d days are deleted when the next one is saved.	Aufnahmen, die älter als %1$d Tage sind, werden gelöscht, wenn die nächste gespeichert wird.
 Until you delete them	Bis du sie löschst
+Save recordings as Opus	Aufnahmen als Opus speichern
+Files about half the size, ending in .ogg. Some older players can't open them.	Dateien etwa halb so groß, mit der Endung .ogg. Manche ältere Player können sie nicht öffnen.
 Notify when a call is saved	Benachrichtigen, wenn ein Anruf gespeichert ist
 A tap on the notification plays the recording. Its buttons share it or send it to your Saved Messages.	Ein Tipp auf die Benachrichtigung spielt die Aufnahme ab. Mit ihren Schaltflächen teilst du sie oder sendest sie an Gespeichertes.
 Call recordings	Anrufaufnahmen

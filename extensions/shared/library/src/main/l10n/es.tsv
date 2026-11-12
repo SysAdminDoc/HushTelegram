@@ -1855,6 +1855,8 @@ Recordings stay until you delete them.	Las grabaciones se quedan hasta que las b
 Recordings older than %1$d day are deleted when the next one is saved.	Las grabaciones de más de %1$d día se borran cuando se guarda la siguiente.
 Recordings older than %1$d days are deleted when the next one is saved.	Las grabaciones de más de %1$d días se borran cuando se guarda la siguiente.
 Until you delete them	Hasta que las borres
+Save recordings as Opus	Guardar grabaciones en Opus
+Files about half the size, ending in .ogg. Some older players can't open them.	Archivos de más o menos la mitad de tamaño, terminados en .ogg. Algunos reproductores antiguos no los abren.
 Notify when a call is saved	Avisar cuando se guarde una llamada
 A tap on the notification plays the recording. Its buttons share it or send it to your Saved Messages.	Al tocar la notificación se reproduce la grabación. Sus botones la comparten o la envían a tus Mensajes guardados.
 Call recordings	Grabaciones de llamadas

@@ -976,6 +976,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting RECORD_CALLS_NOTIFY =
             new BooleanSetting("hushtelegram_record_calls_notify", FALSE);
 
+    /**
+     * Call recordings in Opus, in an .ogg about half the size, rather than AAC in an .m4a (#72).
+     * Android 10 and newer with an Opus encoder; AAC otherwise. Read as each recording starts. Off
+     * by default.
+     */
+    public static final BooleanSetting RECORD_CALLS_OPUS =
+            new BooleanSetting("hushtelegram_record_calls_opus", FALSE);
+
     /** Link previews for unsent messages only; sent messages and received previews stay stock. */
     public static final BooleanSetting DISABLE_DRAFT_PREVIEWS =
             new BooleanSetting("hushtelegram_disable_draft_previews", FALSE);

@@ -249,6 +249,7 @@ public final class SettingsBackup {
             Settings.RECORD_CALLS,
             Settings.RECORD_CALL_BUTTON,
             Settings.RECORD_CALLS_NOTIFY,
+            Settings.RECORD_CALLS_OPUS,
             Settings.DISABLE_DRAFT_PREVIEWS,
             Settings.LOCAL_DRAFTS,
             Settings.LOCAL_SEARCH,

@@ -1502,6 +1502,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             L10n.t("A button on the call screen records just that call, or stops recording it when Record calls is on.")));
                 }
                 if (PatchFamily.Capability.CALL_RECORDING.installed() || PatchFamily.Capability.CALL_RECORD_BUTTON.installed()) {
+                    // Android 9 can't write an .ogg, so it has nothing to choose.
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        privacy.addPreference(toggle(context, Settings.RECORD_CALLS_OPUS, L10n.t("Save recordings as Opus"),
+                                L10n.t("Files about half the size, ending in .ogg. Some older players can't open them.")));
+                    }
                     privacy.addPreference(toggle(context, Settings.RECORD_CALLS_NOTIFY, L10n.t("Notify when a call is saved"),
                             L10n.t("A tap on the notification plays the recording. Its buttons share it or send it to your Saved Messages.")));
                 }

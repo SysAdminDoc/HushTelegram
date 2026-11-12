@@ -11,6 +11,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.media.MediaFormat;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
@@ -42,6 +43,27 @@ final class CallRecordings {
 
     static final String FOLDER = "Telegram calls";
     static final String MIME = "audio/mp4";
+
+    /** How a recording is encoded (#72): AAC in an .m4a anywhere, or Opus in an .ogg from Android 10. */
+    enum Format {
+        AAC(MediaFormat.MIMETYPE_AUDIO_AAC, MIME, ".m4a"),
+        OPUS(MediaFormat.MIMETYPE_AUDIO_OPUS, "audio/ogg", ".ogg");
+
+        final String codec;
+        final String mime;
+        final String extension;
+
+        Format(String codec, String mime, String extension) {
+            this.codec = codec;
+            this.mime = mime;
+            this.extension = extension;
+        }
+
+        /** The format a recording's file name says it's in. */
+        static Format of(String name) {
+            return name.endsWith(OPUS.extension) ? OPUS : AAC;
+        }
+    }
     /** Telegram's cache folder for the recording in progress. Only one call records at a time. */
     static final String SCRATCH = "hush-call-recordings";
 
@@ -65,9 +87,14 @@ final class CallRecordings {
      * one to name. Characters a file name can't carry go, and a long name is cut.
      */
     static String name(long began, @Nullable String with) {
+        return name(began, with, Format.AAC);
+    }
+
+    /** The same name, ending the way [format]'s files do. */
+    static String name(long began, @Nullable String with, Format format) {
         String who = fileSafe(with);
         return PREFIX + (who.isEmpty() ? "" : "with " + who + " ")
-                + new SimpleDateFormat("yyyy-MM-dd HH-mm", Locale.US).format(new Date(began)) + ".m4a";
+                + new SimpleDateFormat("yyyy-MM-dd HH-mm", Locale.US).format(new Date(began)) + format.extension;
     }
 
     /** Every recording's name starts with this, which is how cleanup knows its own files. */
@@ -126,23 +153,24 @@ final class CallRecordings {
 
     /** Puts the finished file in shared storage under [name] and answers where it went. */
     static Saved save(Context context, File file, String name) throws IOException {
+        String mime = Format.of(name).mime;
         Uri uri = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            uri = insert(context, file, name);
+            uri = insert(context, file, name, mime);
         } else {
-            legacy(context, file, name);
+            legacy(context, file, name, mime);
         }
-        return new Saved(folder(), uri, MIME);
+        return new Saved(folder(), uri, mime);
     }
 
     /** Into MediaStore's audio, hidden until it's whole, the way Save to Downloads copies. */
     @RequiresApi(Build.VERSION_CODES.Q)
-    private static Uri insert(Context context, File file, String name) throws IOException {
+    private static Uri insert(Context context, File file, String name, String mime) throws IOException {
         ContentResolver resolver = context.getContentResolver();
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
         values.put(MediaStore.MediaColumns.RELATIVE_PATH, folder() + "/");
-        values.put(MediaStore.MediaColumns.MIME_TYPE, MIME);
+        values.put(MediaStore.MediaColumns.MIME_TYPE, mime);
         values.put(MediaStore.MediaColumns.IS_PENDING, 1);
         Uri pending = resolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values);
         if (pending == null) throw new IOException("MediaStore didn't take the recording");
@@ -171,7 +199,7 @@ final class CallRecordings {
      * and the media scanner is told about it.
      */
     @SuppressWarnings("deprecation")
-    private static void legacy(Context context, File file, String name) throws IOException {
+    private static void legacy(Context context, File file, String name, String mime) throws IOException {
         if (context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             throw new IOException("Telegram can't write to the phone's storage");
         }
@@ -184,7 +212,7 @@ final class CallRecordings {
             if (!target.delete() && target.exists()) failure.addSuppressed(new IOException("Left a partial " + target.getName()));
             throw failure;
         }
-        MediaScannerConnection.scanFile(context, new String[]{target.getPath()}, new String[]{MIME}, null);
+        MediaScannerConnection.scanFile(context, new String[]{target.getPath()}, new String[]{mime}, null);
     }
 
     /**

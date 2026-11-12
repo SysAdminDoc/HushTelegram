@@ -345,4 +345,16 @@ public class CallRecordingsTest {
             return "audio/mp4";
         }
     }
+
+    @Test public void anOpusRecordingIsAnOggInMediaStore() throws IOException {
+        bodyOf(1);
+        long began = new GregorianCalendar(2026, Calendar.OCTOBER, 30, 21, 15).getTimeInMillis();
+        String name = CallRecordings.name(began, "Alex Kim", CallRecordings.Format.OPUS);
+        assertEquals("Telegram call with Alex Kim 2026-10-30 21-15.ogg", name);
+        CallRecordings.Saved saved = CallRecordings.save(context(), finished(), name);
+        assertEquals("audio/ogg", saved.mime);
+        assertEquals("audio/ogg", recordings.row(1).getAsString(MediaStore.MediaColumns.MIME_TYPE));
+        assertEquals(CallRecordings.Format.AAC, CallRecordings.Format.of(NAME));
+        assertEquals(CallRecordings.Format.OPUS, CallRecordings.Format.of(name));
+    }
 }
