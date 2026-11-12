@@ -17,13 +17,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The long-press menu items that forward with a choice (Fast forward, Forward to Saved Messages),
- * each behind its own switch under Add Repeat to the message menu. {@link MessageMenu} hands them
+ * The long-press menu items that forward with a choice (Fast forward, Forward to Saved Messages,
+ * Forward as plain text), each behind its own switch under Add Repeat to the message menu. {@link MessageMenu} hands them
  * the menu's lists as it finishes and the chosen number as it comes back.
  *
- * <p>Both go through Telegram's own forward with its two flags: the sender's name hidden (Telegram's
- * "forward from my name" argument) and captions dropped. They only show next to Telegram's own
- * Forward, so a chat that doesn't allow forwarding never gets them.
+ * <p>The first two go through Telegram's own forward with its two flags: the sender's name hidden
+ * (Telegram's "forward from my name" argument) and captions dropped. Forward as plain text sends the
+ * words as a new message instead. They only show next to Telegram's own Forward, so a chat that
+ * doesn't allow forwarding never gets them.
  */
 public final class MessageMenuTools {
     private MessageMenuTools() {}
@@ -34,10 +35,12 @@ public final class MessageMenuTools {
     static final int SAVE_ART = 0x48544d09;
     static final int CLEAR_CACHE = 0x48544d0c;
     static final int HIDE = 0x48544d0d;
+    static final int PLAIN = 0x48544d0e;
 
     /** Whether the number is one of this class's. */
     static boolean owns(int option) {
-        return option == FAST_FORWARD || option == FORWARD_SAVED || option == SAVE_COVER || option == SAVE_ART || option == CLEAR_CACHE || option == HIDE;
+        return option == FAST_FORWARD || option == FORWARD_SAVED || option == SAVE_COVER || option == SAVE_ART || option == CLEAR_CACHE || option == HIDE
+                || option == PLAIN;
     }
 
     static BooleanSetting setting(int option) {
@@ -45,14 +48,16 @@ public final class MessageMenuTools {
                 : option == SAVE_COVER ? Settings.MESSAGE_MENU_SAVE_COVER
                 : option == SAVE_ART ? Settings.MESSAGE_MENU_SAVE_ART
                 : option == CLEAR_CACHE ? Settings.MESSAGE_MENU_CLEAR_CACHE
-                : option == HIDE ? Settings.MESSAGE_MENU_HIDE : Settings.MESSAGE_MENU_FORWARD_SAVED;
+                : option == HIDE ? Settings.MESSAGE_MENU_HIDE
+                : option == PLAIN ? Settings.MESSAGE_MENU_PLAIN_FORWARD : Settings.MESSAGE_MENU_FORWARD_SAVED;
     }
 
     /** Whether any of this class's switches is on. */
     static boolean any() {
         return MessageMenu.on(Settings.MESSAGE_MENU_FAST_FORWARD) || MessageMenu.on(Settings.MESSAGE_MENU_FORWARD_SAVED)
                 || MessageMenu.on(Settings.MESSAGE_MENU_SAVE_COVER) || MessageMenu.on(Settings.MESSAGE_MENU_SAVE_ART)
-                || MessageMenu.on(Settings.MESSAGE_MENU_CLEAR_CACHE) || MessageMenu.on(Settings.MESSAGE_MENU_HIDE);
+                || MessageMenu.on(Settings.MESSAGE_MENU_CLEAR_CACHE) || MessageMenu.on(Settings.MESSAGE_MENU_HIDE)
+                || MessageMenu.on(Settings.MESSAGE_MENU_PLAIN_FORWARD);
     }
 
     /** One way to forward: a label, and the two flags Telegram's forward takes. */
@@ -82,6 +87,7 @@ public final class MessageMenuTools {
             if (MessageMenu.on(Settings.MESSAGE_MENU_FAST_FORWARD) && !fastWays(message, batch).isEmpty()) chosen.add(FAST_FORWARD);
             if (MessageMenu.on(Settings.MESSAGE_MENU_FORWARD_SAVED) && savedAvailable(message)) chosen.add(FORWARD_SAVED);
         }
+        if (forwardable && plainAvailable(chat, message)) chosen.add(PLAIN);
         if (MessageMenu.on(Settings.MESSAGE_MENU_SAVE_COVER) && savable(message) && video(message) && MediaArt.hasVideoArt(message)) chosen.add(SAVE_COVER);
         if (MessageMenu.on(Settings.MESSAGE_MENU_SAVE_ART) && savable(message) && music(message) && MediaArt.hasMusicArt(message)) chosen.add(SAVE_ART);
         if (MessageMenu.on(Settings.MESSAGE_MENU_CLEAR_CACHE) && clearable(message)) chosen.add(CLEAR_CACHE);
@@ -101,7 +107,8 @@ public final class MessageMenuTools {
                 : option == SAVE_COVER ? L10n.t("Save video cover")
                 : option == SAVE_ART ? L10n.t("Save album art")
                 : option == CLEAR_CACHE ? L10n.t("Clear from cache")
-                : option == HIDE ? L10n.t("Hide for me") : L10n.t("Forward to Saved Messages");
+                : option == HIDE ? L10n.t("Hide for me")
+                : option == PLAIN ? L10n.t("Forward as plain text") : L10n.t("Forward to Saved Messages");
     }
 
     /** A message whose chat doesn't allow saving only gets a save item when Save to Downloads' switch for protected chats is on. */
@@ -138,6 +145,11 @@ public final class MessageMenuTools {
         if (caption) ways.add(new Way(L10n.t("Without caption"), false, true));
         if (sender && caption) ways.add(new Way(L10n.t("Without sender name or caption"), true, true));
         return ways;
+    }
+
+    /** Forward as plain text: a message with words in it, where this build can send text. */
+    static boolean plainAvailable(Object chat, Object message) {
+        return MessageMenu.on(Settings.MESSAGE_MENU_PLAIN_FORWARD) && MessageMenu.sending() && !MessageMenu.copyable(chat, message).isEmpty();
     }
 
     /** Forward to Saved Messages: your own chat, unless the message is already in it. */
@@ -178,6 +190,13 @@ public final class MessageMenuTools {
             HiddenMessages.hide(context, chat, message);
             return;
         }
+        if (option == PLAIN) {
+            String text = MessageMenu.copyable(chat, message);
+            Utils.runOnMainThread(() -> MessageMenu.chooseChat(context, account, from, L10n.t(context, "Forward as plain text"),
+                    Settings.MESSAGE_MENU_PLAIN_FORWARD, destination -> sendPlain(context, account, destination, text)));
+            HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "plain text forward opened");
+            return;
+        }
         if (option == FAST_FORWARD) {
             List<Way> ways = fastWays(message, batch);
             Utils.runOnMainThread(() -> MessageMenu.chooseRow(context, L10n.t(context, "Fast forward"), labels(ways),
@@ -191,6 +210,23 @@ public final class MessageMenuTools {
             Utils.runOnMainThread(() -> MessageMenu.chooseRow(context, L10n.t(context, "Forward to Saved Messages"), labels(ways),
                     Settings.MESSAGE_MENU_FORWARD_SAVED, index -> forward(context, account, saved, batch, ways.get(index), Settings.MESSAGE_MENU_FORWARD_SAVED)));
             HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "forward to saved messages opened");
+        }
+    }
+
+    /**
+     * Sends the words of a message to the picked chat as a new message. Telegram's text send takes a
+     * plain string, so the formatting stays behind, and a custom emoji arrives as the regular emoji
+     * its text already holds.
+     */
+    static void sendPlain(Context context, int account, MessageMenu.Destination destination, String text) {
+        if (!MessageMenu.on(Settings.MESSAGE_MENU_PLAIN_FORWARD)) return;
+        try {
+            if (text.isEmpty() || !MessageMenu.sendText(account, destination.id, text)) throw new IllegalStateException("plain text send refused");
+            MessageMenu.feedback(context, L10n.f(context, "Forwarding to %1$s", L10n.isolate(destination.title)));
+            HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "text forwarded as plain text");
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "forward as plain text", failure);
+            MessageMenu.feedback(context, L10n.t(context, "Can't forward there"));
         }
     }
 

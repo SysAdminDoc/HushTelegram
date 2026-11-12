@@ -1741,3 +1741,9 @@ Show hidden messages	Ausgeblendete Nachrichten anzeigen
 Brings back every message you hid with Hide for me, in every account. Open the chat again to see them.	Holt jede Nachricht zurück, die du mit Für mich ausblenden versteckt hast, in jedem Konto. Öffne den Chat erneut, um sie zu sehen.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names Hide for me in the message menu
 hiding messages for you	das Ausblenden von Nachrichten nur für dich
+# context: Item in a message's long-press menu, and the title of the chat picker it opens. It sends the message's text to the picked chat as a new message, with no formatting
+Forward as plain text	Als reinen Text weiterleiten
+# context: Title of the switch on the Conversations page that adds Forward as plain text to a message's long-press menu
+Add Forward as plain text to the message menu	Als reinen Text weiterleiten zum Nachrichtenmenü hinzufügen
+# context: Summary of the Add Forward as plain text to the message menu switch. Forward as plain text is the menu item's name. Custom emoji are Telegram's Premium emoji. Regular ones are the phone's own emoji
+Adds Forward as plain text to a message you can forward. Pick a chat and its text is sent there as a new message, with no formatting or sender name. Custom emoji become regular ones.	Fügt Als reinen Text weiterleiten zu einer Nachricht hinzu, die du weiterleiten kannst. Wähle einen Chat, und ihr Text wird dort als neue Nachricht gesendet, ohne Formatierung und ohne Absendernamen. Eigene Emojis werden zu normalen.

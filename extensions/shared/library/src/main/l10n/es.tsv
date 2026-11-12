@@ -1741,3 +1741,9 @@ Show hidden messages	Mostrar mensajes ocultos
 Brings back every message you hid with Hide for me, in every account. Open the chat again to see them.	Recupera todos los mensajes que ocultaste con Ocultar para mí, en todas las cuentas. Vuelve a abrir el chat para verlos.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names Hide for me in the message menu
 hiding messages for you	ocultar mensajes solo para ti
+# context: Item in a message's long-press menu, and the title of the chat picker it opens. It sends the message's text to the picked chat as a new message, with no formatting
+Forward as plain text	Reenviar como texto sin formato
+# context: Title of the switch on the Conversations page that adds Forward as plain text to a message's long-press menu
+Add Forward as plain text to the message menu	Añadir Reenviar como texto sin formato al menú del mensaje
+# context: Summary of the Add Forward as plain text to the message menu switch. Forward as plain text is the menu item's name. Custom emoji are Telegram's Premium emoji. Regular ones are the phone's own emoji
+Adds Forward as plain text to a message you can forward. Pick a chat and its text is sent there as a new message, with no formatting or sender name. Custom emoji become regular ones.	Añade Reenviar como texto sin formato a un mensaje que puedes reenviar. Elige un chat y su texto se envía allí como un mensaje nuevo, sin formato ni nombre del remitente. Los emojis personalizados pasan a ser normales.

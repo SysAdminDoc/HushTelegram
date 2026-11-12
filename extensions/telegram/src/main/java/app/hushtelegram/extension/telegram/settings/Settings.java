@@ -797,6 +797,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting MESSAGE_MENU_HIDE =
             new BooleanSetting("hushtelegram_message_menu_hide", FALSE);
 
+    /** Forward as plain text in the message menu (#71): a message's words go to a picked chat as a new message, without formatting. */
+    public static final BooleanSetting MESSAGE_MENU_PLAIN_FORWARD =
+            new BooleanSetting("hushtelegram_message_menu_plain_forward", FALSE);
+
     /**
      * A channel's read metrics (how long each post stayed on screen), Premium screen interaction
      * reports and the camera's dual-camera report are never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

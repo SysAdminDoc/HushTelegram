@@ -858,6 +858,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Fast forward to a message you can forward. Pick without the sender's name, without the caption, or both, then pick a chat."))));
             on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_FORWARD_SAVED, L10n.t("Add Forward to Saved Messages to the message menu"),
                     PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Forward to Saved Messages to a message you can forward. Pick as is, without the sender's name, without the caption, or both, and it lands in your Saved Messages at once."))));
+            on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_PLAIN_FORWARD, L10n.t("Add Forward as plain text to the message menu"),
+                    PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Forward as plain text to a message you can forward. Pick a chat and its text is sent there "
+                            + "as a new message, with no formatting or sender name. Custom emoji become regular ones."))));
             on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_SAVE_COVER, L10n.t("Add Save video cover to the message menu"),
                     PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Save video cover to a video message. The biggest cover or thumbnail Telegram has goes to Pictures, fetched first if it is not on the phone yet."))));
             on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_SAVE_ART, L10n.t("Add Save album art to the message menu"),
