@@ -872,6 +872,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("Adds Hide for me to a message. It leaves the chat on this phone only, with nothing sent to Telegram, "
                                 + "so everyone else still sees it. Turn this off and hidden messages show again.")));
                 on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(showHiddenRow(context));
+                if (build.contains(PatchFamily.KEEP_DELETED_MESSAGES)) {
+                    on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_DELETE_FOR_THEM,
+                            L10n.t("Add Delete for them to the message menu"),
+                            L10n.t("Adds Delete for them to your own messages in chats and groups. It deletes the message for everyone else "
+                                    + "and keeps it on this phone, marked deleted. Clear kept messages removes it here too.")));
+                }
             }
             if (PatchFamily.Capability.SELECT_BETWEEN.installed()) {
                 on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.SELECT_BETWEEN, L10n.t("Select between"),

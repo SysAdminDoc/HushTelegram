@@ -1747,3 +1747,11 @@ Forward as plain text	Reenviar como texto sin formato
 Add Forward as plain text to the message menu	Añadir Reenviar como texto sin formato al menú del mensaje
 # context: Summary of the Add Forward as plain text to the message menu switch. Forward as plain text is the menu item's name. Custom emoji are Telegram's Premium emoji. Regular ones are the phone's own emoji
 Adds Forward as plain text to a message you can forward. Pick a chat and its text is sent there as a new message, with no formatting or sender name. Custom emoji become regular ones.	Añade Reenviar como texto sin formato a un mensaje que puedes reenviar. Elige un chat y su texto se envía allí como un mensaje nuevo, sin formato ni nombre del remitente. Los emojis personalizados pasan a ser normales.
+# context: Item in the long-press menu of your own message. It deletes the message for everyone else in the chat and keeps it on this phone
+Delete for them	Eliminar para los demás
+# context: Title of the switch on the Conversations page that adds Delete for them to the long-press menu of your own messages
+Add Delete for them to the message menu	Añadir Eliminar para los demás al menú del mensaje
+# context: Summary of the Add Delete for them to the message menu switch. Delete for them is the menu item's name. Marked deleted means the word deleted next to the message's time. Clear kept messages is the name of a row in settings
+Adds Delete for them to your own messages in chats and groups. It deletes the message for everyone else and keeps it on this phone, marked deleted. Clear kept messages removes it here too.	Añade Eliminar para los demás a tus propios mensajes en chats y grupos. El mensaje se elimina para todos los demás y se queda en este teléfono, marcado como eliminado. Borrar los mensajes conservados también lo quita de aquí.
+# context: Short message shown after Delete for them: the message is gone for everyone else in the chat and stays on this phone
+Deleted for them, kept here.	Eliminado para los demás, guardado aquí.

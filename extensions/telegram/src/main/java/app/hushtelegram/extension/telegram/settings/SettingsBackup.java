@@ -225,6 +225,7 @@ public final class SettingsBackup {
             Settings.MESSAGE_MENU_CLEAR_CACHE,
             Settings.MESSAGE_MENU_HIDE,
             Settings.MESSAGE_MENU_PLAIN_FORWARD,
+            Settings.MESSAGE_MENU_DELETE_FOR_THEM,
             Settings.DISABLE_ANALYTICS,
             Settings.GHOST_MODE,
             Settings.GHOST_READS,

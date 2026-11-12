@@ -1743,3 +1743,11 @@ Forward as plain text	Препращане като обикновен текс�
 Add Forward as plain text to the message menu	Добавяне на Препращане като обикновен текст към менюто на съобщението
 # context: Summary of the Add Forward as plain text to the message menu switch. Forward as plain text is the menu item's name. Custom emoji are Telegram's Premium emoji. Regular ones are the phone's own emoji
 Adds Forward as plain text to a message you can forward. Pick a chat and its text is sent there as a new message, with no formatting or sender name. Custom emoji become regular ones.	Добавя Препращане като обикновен текст към съобщение, което можете да препратите. Изберете чат и текстът му се изпраща там като ново съобщение, без форматиране и без името на подателя. Персонализираните емоджита стават обикновени.
+# context: Item in the long-press menu of your own message. It deletes the message for everyone else in the chat and keeps it on this phone
+Delete for them	Изтриване за другите
+# context: Title of the switch on the Conversations page that adds Delete for them to the long-press menu of your own messages
+Add Delete for them to the message menu	Добавяне на Изтриване за другите към менюто на съобщението
+# context: Summary of the Add Delete for them to the message menu switch. Delete for them is the menu item's name. Marked deleted means the word deleted next to the message's time. Clear kept messages is the name of a row in settings
+Adds Delete for them to your own messages in chats and groups. It deletes the message for everyone else and keeps it on this phone, marked deleted. Clear kept messages removes it here too.	Добавя Изтриване за другите към вашите собствени съобщения в чатове и групи. Съобщението се изтрива за всички останали и остава на този телефон, отбелязано като изтрито. Изчистване на запазените съобщения го премахва и тук.
+# context: Short message shown after Delete for them: the message is gone for everyone else in the chat and stays on this phone
+Deleted for them, kept here.	Изтрито за другите, запазено тук.

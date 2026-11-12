@@ -307,10 +307,13 @@ public class HushTelegramPreferenceFragmentTest {
                 for (PatchFamily family : PatchFamily.values()) {
                     for (BooleanSetting setting : family.switches) {
                         boolean drawn = page.findPreference(setting.key) != null;
-                        // Ghost mode exceptions are picked from Hide picked chats' list and long press menu.
+                        // Ghost mode exceptions are picked from Hide picked chats' list and long press menu,
+                        // and Delete for them keeps its copy on Keep deleted messages' list.
                         boolean expected = build.contains(family)
                                 && (setting != Settings.GHOST_CHATS && setting != Settings.FAKE_TYPING
-                                        || build.contains(PatchFamily.HIDE_FOLDER_COUNTERS));
+                                        || build.contains(PatchFamily.HIDE_FOLDER_COUNTERS))
+                                && (setting != Settings.MESSAGE_MENU_DELETE_FOR_THEM
+                                        || build.contains(PatchFamily.KEEP_DELETED_MESSAGES));
                         if (drawn != expected) wrong.add(build + ": " + setting.key + (drawn ? " is drawn" : " isn't drawn"));
                     }
                 }

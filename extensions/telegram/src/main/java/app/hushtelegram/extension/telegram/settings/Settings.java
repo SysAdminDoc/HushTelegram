@@ -801,6 +801,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting MESSAGE_MENU_PLAIN_FORWARD =
             new BooleanSetting("hushtelegram_message_menu_plain_forward", FALSE);
 
+    /** Delete for them in the message menu (#71): your own message goes for everyone else and stays on this phone ({@link app.hushtelegram.extension.telegram.misc.DeleteForThem}). */
+    public static final BooleanSetting MESSAGE_MENU_DELETE_FOR_THEM =
+            new BooleanSetting("hushtelegram_message_menu_delete_for_them", FALSE);
+
     /**
      * A channel's read metrics (how long each post stayed on screen), Premium screen interaction
      * reports and the camera's dual-camera report are never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

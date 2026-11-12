@@ -1747,3 +1747,11 @@ Forward as plain text	Als reinen Text weiterleiten
 Add Forward as plain text to the message menu	Als reinen Text weiterleiten zum Nachrichtenmenü hinzufügen
 # context: Summary of the Add Forward as plain text to the message menu switch. Forward as plain text is the menu item's name. Custom emoji are Telegram's Premium emoji. Regular ones are the phone's own emoji
 Adds Forward as plain text to a message you can forward. Pick a chat and its text is sent there as a new message, with no formatting or sender name. Custom emoji become regular ones.	Fügt Als reinen Text weiterleiten zu einer Nachricht hinzu, die du weiterleiten kannst. Wähle einen Chat, und ihr Text wird dort als neue Nachricht gesendet, ohne Formatierung und ohne Absendernamen. Eigene Emojis werden zu normalen.
+# context: Item in the long-press menu of your own message. It deletes the message for everyone else in the chat and keeps it on this phone
+Delete for them	Für andere löschen
+# context: Title of the switch on the Conversations page that adds Delete for them to the long-press menu of your own messages
+Add Delete for them to the message menu	Für andere löschen zum Nachrichtenmenü hinzufügen
+# context: Summary of the Add Delete for them to the message menu switch. Delete for them is the menu item's name. Marked deleted means the word deleted next to the message's time. Clear kept messages is the name of a row in settings
+Adds Delete for them to your own messages in chats and groups. It deletes the message for everyone else and keeps it on this phone, marked deleted. Clear kept messages removes it here too.	Fügt Für andere löschen zu deinen eigenen Nachrichten in Chats und Gruppen hinzu. Die Nachricht wird für alle anderen gelöscht und bleibt auf diesem Handy, als gelöscht markiert. Behaltene Nachrichten löschen entfernt sie auch hier.
+# context: Short message shown after Delete for them: the message is gone for everyone else in the chat and stays on this phone
+Deleted for them, kept here.	Für andere gelöscht, hier behalten.
