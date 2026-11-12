@@ -1077,7 +1077,8 @@ public class PatchFamilyTest {
                         PatchFamily.Capability.PREMIUM_PROMO_SHOW, PatchFamily.Capability.PREMIUM_PROMO_TAP,
                         PatchFamily.Capability.PREMIUM_PROMO_ACCEPT, PatchFamily.Capability.PREMIUM_PROMO_FAIL, PatchFamily.Capability.DUAL_CAMERA_REPORTS,
                         PatchFamily.Capability.GHOST_MODE, PatchFamily.Capability.RECEIVE_ONLY, PatchFamily.Capability.POWER_OFF_ACCOUNTS,
-                        PatchFamily.Capability.INSTANT_LOCK, PatchFamily.Capability.QUIET_SIGN_UP),
+                        PatchFamily.Capability.INSTANT_LOCK, PatchFamily.Capability.QUIET_SIGN_UP,
+                        PatchFamily.Capability.DELETE_ACCOUNT),
                 PatchFamily.DISABLE_ANALYTICS.expectedCapabilities());
         assertEquals(EnumSet.of(PatchFamily.Capability.READ_METRICS),
                 PatchFamily.DISABLE_ANALYTICS.installedCapabilities());
@@ -1293,7 +1294,7 @@ public class PatchFamilyTest {
                         + "Suppress screenshot notification, Unlock Premium features, Bypass channel restrictions, "
                         + "Bypass integrity check, Auto-forwarding rules, Never send an uncropped photo, Keep captions with their photos, Proxy in the chat list menu, Free proxies, My messages, Text direction, Lyrics and song dates, Chat preview buttons",
                 "Hide ads coverage: channel ads, video ads, search ads",
-                "Disable analytics coverage: channel read metrics, Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures, dual camera reports, read receipts and story views, receive only mode, powering off accounts, instant lock, quiet sign-up"),
+                "Disable analytics coverage: channel read metrics, Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures, dual camera reports, read receipts and story views, receive only mode, powering off accounts, instant lock, quiet sign-up, account deletion"),
                 running);
 
         // Every family in this build has a switch, but the line still has room, after the switch's
@@ -1323,7 +1324,7 @@ public class PatchFamilyTest {
                 PatchFamily.Capability.READ_METRICS);
         List<String> running = PatchFamily.reportLines(build, false);
         assertTrue(running.toString(), running.contains("Hide ads coverage: channel ads; missing: video ads, search ads"));
-        assertTrue(running.toString(), running.contains("Disable analytics coverage: channel read metrics; missing: Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures, dual camera reports, read receipts and story views, receive only mode, powering off accounts, instant lock, quiet sign-up"));
+        assertTrue(running.toString(), running.contains("Disable analytics coverage: channel read metrics; missing: Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures, dual camera reports, read receipts and story views, receive only mode, powering off accounts, instant lock, quiet sign-up, account deletion"));
         Settings.HIDE_ADS.save(false);
         Settings.DISABLE_ANALYTICS.save(false);
         List<String> disabled = PatchFamily.reportLines(build, false);
@@ -1333,7 +1334,7 @@ public class PatchFamilyTest {
         PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
         List<String> none = PatchFamily.reportLines(build, false);
         assertTrue(none.toString(), none.contains("Hide ads coverage: none; missing: channel ads, video ads, search ads"));
-        assertTrue(none.toString(), none.contains("Disable analytics coverage: none; missing: channel read metrics, Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures, dual camera reports, read receipts and story views, receive only mode, powering off accounts, instant lock, quiet sign-up"));
+        assertTrue(none.toString(), none.contains("Disable analytics coverage: none; missing: channel read metrics, Premium promo views, Premium promo taps, Premium promo accepts, Premium promo failures, dual camera reports, read receipts and story views, receive only mode, powering off accounts, instant lock, quiet sign-up, account deletion"));
     }
 
     /** A target that only adds its own row leaves the switch working, so its description and report say so. */

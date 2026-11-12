@@ -359,6 +359,7 @@ public enum PatchFamily {
         POWER_OFF_ACCOUNTS(DISABLE_ANALYTICS, "powerOff", "powering off accounts", true),
         INSTANT_LOCK(DISABLE_ANALYTICS, "instantLock", "instant lock", true),
         QUIET_SIGN_UP(DISABLE_ANALYTICS, "quietSignUp", "quiet sign-up", true),
+        DELETE_ACCOUNT(DISABLE_ANALYTICS, "deleteAccount", "account deletion", true),
         CALL_DEBUG_UPLOAD(DISABLE_CALL_DEBUG, "callDebugUpload", "call debug reports"),
         CALL_LOG_FILE_UPLOAD(DISABLE_CALL_DEBUG, "callLogFileUpload", "call log file uploads"),
         CALL_LOG_UPLOAD(DISABLE_CALL_DEBUG, "callLogUpload", "call log reports"),

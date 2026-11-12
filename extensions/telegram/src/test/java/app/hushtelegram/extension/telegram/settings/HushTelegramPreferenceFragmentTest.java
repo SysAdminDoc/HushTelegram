@@ -66,6 +66,7 @@ import app.hushtelegram.extension.telegram.misc.HiddenAccounts;
 import app.hushtelegram.extension.telegram.misc.HiddenAccountsForTests;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloadsForTests;
+import app.hushtelegram.extension.telegram.misc.DeleteAccountForTests;
 import app.hushtelegram.extension.telegram.misc.GhostChats;
 import app.hushtelegram.extension.telegram.misc.HiddenChats;
 import app.hushtelegram.extension.telegram.misc.HiddenChatsForTests;
@@ -2220,6 +2221,70 @@ public class HushTelegramPreferenceFragmentTest {
             assertTrue(resolver.getPersistedUriPermissions().isEmpty());
         } finally {
             Settings.RECORD_CALLS_FOLDER.resetToDefault();
+        }
+    }
+
+    /**
+     * Delete account (#71) is on the Privacy page of a build with it. A tap names the account in use
+     * and sends nothing until Delete account is tapped, which then waits dimmed for Telegram's answer.
+     */
+    @Test
+    public void deleteAccountAsksByNameAndSendsOnlyOnDelete() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.DISABLE_ANALYTICS);
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.READ_METRICS);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            assertNull("a build without it has no row",
+                    pageOf(controller).findPreference(HushTelegramPreferenceFragment.DELETE_ACCOUNT_ROW));
+        }
+        PatchFamily.capabilitiesForTests = null;
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            Preference row = page.findPreference(HushTelegramPreferenceFragment.DELETE_ACCOUNT_ROW);
+            assertEquals("Delete account", String.valueOf(row.getTitle()));
+            assertFalse(row.isPersistent());
+            assertEquals("Deletes the account you're using now, with its messages and contacts. If it has a cloud "
+                    + "password, Telegram waits a week first.", String.valueOf(row.getSummary()));
+
+            DeleteAccountForTests.signedIn(0, null);
+            AlertDialog before = ShadowAlertDialog.getLatestAlertDialog();
+            assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+            ShadowLooper.idleMainLooper();
+            assertEquals("Sign in to Telegram first.", ShadowToast.getTextOfLatestToast());
+            assertSame("no dialog without an account", before, ShadowAlertDialog.getLatestAlertDialog());
+
+            DeleteAccountForTests.signedIn(1, "Test account");
+            AlertDialog ask = dialogOf(row);
+            assertEquals("Delete this account?", String.valueOf(shadowOf(ask).getTitle()));
+            assertEquals("Telegram deletes Test account with all its messages and contacts. This can't be undone.",
+                    String.valueOf(shadowOf(ask).getMessage()).replaceAll("[^\\p{ASCII}]", ""));
+            ask.getButton(AlertDialog.BUTTON_NEGATIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertFalse(ask.isShowing());
+            assertTrue("Cancel sends nothing", DeleteAccountForTests.sent().isEmpty());
+
+            ask = dialogOf(row);
+            Button delete = ask.getButton(AlertDialog.BUTTON_POSITIVE);
+            delete.performClick();
+            ShadowLooper.idleMainLooper();
+            assertEquals(Collections.singletonList("1: deleteAccount reason=\"\""), DeleteAccountForTests.sent());
+            assertTrue(ask.isShowing());
+            assertFalse("Delete waits for Telegram", delete.isEnabled());
+            assertEquals("Waiting for Telegram.", String.valueOf(shadowOf(ask).getMessage()));
+
+            DeleteAccountForTests.refused("FLOOD_WAIT_30");
+            ShadowLooper.idleMainLooper();
+            assertTrue("a refusal keeps the dialog", ask.isShowing());
+            assertTrue(delete.isEnabled());
+            assertEquals("Wait 30 seconds, then try again.", ShadowToast.getTextOfLatestToast());
+
+            delete.performClick();
+            DeleteAccountForTests.deleted();
+            ShadowLooper.idleMainLooper();
+            assertFalse(ask.isShowing());
+            assertEquals("Account deleted.", ShadowToast.getTextOfLatestToast());
+            assertEquals(Collections.singletonList(1), DeleteAccountForTests.signedOut());
+        } finally {
+            DeleteAccountForTests.restore();
         }
     }
 

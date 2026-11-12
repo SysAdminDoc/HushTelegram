@@ -1628,6 +1628,8 @@ Don't notify contacts	Kontakte nicht benachrichtigen
 When you sign up a phone number that's new to Telegram, people who have it saved aren't told you joined. Accounts that already exist aren't affected.	Wenn du eine Telefonnummer registrierst, die neu bei Telegram ist, erfahren Leute, die sie gespeichert haben, nicht, dass du beigetreten bist. Bestehende Konten sind davon nicht betroffen.
 # context: Lowercase noun phrase naming the Don't notify contacts switch (#71) in the patch status list
 quiet sign-up	stille Registrierung
+# context: Lowercase noun phrase naming the Delete account row (#71) in the patch status list
+account deletion	Kontolöschung
 # context: Lowercase noun phrase naming Proxy order (#71) in the patch status list
 proxy order	Proxy-Reihenfolge
 # context: Title of the Proxy order row on the Chat list page and of its editor dialog (#71). It sets the order of the proxies on Telegram's own proxy screen
@@ -1871,3 +1873,12 @@ Call recording saved	Anrufaufnahme gespeichert
 Share	Teilen
 %1$d day	%1$d Tag
 %1$d days	%1$d Tage
+# context: Delete account (#71). A row on the Privacy page, the dialog it opens (the name is the account's, and the button is the row's title again) and the toasts after Telegram answers. The day count is how long Telegram waits before deleting an account that has a cloud password.
+Delete account	Konto löschen
+Deletes the account you're using now, with its messages and contacts. If it has a cloud password, Telegram waits a week first.	Löscht das Konto, das du gerade nutzt, mit seinen Nachrichten und Kontakten. Hat es ein Cloud-Passwort, wartet Telegram vorher eine Woche.
+Delete this account?	Dieses Konto löschen?
+Telegram deletes %1$s with all its messages and contacts. This can't be undone.	Telegram löscht %1$s mit allen Nachrichten und Kontakten. Das lässt sich nicht rückgängig machen.
+Account deleted.	Konto gelöscht.
+Telegram deletes the account in %1$d day.	Telegram löscht das Konto in %1$d Tag.
+Telegram deletes the account in %1$d days.	Telegram löscht das Konto in %1$d Tagen.
+Telegram didn't delete the account.	Telegram hat das Konto nicht gelöscht.

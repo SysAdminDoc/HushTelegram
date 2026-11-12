@@ -91,6 +91,7 @@ import app.hushtelegram.extension.telegram.misc.AutoForwarding;
 import app.hushtelegram.extension.telegram.misc.CallRecorder;
 import app.hushtelegram.extension.telegram.misc.ChatTypeFolders;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
+import app.hushtelegram.extension.telegram.misc.DeleteAccount;
 import app.hushtelegram.extension.telegram.misc.FirebasePush;
 import app.hushtelegram.extension.telegram.misc.FolderIcons;
 import app.hushtelegram.extension.telegram.misc.FreeProxies;
@@ -169,6 +170,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     /** The folder picker's request, next to the settings file's 7311 and 7312. */
     static final int RECORD_FOLDER_REQUEST = 7313;
     static final String HIDDEN_ACCOUNTS_ROW = "action_hidden_accounts";
+    /** The Delete account row's key. Nothing is saved: a tap asks, then sends the deletion. */
+    static final String DELETE_ACCOUNT_ROW = "action_delete_account";
     /** The Forwarding rules row's key. The rules themselves are saved under {@link Settings#AUTO_FORWARDING_RULES}. */
     static final String FORWARDING_RULES_ROW = "action_forwarding_rules";
     /** The Tracked people row's key. The people themselves are kept by {@link SpecialContacts}, one list for each account. */
@@ -1492,6 +1495,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             L10n.t("When you sign up a phone number that's new to Telegram, people who have it saved aren't "
                                     + "told you joined. Accounts that already exist aren't affected.")));
                 }
+                if (PatchFamily.Capability.DELETE_ACCOUNT.installed()) privacy.addPreference(deleteAccountRow(context));
             }
             if (build.contains(PatchFamily.DISABLE_CALL_DEBUG)) {
                 privacy.addPreference(toggle(context, Settings.DISABLE_CALL_DEBUG, L10n.t("Stop call diagnostics"),
@@ -3070,6 +3074,65 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static String recordCallsSummary() {
         return L10n.f("Saves both sides of each call to %1$s on this phone. The other person isn't told.",
                 L10n.isolate(CallRecorder.folder()));
+    }
+
+    /** Delete account (#71): a tap asks about the account in use, then deletes it. */
+    private Preference deleteAccountRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(DELETE_ACCOUNT_ROW);
+        row.setTitle(L10n.t("Delete account"));
+        row.setPersistent(false);
+        row.setSummary(L10n.t("Deletes the account you're using now, with its messages and contacts. If it has a cloud "
+                + "password, Telegram waits a week first."));
+        row.setOnPreferenceClickListener(p -> {
+            showDeleteAccount(context);
+            return true;
+        });
+        return row;
+    }
+
+    /**
+     * Asks before deleting the account in use, by name, since nothing brings it back. Delete waits
+     * dimmed for Telegram's answer, and a refusal leaves the dialog up to try again or cancel.
+     */
+    void showDeleteAccount(Context context) {
+        if (SettingsLock.refuses()) return;
+        Accounts.Entry account = DeleteAccount.account();
+        if (account == null) {
+            Utils.showToastLong(L10n.t("Sign in to Telegram first."));
+            return;
+        }
+        String asked = L10n.f("Telegram deletes %1$s with all its messages and contacts. This can't be undone.",
+                L10n.isolate(account.name));
+        AlertDialog dialog = show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("Delete this account?"))
+                .setMessage(asked)
+                .setPositiveButton(L10n.t("Delete account"), null)
+                .setNegativeButton(L10n.t("Cancel"), null));
+        if (dialog == null) return;
+        Button delete = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        DeleteAccount.Answer answer = new DeleteAccount.Answer() {
+            @Override public void done(String said) {
+                if (dialog.isShowing()) dialog.dismiss();
+                Utils.showToastLong(said);
+            }
+
+            @Override public void refused(String refused) {
+                delete.setEnabled(true);
+                dialog.setMessage(asked);
+                Utils.showToastLong(refused);
+            }
+        };
+        // Set after show, so a refusal keeps the dialog.
+        delete.setOnClickListener(v -> {
+            String refused = DeleteAccount.send(account.index, answer);
+            if (refused != null) {
+                Utils.showToastLong(refused);
+                return;
+            }
+            delete.setEnabled(false);
+            dialog.setMessage(L10n.t("Waiting for Telegram."));
+        });
     }
 
     /** Where call recordings are saved: the row names the folder, and a tap picks another. */

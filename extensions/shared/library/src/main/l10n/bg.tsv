@@ -1624,6 +1624,8 @@ Don't notify contacts	Без известие до контактите
 When you sign up a phone number that's new to Telegram, people who have it saved aren't told you joined. Accounts that already exist aren't affected.	Когато регистрираш телефонен номер, който е нов за Telegram, хората, които са го запазили, не получават известие, че си се присъединил. Вече съществуващите акаунти не се засягат.
 # context: Lowercase noun phrase naming the Don't notify contacts switch (#71) in the patch status list
 quiet sign-up	тиха регистрация
+# context: Lowercase noun phrase naming the Delete account row (#71) in the patch status list
+account deletion	изтриване на профил
 # context: Lowercase noun phrase naming Proxy order (#71) in the patch status list
 proxy order	ред на проксита
 # context: Title of the Proxy order row on the Chat list page and of its editor dialog (#71). It sets the order of the proxies on Telegram's own proxy screen
@@ -1867,3 +1869,12 @@ Call recording saved	Записът на разговора е запазен
 Share	Споделяне
 %1$d day	%1$d ден
 %1$d days	%1$d дни
+# context: Delete account (#71). A row on the Privacy page, the dialog it opens (the name is the account's, and the button is the row's title again) and the toasts after Telegram answers. The day count is how long Telegram waits before deleting an account that has a cloud password.
+Delete account	Изтриване на профила
+Deletes the account you're using now, with its messages and contacts. If it has a cloud password, Telegram waits a week first.	Изтрива профила, който използвате в момента, заедно със съобщенията и контактите му. Ако има облачна парола, Telegram изчаква една седмица преди това.
+Delete this account?	Да се изтрие ли този профил?
+Telegram deletes %1$s with all its messages and contacts. This can't be undone.	Telegram изтрива %1$s заедно с всички съобщения и контакти. Това не може да бъде отменено.
+Account deleted.	Профилът е изтрит.
+Telegram deletes the account in %1$d day.	Telegram ще изтрие профила след %1$d ден.
+Telegram deletes the account in %1$d days.	Telegram ще изтрие профила след %1$d дни.
+Telegram didn't delete the account.	Telegram не изтри профила.

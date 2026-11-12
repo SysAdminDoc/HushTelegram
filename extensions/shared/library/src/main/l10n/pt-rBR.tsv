@@ -1625,6 +1625,8 @@ Don't notify contacts	Não notificar contatos
 When you sign up a phone number that's new to Telegram, people who have it saved aren't told you joined. Accounts that already exist aren't affected.	Ao cadastrar um número de telefone novo no Telegram, quem tem ele salvo não é avisado de que você entrou. Contas que já existem não são afetadas.
 # context: Lowercase noun phrase naming the Don't notify contacts switch (#71) in the patch status list
 quiet sign-up	cadastro silencioso
+# context: Lowercase noun phrase naming the Delete account row (#71) in the patch status list
+account deletion	exclusão de conta
 # context: Lowercase noun phrase naming Proxy order (#71) in the patch status list
 proxy order	ordem dos proxies
 # context: Title of the Proxy order row on the Chat list page and of its editor dialog (#71). It sets the order of the proxies on Telegram's own proxy screen
@@ -1868,3 +1870,12 @@ Call recording saved	Gravação de chamada salva
 Share	Compartilhar
 %1$d day	%1$d dia
 %1$d days	%1$d dias
+# context: Delete account (#71). A row on the Privacy page, the dialog it opens (the name is the account's, and the button is the row's title again) and the toasts after Telegram answers. The day count is how long Telegram waits before deleting an account that has a cloud password.
+Delete account	Excluir conta
+Deletes the account you're using now, with its messages and contacts. If it has a cloud password, Telegram waits a week first.	Exclui a conta em uso agora, com as mensagens e os contatos dela. Se ela tiver senha na nuvem, o Telegram espera uma semana antes.
+Delete this account?	Excluir esta conta?
+Telegram deletes %1$s with all its messages and contacts. This can't be undone.	O Telegram exclui %1$s com todas as mensagens e contatos. Não é possível desfazer.
+Account deleted.	Conta excluída.
+Telegram deletes the account in %1$d day.	O Telegram exclui a conta em %1$d dia.
+Telegram deletes the account in %1$d days.	O Telegram exclui a conta em %1$d dias.
+Telegram didn't delete the account.	O Telegram não excluiu a conta.

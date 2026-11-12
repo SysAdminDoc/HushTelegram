@@ -1628,6 +1628,8 @@ Don't notify contacts	Kişilere bildirim gönderme
 When you sign up a phone number that's new to Telegram, people who have it saved aren't told you joined. Accounts that already exist aren't affected.	Telegram'da yeni olan bir telefon numarasıyla kaydolduğunda, onu kayıtlı tutan kişilere katıldığın bildirilmez. Zaten var olan hesaplar etkilenmez.
 # context: Lowercase noun phrase naming the Don't notify contacts switch (#71) in the patch status list
 quiet sign-up	sessiz kayıt
+# context: Lowercase noun phrase naming the Delete account row (#71) in the patch status list
+account deletion	hesap silme
 # context: Lowercase noun phrase naming Proxy order (#71) in the patch status list
 proxy order	proxy sırası
 # context: Title of the Proxy order row on the Chat list page and of its editor dialog (#71). It sets the order of the proxies on Telegram's own proxy screen
@@ -1871,3 +1873,12 @@ Call recording saved	Arama kaydı kaydedildi
 Share	Paylaş
 %1$d day	%1$d gün
 %1$d days	%1$d gün
+# context: Delete account (#71). A row on the Privacy page, the dialog it opens (the name is the account's, and the button is the row's title again) and the toasts after Telegram answers. The day count is how long Telegram waits before deleting an account that has a cloud password.
+Delete account	Hesabı sil
+Deletes the account you're using now, with its messages and contacts. If it has a cloud password, Telegram waits a week first.	Şu an kullandığın hesabı mesajları ve kişileriyle birlikte siler. Bulut şifresi varsa Telegram önce bir hafta bekler.
+Delete this account?	Bu hesap silinsin mi?
+Telegram deletes %1$s with all its messages and contacts. This can't be undone.	Telegram %1$s hesabını tüm mesajları ve kişileriyle birlikte siler. Bu geri alınamaz.
+Account deleted.	Hesap silindi.
+Telegram deletes the account in %1$d day.	Telegram hesabı %1$d gün içinde silecek.
+Telegram deletes the account in %1$d days.	Telegram hesabı %1$d gün içinde silecek.
+Telegram didn't delete the account.	Telegram hesabı silmedi.

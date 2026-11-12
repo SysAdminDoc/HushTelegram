@@ -1628,6 +1628,8 @@ Don't notify contacts	Jangan beri tahu kontak
 When you sign up a phone number that's new to Telegram, people who have it saved aren't told you joined. Accounts that already exist aren't affected.	Saat kamu mendaftarkan nomor telepon yang baru di Telegram, orang yang menyimpannya tidak diberi tahu bahwa kamu bergabung. Akun yang sudah ada tidak terpengaruh.
 # context: Lowercase noun phrase naming the Don't notify contacts switch (#71) in the patch status list
 quiet sign-up	pendaftaran senyap
+# context: Lowercase noun phrase naming the Delete account row (#71) in the patch status list
+account deletion	penghapusan akun
 # context: Lowercase noun phrase naming Proxy order (#71) in the patch status list
 proxy order	urutan proxy
 # context: Title of the Proxy order row on the Chat list page and of its editor dialog (#71). It sets the order of the proxies on Telegram's own proxy screen
@@ -1871,3 +1873,12 @@ Call recording saved	Rekaman panggilan disimpan
 Share	Bagikan
 %1$d day	%1$d hari
 %1$d days	%1$d hari
+# context: Delete account (#71). A row on the Privacy page, the dialog it opens (the name is the account's, and the button is the row's title again) and the toasts after Telegram answers. The day count is how long Telegram waits before deleting an account that has a cloud password.
+Delete account	Hapus akun
+Deletes the account you're using now, with its messages and contacts. If it has a cloud password, Telegram waits a week first.	Menghapus akun yang sedang kamu pakai, beserta pesan dan kontaknya. Jika akun punya kata sandi cloud, Telegram menunggu seminggu dulu.
+Delete this account?	Hapus akun ini?
+Telegram deletes %1$s with all its messages and contacts. This can't be undone.	Telegram menghapus %1$s beserta semua pesan dan kontaknya. Ini tidak bisa dibatalkan.
+Account deleted.	Akun dihapus.
+Telegram deletes the account in %1$d day.	Telegram menghapus akun ini dalam %1$d hari.
+Telegram deletes the account in %1$d days.	Telegram menghapus akun ini dalam %1$d hari.
+Telegram didn't delete the account.	Telegram tidak menghapus akun ini.
