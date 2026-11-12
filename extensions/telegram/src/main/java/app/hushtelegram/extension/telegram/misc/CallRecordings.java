@@ -110,19 +110,34 @@ final class CallRecordings {
         return new File(folder, "call-" + began + ".m4a");
     }
 
-    /** Puts the finished file in shared storage under [name] and answers the folder it went to. */
-    static String save(Context context, File file, String name) throws IOException {
+    /** Where a saved recording went: the folder for the toast, and its address for the notification. */
+    static final class Saved {
+        final String folder;
+        /** The recording in MediaStore, or null on Android 9, where it's a plain file. */
+        @Nullable final Uri uri;
+        final String mime;
+
+        Saved(String folder, @Nullable Uri uri, String mime) {
+            this.folder = folder;
+            this.uri = uri;
+            this.mime = mime;
+        }
+    }
+
+    /** Puts the finished file in shared storage under [name] and answers where it went. */
+    static Saved save(Context context, File file, String name) throws IOException {
+        Uri uri = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            insert(context, file, name);
+            uri = insert(context, file, name);
         } else {
             legacy(context, file, name);
         }
-        return folder();
+        return new Saved(folder(), uri, MIME);
     }
 
     /** Into MediaStore's audio, hidden until it's whole, the way Save to Downloads copies. */
     @RequiresApi(Build.VERSION_CODES.Q)
-    private static void insert(Context context, File file, String name) throws IOException {
+    private static Uri insert(Context context, File file, String name) throws IOException {
         ContentResolver resolver = context.getContentResolver();
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
@@ -147,6 +162,7 @@ final class CallRecordings {
             }
             throw failure;
         }
+        return pending;
     }
 
     /**

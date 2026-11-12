@@ -12,6 +12,7 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** **Record calls** has three new rows under it. **Calls to record** picks every call, private calls only, voice chats and live streams only, or just the chats you pick. Pick those in **Chats to record**, or long press chats in the chat list and use **Record calls here** in the three dots menu. **Keep recordings** can delete recordings older than 7, 30 or 90 days each time a new one is saved, and it only ever touches the call recordings HushTelegram made. Recordings are named after the person or group now, like "Telegram call with Alex Kim 2026-11-12 14-05.m4a". (#72)
 * **Telegram:** While **Record button on calls** is recording, the button shows how long the recording runs and a pause button sits next to it. Whatever is said during a pause stays out of the file, and the call still saves as one recording. A tap on the record button records the call you're on even when **Calls to record** would skip it. (#72)
+* **Telegram:** **Notify when a call is saved** puts up a notification after each recording. Tap it to play the recording, or use its buttons to share it or send it straight to your Saved Messages. It's off until you turn it on, and it needs Android 10 or newer. (#72)
 
 ### Fixed
 

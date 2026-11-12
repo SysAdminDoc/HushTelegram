@@ -6,6 +6,7 @@ package app.hushtelegram.extension.telegram.misc;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -101,7 +102,10 @@ public class CallRecordingsTest {
     @Test public void android11AndOlderSaveToMusicHiddenUntilTheCopyIsWhole() throws IOException {
         ByteArrayOutputStream body = bodyOf(1);
         assertEquals("Music/Telegram calls", CallRecordings.folder());
-        assertEquals("Music/Telegram calls", CallRecordings.save(context(), finished(), NAME));
+        CallRecordings.Saved saved = CallRecordings.save(context(), finished(), NAME);
+        assertEquals("Music/Telegram calls", saved.folder);
+        assertEquals(recordings.uriFor(1), saved.uri);
+        assertEquals("audio/mp4", saved.mime);
 
         ContentValues row = recordings.row(1);
         assertEquals(NAME, row.getAsString(MediaStore.MediaColumns.DISPLAY_NAME));
@@ -116,7 +120,7 @@ public class CallRecordingsTest {
     @Test public void android12AndNewerSaveToRecordings() throws IOException {
         bodyOf(1);
         assertEquals("Recordings/Telegram calls", CallRecordings.folder());
-        assertEquals("Recordings/Telegram calls", CallRecordings.save(context(), finished(), NAME));
+        assertEquals("Recordings/Telegram calls", CallRecordings.save(context(), finished(), NAME).folder);
         assertEquals("Recordings/Telegram calls/", recordings.row(1).getAsString(MediaStore.MediaColumns.RELATIVE_PATH));
     }
 
@@ -169,7 +173,9 @@ public class CallRecordingsTest {
         Shadows.shadowOf(RuntimeEnvironment.getApplication()).grantPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         @SuppressWarnings("deprecation")
         File music = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), CallRecordings.FOLDER);
-        assertEquals("Music/Telegram calls", CallRecordings.save(context(), finished(), NAME));
+        CallRecordings.Saved saved = CallRecordings.save(context(), finished(), NAME);
+        assertEquals("Music/Telegram calls", saved.folder);
+        assertNull("a plain file has no address to share", saved.uri);
         CallRecordings.save(context(), finished(), NAME);
         File first = new File(music, NAME);
         File second = new File(music, "Telegram call 2026-10-30 21-15 (2).m4a");

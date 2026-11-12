@@ -1855,5 +1855,10 @@ Recordings stay until you delete them.	Rekaman tetap ada sampai Anda menghapusny
 Recordings older than %1$d day are deleted when the next one is saved.	Rekaman yang lebih lama dari %1$d hari dihapus saat rekaman berikutnya disimpan.
 Recordings older than %1$d days are deleted when the next one is saved.	Rekaman yang lebih lama dari %1$d hari dihapus saat rekaman berikutnya disimpan.
 Until you delete them	Sampai Anda menghapusnya
+Notify when a call is saved	Beri tahu saat panggilan disimpan
+A tap on the notification plays the recording. Its buttons share it or send it to your Saved Messages.	Ketuk notifikasi untuk memutar rekaman. Tombolnya membagikan rekaman atau mengirimnya ke Pesan Tersimpan Anda.
+Call recordings	Rekaman panggilan
+Call recording saved	Rekaman panggilan disimpan
+Share	Bagikan
 %1$d day	%1$d hari
 %1$d days	%1$d hari

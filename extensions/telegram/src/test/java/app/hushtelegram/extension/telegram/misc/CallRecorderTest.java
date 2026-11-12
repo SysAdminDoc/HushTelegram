@@ -10,10 +10,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
+import android.net.Uri;
 
 import org.junit.After;
 import org.junit.Before;
@@ -22,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowToast;
@@ -99,6 +103,7 @@ public class CallRecorderTest {
     private static final CallPeer ALEX = new CallPeer(CallPeer.PRIVATE, 7, "Alex Kim");
     private static final CallPeer BAND = new CallPeer(CallPeer.GROUP, -9, "Band practice");
     private static final long DAY_MS = 24L * 60 * 60 * 1000;
+    private static final Uri SAVED_AT = Uri.parse("content://media/external/audio/media/7");
 
     private CallPeer peer = CallPeer.NONE;
     private final List<Long> cleanedBefore = new ArrayList<>();
@@ -136,7 +141,7 @@ public class CallRecorderTest {
             if (failSaves) throw new IOException("storage full");
             savedNames.add(name);
             savedFileThere.add(file.isFile());
-            return FOLDER;
+            return new CallRecordings.Saved(FOLDER, SAVED_AT, CallRecordings.MIME);
         };
         CallRecorder.cleaner = (Context context, long before) -> {
             if (failCleans) throw new IllegalStateException("MediaStore went away");
@@ -155,6 +160,7 @@ public class CallRecorderTest {
         Settings.RECORD_CALL_BUTTON.resetToDefault();
         Settings.RECORD_CALLS_WHICH.resetToDefault();
         Settings.RECORD_CALLS_KEEP_DAYS.resetToDefault();
+        Settings.RECORD_CALLS_NOTIFY.resetToDefault();
         RecordChats.save(Collections.emptySet());
         RecordChats.forget();
     }
@@ -638,5 +644,25 @@ public class CallRecorderTest {
         assertEquals("Call saved to " + L10n.isolate(FOLDER), hangUp());
         assertCounted(CallRecorder.SAVED, 1);
         assertTrue(report(), report().contains("old call recordings cleanup"));
+    }
+
+    @Test public void aSavedCallIsAnnouncedOnlyWhenTheSwitchAsks() {
+        Settings.RECORD_CALLS.save(true);
+        peer = ALEX;
+        AudioTrack track = track(CallMixer.RATE);
+        play(track, 101, 1000);
+        hangUp();
+        NotificationManager manager = RuntimeEnvironment.getApplication().getSystemService(NotificationManager.class);
+        assertEquals("off by default", 0, Shadows.shadowOf(manager).size());
+
+        Settings.RECORD_CALLS_NOTIFY.save(true);
+        now += 60_000;
+        wallNow += 60_000;
+        play(track, 101, 1000);
+        hangUp();
+        Notification shown = Shadows.shadowOf(manager).getNotification(CallSavedNotice.NOTIFICATION_ID);
+        assertEquals(savedNames.get(1), String.valueOf(shown.extras.getCharSequence(Notification.EXTRA_TEXT)));
+        assertEquals(SAVED_AT, Shadows.shadowOf(shown.contentIntent).getSavedIntent().getData());
+        assertCounted(CallRecorder.SAVED, 2);
     }
 }

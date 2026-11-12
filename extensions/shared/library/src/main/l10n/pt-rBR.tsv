@@ -1852,5 +1852,10 @@ Recordings stay until you delete them.	As gravações ficam até você apagá-la
 Recordings older than %1$d day are deleted when the next one is saved.	Gravações com mais de %1$d dia são apagadas quando a próxima é salva.
 Recordings older than %1$d days are deleted when the next one is saved.	Gravações com mais de %1$d dias são apagadas quando a próxima é salva.
 Until you delete them	Até você apagá-las
+Notify when a call is saved	Avisar quando uma chamada for salva
+A tap on the notification plays the recording. Its buttons share it or send it to your Saved Messages.	Tocar na notificação reproduz a gravação. Os botões dela compartilham a gravação ou enviam para suas Mensagens Salvas.
+Call recordings	Gravações de chamadas
+Call recording saved	Gravação de chamada salva
+Share	Compartilhar
 %1$d day	%1$d dia
 %1$d days	%1$d dias

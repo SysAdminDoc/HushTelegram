@@ -1851,5 +1851,10 @@ Recordings stay until you delete them.	Записите остават, дока
 Recordings older than %1$d day are deleted when the next one is saved.	Записите, по-стари от %1$d ден, се изтриват при запазване на следващия.
 Recordings older than %1$d days are deleted when the next one is saved.	Записите, по-стари от %1$d дни, се изтриват при запазване на следващия.
 Until you delete them	Докато не ги изтриете
+Notify when a call is saved	Известие при запазен разговор
+A tap on the notification plays the recording. Its buttons share it or send it to your Saved Messages.	Докосване на известието пуска записа. Бутоните му го споделят или го изпращат в Запазени съобщения.
+Call recordings	Записи на разговори
+Call recording saved	Записът на разговора е запазен
+Share	Споделяне
 %1$d day	%1$d ден
 %1$d days	%1$d дни

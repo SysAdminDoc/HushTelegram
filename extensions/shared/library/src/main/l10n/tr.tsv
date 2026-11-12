@@ -1855,5 +1855,10 @@ Recordings stay until you delete them.	Kayıtlar siz silene kadar kalır.
 Recordings older than %1$d day are deleted when the next one is saved.	%1$d günden eski kayıtlar bir sonraki kaydedildiğinde silinir.
 Recordings older than %1$d days are deleted when the next one is saved.	%1$d günden eski kayıtlar bir sonraki kaydedildiğinde silinir.
 Until you delete them	Siz silene kadar
+Notify when a call is saved	Arama kaydedilince bildir
+A tap on the notification plays the recording. Its buttons share it or send it to your Saved Messages.	Bildirime dokunmak kaydı oynatır. Düğmeleri kaydı paylaşır veya Kayıtlı Mesajlar'a gönderir.
+Call recordings	Arama kayıtları
+Call recording saved	Arama kaydı kaydedildi
+Share	Paylaş
 %1$d day	%1$d gün
 %1$d days	%1$d gün

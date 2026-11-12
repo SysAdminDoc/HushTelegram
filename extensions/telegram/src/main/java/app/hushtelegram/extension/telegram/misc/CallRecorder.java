@@ -93,8 +93,8 @@ public final class CallRecorder {
     }
 
     interface Saver {
-        /** Puts the finished file in shared storage and answers the folder it went to. */
-        String save(Context context, File file, String name) throws IOException;
+        /** Puts the finished file in shared storage and answers where it went. */
+        CallRecordings.Saved save(Context context, File file, String name) throws IOException;
     }
 
     interface Cleaner {
@@ -451,9 +451,11 @@ public final class CallRecorder {
                 finished = open.finish();
                 Context context = Utils.getContext();
                 if (context == null) throw new IOException("No context to save the call in");
-                String folder = saver.save(context, finished, CallRecordings.name(began, with));
+                String name = CallRecordings.name(began, with);
+                CallRecordings.Saved saved = saver.save(context, finished, name);
                 HookStatus.counted(FAMILY, SAVED);
-                Utils.showToastShort(L10n.f("Call saved to %1$s", L10n.isolate(folder)));
+                Utils.showToastShort(L10n.f("Call saved to %1$s", L10n.isolate(saved.folder)));
+                notice(context, saved, name);
                 clean(context);
             } catch (Throwable failure) {
                 HookStatus.threw(FAMILY, "call recording save", failure);
@@ -463,6 +465,15 @@ public final class CallRecorder {
             } finally {
                 if (finished != null && !finished.delete() && finished.exists()) finished.deleteOnExit();
                 file = null;
+            }
+        }
+
+        /** The notification for a saved recording. The recording stays saved whatever happens here. */
+        private void notice(Context context, CallRecordings.Saved saved, String name) {
+            try {
+                CallSavedNotice.show(context, saved.uri, name, saved.mime);
+            } catch (Throwable failure) {
+                HookStatus.threw(FAMILY, "call saved notification", failure);
             }
         }
 

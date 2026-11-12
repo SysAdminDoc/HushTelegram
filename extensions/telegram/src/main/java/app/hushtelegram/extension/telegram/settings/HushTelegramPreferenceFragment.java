@@ -1501,6 +1501,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     privacy.addPreference(toggle(context, Settings.RECORD_CALL_BUTTON, L10n.t("Record button on calls"),
                             L10n.t("A button on the call screen records just that call, or stops recording it when Record calls is on.")));
                 }
+                if (PatchFamily.Capability.CALL_RECORDING.installed() || PatchFamily.Capability.CALL_RECORD_BUTTON.installed()) {
+                    privacy.addPreference(toggle(context, Settings.RECORD_CALLS_NOTIFY, L10n.t("Notify when a call is saved"),
+                            L10n.t("A tap on the notification plays the recording. Its buttons share it or send it to your Saved Messages.")));
+                }
             }
             if (build.contains(PatchFamily.DISABLE_DRAFT_PREVIEWS)) {
                 privacy.addPreference(toggle(context, Settings.DISABLE_DRAFT_PREVIEWS, L10n.t("No previews before sending"),

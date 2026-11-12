@@ -969,6 +969,13 @@ public class Settings extends BaseSettings {
     public static final IntegerSetting RECORD_CALLS_KEEP_DAYS =
             new IntegerSetting("hushtelegram_record_calls_keep_days", 0).withRange(0, 365);
 
+    /**
+     * A notification once each call recording is saved (#72): a tap plays it, and its buttons share
+     * it or send it to Saved Messages. Off by default.
+     */
+    public static final BooleanSetting RECORD_CALLS_NOTIFY =
+            new BooleanSetting("hushtelegram_record_calls_notify", FALSE);
+
     /** Link previews for unsent messages only; sent messages and received previews stay stock. */
     public static final BooleanSetting DISABLE_DRAFT_PREVIEWS =
             new BooleanSetting("hushtelegram_disable_draft_previews", FALSE);

@@ -2190,6 +2190,10 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals(HushTelegramPreferenceFragment.RECORD_KEEP_ROW, keep.getKey());
             assertEquals("Keep recordings", String.valueOf(keep.getTitle()));
             assertEquals("Recordings stay until you delete them.", String.valueOf(keep.getSummary()));
+            // The notification covers the record button's recordings too, so it comes after that switch.
+            Preference notify = rows.get(indexOfKey(rows, Settings.RECORD_CALL_BUTTON.key) + 1);
+            assertEquals(Settings.RECORD_CALLS_NOTIFY.key, notify.getKey());
+            assertEquals("Notify when a call is saved", String.valueOf(notify.getTitle()));
 
             AlertDialog list = dialogOf(which);
             assertEquals("Calls to record", String.valueOf(shadowOf(list).getTitle()));
