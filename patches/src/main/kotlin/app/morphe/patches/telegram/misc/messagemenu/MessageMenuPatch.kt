@@ -105,7 +105,7 @@ internal const val APPLICATION_ID = "Lorg/telegram/messenger/ApplicationLoader;-
 private const val NAME = "Add Repeat to the message menu"
 
 /** The extension's option numbers, Repeat, Message details, Copy photo and Quick forward, which Telegram's own may never use. */
-internal val MENU_OPTIONS = listOf(0x48544d01, 0x48544d02, 0x48544d03, 0x48544d04, 0x48544d05, 0x48544d06, 0x48544d07, 0x48544d08, 0x48544d09, 0x48544d0a, 0x48544d0b, 0x48544d0c)
+internal val MENU_OPTIONS = listOf(0x48544d01, 0x48544d02, 0x48544d03, 0x48544d04, 0x48544d05, 0x48544d06, 0x48544d07, 0x48544d08, 0x48544d09, 0x48544d0a, 0x48544d0b, 0x48544d0c, 0x48544d0d)
 private val MOVES = setOf(Opcode.MOVE, Opcode.MOVE_FROM16, Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_WIDE, Opcode.MOVE_WIDE_FROM16)
 
 @Suppress("unused")
@@ -154,6 +154,13 @@ val messageMenuPatch = bytecodePatch(
             enableCapability("selectBetween")
         } else {
             patchLog.warning("Add Repeat to the message menu: ${between.missing}. The patch goes on without the Select between button.")
+        }
+        val hide = resolveHideForMe()
+        if (hide.missing == null) {
+            hide.apply(this)
+            enableCapability("hideForMe")
+        } else {
+            patchLog.warning("Add Repeat to the message menu: ${hide.missing}. The patch goes on without Hide for me.")
         }
         enableStatus("messageMenuRepeat")
     }

@@ -793,6 +793,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting MESSAGE_MENU_CLEAR_CACHE =
             new BooleanSetting("hushtelegram_message_menu_clear_cache", FALSE);
 
+    /** Hide for me in the message menu (#20): a message leaves the chat on this phone only ({@link app.hushtelegram.extension.telegram.misc.HiddenMessages}). */
+    public static final BooleanSetting MESSAGE_MENU_HIDE =
+            new BooleanSetting("hushtelegram_message_menu_hide", FALSE);
+
     /**
      * A channel's read metrics (how long each post stayed on screen), Premium screen interaction
      * reports and the camera's dual-camera report are never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

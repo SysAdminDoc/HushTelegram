@@ -96,6 +96,7 @@ import app.hushtelegram.extension.telegram.misc.GalleryFolder;
 import app.hushtelegram.extension.telegram.misc.HiddenAccounts;
 import app.hushtelegram.extension.telegram.misc.GhostChats;
 import app.hushtelegram.extension.telegram.misc.HiddenChats;
+import app.hushtelegram.extension.telegram.misc.HiddenMessages;
 import app.hushtelegram.extension.telegram.misc.KeepAlive;
 import app.hushtelegram.extension.telegram.misc.KeepDeleted;
 import app.hushtelegram.extension.telegram.misc.KeepEdits;
@@ -138,6 +139,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String SUPPORTED_LINKS = "action_supported_links";
     /** The Clear kept messages row's key, which stores nothing. */
     static final String CLEAR_KEPT = "action_clear_kept_messages";
+    /** The Show hidden messages row's key, which stores nothing. */
+    static final String SHOW_HIDDEN = "action_show_hidden_messages";
     /** The Clear edit history row's key, which stores nothing. */
     static final String CLEAR_EDITS = "action_clear_edit_history";
     /** The Sticker size row's key. The size itself is saved under {@link Settings#STICKER_SIZE}. */
@@ -861,6 +864,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Save album art to a song that has art, inside the file or on Telegram. The picture goes to Pictures."))));
             on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_CLEAR_CACHE, L10n.t("Add Clear from cache to the message menu"),
                     PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Clear from cache to a video or file message. It stops a running download, deletes what Telegram kept of it and brings the download arrow back. Saved copies in Downloads or Pictures stay."))));
+            if (PatchFamily.Capability.HIDE_FOR_ME.installed()) {
+                on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_HIDE, L10n.t("Add Hide for me to the message menu"),
+                        L10n.t("Adds Hide for me to a message. It leaves the chat on this phone only, with nothing sent to Telegram, "
+                                + "so everyone else still sees it. Turn this off and hidden messages show again.")));
+                on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(showHiddenRow(context));
+            }
             if (PatchFamily.Capability.SELECT_BETWEEN.installed()) {
                 on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.SELECT_BETWEEN, L10n.t("Select between"),
                         L10n.t("Adds a Select between button to the bar that shows while you pick messages. It selects everything between the first and"
@@ -2064,6 +2073,21 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         row.actsAtOnce = true;
         row.setOnPreferenceClickListener(p -> {
             Utils.showToastLong(KeepDeleted.clearedMessage(KeepDeleted.clear()));
+            return true;
+        });
+        return row;
+    }
+
+    /** Brings back every message Hide for me hid, in every account, and says how many. */
+    private static Preference showHiddenRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(SHOW_HIDDEN);
+        row.setPersistent(false);
+        row.setTitle(L10n.t("Show hidden messages"));
+        row.setSummary(L10n.t("Brings back every message you hid with Hide for me, in every account. Open the chat again to see them."));
+        row.actsAtOnce = true;
+        row.setOnPreferenceClickListener(p -> {
+            Utils.showToastLong(HiddenMessages.shownMessage(HiddenMessages.showAll()));
             return true;
         });
         return row;

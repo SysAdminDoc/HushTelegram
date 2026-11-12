@@ -1722,3 +1722,22 @@ Right-to-left isolate	Aislamiento de derecha a izquierda
 First strong isolate	Aislamiento según el primer carácter fuerte
 # context: Name of an invisible Unicode control character in the Text direction feature's Control character list, shown after its short code (for example LRM). Keep it close to the character's Unicode name
 Pop directional isolate	Fin de aislamiento
+# context: Item in a message's long-press menu that takes the message out of the chat on this phone only. Nothing is sent, and everyone else still sees it
+Hide for me	Ocultar para mí
+# context: Short toast right after Hide for me took a message out of the chat, at most two short lines
+Hidden on this phone.	Oculto en este teléfono.
+# context: Short toast after tapping Show hidden messages when nothing was hidden, at most two short lines
+No messages are hidden.	No hay mensajes ocultos.
+# context: Short toast after tapping Show hidden messages, with how many hidden messages will show again. At most two short lines
+%1$d message shows again.	%1$d mensaje visible de nuevo.
+%1$d messages show again.	%1$d mensajes visibles de nuevo.
+# context: Title of the switch on the Conversations page that adds Hide for me to a message's long-press menu
+Add Hide for me to the message menu	Añadir Ocultar para mí al menú del mensaje
+# context: Summary of the Add Hide for me to the message menu switch. Hide for me is the menu item's name
+Adds Hide for me to a message. It leaves the chat on this phone only, with nothing sent to Telegram, so everyone else still sees it. Turn this off and hidden messages show again.	Añade Ocultar para mí a un mensaje. Sale del chat solo en este teléfono, sin enviar nada a Telegram, así que todos los demás lo siguen viendo. Desactívalo y los mensajes ocultos vuelven a aparecer.
+# context: Title of the row on the Conversations page that brings back every message hidden with Hide for me
+Show hidden messages	Mostrar mensajes ocultos
+# context: Summary of the Show hidden messages row. Hide for me is the message menu item's name
+Brings back every message you hid with Hide for me, in every account. Open the chat again to see them.	Recupera todos los mensajes que ocultaste con Ocultar para mí, en todas las cuentas. Vuelve a abrir el chat para verlos.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names Hide for me in the message menu
+hiding messages for you	ocultar mensajes solo para ti

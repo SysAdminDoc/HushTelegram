@@ -492,6 +492,7 @@ public final class SelectionCheck {
         hook(calls, flags, "reactionAlerts", "misc/ReactionAlerts", "changed");
         hook(calls, flags, "reactionSound", "misc/ReactionAlerts", "quiet");
         hook(calls, flags, "hideByKeyword", "misc/MessageFilters", "type");
+        hook(calls, flags, "hideForMe", "misc/HiddenMessages", "type");
         hook(calls, flags, "galleryCameraOnTap", "misc/GalleryCamera", "keepCameraOff", "wakeOnTap", "openWhenReady");
         hook(calls, flags, "disableUpdateChecks", "misc/UpdateChecks", "skipUpdateCheck");
         hook(calls, flags, "testServerSignIn", "misc/TestServers", "shown", "countryState");

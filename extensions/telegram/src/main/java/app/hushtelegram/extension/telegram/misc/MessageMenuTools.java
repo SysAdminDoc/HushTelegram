@@ -33,24 +33,26 @@ public final class MessageMenuTools {
     static final int SAVE_COVER = 0x48544d08;
     static final int SAVE_ART = 0x48544d09;
     static final int CLEAR_CACHE = 0x48544d0c;
+    static final int HIDE = 0x48544d0d;
 
     /** Whether the number is one of this class's. */
     static boolean owns(int option) {
-        return option == FAST_FORWARD || option == FORWARD_SAVED || option == SAVE_COVER || option == SAVE_ART || option == CLEAR_CACHE;
+        return option == FAST_FORWARD || option == FORWARD_SAVED || option == SAVE_COVER || option == SAVE_ART || option == CLEAR_CACHE || option == HIDE;
     }
 
     static BooleanSetting setting(int option) {
         return option == FAST_FORWARD ? Settings.MESSAGE_MENU_FAST_FORWARD
                 : option == SAVE_COVER ? Settings.MESSAGE_MENU_SAVE_COVER
                 : option == SAVE_ART ? Settings.MESSAGE_MENU_SAVE_ART
-                : option == CLEAR_CACHE ? Settings.MESSAGE_MENU_CLEAR_CACHE : Settings.MESSAGE_MENU_FORWARD_SAVED;
+                : option == CLEAR_CACHE ? Settings.MESSAGE_MENU_CLEAR_CACHE
+                : option == HIDE ? Settings.MESSAGE_MENU_HIDE : Settings.MESSAGE_MENU_FORWARD_SAVED;
     }
 
     /** Whether any of this class's switches is on. */
     static boolean any() {
         return MessageMenu.on(Settings.MESSAGE_MENU_FAST_FORWARD) || MessageMenu.on(Settings.MESSAGE_MENU_FORWARD_SAVED)
                 || MessageMenu.on(Settings.MESSAGE_MENU_SAVE_COVER) || MessageMenu.on(Settings.MESSAGE_MENU_SAVE_ART)
-                || MessageMenu.on(Settings.MESSAGE_MENU_CLEAR_CACHE);
+                || MessageMenu.on(Settings.MESSAGE_MENU_CLEAR_CACHE) || MessageMenu.on(Settings.MESSAGE_MENU_HIDE);
     }
 
     /** One way to forward: a label, and the two flags Telegram's forward takes. */
@@ -83,11 +85,12 @@ public final class MessageMenuTools {
         if (MessageMenu.on(Settings.MESSAGE_MENU_SAVE_COVER) && savable(message) && video(message) && MediaArt.hasVideoArt(message)) chosen.add(SAVE_COVER);
         if (MessageMenu.on(Settings.MESSAGE_MENU_SAVE_ART) && savable(message) && music(message) && MediaArt.hasMusicArt(message)) chosen.add(SAVE_ART);
         if (MessageMenu.on(Settings.MESSAGE_MENU_CLEAR_CACHE) && clearable(message)) chosen.add(CLEAR_CACHE);
+        if (HiddenMessages.offered(message)) chosen.add(HIDE);
         int at = options.indexOf(MessageMenu.DETAILS);
         for (int option : chosen) {
             int position = at < 0 ? options.size() : at++;
             icons.add(position, option == SAVE_COVER || option == SAVE_ART ? saveIcon()
-                    : option == CLEAR_CACHE ? deleteIcon() : MessageMenu.quickIcon());
+                    : option == CLEAR_CACHE ? deleteIcon() : option == HIDE ? HiddenMessages.icon() : MessageMenu.quickIcon());
             items.add(position, label(option));
             options.add(position, option);
         }
@@ -97,7 +100,8 @@ public final class MessageMenuTools {
         return option == FAST_FORWARD ? L10n.t("Fast forward")
                 : option == SAVE_COVER ? L10n.t("Save video cover")
                 : option == SAVE_ART ? L10n.t("Save album art")
-                : option == CLEAR_CACHE ? L10n.t("Clear from cache") : L10n.t("Forward to Saved Messages");
+                : option == CLEAR_CACHE ? L10n.t("Clear from cache")
+                : option == HIDE ? L10n.t("Hide for me") : L10n.t("Forward to Saved Messages");
     }
 
     /** A message whose chat doesn't allow saving only gets a save item when Save to Downloads' switch for protected chats is on. */
@@ -168,6 +172,10 @@ public final class MessageMenuTools {
         if (option == CLEAR_CACHE) {
             CacheClear.clear(context, message);
             HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "clear from cache started");
+            return;
+        }
+        if (option == HIDE) {
+            HiddenMessages.hide(context, chat, message);
             return;
         }
         if (option == FAST_FORWARD) {
