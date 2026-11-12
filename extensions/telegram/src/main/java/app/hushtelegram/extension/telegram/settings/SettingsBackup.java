@@ -76,6 +76,7 @@ import app.hushtelegram.extension.telegram.misc.TranslateTarget;
  * removes folders on your account, and an import would flip it without doing either.
  * The chats picked under Hide picked chats stay out too, though the switch goes in: they name the
  * account and the chats someone chose to hide, and settings files get passed around to help others.
+ * Ghost mode's exception chats stay out the same way, with their switch going in.
  *
  * <p>Call the file and preference work on a worker thread.
  */
@@ -231,6 +232,7 @@ public final class SettingsBackup {
             Settings.GHOST_BUTTON,
             Settings.GHOST_READ_AFTER_SEND,
             Settings.GHOST_READS_BUTTON,
+            Settings.GHOST_CHATS,
             Settings.RECEIVE_ONLY,
             Settings.POWER_OFF_ACCOUNTS,
             Settings.DISABLE_CALL_DEBUG,

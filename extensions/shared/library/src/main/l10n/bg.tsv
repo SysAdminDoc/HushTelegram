@@ -1586,3 +1586,19 @@ Proxies added last time: %1$s. They're in Telegram's proxy list.	Добавен�
 Couldn't download a proxy list last time. Check your connection and try again.	Последния път не успя да се изтегли списък с проксита. Проверете връзката си и опитайте отново.
 None of the listed proxies answered last time. Try again later.	Последния път никое от изброените проксита не отговори. Опитайте отново по-късно.
 Telegram didn't take the proxies last time.	Последния път Telegram не прие проксита.
+# context: Ghost mode exceptions (#71), a switch under Ghost mode, off by default. The chats picked for it get the opposite of Ghost mode: with Ghost mode on they act as in stock Telegram, with it off they keep back what the Ghost mode switches keep back. Online status stays with Ghost mode.
+Ghost mode exceptions	Изключения от режим „Призрак“
+# context: that switch's summary. The three dots are the menu Telegram's chat list shows after a long press, where Ghost mode exception sits
+The chats you pick work the other way around. While Ghost mode is on they act as usual, and while it's off the Ghost mode switches above apply there. Long press chats in the chat list and use the three dots to add them. Online status follows Ghost mode everywhere.	Избраните от вас чатове работят наобратно. Докато режим „Призрак“ е включен, те се държат както обикновено, а докато е изключен, за тях важат превключвателите на режим „Призрак“ по-горе. Задръжте чатове в списъка с чатове и използвайте трите точки, за да ги добавите. Статусът „на линия“ навсякъде следва режим „Призрак“.
+# context: Row under Ghost mode exceptions, and the title of the list it opens. Its summary names the picked chats, and a tap lists the account's chats to tick
+Exception chats	Чатове с изключение
+# context: Summary of Exception chats when no chat is ticked
+No chats picked yet.	Още няма избрани чатове.
+# context: Item in the chat list's long press menu (the three dots, under Hide from chat list), shown while Ghost mode exceptions is on. It adds the selected chats to the exceptions, or takes them out when they all were
+Ghost mode exception	Изключение от режим „Призрак“
+# context: Toast after Ghost mode exception took the selected chats back out of the exceptions
+These chats follow Ghost mode again.	Тези чатове пак следват режим „Призрак“.
+# context: Toast after Ghost mode exception added the selected chats while Ghost mode is on, so it no longer applies there
+Ghost mode is off in these chats.	Режим „Призрак“ е изключен в тези чатове.
+# context: Toast after Ghost mode exception added the selected chats while Ghost mode is off, so it applies there
+Ghost mode is on in these chats.	Режим „Призрак“ е включен в тези чатове.

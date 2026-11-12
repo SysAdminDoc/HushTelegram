@@ -835,6 +835,15 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_ghost_reads_button", FALSE);
 
     /**
+     * Ghost mode exceptions: the chats picked for them get the opposite of {@link #GHOST_MODE}, so
+     * they act as in stock Telegram while it's on and keep things back while it's off
+     * ({@link app.hushtelegram.extension.telegram.misc.GhostChats}, #71). Online status stays
+     * with the main switch, since it's the account's and not one chat's.
+     */
+    public static final BooleanSetting GHOST_CHATS =
+            new BooleanSetting("hushtelegram_ghost_chats", FALSE);
+
+    /**
      * Receive only mode: the accounts on {@link #RECEIVE_ONLY_ACCOUNTS} send nothing that writes.
      * With it off every account sends as in stock Telegram.
      */

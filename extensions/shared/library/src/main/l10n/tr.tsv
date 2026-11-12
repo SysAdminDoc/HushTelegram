@@ -1590,3 +1590,19 @@ Proxies added last time: %1$s. They're in Telegram's proxy list.	Geçen sefer ek
 Couldn't download a proxy list last time. Check your connection and try again.	Geçen sefer proxy listesi indirilemedi. Bağlantınızı kontrol edip tekrar deneyin.
 None of the listed proxies answered last time. Try again later.	Geçen sefer listedeki proxy'lerin hiçbiri yanıt vermedi. Daha sonra tekrar deneyin.
 Telegram didn't take the proxies last time.	Geçen sefer Telegram proxy'leri kabul etmedi.
+# context: Ghost mode exceptions (#71), a switch under Ghost mode, off by default. The chats picked for it get the opposite of Ghost mode: with Ghost mode on they act as in stock Telegram, with it off they keep back what the Ghost mode switches keep back. Online status stays with Ghost mode.
+Ghost mode exceptions	Hayalet modu istisnaları
+# context: that switch's summary. The three dots are the menu Telegram's chat list shows after a long press, where Ghost mode exception sits
+The chats you pick work the other way around. While Ghost mode is on they act as usual, and while it's off the Ghost mode switches above apply there. Long press chats in the chat list and use the three dots to add them. Online status follows Ghost mode everywhere.	Seçtiğiniz sohbetler tersine çalışır. Hayalet modu açıkken her zamanki gibi davranırlar, kapalıyken ise yukarıdaki Hayalet modu anahtarları orada geçerli olur. Sohbet listesinde sohbetlere uzun basın ve eklemek için üç noktayı kullanın. Çevrimiçi durumu her yerde Hayalet modunu izler.
+# context: Row under Ghost mode exceptions, and the title of the list it opens. Its summary names the picked chats, and a tap lists the account's chats to tick
+Exception chats	İstisna sohbetler
+# context: Summary of Exception chats when no chat is ticked
+No chats picked yet.	Henüz seçilen sohbet yok.
+# context: Item in the chat list's long press menu (the three dots, under Hide from chat list), shown while Ghost mode exceptions is on. It adds the selected chats to the exceptions, or takes them out when they all were
+Ghost mode exception	Hayalet modu istisnası
+# context: Toast after Ghost mode exception took the selected chats back out of the exceptions
+These chats follow Ghost mode again.	Bu sohbetler yine Hayalet modunu izliyor.
+# context: Toast after Ghost mode exception added the selected chats while Ghost mode is on, so it no longer applies there
+Ghost mode is off in these chats.	Bu sohbetlerde Hayalet modu kapalı.
+# context: Toast after Ghost mode exception added the selected chats while Ghost mode is off, so it applies there
+Ghost mode is on in these chats.	Bu sohbetlerde Hayalet modu açık.

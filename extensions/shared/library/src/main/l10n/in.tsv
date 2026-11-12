@@ -1590,3 +1590,19 @@ Proxies added last time: %1$s. They're in Telegram's proxy list.	Proxy yang dita
 Couldn't download a proxy list last time. Check your connection and try again.	Terakhir kali daftar proxy tidak bisa diunduh. Periksa koneksi Anda dan coba lagi.
 None of the listed proxies answered last time. Try again later.	Terakhir kali tidak ada proxy dalam daftar yang menjawab. Coba lagi nanti.
 Telegram didn't take the proxies last time.	Terakhir kali Telegram tidak menerima proxy tersebut.
+# context: Ghost mode exceptions (#71), a switch under Ghost mode, off by default. The chats picked for it get the opposite of Ghost mode: with Ghost mode on they act as in stock Telegram, with it off they keep back what the Ghost mode switches keep back. Online status stays with Ghost mode.
+Ghost mode exceptions	Pengecualian Mode hantu
+# context: that switch's summary. The three dots are the menu Telegram's chat list shows after a long press, where Ghost mode exception sits
+The chats you pick work the other way around. While Ghost mode is on they act as usual, and while it's off the Ghost mode switches above apply there. Long press chats in the chat list and use the three dots to add them. Online status follows Ghost mode everywhere.	Obrolan yang Anda pilih bekerja sebaliknya. Saat Mode hantu aktif, obrolan itu berjalan seperti biasa, dan saat nonaktif, sakelar Mode hantu di atas berlaku di sana. Tekan lama obrolan di daftar obrolan dan gunakan tiga titik untuk menambahkannya. Status online mengikuti Mode hantu di mana saja.
+# context: Row under Ghost mode exceptions, and the title of the list it opens. Its summary names the picked chats, and a tap lists the account's chats to tick
+Exception chats	Obrolan pengecualian
+# context: Summary of Exception chats when no chat is ticked
+No chats picked yet.	Belum ada obrolan yang dipilih.
+# context: Item in the chat list's long press menu (the three dots, under Hide from chat list), shown while Ghost mode exceptions is on. It adds the selected chats to the exceptions, or takes them out when they all were
+Ghost mode exception	Jadikan pengecualian Mode hantu
+# context: Toast after Ghost mode exception took the selected chats back out of the exceptions
+These chats follow Ghost mode again.	Obrolan ini kembali mengikuti Mode hantu.
+# context: Toast after Ghost mode exception added the selected chats while Ghost mode is on, so it no longer applies there
+Ghost mode is off in these chats.	Mode hantu nonaktif di obrolan ini.
+# context: Toast after Ghost mode exception added the selected chats while Ghost mode is off, so it applies there
+Ghost mode is on in these chats.	Mode hantu aktif di obrolan ini.

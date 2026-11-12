@@ -185,10 +185,19 @@ public final class TLRPC {
     }
 
     /** The typing, recording or uploading status shown in a chat. */
-    public static class TL_messages_setTyping { }
+    public static class TL_messages_setTyping {
+        public InputPeer peer;
+    }
+
+    /** Marks voice messages and mentions as played or seen, by message id alone. */
+    public static class TL_messages_readMessageContents {
+        public java.util.ArrayList<Integer> id = new java.util.ArrayList<>();
+    }
 
     /** The same status in a secret chat. */
-    public static class TL_messages_setEncryptedTyping { }
+    public static class TL_messages_setEncryptedTyping {
+        public TL_inputEncryptedChat peer;
+    }
 
     /** A person, with the fields Special contacts compares. */
     public static class User {

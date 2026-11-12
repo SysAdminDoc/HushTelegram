@@ -22,6 +22,8 @@ import org.telegram.tgnet.tl.TL_stories;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import app.hushtelegram.extension.shared.SettingsContextRule;
@@ -63,6 +65,9 @@ public class GhostModeTest {
         Settings.GHOST_ONLINE.resetToDefault();
         Settings.GHOST_READ_AFTER_SEND.resetToDefault();
         Settings.GHOST_READS_BUTTON.resetToDefault();
+        Settings.GHOST_CHATS.resetToDefault();
+        GhostChats.save(Collections.emptySet());
+        GhostChats.forget();
         GhostMode.forgetHeld();
     }
 
@@ -380,6 +385,85 @@ public class GhostModeTest {
         assertEquals(Arrays.asList("Disable analytics: invoked 3, 0 found, 0 missing. Counted: post views not counted 1"),
                 HookStatus.report());
         assertEquals(GhostMode.Kind.VIEW, GhostMode.kind("org.telegram.tgnet.TLRPC$TL_messages_getMessagesViews"));
+    }
+
+    private static TLRPC.TL_messages_setTyping typing(TLRPC.InputPeer peer) {
+        TLRPC.TL_messages_setTyping request = new TLRPC.TL_messages_setTyping();
+        request.peer = peer;
+        return request;
+    }
+
+    private static TL_stories.TL_stories_readStories story(TLRPC.InputPeer peer) {
+        TL_stories.TL_stories_readStories request = new TL_stories.TL_stories_readStories();
+        request.peer = peer;
+        return request;
+    }
+
+    private static void exceptions(Long... chats) {
+        Settings.GHOST_CHATS.save(true);
+        assertTrue(GhostChats.save(new LinkedHashSet<>(Arrays.asList(chats))));
+    }
+
+    @Test public void whileGhostModeIsOnAnExceptionChatReadsAndTypesAsUsual() {
+        Settings.GHOST_MODE.save(true);
+        Settings.GHOST_TYPING.save(true);
+        exceptions(7L, -9L, -11L, 0x4000000000000003L);
+        assertFalse(GhostMode.drop(read(user(7), 3), null));
+        assertFalse(GhostMode.drop(read(group(9), 3), null));
+        assertFalse(GhostMode.drop(channelRead(11), null));
+        assertFalse(GhostMode.drop(secretRead(3), null));
+        assertFalse(GhostMode.drop(typing(user(7)), null));
+        assertFalse(GhostMode.drop(story(user(7)), null));
+        // Every other chat stays kept back.
+        assertTrue(GhostMode.drop(read(user(8), 3), null));
+        assertTrue(GhostMode.drop(typing(user(8)), null));
+        assertTrue(sent.requests.isEmpty());
+        assertEquals(Arrays.asList("Disable analytics: invoked 8, 0 found, 0 missing. "
+                        + "Counted: exceptions applied 6, read receipts kept back 1, typing statuses kept back 1"),
+                HookStatus.report());
+    }
+
+    @Test public void whileGhostModeIsOffAnExceptionChatKeepsThingsBackUntilYouReply() {
+        Settings.GHOST_TYPING.save(true);
+        Settings.GHOST_READ_AFTER_SEND.save(true);
+        exceptions(7L, -5L);
+        TLRPC.TL_messages_readHistory read = read(user(7), 4);
+        assertTrue(GhostMode.drop(read, null));
+        assertTrue(GhostMode.drop(typing(user(7)), null));
+        assertTrue(GhostMode.drop(story(user(7)), null));
+        TLRPC.TL_messages_getMessagesViews views = views(true);
+        assertFalse(GhostMode.drop(views, null));
+        assertFalse("the exception channel's view isn't added", views.increment);
+        // Other chats act as in stock Telegram.
+        assertFalse(GhostMode.drop(read(user(8), 4), null));
+        assertFalse(GhostMode.drop(typing(user(8)), null));
+        assertTrue(sent.requests.isEmpty());
+        // A reply elsewhere lets nothing out, and one in the exception sends the read it held.
+        assertFalse(GhostMode.drop(message(user(8)), null));
+        assertTrue(sent.requests.isEmpty());
+        assertFalse(GhostMode.drop(message(user(7)), null));
+        assertEquals(Collections.singletonList(read), sent.requests);
+    }
+
+    @Test public void onlineStatusAndPlayedVoiceMessagesFollowGhostModeItself() {
+        Settings.GHOST_ONLINE.save(true);
+        exceptions(7L);
+        assertFalse(GhostMode.drop(status(false), null));
+        assertFalse(GhostMode.drop(new TLRPC.TL_messages_readMessageContents(), null));
+        Settings.GHOST_MODE.save(true);
+        assertTrue(GhostMode.drop(status(false), null));
+        assertTrue(GhostMode.drop(new TLRPC.TL_messages_readMessageContents(), null));
+        assertFalse(HookStatus.report().toString(), HookStatus.report().toString().contains("threw"));
+        assertFalse(HookStatus.report().toString(), HookStatus.report().toString().contains("exceptions applied"));
+    }
+
+    @Test public void theListDoesNothingWithItsSwitchOff() {
+        Settings.GHOST_MODE.save(true);
+        exceptions(7L);
+        Settings.GHOST_CHATS.save(false);
+        assertTrue(GhostMode.drop(read(user(7), 2), null));
+        Settings.GHOST_CHATS.save(true);
+        assertFalse(GhostMode.drop(read(user(7), 2), null));
     }
 
     /** A request's callback that keeps what Telegram would have been told. */

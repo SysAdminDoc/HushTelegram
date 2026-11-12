@@ -94,6 +94,7 @@ import app.hushtelegram.extension.telegram.misc.FolderIcons;
 import app.hushtelegram.extension.telegram.misc.FreeProxies;
 import app.hushtelegram.extension.telegram.misc.GalleryFolder;
 import app.hushtelegram.extension.telegram.misc.HiddenAccounts;
+import app.hushtelegram.extension.telegram.misc.GhostChats;
 import app.hushtelegram.extension.telegram.misc.HiddenChats;
 import app.hushtelegram.extension.telegram.misc.KeepAlive;
 import app.hushtelegram.extension.telegram.misc.KeepDeleted;
@@ -149,6 +150,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     /** The Folder icons row's key. The choice itself is saved under {@link Settings#FOLDER_ICON_PACK}. */
     static final String FOLDER_ICON_ROW = "action_folder_icons";
     static final String HIDDEN_CHATS_ROW = "action_hidden_chats";
+    static final String GHOST_CHATS_ROW = "action_ghost_chats";
     static final String HIDDEN_ACCOUNTS_ROW = "action_hidden_accounts";
     /** The Forwarding rules row's key. The rules themselves are saved under {@link Settings#AUTO_FORWARDING_RULES}. */
     static final String FORWARDING_RULES_ROW = "action_forwarding_rules";
@@ -1373,6 +1375,14 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             L10n.t("A double check at the top of the chat list sends the read receipts Ghost mode is holding for the "
                                     + "account you're on, from chats read since Telegram last started. Shows with Ghost mode and No "
                                     + "read receipts on.")));
+                    // The exceptions are picked from the hidden chats' list and long press item.
+                    if (PatchFamily.Capability.HIDDEN_CHATS.installed()) {
+                        privacy.addPreference(toggle(context, Settings.GHOST_CHATS, L10n.t("Ghost mode exceptions"),
+                                L10n.t("The chats you pick work the other way around. While Ghost mode is on they act as usual, "
+                                        + "and while it's off the Ghost mode switches above apply there. Long press chats in the chat "
+                                        + "list and use the three dots to add them. Online status follows Ghost mode everywhere.")));
+                        privacy.addPreference(ghostChatsRow(context));
+                    }
                 }
                 if (PatchFamily.Capability.RECEIVE_ONLY.installed()) {
                     privacy.addPreference(toggle(context, Settings.RECEIVE_ONLY, L10n.t("Receive only mode"),
@@ -2661,6 +2671,95 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             }
         }
         return names.isEmpty() ? L10n.t("No chats hidden yet.") : TextUtils.join(", ", names);
+    }
+
+    /** The Ghost mode exceptions among the account shown now: the row names them, and a tap lists every chat to tick. */
+    private Preference ghostChatsRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(GHOST_CHATS_ROW);
+        row.setTitle(L10n.t("Exception chats"));
+        row.setPersistent(false);
+        row.setSummary(ghostChatsSummary(HiddenChats.shown(), GhostChats.chats(), passcodeOn()));
+        row.setOnPreferenceClickListener(p -> {
+            showGhostChats(context, p);
+            return true;
+        });
+        return row;
+    }
+
+    /**
+     * The account's chats with the exceptions ticked. Save writes the ticks, keeping the exceptions
+     * this account doesn't list, and the list closes once they're saved.
+     */
+    void showGhostChats(Context context, Preference row) {
+        if (SettingsLock.refuses()) return;
+        HiddenChats.Shown shown = HiddenChats.shown();
+        if (shown == null) {
+            Utils.showToastLong(L10n.t("Couldn't read your chats."));
+            return;
+        }
+        if (shown.user == 0) {
+            Utils.showToastLong(L10n.t("Sign in to Telegram first."));
+            return;
+        }
+        List<HiddenChats.Chat> chats = ghostChoices(shown, passcodeOn());
+        if (chats.isEmpty()) {
+            Utils.showToastLong(L10n.t("You don't have any chats yet."));
+            return;
+        }
+        Set<Long> before = GhostChats.chats();
+        CharSequence[] labels = new CharSequence[chats.size()];
+        boolean[] ticked = new boolean[chats.size()];
+        for (int i = 0; i < chats.size(); i++) {
+            labels[i] = chats.get(i).name;
+            ticked[i] = before.contains(chats.get(i).id);
+        }
+        AlertDialog dialog = show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("Exception chats"))
+                .setMultiChoiceItems(labels, ticked, (d, which, checked) -> ticked[which] = checked)
+                .setPositiveButton(L10n.t("Save"), null)
+                .setNegativeButton(L10n.t("Cancel"), null));
+        if (dialog == null) return;
+        // Set here rather than on the builder, so a tap waits for the save instead of closing the list.
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            Set<Long> picked = new LinkedHashSet<>(before);
+            for (int i = 0; i < ticked.length; i++) {
+                if (ticked[i]) picked.add(chats.get(i).id);
+                else picked.remove(chats.get(i).id);
+            }
+            save(dialog, () -> GhostChats.save(picked), landed -> {
+                if (landed) {
+                    row.setSummary(ghostChatsSummary(shown, GhostChats.chats(), passcodeOn()));
+                    dialog.dismiss();
+                } else {
+                    Utils.showToastLong(L10n.t("Couldn't save the chats. Try again in a moment."));
+                }
+            });
+        });
+    }
+
+    /**
+     * The chats the exceptions list offers: all of the account's, less the hidden ones while they're
+     * behind the passcode, so this list doesn't name them. Their exceptions stay as they were.
+     */
+    static List<HiddenChats.Chat> ghostChoices(HiddenChats.Shown shown, boolean locked) {
+        if (!locked) return shown.chats;
+        List<HiddenChats.Chat> open = new ArrayList<>();
+        for (HiddenChats.Chat chat : shown.chats) {
+            if (!shown.hidden.contains(chat.id)) open.add(chat);
+        }
+        return open;
+    }
+
+    /** The exceptions' names among the chats the account shown now offers, or that there are none. */
+    static String ghostChatsSummary(@Nullable HiddenChats.Shown shown, Set<Long> exceptions, boolean locked) {
+        List<String> names = new ArrayList<>();
+        if (shown != null) {
+            for (HiddenChats.Chat chat : ghostChoices(shown, locked)) {
+                if (exceptions.contains(chat.id)) names.add(chat.name);
+            }
+        }
+        return names.isEmpty() ? L10n.t("No chats picked yet.") : TextUtils.join(", ", names);
     }
 
     /** The forwarding rules for the account shown now: the row names them, and a tap lists them to add to or take from. */

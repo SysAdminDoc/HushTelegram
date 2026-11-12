@@ -6,6 +6,8 @@ package app.hushtelegram.extension.telegram.misc;
 
 import android.content.SharedPreferences;
 
+import androidx.annotation.Nullable;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +54,11 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  *
  * <p>A broadcast channel's read still goes out. Nobody in a channel sees who read what, so holding
  * it back hid nothing and only left the channel unread on the account's other devices (#65).
+ *
+ * <p>A chat picked as a Ghost mode exception gets the opposite of the main switch for everything
+ * here that names a chat: reads, typing, story views and view counts (#71, {@link GhostChats}). A
+ * played voice message's receipt names only the message, so it follows the main switch, and so
+ * does online status, which is the account's.
  */
 public final class GhostMode {
     private GhostMode() {}
@@ -84,6 +91,15 @@ public final class GhostMode {
 
     /** A secret chat's read, whose peer field is an input encrypted chat. */
     private static final String SECRET_READ = "org.telegram.tgnet.TLRPC$TL_messages_readEncryptedHistory";
+
+    /** A secret chat's typing status, whose peer field is an input encrypted chat too. */
+    private static final String SECRET_TYPING = "org.telegram.tgnet.TLRPC$TL_messages_setEncryptedTyping";
+
+    /** A supergroup's or channel's played voice message, which names the chat in its channel field. */
+    private static final String CHANNEL_CONTENTS = "org.telegram.tgnet.TLRPC$TL_channels_readMessageContents";
+
+    /** A private chat's or basic group's played voice message, which names only the messages. */
+    private static final String CONTENTS = "org.telegram.tgnet.TLRPC$TL_messages_readMessageContents";
 
     /** Messages sent into a chat, each with a peer field like the read of that chat. */
     private static final Set<String> SENDS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
@@ -229,18 +245,23 @@ public final class GhostMode {
         }
     }
 
-    /** With Read after you reply on, a message going into a chat lets out the read held there. */
+    /**
+     * With Read after you reply on, a message going into a chat lets out the read held there, in a
+     * chat Ghost mode covers: every chat but the exceptions while it's on, only those while it's off.
+     */
     private static void afterSend(String name, Object request) {
+        boolean on;
         try {
-            if (!Utils.settingsReady() || !Settings.GHOST_MODE.get() || !Settings.GHOST_READS.get()
-                    || !Settings.GHOST_READ_AFTER_SEND.get()) return;
+            if (!Utils.settingsReady() || !Settings.GHOST_READS.get() || !Settings.GHOST_READ_AFTER_SEND.get()) return;
+            on = Settings.GHOST_MODE.get();
+            if (!on && !GhostChats.any()) return;
         } catch (Throwable t) {
             HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "ghost mode reply switch read", t);
             return;
         }
         try {
             Long chat = chat(name, request);
-            if (chat == null) return;
+            if (chat == null || on == GhostChats.flipped(chat)) return;
             int account = requests.account();
             Held read;
             synchronized (HELD) {
@@ -311,15 +332,15 @@ public final class GhostMode {
     }
 
     /**
-     * The dialog ID of the chat a read or a send is for, the way Telegram numbers them: a person's
-     * own ID, a group's or channel's negated, a secret chat's with its mark. Null for anything else,
-     * like Saved Messages, whose peer names no one.
+     * The dialog ID of the chat a read, a send, a typing status, a story view or a view count is
+     * for, the way Telegram numbers them: a person's own ID, a group's or channel's negated, a secret
+     * chat's with its mark. Null for anything else, like Saved Messages, whose peer names no one.
      */
     static Long chat(String name, Object request) throws ReflectiveOperationException {
-        boolean channel = CHANNEL_READ.equals(name);
+        boolean channel = CHANNEL_READ.equals(name) || CHANNEL_CONTENTS.equals(name);
         Object peer = HostNames.field(request.getClass(), channel ? "channel" : "peer").get(request);
         if (peer == null) return null;
-        if (SECRET_READ.equals(name) || SECRET_SENDS.contains(name)) {
+        if (SECRET_READ.equals(name) || SECRET_TYPING.equals(name) || SECRET_SENDS.contains(name)) {
             long id = ((Number) HostNames.field(peer.getClass(), "chat_id").get(peer)).longValue();
             return id == 0 ? null : SECRET_CHAT | (id & 0xFFFFFFFFL);
         }
@@ -330,6 +351,19 @@ public final class GhostMode {
         if (id != 0) return id;
         id = idOf(peer, "chat_id");
         return id != 0 ? -id : null;
+    }
+
+    /** The chat [request] is for, null when it names none, like a played voice message, or can't be read. */
+    @Nullable
+    private static Long chatOf(Object request) {
+        String name = request.getClass().getName();
+        if (CONTENTS.equals(name)) return null;
+        try {
+            return chat(name, request);
+        } catch (ReflectiveOperationException | RuntimeException unreadable) {
+            HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "ghost mode exception chat", unreadable);
+            return null;
+        }
     }
 
     /** A peer's ID field, 0 when it has none of that name. Telegram's input peers share one class's fields. */
@@ -372,7 +406,7 @@ public final class GhostMode {
     private static void uncount(Object request) {
         try {
             Field increment = HostNames.field(request.getClass(), "increment");
-            if (!increment.getBoolean(request) || !keepBack(Kind.VIEW)) return;
+            if (!increment.getBoolean(request) || !keepBack(Kind.VIEW, request)) return;
             increment.setBoolean(request, false);
         } catch (ReflectiveOperationException | RuntimeException unreadable) {
             HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "ghost mode channel views", unreadable);
@@ -443,12 +477,20 @@ public final class GhostMode {
         if (kind == Kind.OTHER) return false;
         HookStatus.invoked(FamilyNames.DISABLE_ANALYTICS);
         BooleanSetting part = part(kind);
+        boolean on;
         try {
-            if (!Utils.settingsReady() || !Settings.GHOST_MODE.get() || !part.get()) return false;
+            if (!Utils.settingsReady() || !part.get()) return false;
+            on = Settings.GHOST_MODE.get();
+            // Online status is the account's, so only a request naming a chat can be an exception's.
+            if (request != null && kind != Kind.ONLINE && GhostChats.any() && GhostChats.flipped(chatOf(request))) {
+                on = !on;
+                HookStatus.counted(FamilyNames.DISABLE_ANALYTICS, "exceptions applied");
+            }
         } catch (Throwable t) {
             HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "ghost mode switch read", t);
             return false;
         }
+        if (!on) return false;
         if (request != null && broadcastRead(request)) {
             HookStatus.counted(FamilyNames.DISABLE_ANALYTICS, "channel reads sent");
             return false;
