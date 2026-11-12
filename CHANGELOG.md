@@ -2,6 +2,12 @@
 
 Every HushTelegram release, newest first.
 
+## Unreleased
+
+### Fixed
+
+* **Tooling:** Release publish reads the notes GitHub serves back as UTF-8, so a bullet with an accented word like "Português" no longer looks missing after the release is already up.
+
 ## 0.0.25 (2026-11-12)
 
 The sixteenth release moves telegram.org's build to Telegram 13.2.1, so both builds are on the same version now. It still runs on Morphe patcher 2.3.0, so Morphe Manager 2.5.0 or newer is all you need. There are 82 patches, 13 more than last time, and the bundle is signed from now on, so Morphe Manager shows who signed it when you add or update the source. Most of the new parts came from your reports. Free proxies keeps the fastest public MTProto proxies in Telegram's list for you, Ghost mode can make exceptions for the chats you pick, and the message menu gains Hide for me, Delete for them and Forward as plain text. Every new switch starts off, except two that stop a photo from going out uncropped or with the wrong caption.
