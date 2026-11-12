@@ -549,7 +549,9 @@ public class PatchFamilyTest {
         assertTrue(Settings.SIGN_IN_PROXY.defaultValue);
         assertFalse(Settings.FREE_PROXIES.rebootApp);
         assertFalse(Settings.SIGN_IN_PROXY.rebootApp);
-        assertTrue(family.expectedCapabilities().isEmpty());
+        // The proxy order has no switch of its own: the order saved is the setting.
+        assertEquals(EnumSet.of(PatchFamily.Capability.PROXY_ORDER), family.expectedCapabilities());
+        assertEquals("proxyOrder", PatchFamily.Capability.PROXY_ORDER.statusMethod);
         assertEquals(PatchFamily.Page.CHAT_LIST, PatchFamily.Page.of(family));
         assertOnItsPage(family);
     }

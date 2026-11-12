@@ -348,6 +348,8 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/InstantLock.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/analytics/InstantLockSupport.kt",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/QuietSignUp.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ProxyOrder.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/ProxyOrderEditor.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/analytics/QuietSignUpSupport.kt",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/GhostButton.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ReadsButton.java",

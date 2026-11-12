@@ -6,13 +6,16 @@ package app.morphe.patches.telegram.misc.freeproxies
 
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
+import app.morphe.patches.telegram.misc.extension.enableCapability
 import app.morphe.patches.telegram.misc.extension.enableStatus
 import app.morphe.patches.telegram.misc.extension.freeLocalsAt
+import app.morphe.patches.telegram.misc.extension.patchLog
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.telegramExtensionPatch
 import app.morphe.patches.telegram.misc.extension.writeStub
@@ -31,8 +34,10 @@ import app.morphe.util.ControlFlow
 import app.morphe.util.call
 import app.morphe.util.namedRegisters
 import app.morphe.util.names.addInstructionsWithLabels
+import app.morphe.util.names.replaceInstruction
 import app.morphe.util.names.tgClassDefBy
 import app.morphe.util.names.tgMutableClassDefBy
+import app.morphe.util.names.tgMutableClassDefByOrNull
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
@@ -52,6 +57,11 @@ private const val PREFERENCES = "Landroid/content/SharedPreferences;"
 private const val EDITOR = "Landroid/content/SharedPreferences\$Editor;"
 private const val URI = "Landroid/net/Uri;"
 private const val LIST_EMPTY = "Ljava/util/ArrayList;->isEmpty()Z"
+internal const val PROXY_ORDER = "$EXTENSION_PACKAGE/misc/ProxyOrder;"
+internal const val PROXY_ORDER_SORT = "${PROXY_ORDER}->sort(Ljava/util/List;Ljava/util/Comparator;)V"
+internal const val PROXY_LIST_SCREEN = "Lorg/telegram/ui/ProxyListActivity;"
+internal const val SORT = "Ljava/util/Collections;->sort(Ljava/util/List;Ljava/util/Comparator;)V"
+private const val ADD_ALL = "Ljava/util/ArrayList;->addAll(Ljava/util/Collection;)Z"
 private const val PROXY_ENABLED = "proxy_enabled"
 private const val SIGN_IN_LABEL = "hush_sign_in_proxy"
 
@@ -73,7 +83,8 @@ val freeProxiesPatch = bytecodePatch(
     name = PATCH,
     description = "Downloads a public list of MTProto proxies, times them and keeps the 10 fastest in Telegram's " +
         "proxy list, refreshed every 6 hours. Telegram connects through them unless you use a proxy of your own. " +
-        "The phone number screen also always has the proxy button, so you can add one before you sign in. " +
+        "The phone number screen also always has the proxy button, so you can add one before you sign in, " +
+        "and Proxy order puts Telegram's proxy list in an order of your own, with pinned proxies on top. " +
         "Finding proxies starts off. Turn it on in HushTelegram settings > Chat list.",
     default = true,
 ) {
@@ -84,6 +95,13 @@ val freeProxiesPatch = bytecodePatch(
         // Both are found before either changes, so a build missing one keeps Telegram as it was.
         val calls = resolveProxyCalls()
         val site = resolveSignInProxy()
+        // Proxy order stands on its own: a build whose proxy screen moved keeps the rest.
+        val order = try {
+            resolveProxyOrder()
+        } catch (unfit: PatchException) {
+            patchLog.warning("$PATCH: ${unfit.message}. The patch goes on without proxy order.")
+            null
+        }
         writeProxyStubs(calls)
         val free = site.method.freeLocalsAt(PATCH, site.read, 1, listOf(site.show)).single()
         site.method.addInstructionsWithLabels(
@@ -96,6 +114,10 @@ val freeProxiesPatch = bytecodePatch(
             """,
             ExternalLabel(SIGN_IN_LABEL, site.method.getInstruction(site.show)),
         )
+        if (order != null) {
+            order.apply()
+            enableCapability("proxyOrder")
+        }
         enableStatus("freeProxies")
     }
 }
@@ -208,6 +230,39 @@ internal fun BytecodePatchContext.resolveSignInProxy(): SignInProxySite {
     return SignInProxySite(method, read, show)
 }
 
+/** The proxy screen's row update [method], and [at], its one sort of the proxies it's about to show. */
+internal class ProxyOrderSite(val method: MutableMethod, val at: Int) {
+    /** Hands the sort, with the same list and Telegram's comparator, to ProxyOrder. */
+    fun apply() {
+        val registers = method.controlBody()[at].namedRegisters()
+        method.replaceInstruction(at, "invoke-static {${registers.joinToString { "v$it" }}}, $PROXY_ORDER_SORT")
+    }
+}
+
+/**
+ * Telegram's proxy screen copies the proxy list into the rows it shows and sorts them, the one in
+ * use first and the rest by speed. Saving the list sorts it the same way, so this sort is where an
+ * order of the person's own can go.
+ */
+internal fun BytecodePatchContext.resolveProxyOrder(): ProxyOrderSite {
+    requireStatusMethod("proxyOrder")
+    controlHook(PROXY_ORDER, "sort", listOf("Ljava/util/List;", "Ljava/util/Comparator;"), "V")
+    val screen = tgMutableClassDefByOrNull(PROXY_LIST_SCREEN)
+    controlShape(screen != null, "Telegram's proxy screen is missing")
+    val method = screen!!.methods.filter { method -> method.controlBody().any { it.controlRef() == SORT } }
+        .controlSingle("the proxy screen's sort")
+    controlShape(method.returnType == "V" && method.parameterTypeNames() == listOf("Z") &&
+        !AccessFlags.STATIC.isSet(method.accessFlags), "the proxy screen's row update changed shape")
+    val body = method.controlBody()
+    val at = body.indices.filter { body[it].controlRef() == SORT }.controlSingle("the proxy screen's one sort")
+    controlShape(body[at].opcode == Opcode.INVOKE_STATIC && body[at].namedRegisters().size == 2,
+        "the proxy screen's sort is no longer a plain call")
+    val copied = body.indices.filter { body[it].controlRef() == PROXY_LIST && it < at }
+    controlShape(copied.isNotEmpty() && body.indices.any { it in copied.first() until at && body[it].controlRef() == ADD_ALL },
+        "the proxy screen no longer sorts a copy of Telegram's proxy list")
+    return ProxyOrderSite(method, at)
+}
+
 /** TelegramProxies' stubs, each a few instructions on the classes found for this build. */
 private fun BytecodePatchContext.writeProxyStubs(calls: ProxyCalls) {
     writeStub(TELEGRAM_PROXIES, "parse", 2, """
@@ -270,6 +325,13 @@ private fun BytecodePatchContext.writeProxyStubs(calls: ProxyCalls) {
         check-cast p0, ${calls.info}
         iget-object v0, p0, ${calls.field}
         return-object v0
+    """)
+    // ProxyOrder knows a proxy by what this writes, which is the same in every build.
+    writeStub(TELEGRAM_PROXIES, "describe", 3, """
+        check-cast p0, ${calls.info}
+        iget-object v0, p0, ${calls.field}
+        invoke-virtual { v0, p1 }, ${calls.write}
+        return-void
     """)
     writeStub(TELEGRAM_PROXIES, "delete", 1, """
         check-cast p0, ${calls.info}

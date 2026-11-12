@@ -1628,3 +1628,51 @@ Don't notify contacts	Kişilere bildirim gönderme
 When you sign up a phone number that's new to Telegram, people who have it saved aren't told you joined. Accounts that already exist aren't affected.	Telegram'da yeni olan bir telefon numarasıyla kaydolduğunda, onu kayıtlı tutan kişilere katıldığın bildirilmez. Zaten var olan hesaplar etkilenmez.
 # context: Lowercase noun phrase naming the Don't notify contacts switch (#71) in the patch status list
 quiet sign-up	sessiz kayıt
+# context: Lowercase noun phrase naming Proxy order (#71) in the patch status list
+proxy order	proxy sırası
+# context: Title of the Proxy order row on the Chat list page and of its editor dialog (#71). It sets the order of the proxies on Telegram's own proxy screen
+Proxy order	Proxy sırası
+# context: Summary of the Proxy order row when nothing has been arranged yet
+Drag the proxies in Telegram's proxy list into your own order, or pin some on top.	Telegram'ın proxy listesindeki proxy'leri sürükleyip kendi sırana koy ya da bazılarını en üste sabitle.
+# context: Summary of the Proxy order row once the person has dragged proxies into an order of their own
+Telegram's proxy list is in your order. Tap to change it.	Telegram'ın proxy listesi senin sıranda. Değiştirmek için dokun.
+# context: Summary of the Proxy order row, singular form: the person's own order with this many proxies pinned at the top
+Telegram's proxy list is in your order, with %1$d proxy pinned on top.	Telegram'ın proxy listesi senin sıranda, en üstte %1$d sabitlenmiş proxy var.
+# context: Summary of the Proxy order row, plural form: the person's own order with this many proxies pinned at the top
+Telegram's proxy list is in your order, with %1$d proxies pinned on top.	Telegram'ın proxy listesi senin sıranda, en üstte %1$d sabitlenmiş proxy var.
+# context: Summary of the Proxy order row, singular form: only pins are set, and the other proxies keep Telegram's own speed order
+%1$d proxy pinned on top of Telegram's proxy list. The rest keep Telegram's order.	Telegram'ın proxy listesinin en üstünde %1$d proxy sabitlendi. Geri kalanlar Telegram'ın sırasında kalır.
+# context: Summary of the Proxy order row, plural form: only pins are set, and the other proxies keep Telegram's own speed order
+%1$d proxies pinned on top of Telegram's proxy list. The rest keep Telegram's order.	Telegram'ın proxy listesinin en üstünde %1$d proxy sabitlendi. Geri kalanlar Telegram'ın sırasında kalır.
+# context: Name shown in the Proxy order editor for a proxy whose address couldn't be read
+Proxy	Proxy
+# context: Button that closes the Proxy order editor; every change was already kept
+Done	Tamam
+# context: Button in the Proxy order editor that drops the person's own order, keeping only pins, so the rest go back to Telegram's speed order
+Sort by speed	Hıza göre sırala
+# context: Short toast after Sort by speed, at most two short lines
+Unpinned proxies sort by speed again.	Sabitlenmeyenler yine hıza göre.
+# context: Short toast when the proxy order couldn't be saved, at most two short lines
+Couldn't save the order. Try again.	Sıra kaydedilemedi. Tekrar dene.
+# context: Note in the Proxy order editor when Telegram has no saved proxies. Find free proxies is a row on the same page
+Telegram's proxy list is empty. Add a proxy in Telegram's proxy settings, or find free proxies, then come back here.	Telegram'ın proxy listesi boş. Telegram'ın proxy ayarlarından bir proxy ekle ya da ücretsiz proxy bul, sonra buraya dön.
+# context: Note at the top of the Proxy order editor. Each proxy has a handle (three short lines) to drag it by and a Pin button
+Drag a proxy by its handle to move it, and pin the ones you want on top. Telegram's proxy screen shows them in this order. Once you've moved one, proxies added later go below in Telegram's order.	Bir proxy'yi taşımak için tutamacından sürükle, en üstte olmasını istediklerini sabitle. Telegram'ın proxy ekranı onları bu sırada gösterir. Bir tanesini taşıdıktan sonra, sonradan eklenen proxy'ler Telegram'ın sırasıyla altta yer alır.
+# context: Screen reader action on a proxy in the Proxy order editor that moves it one place up
+Move up	Yukarı taşı
+# context: Screen reader action on a proxy in the Proxy order editor that moves it one place down
+Move down	Aşağı taşı
+# context: Button on a proxy in the Proxy order editor that keeps it at the top of Telegram's proxy list
+Pin	Sabitle
+# context: Button on a pinned proxy in the Proxy order editor that lets it go back among the others
+Unpin	Sabitlemeyi kaldır
+# context: Short toast after a proxy is pinned in the Proxy order editor
+Pinned on top.	En üste sabitlendi.
+# context: Short toast after a proxy is unpinned in the Proxy order editor
+Unpinned.	Sabitleme kaldırıldı.
+# context: State line under a proxy in the Proxy order editor: it's pinned and Telegram connects through it now
+Pinned, in use	Sabitlendi, kullanımda
+# context: State line under a pinned proxy in the Proxy order editor
+Pinned	Sabitlendi
+# context: State line under the proxy Telegram connects through now, in the Proxy order editor
+In use	Kullanımda

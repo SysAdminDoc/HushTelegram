@@ -4,12 +4,13 @@
  */
 package app.hushtelegram.extension.telegram.misc;
 
+import android.content.SharedPreferences;
 import android.net.Uri;
 import androidx.annotation.Nullable;
 import java.util.ArrayList;
 
 /**
- * Telegram's own proxy calls, for {@link FreeProxies}. A proxy is two objects in Telegram: the
+ * Telegram's own proxy calls, for {@link FreeProxies} and {@link ProxyOrder}. A proxy is two objects in Telegram: the
  * address, port and secret a link names, and the entry in the proxy list that holds them. Both are
  * passed as Object here, since their classes have a different obfuscated name in every build.
  * Call these on the main thread, where Telegram's proxy screen calls them.
@@ -60,6 +61,10 @@ public final class TelegramProxies {
     @Nullable
     public static Object proxy(Object entry) {
         return null;
+    }
+
+    /** Writes [entry]'s proxy to [into] the way Telegram writes the one in use to its settings, for {@link ProxyOrder}. */
+    public static void describe(Object entry, SharedPreferences.Editor into) {
     }
 
     /** Takes [entry] out of the list. Telegram turns Use proxy off when it's the current one, so never pass that. */

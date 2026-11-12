@@ -215,6 +215,18 @@ public class FreeProxiesTest {
         assertEquals(Arrays.asList("C", "D", "SAVED"), list.saved);
     }
 
+    @Test public void onePinnedInProxyOrderStaysAndIsTheirsFromThen() {
+        Set<String> owned = FreeProxies.apply(list, Arrays.asList("A", "B"), set(), false);
+        list.pinned.add("B");
+        owned = FreeProxies.apply(list, Arrays.asList("C"), owned, false);
+        assertEquals(Arrays.asList("C", "B"), list.saved);
+        assertEquals("the pinned one is no longer owned", set("C"), owned);
+
+        list.pinned.clear();
+        FreeProxies.apply(list, Arrays.asList("D"), owned, false);
+        assertEquals("unpinned later, it's still theirs", Arrays.asList("D", "B"), list.saved);
+    }
+
     @Test public void theBestAlreadyInUseIsLeftAlone() {
         Set<String> owned = FreeProxies.apply(list, Arrays.asList("A", "B"), set(), true);
         list.uses = 0;
@@ -483,6 +495,7 @@ public class FreeProxiesTest {
     private static class FakeList implements FreeProxies.Store {
         final List<String> saved = new ArrayList<>();
         final Set<String> refused = new HashSet<>();
+        final Set<String> pinned = new HashSet<>();
         String current;
         boolean enabled;
         boolean rotating;
@@ -516,6 +529,10 @@ public class FreeProxiesTest {
 
         @Override public void delete(String link) {
             if (!link.equals(current)) saved.remove(link);
+        }
+
+        @Override public boolean pinned(String link) {
+            return pinned.contains(link);
         }
 
         @Override public void rotate() {

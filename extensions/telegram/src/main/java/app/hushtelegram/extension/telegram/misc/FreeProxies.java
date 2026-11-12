@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
  * Telegram starts and the last try is six hours old, and from the Find free proxies now row.
  *
  * <p>Only proxies this class put in the list are ever taken out of it again, and never the one in
- * use. A proxy that was already saved stays the person's. Telegram's own calls are
+ * use. A proxy that was already saved stays the person's, and so does one they pin. Telegram's own calls are
  * {@link TelegramProxies}, which the patch writes for each build. The patch also asks
  * {@link #signInButton} whether the phone number screen shows Telegram's proxy button, which
  * Telegram otherwise keeps for countries where it's blocked.
@@ -172,6 +172,9 @@ public final class FreeProxies {
 
         /** Takes the saved proxy [link] names out of the list, unless it's the current one. */
         void delete(String link);
+
+        /** Whether the saved proxy [link] names is pinned in {@link ProxyOrder}. */
+        boolean pinned(String link);
 
         /** Turns on Telegram's switching to another saved proxy when the current one stops answering. */
         void rotate();
@@ -464,7 +467,8 @@ public final class FreeProxies {
      * Puts [fastest] (links, fastest first) in Telegram's list through [into] and returns the links
      * HushTelegram now owns there. [owned] are those it owned before. With [connect], Telegram
      * connects through the fastest unless a proxy of the person's own is in use. Owned proxies no
-     * longer among the fastest come out, apart from the one in use. When Telegram takes none of
+     * longer among the fastest come out, apart from the one in use. A pinned one stays and is no longer
+     * owned. When Telegram takes none of
      * them, nothing changes.
      */
     static Set<String> apply(Store into, List<String> fastest, Set<String> owned, boolean connect) {
@@ -501,6 +505,8 @@ public final class FreeProxies {
                 nowOwned.add(link);
                 continue;
             }
+            // One the person pinned is theirs now, so it stays, and no later try takes it out.
+            if (into.pinned(link)) continue;
             into.delete(link);
         }
         return nowOwned;
@@ -608,6 +614,12 @@ public final class FreeProxies {
             if (current(link)) return;
             Object entry = entry(link);
             if (entry != null) TelegramProxies.delete(entry);
+        }
+
+        @Override
+        public boolean pinned(String link) {
+            Object entry = entry(link);
+            return entry != null && ProxyOrder.pinned(entry);
         }
 
         @Override

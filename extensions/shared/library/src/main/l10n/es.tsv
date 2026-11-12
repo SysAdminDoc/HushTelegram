@@ -1628,3 +1628,51 @@ Don't notify contacts	No notificar a los contactos
 When you sign up a phone number that's new to Telegram, people who have it saved aren't told you joined. Accounts that already exist aren't affected.	Al registrar un número de teléfono nuevo en Telegram, quienes lo tienen guardado no reciben aviso de que te uniste. Las cuentas que ya existen no se ven afectadas.
 # context: Lowercase noun phrase naming the Don't notify contacts switch (#71) in the patch status list
 quiet sign-up	registro silencioso
+# context: Lowercase noun phrase naming Proxy order (#71) in the patch status list
+proxy order	orden de proxies
+# context: Title of the Proxy order row on the Chat list page and of its editor dialog (#71). It sets the order of the proxies on Telegram's own proxy screen
+Proxy order	Orden de proxies
+# context: Summary of the Proxy order row when nothing has been arranged yet
+Drag the proxies in Telegram's proxy list into your own order, or pin some on top.	Arrastra los proxies de la lista de Telegram a tu propio orden o fija algunos arriba.
+# context: Summary of the Proxy order row once the person has dragged proxies into an order of their own
+Telegram's proxy list is in your order. Tap to change it.	La lista de proxies de Telegram está en tu orden. Toca para cambiarlo.
+# context: Summary of the Proxy order row, singular form: the person's own order with this many proxies pinned at the top
+Telegram's proxy list is in your order, with %1$d proxy pinned on top.	La lista de proxies de Telegram está en tu orden, con %1$d proxy fijado arriba.
+# context: Summary of the Proxy order row, plural form: the person's own order with this many proxies pinned at the top
+Telegram's proxy list is in your order, with %1$d proxies pinned on top.	La lista de proxies de Telegram está en tu orden, con %1$d proxies fijados arriba.
+# context: Summary of the Proxy order row, singular form: only pins are set, and the other proxies keep Telegram's own speed order
+%1$d proxy pinned on top of Telegram's proxy list. The rest keep Telegram's order.	%1$d proxy fijado arriba en la lista de proxies de Telegram. El resto sigue el orden de Telegram.
+# context: Summary of the Proxy order row, plural form: only pins are set, and the other proxies keep Telegram's own speed order
+%1$d proxies pinned on top of Telegram's proxy list. The rest keep Telegram's order.	%1$d proxies fijados arriba en la lista de proxies de Telegram. El resto sigue el orden de Telegram.
+# context: Name shown in the Proxy order editor for a proxy whose address couldn't be read
+Proxy	Proxy
+# context: Button that closes the Proxy order editor; every change was already kept
+Done	Listo
+# context: Button in the Proxy order editor that drops the person's own order, keeping only pins, so the rest go back to Telegram's speed order
+Sort by speed	Ordenar por velocidad
+# context: Short toast after Sort by speed, at most two short lines
+Unpinned proxies sort by speed again.	Los no fijados vuelven a ir por velocidad.
+# context: Short toast when the proxy order couldn't be saved, at most two short lines
+Couldn't save the order. Try again.	No se pudo guardar el orden. Inténtalo de nuevo.
+# context: Note in the Proxy order editor when Telegram has no saved proxies. Find free proxies is a row on the same page
+Telegram's proxy list is empty. Add a proxy in Telegram's proxy settings, or find free proxies, then come back here.	La lista de proxies de Telegram está vacía. Añade un proxy en los ajustes de proxy de Telegram o busca proxies gratis, y luego vuelve aquí.
+# context: Note at the top of the Proxy order editor. Each proxy has a handle (three short lines) to drag it by and a Pin button
+Drag a proxy by its handle to move it, and pin the ones you want on top. Telegram's proxy screen shows them in this order. Once you've moved one, proxies added later go below in Telegram's order.	Arrastra un proxy por su asa para moverlo y fija arriba los que quieras. La pantalla de proxies de Telegram los muestra en este orden. Cuando muevas uno, los proxies que añadas después van debajo en el orden de Telegram.
+# context: Screen reader action on a proxy in the Proxy order editor that moves it one place up
+Move up	Subir
+# context: Screen reader action on a proxy in the Proxy order editor that moves it one place down
+Move down	Bajar
+# context: Button on a proxy in the Proxy order editor that keeps it at the top of Telegram's proxy list
+Pin	Fijar
+# context: Button on a pinned proxy in the Proxy order editor that lets it go back among the others
+Unpin	Desfijar
+# context: Short toast after a proxy is pinned in the Proxy order editor
+Pinned on top.	Fijado arriba.
+# context: Short toast after a proxy is unpinned in the Proxy order editor
+Unpinned.	Desfijado.
+# context: State line under a proxy in the Proxy order editor: it's pinned and Telegram connects through it now
+Pinned, in use	Fijado, en uso
+# context: State line under a pinned proxy in the Proxy order editor
+Pinned	Fijado
+# context: State line under the proxy Telegram connects through now, in the Proxy order editor
+In use	En uso

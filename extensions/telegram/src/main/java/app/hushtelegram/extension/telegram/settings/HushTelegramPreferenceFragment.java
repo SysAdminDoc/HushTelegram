@@ -101,6 +101,7 @@ import app.hushtelegram.extension.telegram.misc.KeepDeleted;
 import app.hushtelegram.extension.telegram.misc.KeepEdits;
 import app.hushtelegram.extension.telegram.misc.LaunchFolder;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
+import app.hushtelegram.extension.telegram.misc.ProxyOrder;
 import app.hushtelegram.extension.telegram.misc.SaveDownloads;
 import app.hushtelegram.extension.telegram.misc.SpecialContacts;
 import app.hushtelegram.extension.telegram.misc.StickerSize;
@@ -324,6 +325,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (size != null) size.setSummary(stickerSizeSummary());
         Preference emoji = findPreference(TitleEmojiEditor.KEY);
         if (emoji != null) emoji.setSummary(TitleEmojiEditor.summary(Settings.TITLE_EMOJI.savedValue()));
+        Preference proxyOrder = findPreference(ProxyOrderEditor.KEY);
+        if (proxyOrder != null) proxyOrder.setSummary(ProxyOrder.summary());
         Preference gallery = findPreference(GALLERY_FOLDER_ROW);
         if (gallery != null) gallery.setSummary(galleryFolderSummary());
         Preference kinds = findPreference(SAVE_KINDS_ROW);
@@ -695,6 +698,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             + "you use a proxy of your own. Whoever runs a proxy can see your IP address. Turning this "
                             + "off leaves them in the list."))));
             proxies.addPreference(findProxiesRow(context));
+            if (PatchFamily.Capability.PROXY_ORDER.installed()) proxies.addPreference(proxyOrderRow(context));
             proxies.addPreference(toggle(context, Settings.SIGN_IN_PROXY, L10n.t("Proxy button when signing in"),
                     PatchFamily.FREE_PROXIES.coverageSummary(L10n.t("The phone number screen always has the proxy "
                             + "button, so you can add a proxy before you sign in."))));
@@ -1636,6 +1640,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (build.contains(PatchFamily.UNIFIED_PUSH)) leftOut.add(L10n.t("UnifiedPush notifications"));
         if (build.contains(PatchFamily.CHAT_TYPE_FOLDERS)) leftOut.add(L10n.t("Folders by chat type"));
         if (build.contains(PatchFamily.FREE_PROXIES)) leftOut.add(L10n.t("Free proxies"));
+        if (build.contains(PatchFamily.FREE_PROXIES) && PatchFamily.Capability.PROXY_ORDER.installed()) {
+            leftOut.add(L10n.t("Proxy order"));
+        }
         if (build.contains(PatchFamily.OUTSIDE_TRANSLATE)) {
             leftOut.add(L10n.t("the translation service, its key and the chats you turned translation on for"));
         }
@@ -2010,6 +2017,24 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             return true;
         });
         findProxiesRow = row;
+        return row;
+    }
+
+    /** Telegram's proxy list in an order of the person's own: the row says what's kept, and a tap opens its editor. */
+    private Preference proxyOrderRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(ProxyOrderEditor.KEY);
+        row.setTitle(L10n.t("Proxy order"));
+        row.setPersistent(false);
+        row.setSummary(ProxyOrder.summary());
+        row.setOnPreferenceClickListener(p -> {
+            Activity activity = getActivity();
+            if (SettingsLock.refuses()) return true;
+            if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
+                own(ProxyOrderEditor.open(activity, p));
+            }
+            return true;
+        });
         return row;
     }
 

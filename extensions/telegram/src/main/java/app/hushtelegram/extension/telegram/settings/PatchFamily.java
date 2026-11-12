@@ -447,7 +447,8 @@ public enum PatchFamily {
         FIREBASE_LOCAL_STATUS(REPAIR_FIREBASE_PUSH, "firebaseLocalStatus", "local notification status"),
         KEEP_ALIVE_RUNNING(REPAIR_FIREBASE_PUSH, "keepAliveRunning", "Keep-Alive Service start", true),
         REACTION_ALERTS(UNIFIED_PUSH, "reactionAlerts", "reaction notifications without push", true),
-        REACTION_SOUND(UNIFIED_PUSH, "reactionSound", "sound for reaction notifications", true);
+        REACTION_SOUND(UNIFIED_PUSH, "reactionSound", "sound for reaction notifications", true),
+        PROXY_ORDER(FREE_PROXIES, "proxyOrder", "proxy order", true);
 
         public final PatchFamily family;
         final String statusMethod;

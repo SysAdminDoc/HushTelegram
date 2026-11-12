@@ -42,7 +42,7 @@ class FreeProxiesFixtureTest {
             val data = manager.methods.single { it.name == "setProxySettings" && it.parameterTypes.size == 2 }
                 .parameterTypes[1].toString()
             val kept = FixtureDex.classes(build, setOf(SHARED_CONFIG, PROXY_INFO, data,
-                "Lorg/telegram/messenger/MessagesController;", notifications)).values
+                "Lorg/telegram/messenger/MessagesController;", notifications, PROXY_LIST_SCREEN)).values
             val screens = FixtureDex.classesWhere(build, { true }) { m ->
                 m.controlBody().let { body ->
                     body.any { it.controlString() == "proxy_enabled" } && body.any { it.controlRef() == BLOCKED_COUNTRY } &&
@@ -53,6 +53,8 @@ class FreeProxiesFixtureTest {
                 (listOf(manager) + kept + screens).distinctBy { it.type }.map(ImmutableClassDef::of))
             val site = context.resolveSignInProxy()
             val before = ImmutableMethod.of(site.method).controlBody()
+            val order = context.resolveProxyOrder()
+            val sortBefore = ImmutableMethod.of(order.method).controlBody()
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { freeProxiesPatch.execute(context) })
 
             val at = site.read
@@ -69,6 +71,15 @@ class FreeProxiesFixtureTest {
             assertEquals("$name: that path shows it and returns", Opcode.RETURN_VOID, after[site.show + 3].opcode)
             assertStock("$name head", before.take(at), after.take(at))
             assertStock("$name tail", before.drop(at), after.drop(at + 4))
+
+            val sortAfter = order.method.controlBody()
+            assertEquals("$name: the proxy screen's sort is Proxy order's", PROXY_ORDER_SORT, sortAfter[order.at].controlRef())
+            assertEquals(name, Opcode.INVOKE_STATIC, sortAfter[order.at].opcode)
+            assertEquals("$name: with the list and Telegram's comparator", sortBefore[order.at].namedRegisters(),
+                sortAfter[order.at].namedRegisters())
+            assertEquals(name, SORT, sortBefore[order.at].controlRef())
+            assertStock("$name proxy screen", sortBefore.filterIndexed { i, _ -> i != order.at },
+                sortAfter.filterIndexed { i, _ -> i != order.at })
 
             val stubs = context.tgMutableClassDefBy(TELEGRAM_PROXIES).methods.associate { method ->
                 method.name to method.controlBody().mapNotNull { it.controlRef() }.filter { "->" in it }
@@ -96,11 +107,14 @@ class FreeProxiesFixtureTest {
             assertEquals(name, listOf("$SHARED_CONFIG->currentProxy:$PROXY_INFO"), stubs.getValue("current"))
             assertEquals(name, listOf("$SHARED_CONFIG->loadProxyList()V", PROXY_LIST), stubs.getValue("proxies"))
             assertEquals(name, listOf(use[3]), stubs.getValue("proxy"))
+            assertEquals("$name: describe writes the entry's proxy as use does", listOf(use[3], use[4]), stubs.getValue("describe"))
             assertEquals(name, listOf("$SHARED_CONFIG->deleteProxy($PROXY_INFO)V"), stubs.getValue("delete"))
             assertEquals(name, listOf("$SHARED_CONFIG->proxyRotationEnabled:Z", "$SHARED_CONFIG->saveConfig()V"), stubs.getValue("rotate"))
 
-            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "freeProxies" }.controlBody()
-            assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
+            for (flag in listOf("freeProxies", "proxyOrder")) {
+                val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == flag }.controlBody()
+                assertEquals("$name: $flag", 1L, (status.first() as WideLiteralInstruction).wideLiteral)
+            }
         }
     }
 
