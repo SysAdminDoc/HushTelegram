@@ -1612,3 +1612,9 @@ Typing in these chats for 10 minutes.	Пишете в тези чатове 10 �
 Stopped typing in these chats.	Писането в тези чатове спря.
 # context: Toast when only secret chats (or archive folders) were selected for Fake typing, which can't carry it
 Secret chats can't show typing.	Тайните чатове не показват писане.
+# context: Switch title on the Privacy page (#71), off by default. With a Telegram passcode set, the app locks about a second after you leave it instead of after the Auto-lock time picked in Telegram
+Instant lock	Незабавно заключване
+# context: Summary of Instant lock. Auto-lock is Telegram's own passcode setting; the user's Auto-lock choice is kept and comes back when the switch is off
+With a Telegram passcode set, Telegram locks a second or two after you leave it instead of waiting for Auto-lock. Turning this off brings your Auto-lock time back.	Когато има зададена парола за Telegram, Telegram се заключва секунда-две след като излезеш, вместо да чака автоматичното заключване. Ако го изключиш, времето ти за автоматично заключване се връща.
+# context: Lowercase noun phrase naming the Instant lock switch (#71) in the patch status list
+instant lock	незабавно заключване

@@ -1404,6 +1404,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     privacy.addPreference(powerOff);
                     addAccountRows(context, privacy, true);
                 }
+                if (PatchFamily.Capability.INSTANT_LOCK.installed()) {
+                    privacy.addPreference(toggle(context, Settings.INSTANT_LOCK, L10n.t("Instant lock"),
+                            L10n.t("With a Telegram passcode set, Telegram locks a second or two after you leave it instead "
+                                    + "of waiting for Auto-lock. Turning this off brings your Auto-lock time back.")));
+                }
             }
             if (build.contains(PatchFamily.DISABLE_CALL_DEBUG)) {
                 privacy.addPreference(toggle(context, Settings.DISABLE_CALL_DEBUG, L10n.t("Stop call diagnostics"),

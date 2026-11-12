@@ -430,7 +430,9 @@ public class PausedHooksTest {
                 // Typing and going online are kept back too, and a pause lets both go out.
                 () -> app.hushtelegram.extension.telegram.misc.GhostMode.drop(new org.telegram.tgnet.TLRPC.TL_messages_setTyping(), null),
                 () -> app.hushtelegram.extension.telegram.misc.GhostMode.drop(new org.telegram.tgnet.TLRPC.TL_messages_setEncryptedTyping(), null),
-                () -> app.hushtelegram.extension.telegram.misc.GhostMode.drop(new org.telegram.tgnet.tl.TL_account.updateStatus(), null)));
+                () -> app.hushtelegram.extension.telegram.misc.GhostMode.drop(new org.telegram.tgnet.tl.TL_account.updateStatus(), null),
+                // Instant lock shortens Auto-lock, and a pause gives the user's own delay back.
+                () -> app.hushtelegram.extension.telegram.misc.InstantLock.autoLockIn(60) != 60));
         // Links open in the browser, and Mini Apps and web pages inside Telegram get no location.
         probes.put(PatchFamily.OPEN_EXTERNAL_LINKS, Arrays.asList(
                 PausedHooksTest::externalBrowserOpened,

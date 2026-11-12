@@ -1616,3 +1616,9 @@ Typing in these chats for 10 minutes.	Du schreibst hier 10 Minuten lang.
 Stopped typing in these chats.	Tippen in diesen Chats gestoppt.
 # context: Toast when only secret chats (or archive folders) were selected for Fake typing, which can't carry it
 Secret chats can't show typing.	Geheime Chats zeigen kein Tippen.
+# context: Switch title on the Privacy page (#71), off by default. With a Telegram passcode set, the app locks about a second after you leave it instead of after the Auto-lock time picked in Telegram
+Instant lock	Sofortige Sperre
+# context: Summary of Instant lock. Auto-lock is Telegram's own passcode setting; the user's Auto-lock choice is kept and comes back when the switch is off
+With a Telegram passcode set, Telegram locks a second or two after you leave it instead of waiting for Auto-lock. Turning this off brings your Auto-lock time back.	Wenn ein Telegram-Code festgelegt ist, sperrt sich Telegram ein, zwei Sekunden nachdem du es verlässt, statt auf die automatische Sperre zu warten. Schaltest du das aus, gilt wieder deine Zeit für die automatische Sperre.
+# context: Lowercase noun phrase naming the Instant lock switch (#71) in the patch status list
+instant lock	sofortige Sperre

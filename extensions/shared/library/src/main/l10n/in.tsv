@@ -1616,3 +1616,9 @@ Typing in these chats for 10 minutes.	Mengetik di obrolan ini selama 10 menit.
 Stopped typing in these chats.	Berhenti mengetik di obrolan ini.
 # context: Toast when only secret chats (or archive folders) were selected for Fake typing, which can't carry it
 Secret chats can't show typing.	Obrolan rahasia tidak bisa menampilkan status mengetik.
+# context: Switch title on the Privacy page (#71), off by default. With a Telegram passcode set, the app locks about a second after you leave it instead of after the Auto-lock time picked in Telegram
+Instant lock	Kunci instan
+# context: Summary of Instant lock. Auto-lock is Telegram's own passcode setting; the user's Auto-lock choice is kept and comes back when the switch is off
+With a Telegram passcode set, Telegram locks a second or two after you leave it instead of waiting for Auto-lock. Turning this off brings your Auto-lock time back.	Jika kode sandi Telegram sudah diatur, Telegram terkunci satu atau dua detik setelah kamu keluar, tanpa menunggu Kunci otomatis. Mematikan ini mengembalikan waktu Kunci otomatis kamu.
+# context: Lowercase noun phrase naming the Instant lock switch (#71) in the patch status list
+instant lock	kunci instan

@@ -393,6 +393,11 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("Adds Fake typing to the three dots menu when you long press chats in the chat list. The chats "
                     + "you pick show you typing for 10 minutes, or until you pick them again, even with Ghost mode on.",
                     String.valueOf(page.findPreference(Settings.FAKE_TYPING.key).getSummary()));
+            assertEquals("Instant lock", String.valueOf(page.findPreference(Settings.INSTANT_LOCK.key).getTitle()));
+            assertEquals("With a Telegram passcode set, Telegram locks a second or two after you leave it instead of "
+                    + "waiting for Auto-lock. Turning this off brings your Auto-lock time back.",
+                    String.valueOf(page.findPreference(Settings.INSTANT_LOCK.key).getSummary()));
+            assertFalse(Settings.INSTANT_LOCK.key, ((SwitchPreference) page.findPreference(Settings.INSTANT_LOCK.key)).isChecked());
             // Held reads stay held until one of the two ways out is asked for.
             assertFalse(Settings.GHOST_READ_AFTER_SEND.key,
                     ((SwitchPreference) page.findPreference(Settings.GHOST_READ_AFTER_SEND.key)).isChecked());

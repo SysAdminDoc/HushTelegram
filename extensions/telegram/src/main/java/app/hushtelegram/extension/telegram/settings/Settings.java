@@ -872,6 +872,13 @@ public class Settings extends BaseSettings {
     public static final StringSetting POWERED_OFF_ACCOUNTS =
             new StringSetting("hushtelegram_powered_off_accounts", "", false, false);
 
+    /**
+     * Instant lock: with a Telegram passcode set, Telegram locks a second or two after you leave it
+     * instead of waiting for Auto-lock. The Auto-lock choice itself is kept (#71).
+     */
+    public static final BooleanSetting INSTANT_LOCK =
+            new BooleanSetting("hushtelegram_instant_lock", FALSE);
+
     /** Automatic call diagnostics only; the call itself and its cleanup stay stock. */
     public static final BooleanSetting DISABLE_CALL_DEBUG =
             new BooleanSetting("hushtelegram_disable_call_debug", TRUE);

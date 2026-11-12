@@ -236,6 +236,7 @@ public final class SettingsBackup {
             Settings.FAKE_TYPING,
             Settings.RECEIVE_ONLY,
             Settings.POWER_OFF_ACCOUNTS,
+            Settings.INSTANT_LOCK,
             Settings.DISABLE_CALL_DEBUG,
             Settings.RECORD_CALLS,
             Settings.RECORD_CALL_BUTTON,

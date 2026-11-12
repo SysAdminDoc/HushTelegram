@@ -358,6 +358,7 @@ public final class SelectionCheck {
         hook(calls, flags, "ghostMode", "misc/GhostMode", "drop");
         hook(calls, flags, "receiveOnly", "misc/AccountGuard", "drop");
         hook(calls, flags, "powerOff", "misc/AccountGuard", "drop");
+        hook(calls, flags, "instantLock", "misc/InstantLock", "autoLockIn");
         hook(calls, flags, "callDebugUpload", "misc/CallDebug", "skipCallDebugUpload");
         hook(calls, flags, "callLogFileUpload", "misc/CallDebug", "skipCallLogFileUpload");
         hook(calls, flags, "callLogUpload", "misc/CallDebug", "skipCallLogUpload");
