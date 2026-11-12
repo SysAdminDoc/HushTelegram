@@ -1801,3 +1801,20 @@ Not in secret chats	Nicht in geheimen Chats
 This chat doesn't allow saving	Dieser Chat erlaubt kein Speichern
 # context: Toast once the Screenshot button's picture is saved. Pictures is the phone's pictures folder. Two short lines at most.
 Screenshot saved to Pictures	Screenshot in Bilder gespeichert
+
+# context: Title of a settings row and of its dialog: type a user, group or channel ID and that chat opens
+Open a chat by ID	Chat per ID öffnen
+# context: Summary of the Open a chat by ID row. Telegram only opens people and chats it already has stored on the phone
+Type a user, group or channel ID to open that chat. It works for anyone this app has already seen, such as someone who wrote in a group you opened.	Gib die ID eines Benutzers, einer Gruppe oder eines Kanals ein, um diesen Chat zu öffnen. Das klappt bei allen, die diese App schon gesehen hat, etwa bei jemandem, der in einer Gruppe geschrieben hat, die du geöffnet hast.
+# context: Hint and label of the number field in the Open a chat by ID dialog
+User or chat ID	Benutzer- oder Chat-ID
+# context: Note in the Open a chat by ID dialog. The ID row is the one Show user and chat IDs adds to a profile; bots write a group ID with a minus sign and a channel ID starting with -100
+The number from a profile's ID row, or a chat ID the way bots write it.	Die Zahl aus der ID-Zeile eines Profils oder eine Chat-ID, wie Bots sie schreiben.
+# context: Button in the Open a chat by ID dialog that opens the chat
+Open	Öffnen
+# context: Toast when what was typed in Open a chat by ID isn't a number. Two short lines at most.
+Type the ID in numbers	Gib die ID in Ziffern ein
+# context: Toast when Telegram on this phone has never stored that user or chat, so it can't open it. Two short lines at most.
+This app hasn't seen that ID yet	Diese App kennt die ID noch nicht
+# context: Toast and dialog note when Open a chat by ID couldn't look the ID up or couldn't start the chat. Two short lines at most.
+Couldn't open that. Try again.	Ließ sich nicht öffnen. Versuch es noch mal.

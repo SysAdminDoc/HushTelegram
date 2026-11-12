@@ -1798,3 +1798,20 @@ Not in secret chats	Não em chats secretos
 This chat doesn't allow saving	Este chat não permite salvar
 # context: Toast once the Screenshot button's picture is saved. Pictures is the phone's pictures folder. Two short lines at most.
 Screenshot saved to Pictures	Captura salva em Imagens
+
+# context: Title of a settings row and of its dialog: type a user, group or channel ID and that chat opens
+Open a chat by ID	Abrir um chat pelo ID
+# context: Summary of the Open a chat by ID row. Telegram only opens people and chats it already has stored on the phone
+Type a user, group or channel ID to open that chat. It works for anyone this app has already seen, such as someone who wrote in a group you opened.	Digite o ID de um usuário, grupo ou canal para abrir esse chat. Funciona com qualquer pessoa que este app já viu, como alguém que escreveu em um grupo que você abriu.
+# context: Hint and label of the number field in the Open a chat by ID dialog
+User or chat ID	ID de usuário ou chat
+# context: Note in the Open a chat by ID dialog. The ID row is the one Show user and chat IDs adds to a profile; bots write a group ID with a minus sign and a channel ID starting with -100
+The number from a profile's ID row, or a chat ID the way bots write it.	O número da linha ID de um perfil, ou um ID de chat do jeito que os bots escrevem.
+# context: Button in the Open a chat by ID dialog that opens the chat
+Open	Abrir
+# context: Toast when what was typed in Open a chat by ID isn't a number. Two short lines at most.
+Type the ID in numbers	Digite o ID em números
+# context: Toast when Telegram on this phone has never stored that user or chat, so it can't open it. Two short lines at most.
+This app hasn't seen that ID yet	Este app ainda não viu esse ID
+# context: Toast and dialog note when Open a chat by ID couldn't look the ID up or couldn't start the chat. Two short lines at most.
+Couldn't open that. Try again.	Não deu para abrir. Tente de novo.

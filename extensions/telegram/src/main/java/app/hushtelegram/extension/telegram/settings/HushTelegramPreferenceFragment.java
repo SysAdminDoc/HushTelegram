@@ -1290,6 +1290,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(toggle(context, Settings.PROFILE_DATA_CENTER, L10n.t("Show where a profile photo is stored"),
                     L10n.t("A profile's menu also shows which of Telegram's five data centers (its server "
                             + "locations) stores the profile photo. No photo, no number.")));
+            on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(openByIdRow(context));
             if (PatchFamily.Capability.SPECIAL_CONTACTS.installed()) {
                 on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(toggle(context, Settings.SPECIAL_CONTACTS, L10n.t("Special contacts"),
                         L10n.t("A person's profile menu gets Track this user. For anyone you track, a history builds up from what "
@@ -2066,6 +2067,24 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             return true;
         });
         findProxiesRow = row;
+        return row;
+    }
+
+    private Preference openByIdRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(OpenByIdEditor.KEY);
+        row.setTitle(L10n.t("Open a chat by ID"));
+        row.setPersistent(false);
+        row.setSummary(L10n.t("Type a user, group or channel ID to open that chat. It works for anyone this app has "
+                + "already seen, such as someone who wrote in a group you opened."));
+        row.setOnPreferenceClickListener(p -> {
+            Activity activity = getActivity();
+            if (SettingsLock.refuses()) return true;
+            if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
+                own(OpenByIdEditor.open(activity));
+            }
+            return true;
+        });
         return row;
     }
 
