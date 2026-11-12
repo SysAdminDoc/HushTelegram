@@ -706,6 +706,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             + "you use a proxy of your own. Whoever runs a proxy can see your IP address. Turning this "
                             + "off leaves them in the list."))));
             proxies.addPreference(findProxiesRow(context));
+            proxies.addPreference(proxyListsRow(context));
             if (PatchFamily.Capability.PROXY_ORDER.installed()) proxies.addPreference(proxyOrderRow(context));
             proxies.addPreference(toggle(context, Settings.SIGN_IN_PROXY, L10n.t("Proxy button when signing in"),
                     PatchFamily.FREE_PROXIES.coverageSummary(L10n.t("The phone number screen always has the proxy "
@@ -2067,6 +2068,23 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             return true;
         });
         findProxiesRow = row;
+        return row;
+    }
+
+    private Preference proxyListsRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(ProxyListsEditor.KEY);
+        row.setTitle(L10n.t("Your proxy lists"));
+        row.setPersistent(false);
+        row.setSummary(ProxyListsEditor.summary());
+        row.setOnPreferenceClickListener(p -> {
+            Activity activity = getActivity();
+            if (SettingsLock.refuses()) return true;
+            if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
+                own(ProxyListsEditor.open(activity, p));
+            }
+            return true;
+        });
         return row;
     }
 
