@@ -1587,6 +1587,7 @@ The phone number screen always has the proxy button, so you can add a proxy befo
 Looking for free proxies now.	Sedang mencari proxy gratis.
 Downloads a public list of proxies now, times them and adds the fastest to Telegram's proxy list, even with the switch above off.	Mengunduh daftar proxy publik sekarang, mengukur kecepatannya, lalu menambahkan yang tercepat ke daftar proxy Telegram, meski sakelar di atas nonaktif.
 Proxies added last time: %1$s. They're in Telegram's proxy list.	Proxy yang ditambahkan terakhir kali: %1$s. Semuanya ada di daftar proxy Telegram.
+Proxies added last time: %1$s of %2$s read. They're in Telegram's proxy list.	Proxy yang ditambahkan terakhir kali: %1$s dari %2$s yang terbaca. Semuanya ada di daftar proxy Telegram.
 Couldn't download a proxy list last time. Check your connection and try again.	Terakhir kali daftar proxy tidak bisa diunduh. Periksa koneksi Anda dan coba lagi.
 None of the listed proxies answered last time. Try again later.	Terakhir kali tidak ada proxy dalam daftar yang menjawab. Coba lagi nanti.
 Telegram didn't take the proxies last time.	Terakhir kali Telegram tidak menerima proxy tersebut.

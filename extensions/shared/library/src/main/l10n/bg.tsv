@@ -1583,6 +1583,7 @@ The phone number screen always has the proxy button, so you can add a proxy befo
 Looking for free proxies now.	Търсят се безплатни проксита.
 Downloads a public list of proxies now, times them and adds the fastest to Telegram's proxy list, even with the switch above off.	Изтегля публичен списък с проксита сега, измерва ги и добавя най-бързите в списъка с проксита на Telegram, дори ако превключвателят по-горе е изключен.
 Proxies added last time: %1$s. They're in Telegram's proxy list.	Добавени проксита последния път: %1$s. Те са в списъка с проксита на Telegram.
+Proxies added last time: %1$s of %2$s read. They're in Telegram's proxy list.	Добавени проксита последния път: %1$s от %2$s прочетени. Те са в списъка с проксита на Telegram.
 Couldn't download a proxy list last time. Check your connection and try again.	Последния път не успя да се изтегли списък с проксита. Проверете връзката си и опитайте отново.
 None of the listed proxies answered last time. Try again later.	Последния път никое от изброените проксита не отговори. Опитайте отново по-късно.
 Telegram didn't take the proxies last time.	Последния път Telegram не прие проксита.

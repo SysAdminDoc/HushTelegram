@@ -1587,6 +1587,7 @@ The phone number screen always has the proxy button, so you can add a proxy befo
 Looking for free proxies now.	Suche gerade nach kostenlosen Proxys.
 Downloads a public list of proxies now, times them and adds the fastest to Telegram's proxy list, even with the switch above off.	Lädt jetzt eine öffentliche Proxy-Liste herunter, misst die Proxys und fügt die schnellsten zur Proxy-Liste von Telegram hinzu, auch wenn der Schalter oben aus ist.
 Proxies added last time: %1$s. They're in Telegram's proxy list.	Beim letzten Mal hinzugefügte Proxys: %1$s. Sie sind in der Proxy-Liste von Telegram.
+Proxies added last time: %1$s of %2$s read. They're in Telegram's proxy list.	Beim letzten Mal hinzugefügte Proxys: %1$s von %2$s gelesenen. Sie sind in der Proxy-Liste von Telegram.
 Couldn't download a proxy list last time. Check your connection and try again.	Beim letzten Mal ließ sich keine Proxy-Liste herunterladen. Prüfe deine Verbindung und versuche es noch einmal.
 None of the listed proxies answered last time. Try again later.	Beim letzten Mal hat keiner der aufgeführten Proxys geantwortet. Versuche es später noch einmal.
 Telegram didn't take the proxies last time.	Telegram hat die Proxys beim letzten Mal nicht übernommen.
