@@ -1896,3 +1896,13 @@ When a chat search lands on a match inside a collapsed quote, the quote opens so
 spoiler and quote items in the chat menu	Spoiler- und Zitat-Einträge im Chatmenü
 # context: Lowercase noun phrase naming the Open quotes on search hits switch (#71) in the patch status list
 quotes opened on search hits	bei Suchtreffern aufgeklappte Zitate
+# context: Label of the Select all button (#73) in the bar that shows while messages are selected, and of its switch.
+Select all	Alle auswählen
+# context: Toast from Select all when every loaded message is already selected.
+Everything here is already selected	Hier ist schon alles ausgewählt
+# context: Summary of the Select all switch (#73). The bar is the one that appears at the top of a chat, or of a chat's shared media, while messages are selected.
+Adds a Select all button to the bar that shows while you pick messages, in chats and in a chat's shared media. It selects everything loaded, newest first, up to Telegram's limit of 100.	Fügt der Leiste, die beim Auswählen von Nachrichten erscheint, eine Schaltfläche Alle auswählen hinzu, in Chats und in den geteilten Medien eines Chats. Sie wählt alles Geladene aus, das Neueste zuerst, bis zur Telegram-Grenze von 100.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Select all button in chats.
+selecting every loaded message in a chat	das Auswählen aller geladenen Nachrichten in einem Chat
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Select all button in a chat's shared media.
+selecting everything in shared media	das Auswählen von allem in den geteilten Medien

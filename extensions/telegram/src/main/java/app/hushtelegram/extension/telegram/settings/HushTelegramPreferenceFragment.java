@@ -932,6 +932,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("Adds a Screenshot button to the bar that shows while you pick messages. It saves a picture of them as the chat"
                                 + " shows them, background, dates and times included, to Pictures/Telegram.")));
             }
+            if (PatchFamily.Capability.SELECT_ALL.installed() || PatchFamily.Capability.SHARED_MEDIA_SELECT_ALL.installed()) {
+                on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.SELECT_ALL, L10n.t("Select all"),
+                        L10n.t("Adds a Select all button to the bar that shows while you pick messages, in chats and in a chat's shared media."
+                                + " It selects everything loaded, newest first, up to Telegram's limit of 100.")));
+            }
         }
         if (build.contains(PatchFamily.KEEP_DELETED_MESSAGES)) {
             on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(toggle(context, Settings.KEEP_DELETED_MESSAGES, L10n.t("Keep deleted messages"),

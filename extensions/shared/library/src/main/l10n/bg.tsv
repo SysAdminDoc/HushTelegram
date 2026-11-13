@@ -1892,3 +1892,13 @@ When a chat search lands on a match inside a collapsed quote, the quote opens so
 spoiler and quote items in the chat menu	елементи за спойлери и цитати в менюто на чата
 # context: Lowercase noun phrase naming the Open quotes on search hits switch (#71) in the patch status list
 quotes opened on search hits	цитати, разгънати при резултати от търсене
+# context: Label of the Select all button (#73) in the bar that shows while messages are selected, and of its switch.
+Select all	Избери всички
+# context: Toast from Select all when every loaded message is already selected.
+Everything here is already selected	Всичко тук вече е избрано
+# context: Summary of the Select all switch (#73). The bar is the one that appears at the top of a chat, or of a chat's shared media, while messages are selected.
+Adds a Select all button to the bar that shows while you pick messages, in chats and in a chat's shared media. It selects everything loaded, newest first, up to Telegram's limit of 100.	Добавя бутон Избери всички към лентата, която се показва, докато избираш съобщения, в чатовете и в споделените медии на чата. Избира всичко заредено, от най-новото, до лимита на Telegram от 100.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Select all button in chats.
+selecting every loaded message in a chat	избирането на всички заредени съобщения в чат
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Select all button in a chat's shared media.
+selecting everything in shared media	избирането на всичко в споделените медии

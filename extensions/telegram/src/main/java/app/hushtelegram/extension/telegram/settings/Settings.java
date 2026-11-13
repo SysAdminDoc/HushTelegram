@@ -440,6 +440,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting SELECTION_SCREENSHOT =
             new BooleanSetting("hushtelegram_selection_screenshot", FALSE);
 
+    /** A Select all button in the same bar, in chats and in a chat's shared media, that selects everything loaded (#73). */
+    public static final BooleanSetting SELECT_ALL =
+            new BooleanSetting("hushtelegram_select_all", FALSE);
+
     public static final BooleanSetting PLAYBACK_POSITION =
             new BooleanSetting("hushtelegram_playback_position", FALSE);
 
