@@ -32,6 +32,9 @@ import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 
 private const val PATCH = "Bypass channel restrictions"
 private const val MESSAGES_CONTROLLER = "Lorg/telegram/messenger/MessagesController;"
@@ -41,6 +44,14 @@ private const val IS_CHAT_NO_FORWARDS_HOOK = "$CHANNEL_RESTRICTIONS->isChatNoFor
 private const val NO_FORWARDS_HOOK = "$CHANNEL_RESTRICTIONS->noForwards(I)I"
 private const val IGNORE_REASON_HOOK = "$CHANNEL_RESTRICTIONS->ignoreRestrictionReason(Ljava/util/ArrayList;)Z"
 internal const val STORY_HOOK = "$CHANNEL_RESTRICTIONS->storyAllowed(I)I"
+
+/** A message's own no-forwarding flag, set on every post of a protected channel and on a bot's protected sends. */
+internal const val MESSAGE_NO_FORWARDS = "Lorg/telegram/tgnet/TLRPC\$Message;->noforwards:Z"
+private const val USER_FULL = "Lorg/telegram/tgnet/TLRPC\$UserFull;"
+private const val PRIVATE_CHAT_NO_FORWARDS = "$USER_FULL->noforwards_peer_enabled:Z"
+
+/** The selected messages a screen keeps, one SparseArray per chat it shows. */
+private const val SELECTED_MESSAGES = "[Landroid/util/SparseArray;"
 
 /** What the story viewer's check reads: the story's own flag, whether it's pinned, and its channel's flag. */
 internal val STORY_CHECK_READS = listOf(
@@ -107,6 +118,43 @@ val bypassChannelRestrictionsPatch = bytecodePatch(
             hooked++
         } else {
             patchLog.warning("$PATCH: isPeerNoForwards is missing. That part is left out.")
+        }
+
+        // A private chat that turned forwarding off answers through a static check of the other
+        // person's full profile, which the chat's Forward and the profile ask directly (#73).
+        val privateChat = owner.methods.singleOrNull { m ->
+            AccessFlags.STATIC.isSet(m.accessFlags) && m.returnType == "Z" &&
+                m.origParameterTypes == listOf(USER_FULL) && m.hasFreeLocal() &&
+                m.implementation!!.instructions.any { it.origRef() == PRIVATE_CHAT_NO_FORWARDS }
+        }
+        if (privateChat != null) {
+            privateChat.addInstructionsWithLabels(0, """
+                const/4 v0, 0x1
+                invoke-static {v0}, $IS_CHAT_NO_FORWARDS_HOOK
+                move-result v0
+                if-nez v0, :stock
+                return v0
+            """, ExternalLabel("stock", privateChat.getInstruction(0)))
+            hooked++
+        } else {
+            patchLog.warning("$PATCH: the private chat check is missing. Private chats that turn forwarding off keep it off.")
+        }
+
+        // Forward from a chat's selection or from shared media first asks whether any selected
+        // message is protected, and does nothing when one is (#73). Each of those reads of the
+        // message's own flag goes through the extension before the branch on it.
+        val selectionReads = selectedNoForwardsReads()
+        for ((method, at) in selectionReads) {
+            val flag = (method.getInstruction(at) as TwoRegisterInstruction).registerA
+            method.addInstructionsAtControlFlowLabel(at + 1, """
+                invoke-static/range {v$flag .. v$flag}, $NO_FORWARDS_HOOK
+                move-result v$flag
+            """)
+        }
+        if (selectionReads.isNotEmpty()) {
+            hooked++
+        } else {
+            patchLog.warning("$PATCH: the selection's protected message check is missing. Forward stays off for a selection holding one.")
         }
 
         // Every check of a chat, user or message Telegram restricts for copyright or local law asks
@@ -197,6 +245,45 @@ internal fun Method.isStoryCheck(): Boolean {
     if (AccessFlags.STATIC.isSet(accessFlags) || parameterTypes.isNotEmpty() || returnType != "Z") return false
     val reads = implementation?.instructions?.mapNotNullTo(mutableSetOf()) { it.origRef() } ?: return false
     return reads.containsAll(STORY_CHECK_READS)
+}
+
+/**
+ * Every "is a selected message protected?" check, each with the index of its one read of
+ * [MESSAGE_NO_FORWARDS]: the chat's and shared media's, ahead of their Forward.
+ */
+private fun BytecodePatchContext.selectedNoForwardsReads(): List<Pair<MutableMethod, Int>> {
+    val found = mutableListOf<Method>()
+    forEachClassMentioning(Mention.reference(MESSAGE_NO_FORWARDS)) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
+        cls.methods.filterTo(found) { it.selectedNoForwardsRead() >= 0 }
+    }
+    return found.map { check ->
+        val method = tgMutableClassDefBy(check.definingClass).methods.single {
+            it.name == check.name && it.parameterTypes.isEmpty() && it.returnType == "Z"
+        }
+        method to method.selectedNoForwardsRead()
+    }
+}
+
+/**
+ * Where an instance method with no arguments that answers a boolean reads a selected message's
+ * [MESSAGE_NO_FORWARDS] and branches on it right away, when it holds a screen's
+ * [SELECTED_MESSAGES] and does that exactly once. -1 for any other method.
+ */
+internal fun Method.selectedNoForwardsRead(): Int {
+    if (AccessFlags.STATIC.isSet(accessFlags) || parameterTypes.isNotEmpty() || returnType != "Z") return -1
+    val code = implementation?.instructions?.toList() ?: return -1
+    val selection = code.any { ins ->
+        ins.opcode == Opcode.IGET_OBJECT && ((ins as ReferenceInstruction).reference as? FieldReference)?.type == SELECTED_MESSAGES
+    }
+    if (!selection) return -1
+    val reads = code.indices.filter { at ->
+        val read = code[at]
+        val next = code.getOrNull(at + 1)
+        read.opcode == Opcode.IGET_BOOLEAN && read.origRef() == MESSAGE_NO_FORWARDS && next?.opcode == Opcode.IF_EQZ &&
+            (next as OneRegisterInstruction).registerA == (read as TwoRegisterInstruction).registerA
+    }
+    return reads.singleOrNull() ?: -1
 }
 
 internal fun Method.returns(): List<Int> =

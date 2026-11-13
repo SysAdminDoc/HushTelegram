@@ -35,7 +35,8 @@ class ProtectedForwardFixtureTest {
             val name = build.name
             val hosts = FixtureDex.classes(build, setOf("Lorg/telegram/messenger/MessagesController;") + FORWARD_HOSTS).values
             val storyOwners = FixtureDex.classesWhere(build, { true }) { it.isStoryCheck() }
-            val context = PatchContexts.of(ExtensionDex.classes() + hosts + storyOwners + bannedAlertHosts(build))
+            val context = PatchContexts.of((ExtensionDex.classes() + hosts + storyOwners + bannedAlertHosts(build) +
+                forwardGateOwners(build)).distinctBy { it.type })
             val forwardName = FORWARD_SEND.substringAfter("->")
             fun forward() = context.tgMutableClassDefBy(helper).methods.single { "${it.origName}${it.origDescriptor}" == forwardName }
             val before = ImmutableMethod.of(forward()).implementation!!.instructions.toList()

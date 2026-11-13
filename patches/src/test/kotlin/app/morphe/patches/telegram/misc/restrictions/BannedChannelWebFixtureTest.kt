@@ -102,11 +102,12 @@ class BannedChannelWebFixtureTest {
             fun flag(context: app.morphe.patcher.patch.BytecodePatchContext) = context.tgMutableClassDefBy(SETTINGS_STATUS).methods
                 .single { it.origName == "bannedChannelWeb" }.controlBody().let { (it[0] as NarrowLiteralInstruction).narrowLiteral }
 
-            val full = PatchContexts.of(ExtensionDex.classes() + hosts + stories + bannedAlertHosts(build))
+            val full = PatchContexts.of((ExtensionDex.classes() + hosts + stories + bannedAlertHosts(build) +
+                forwardGateOwners(build)).distinctBy { it.type })
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { bypassChannelRestrictionsPatch.execute(full) })
             assertEquals("$name: on", 1, flag(full))
 
-            val bare = PatchContexts.of(ExtensionDex.classes() + hosts + stories)
+            val bare = PatchContexts.of((ExtensionDex.classes() + hosts + stories + forwardGateOwners(build)).distinctBy { it.type })
             val warnings = PatchLogCapture.warnings { bypassChannelRestrictionsPatch.execute(bare) }
             assertEquals("$name: one warning, $warnings", 1, warnings.size)
             assertTrue("$name: $warnings", warnings.single().endsWith("A banned channel's alert keeps only Telegram's OK."))

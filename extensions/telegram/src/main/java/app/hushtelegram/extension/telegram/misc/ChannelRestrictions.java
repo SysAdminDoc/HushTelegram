@@ -13,10 +13,11 @@ import java.util.ArrayList;
 
 /**
  * Bypasses content restrictions (no forwards, no saving, no copying) on channels and chats.
- * Hooks the three places Telegram checks: {@code MessagesController.isChatNoForwards},
- * {@code MessagesController.isPeerNoForwards} and the {@code noforwards} field on messages.
- * When the switch is on, all three answer false so forwarding, copying and saving work as if
- * the restriction was never set. The existing Allow screenshots patch handles FLAG_SECURE
+ * Hooks the places Telegram checks: {@code MessagesController.isChatNoForwards},
+ * {@code MessagesController.isPeerNoForwards}, the static check of a private chat's full profile,
+ * and the {@code noforwards} field on messages where the chat's and shared media's Forward read it
+ * for the selection. When the switch is on, all of them answer false so forwarding, copying and
+ * saving work as if the restriction was never set. The existing Allow screenshots patch handles FLAG_SECURE
  * separately, except in stories (see {@link #storyAllowed}). Its Open restricted channels switch
  * also drops the restriction reason Telegram shows for copyright or local law blocks.
  */
@@ -42,8 +43,9 @@ public final class ChannelRestrictions {
     }
 
     /**
-     * Called where Telegram asks whether a chat forbids forwarding. Returns 0 (false) when the
-     * switch is on, letting the stock answer through otherwise.
+     * Called where Telegram asks whether a chat forbids forwarding, and where it asks the same of
+     * a private chat's full profile. Returns 0 (false) when the switch is on, letting the stock
+     * answer through otherwise.
      */
     public static int isChatNoForwards(int stockAnswer) {
         if (stockAnswer == 0 || askingStock()) return stockAnswer;
@@ -58,8 +60,9 @@ public final class ChannelRestrictions {
     }
 
     /**
-     * Called where Telegram reads a message's noforwards flag. Returns 0 (false) when the
-     * switch is on.
+     * Called where Telegram asks whether a peer forbids forwarding, and where the chat's and
+     * shared media's Forward read a selected message's noforwards flag (#73). Returns 0 (false)
+     * when the switch is on.
      */
     public static int noForwards(int stockAnswer) {
         if (stockAnswer == 0 || askingStock()) return stockAnswer;
