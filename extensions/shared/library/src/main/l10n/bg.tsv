@@ -1562,7 +1562,7 @@ When you send a message in a chat, the read receipt Ghost mode held back there g
 # context: a switch under Ghost mode (#69). With it on, a double check button sits at the top of the chat list, next to the ghost.
 Read receipts button	Бутон за потвърждения за прочитане
 # context: that switch's summary. A double check is the two tick marks Telegram shows on a read message.
-A double check at the top of the chat list sends the read receipts Ghost mode is holding for the account you're on, from chats read since Telegram last started. Shows with Ghost mode and No read receipts on.	Двойна отметка горе в списъка с чатове изпраща потвържденията за прочитане, които режим „Призрак“ задържа за текущия акаунт, от чатовете, прочетени след последното стартиране на Telegram. Показва се, когато режим „Призрак“ и „Без потвърждения за прочитане“ са включени.
+A double check at the top of the chat list sends the read receipts Ghost mode is holding for the account you're on, from chats read since Telegram last started. Send read receipts in a chat's menu sends just that chat's. Shows with Ghost mode and No read receipts on.	Двойна отметка горе в списъка с чатове изпраща потвържденията за прочитане, които режим „Призрак“ задържа за текущия акаунт, от чатовете, прочетени след последното стартиране на Telegram. „Изпращане на потвърждения за прочитане“ в менюто на чат изпраща само тези на този чат. Показва се, когато режим „Призрак“ и „Без потвърждения за прочитане“ са включени.
 # context: what a screen reader says for the chat list's double check button.
 Send read receipts	Изпращане на потвърждения за прочитане
 # context: short message after a tap on the chat list's double check button sent the held read receipts.

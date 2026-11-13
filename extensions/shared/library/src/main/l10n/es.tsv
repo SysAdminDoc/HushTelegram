@@ -1566,7 +1566,7 @@ When you send a message in a chat, the read receipt Ghost mode held back there g
 # context: a switch under Ghost mode (#69). With it on, a double check button sits at the top of the chat list, next to the ghost.
 Read receipts button	Botón de confirmaciones de lectura
 # context: that switch's summary. A double check is the two tick marks Telegram shows on a read message.
-A double check at the top of the chat list sends the read receipts Ghost mode is holding for the account you're on, from chats read since Telegram last started. Shows with Ghost mode and No read receipts on.	Un doble check arriba en la lista de chats envía las confirmaciones de lectura que el Modo fantasma retiene para la cuenta que usas, de los chats leídos desde que Telegram se inició por última vez. Aparece con el Modo fantasma y Sin confirmaciones de lectura activados.
+A double check at the top of the chat list sends the read receipts Ghost mode is holding for the account you're on, from chats read since Telegram last started. Send read receipts in a chat's menu sends just that chat's. Shows with Ghost mode and No read receipts on.	Un doble check arriba en la lista de chats envía las confirmaciones de lectura que el Modo fantasma retiene para la cuenta que usas, de los chats leídos desde que Telegram se inició por última vez. Enviar confirmaciones de lectura en el menú de un chat envía solo las de ese chat. Aparece con el Modo fantasma y Sin confirmaciones de lectura activados.
 # context: what a screen reader says for the chat list's double check button.
 Send read receipts	Enviar confirmaciones de lectura
 # context: short message after a tap on the chat list's double check button sent the held read receipts.

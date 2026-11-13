@@ -397,8 +397,8 @@ public class HushTelegramPreferenceFragmentTest {
                     String.valueOf(page.findPreference(Settings.GHOST_READ_AFTER_SEND.key).getSummary()));
             assertEquals("Read receipts button", String.valueOf(page.findPreference(Settings.GHOST_READS_BUTTON.key).getTitle()));
             assertEquals("A double check at the top of the chat list sends the read receipts Ghost mode is holding for "
-                    + "the account you're on, from chats read since Telegram last started. Shows with Ghost mode and No "
-                    + "read receipts on.", String.valueOf(page.findPreference(Settings.GHOST_READS_BUTTON.key).getSummary()));
+                    + "the account you're on, from chats read since Telegram last started. Send read receipts in a chat's "
+                    + "menu sends just that chat's. Shows with Ghost mode and No read receipts on.", String.valueOf(page.findPreference(Settings.GHOST_READS_BUTTON.key).getSummary()));
             assertEquals("Ghost mode exceptions", String.valueOf(page.findPreference(Settings.GHOST_CHATS.key).getTitle()));
             assertEquals("The chats you pick work the other way around. While Ghost mode is on they act as usual, and "
                     + "while it's off the Ghost mode switches above apply there. Long press chats in the chat list and "

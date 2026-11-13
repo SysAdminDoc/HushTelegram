@@ -1566,7 +1566,7 @@ When you send a message in a chat, the read receipt Ghost mode held back there g
 # context: a switch under Ghost mode (#69). With it on, a double check button sits at the top of the chat list, next to the ghost.
 Read receipts button	Okundu bilgisi düğmesi
 # context: that switch's summary. A double check is the two tick marks Telegram shows on a read message.
-A double check at the top of the chat list sends the read receipts Ghost mode is holding for the account you're on, from chats read since Telegram last started. Shows with Ghost mode and No read receipts on.	Sohbet listesinin üstündeki çift tik, Hayalet modunun kullandığınız hesap için tuttuğu okundu bilgilerini, Telegram son açıldığından beri okunan sohbetlerden gönderir. Hayalet modu ve Okundu bilgisi gönderme açıkken görünür.
+A double check at the top of the chat list sends the read receipts Ghost mode is holding for the account you're on, from chats read since Telegram last started. Send read receipts in a chat's menu sends just that chat's. Shows with Ghost mode and No read receipts on.	Sohbet listesinin üstündeki çift tik, Hayalet modunun kullandığınız hesap için tuttuğu okundu bilgilerini, Telegram son açıldığından beri okunan sohbetlerden gönderir. Bir sohbetin menüsündeki Okundu bilgilerini gönder yalnızca o sohbetinkileri gönderir. Hayalet modu ve Okundu bilgisi gönderme açıkken görünür.
 # context: what a screen reader says for the chat list's double check button.
 Send read receipts	Okundu bilgilerini gönder
 # context: short message after a tap on the chat list's double check button sent the held read receipts.

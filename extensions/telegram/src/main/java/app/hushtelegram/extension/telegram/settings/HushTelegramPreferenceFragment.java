@@ -1474,8 +1474,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             L10n.t("A ghost at the top of the chat list turns Ghost mode on and off with a tap. It's filled while Ghost mode is on.")));
                     privacy.addPreference(toggle(context, Settings.GHOST_READS_BUTTON, L10n.t("Read receipts button"),
                             L10n.t("A double check at the top of the chat list sends the read receipts Ghost mode is holding for the "
-                                    + "account you're on, from chats read since Telegram last started. Shows with Ghost mode and No "
-                                    + "read receipts on.")));
+                                    + "account you're on, from chats read since Telegram last started. Send read receipts in a "
+                                    + "chat's menu sends just that chat's. Shows with Ghost mode and No read receipts on.")));
                     // The exceptions are picked from the hidden chats' list and long press item.
                     if (PatchFamily.Capability.HIDDEN_CHATS.installed()) {
                         privacy.addPreference(toggle(context, Settings.GHOST_CHATS, L10n.t("Ghost mode exceptions"),
