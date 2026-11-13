@@ -123,6 +123,7 @@ public final class SettingsStatus {
     public static boolean forwardHideSender() { return false; }
     public static boolean voiceMusicPlayer() { return false; }
     public static boolean playbackPosition() { return false; }
+    public static boolean voiceSkip() { return false; }
     public static boolean selectBetween() { return false; }
     public static boolean selectionScreenshot() { return false; }
     public static boolean selectAll() { return false; }

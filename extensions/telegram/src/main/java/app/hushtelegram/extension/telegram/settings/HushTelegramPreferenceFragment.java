@@ -1048,6 +1048,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("Remember where playback stopped"), L10n.t("Videos, voice messages and music pick up where you left off, even short ones."
                                 + " Telegram only does that for long ones.")));
             }
+            if (PatchFamily.Capability.VOICE_SKIP.installed()) {
+                on(pages, PatchFamily.VOICE_MUSIC_PLAYER).addPreference(toggle(context, Settings.VOICE_SKIP,
+                        L10n.t("Skip between voice messages"), L10n.t("Next and previous on headphones, in a car, in the notification,"
+                                + " on the lock screen and in the full player move between a chat's voice messages, as they do for songs.")));
+            }
         }
         if (build.contains(PatchFamily.LYRICS)) {
             on(pages, PatchFamily.LYRICS).addPreference(toggle(context, Settings.LYRICS, L10n.t("Lyrics in the music player"),

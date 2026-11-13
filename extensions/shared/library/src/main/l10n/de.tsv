@@ -1906,3 +1906,9 @@ Adds a Select all button to the bar that shows while you pick messages, in chats
 selecting every loaded message in a chat	das Auswählen aller geladenen Nachrichten in einem Chat
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Select all button in a chat's shared media.
 selecting everything in shared media	das Auswählen von allem in den geteilten Medien
+# context: Switch on the Playback page under Voice messages in the music player (#77). It gives voice messages the next and previous buttons Telegram gives songs.
+Skip between voice messages	Zwischen Sprachnachrichten springen
+# context: Summary of the switch Skip between voice messages. Next and previous are the media buttons Telegram shows for songs. With the switch on they move between the voice messages of the chat that's playing.
+Next and previous on headphones, in a car, in the notification, on the lock screen and in the full player move between a chat's voice messages, as they do for songs.	Weiter und Zurück am Kopfhörer, im Auto, in der Benachrichtigung, auf dem Sperrbildschirm und im vollen Musikplayer springen zwischen den Sprachnachrichten eines Chats, wie sie es bei Songs tun.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Skip between voice messages switch.
+skipping between voice messages	das Springen zwischen Sprachnachrichten

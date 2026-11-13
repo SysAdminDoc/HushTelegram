@@ -196,6 +196,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ForwardSender.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/VoicePlayer.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/PlaybackPosition.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/VoiceSkip.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/SelectBetween.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/SelectionScreenshot.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FolderIcons.java",
