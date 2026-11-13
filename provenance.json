@@ -198,6 +198,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/PlaybackPosition.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/VoiceSkip.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/SelectBetween.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/SelectAll.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/SelectionScreenshot.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FolderIcons.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FolderIconPath.java",
@@ -441,6 +442,7 @@
       "paths": [
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/AutoForwarding.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ChannelRestrictions.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ProtectedForward.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/IntegrityBypass.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/PremiumUnlock.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ScreenshotNotification.java",
@@ -448,6 +450,7 @@
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/integrity/BypassIntegrityCheckPatch.kt",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/premium/UnlockPremiumPatch.kt",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/restrictions/BypassChannelRestrictionsPatch.kt",
+        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/restrictions/ProtectedForwardSupport.kt",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/screenshotnotif/SuppressScreenshotNotificationPatch.kt"
       ],
       "origin": "original",
