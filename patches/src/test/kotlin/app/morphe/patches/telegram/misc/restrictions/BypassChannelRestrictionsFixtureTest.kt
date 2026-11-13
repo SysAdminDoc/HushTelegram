@@ -23,6 +23,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origRef
@@ -32,6 +33,7 @@ import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
 private const val MESSAGES_CONTROLLER = "Lorg/telegram/messenger/MessagesController;"
+private const val MESSAGE_OBJECT = "Lorg/telegram/messenger/MessageObject;"
 private const val CHAT_HOOK = "Lapp/hushtelegram/extension/telegram/misc/ChannelRestrictions;->isChatNoForwards(I)I"
 private const val PEER_HOOK = "Lapp/hushtelegram/extension/telegram/misc/ChannelRestrictions;->noForwards(I)I"
 private const val REASON_HOOK = "Lapp/hushtelegram/extension/telegram/misc/ChannelRestrictions;->ignoreRestrictionReason(Ljava/util/ArrayList;)Z"
@@ -46,12 +48,19 @@ internal val FORWARD_HOSTS = setOf(
 private val FORWARD_GATE_OWNERS = ConcurrentHashMap<String, List<ClassDef>>()
 
 /**
- * The chat screen and shared media, whose Forward first asks whether a selected message is protected
- * (#73). A test that runs Bypass channel restrictions and expects nothing to warn about adds these.
+ * Every class whose Forward, Copy, Save or share button branches on a message's or chat's own
+ * no-forwarding flag (#73). A test that runs Bypass channel restrictions and expects nothing to
+ * warn about adds these.
  */
 internal fun forwardGateOwners(build: File): List<ClassDef> = FORWARD_GATE_OWNERS.hostsOf(build.path) {
-    FixtureDex.classesWhere(build, { true }) { it.selectedNoForwardsRead() >= 0 }
+    FixtureDex.classesWhere(build, { true }) { !it.definingClass.startsWith("Lorg/telegram/tgnet/") && it.noForwardsGates().isNotEmpty() }
 }
+
+private fun Method.signature() = "$name(${parameterTypes.joinToString("")})$returnType"
+
+private fun Method.readsNoForwards() = implementation?.instructions?.any {
+    it.opcode == Opcode.IGET_BOOLEAN && it.origRef() in NO_FORWARDS_FLAGS
+} == true
 
 private fun Opcode.kind() = if (this == Opcode.GOTO_16 || this == Opcode.GOTO_32) Opcode.GOTO else this
 
@@ -126,21 +135,73 @@ class BypassChannelRestrictionsFixtureTest {
     }
 
     @Test
-    fun `Forward from a selection and from a private chat asks the extension in every declared build`() {
+    fun `Forward, Copy, Save and Share ask the extension at every check of the flag in every declared build`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val owners = forwardGateOwners(build)
-            assertEquals("$name: the chat screen and shared media", listOf("Lorg/telegram/ui", "Lorg/telegram/ui/Components"),
-                owners.map { it.type.substringBeforeLast('/') }.sorted())
             val hosts = FixtureDex.classes(build, setOf(MESSAGES_CONTROLLER) + FORWARD_HOSTS).values
             val stockPrivateChat = hosts.flatMap { it.methods }.single { it.isPrivateChatCheck() }.implementation!!.instructions.toList()
-            val stockSelection = owners.map { owner ->
-                val check = owner.methods.single { it.selectedNoForwardsRead() >= 0 }
-                Triple(owner.type, check.name, check.selectedNoForwardsRead()) to check.implementation!!.instructions.toList()
-            }
-            val context = PatchContexts.of((ExtensionDex.classes() + hosts + storyOwners(build) + bannedAlertHosts(build) +
-                owners).distinctBy { it.type })
+            // Each gate as Telegram ships it, keyed by class and signature.
+            val stockGates = owners.flatMap { owner ->
+                owner.methods.filter { it.noForwardsGates().isNotEmpty() }.map { m ->
+                    (owner.type to m.signature()) to (m.noForwardsGates() to m.implementation!!.instructions.toList())
+                }
+            }.toMap()
+            val gateMethods = owners.flatMap { o -> o.methods.filter { it.noForwardsGates().isNotEmpty() } }
+            assertTrue("$name: the message's own forward check is a gate", gateMethods.any { it.isCanForwardMessage() })
+            assertTrue("$name: so is the message's share button", gateMethods.any {
+                it.origDefiningClass == MESSAGE_OBJECT && it.origName == "needDrawShareButton"
+            })
+            assertTrue("$name: the share button's tap reads the chat's own flag", gateMethods.any { m ->
+                m.noForwardsGates().any { at -> m.implementation!!.instructions.elementAt(at).origRef() == CHAT_NO_FORWARDS }
+            })
+            assertTrue("$name: the chat screen, its cells, menus, shared media and the photo viewer, ${owners.map { it.type }}",
+                owners.count { it.type.startsWith("Lorg/telegram/ui/") } >= 10)
+
+            // Every other method outside the network layer that reads the flag, story check aside.
+            val stories = storyOwners(build)
+            val readers = FixtureDex.classesWhere(build, { true }) { m ->
+                !m.definingClass.startsWith("Lorg/telegram/tgnet/") && m.readsNoForwards() && m.noForwardsGates().isEmpty()
+            }.filter { r -> r.type !in hosts.map { it.type } && r.type !in stories.map { it.type } }
+            val stockReaders = (owners + readers).flatMap { c ->
+                c.methods.filter { it.readsNoForwards() && it.noForwardsGates().isEmpty() && !it.isStoryCheck() }
+                    .map { (c.type to it.signature()) to it.implementation!!.instructions.toList() }
+            }.toMap()
+
+            val context = PatchContexts.of((ExtensionDex.classes() + hosts + stories + bannedAlertHosts(build) +
+                owners + readers).distinctBy { it.type })
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { bypassChannelRestrictionsPatch.execute(context) })
+
+            for ((site, stockSite) in stockGates) {
+                val (type, signature) = site
+                val (reads, stock) = stockSite
+                val after = context.tgMutableClassDefBy(type).methods.single { it.signature() == signature }
+                    .implementation!!.instructions.toList()
+                assertEquals("$name: $type.$signature gains two lines per gate", stock.size + 2 * reads.size, after.size)
+                reads.forEachIndexed { k, read ->
+                    val at = read + 2 * k
+                    val flag = (stock[read] as TwoRegisterInstruction).registerA
+                    val hook = if (stock[read].origRef() == CHAT_NO_FORWARDS) CHAT_HOOK else PEER_HOOK
+                    assertEquals("$name: $type.$signature reads the flag at $read", stock[read].origRef(), after[at].origRef())
+                    assertEquals("$name: $type.$signature then asks the extension", listOf(Opcode.INVOKE_STATIC_RANGE, hook, listOf(flag)),
+                        listOf(after[at + 1].opcode, after[at + 1].origRef(), after[at + 1].namedRegisters()))
+                    assertEquals("$name: $type.$signature and branches on its answer",
+                        listOf(Opcode.MOVE_RESULT, listOf(flag), stock[read + 1].opcode, listOf(flag)),
+                        listOf(after[at + 2].opcode, after[at + 2].namedRegisters(), after[at + 3].opcode, after[at + 3].namedRegisters()))
+                }
+                val inserted = reads.flatMapIndexed { k, read -> listOf(read + 2 * k + 1, read + 2 * k + 2) }.toSet()
+                assertEquals("$name: $type.$signature keeps the rest", stock.map { it.opcode.kind() },
+                    after.filterIndexed { i, _ -> i !in inserted }.map { it.opcode.kind() })
+            }
+            // Every other read of the flag only passes it on, like the channel's own Restrict saving
+            // content switch, and stays Telegram's.
+            for ((site, stock) in stockReaders) {
+                val (type, signature) = site
+                val after = context.tgMutableClassDefBy(type).methods.single { it.signature() == signature }
+                    .implementation!!.instructions.toList()
+                assertEquals("$name: $type.$signature stays Telegram's", stock.map { it.opcode.kind() }, after.map { it.opcode.kind() })
+            }
+            assertTrue("$name: the chat's settings read the flag too", stockReaders.isNotEmpty())
 
             val privateChat = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.single { it.isPrivateChatCheck() }
             val body = privateChat.implementation!!.instructions.toList()
@@ -150,22 +211,6 @@ class BypassChannelRestrictionsFixtureTest {
             assertEquals("$name: asks the extension", CHAT_HOOK, body[1].origRef())
             assertEquals(listOf(Opcode.MOVE_RESULT, Opcode.IF_NEZ, Opcode.RETURN), body.subList(2, 5).map { it.opcode })
             assertEquals("$name: then Telegram's own check", stockPrivateChat.map { it.opcode.kind() }, body.drop(5).map { it.opcode.kind() })
-
-            for ((site, stock) in stockSelection) {
-                val (type, methodName, read) = site
-                val check = context.tgMutableClassDefBy(type).methods.single {
-                    it.name == methodName && it.parameterTypes.isEmpty() && it.returnType == "Z"
-                }
-                val after = check.implementation!!.instructions.toList()
-                val flag = (stock[read] as TwoRegisterInstruction).registerA
-                assertEquals("$name: $type reads the flag", MESSAGE_NO_FORWARDS, after[read].origRef())
-                assertEquals("$name: $type then asks the extension", listOf(Opcode.INVOKE_STATIC_RANGE, PEER_HOOK, listOf(flag)),
-                    listOf(after[read + 1].opcode, after[read + 1].origRef(), after[read + 1].namedRegisters()))
-                assertEquals("$name: $type and branches on its answer", listOf(Opcode.MOVE_RESULT, listOf(flag), Opcode.IF_EQZ, listOf(flag)),
-                    listOf(after[read + 2].opcode, after[read + 2].namedRegisters(), after[read + 3].opcode, after[read + 3].namedRegisters()))
-                assertEquals("$name: $type keeps the rest", stock.map { it.opcode.kind() },
-                    (after.take(read + 1) + after.drop(read + 3)).map { it.opcode.kind() })
-            }
         }
     }
 

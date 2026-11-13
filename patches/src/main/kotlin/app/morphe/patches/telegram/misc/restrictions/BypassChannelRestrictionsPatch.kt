@@ -22,6 +22,7 @@ import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.settings.settingsPatch
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.names.addInstructionsWithLabels
+import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origRef
@@ -32,12 +33,11 @@ import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
-import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
-import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 
 private const val PATCH = "Bypass channel restrictions"
 private const val MESSAGES_CONTROLLER = "Lorg/telegram/messenger/MessagesController;"
+private const val MESSAGE_OBJECT = "Lorg/telegram/messenger/MessageObject;"
 
 private const val CHANNEL_RESTRICTIONS = "$EXTENSION_PACKAGE/misc/ChannelRestrictions;"
 private const val IS_CHAT_NO_FORWARDS_HOOK = "$CHANNEL_RESTRICTIONS->isChatNoForwards(I)I"
@@ -47,11 +47,11 @@ internal const val STORY_HOOK = "$CHANNEL_RESTRICTIONS->storyAllowed(I)I"
 
 /** A message's own no-forwarding flag, set on every post of a protected channel and on a bot's protected sends. */
 internal const val MESSAGE_NO_FORWARDS = "Lorg/telegram/tgnet/TLRPC\$Message;->noforwards:Z"
+/** A chat's own no-forwarding flag, which the share button and a few other screens read straight off the chat. */
+internal const val CHAT_NO_FORWARDS = "Lorg/telegram/tgnet/TLRPC\$Chat;->noforwards:Z"
+internal val NO_FORWARDS_FLAGS = setOf(MESSAGE_NO_FORWARDS, CHAT_NO_FORWARDS)
 private const val USER_FULL = "Lorg/telegram/tgnet/TLRPC\$UserFull;"
 private const val PRIVATE_CHAT_NO_FORWARDS = "$USER_FULL->noforwards_peer_enabled:Z"
-
-/** The selected messages a screen keeps, one SparseArray per chat it shows. */
-private const val SELECTED_MESSAGES = "[Landroid/util/SparseArray;"
 
 /** What the story viewer's check reads: the story's own flag, whether it's pinned, and its channel's flag. */
 internal val STORY_CHECK_READS = listOf(
@@ -140,21 +140,31 @@ val bypassChannelRestrictionsPatch = bytecodePatch(
             patchLog.warning("$PATCH: the private chat check is missing. Private chats that turn forwarding off keep it off.")
         }
 
-        // Forward from a chat's selection or from shared media first asks whether any selected
-        // message is protected, and does nothing when one is (#73). Each of those reads of the
-        // message's own flag goes through the extension before the branch on it.
-        val selectionReads = selectedNoForwardsReads()
-        for ((method, at) in selectionReads) {
-            val flag = (method.getInstruction(at) as TwoRegisterInstruction).registerA
-            method.addInstructionsAtControlFlowLabel(at + 1, """
-                invoke-static/range {v$flag .. v$flag}, $NO_FORWARDS_HOOK
-                move-result v$flag
-            """)
+        // Forward, Copy, Save, the share button and their message menu entries each hang on a read
+        // of the message's or the chat's own flag that Telegram branches on right away: the
+        // selection's counts (a protected message in it turns Forward off), the message's own
+        // forward check, the menu, shared media and the photo viewer (#73). Each of those reads
+        // goes through the extension before the branch. Reads that only copy the flag, like the
+        // channel's own Restrict saving content switch, stay Telegram's.
+        val gates = noForwardsGates()
+        for ((method, reads) in gates) {
+            for (at in reads.sortedDescending()) {
+                val read = method.getInstruction(at)
+                val flag = (read as TwoRegisterInstruction).registerA
+                val hook = if (read.origRef() == CHAT_NO_FORWARDS) IS_CHAT_NO_FORWARDS_HOOK else NO_FORWARDS_HOOK
+                method.addInstructionsAtControlFlowLabel(at + 1, """
+                    invoke-static/range {v$flag .. v$flag}, $hook
+                    move-result v$flag
+                """)
+            }
         }
-        if (selectionReads.isNotEmpty()) {
+        if (gates.isNotEmpty()) {
             hooked++
         } else {
-            patchLog.warning("$PATCH: the selection's protected message check is missing. Forward stays off for a selection holding one.")
+            patchLog.warning("$PATCH: no check of a message's or chat's own flag found. Forward, Copy and Save stay off where it's set.")
+        }
+        if (gates.none { (method, _) -> method.isCanForwardMessage() }) {
+            patchLog.warning("$PATCH: the message's own forward check is missing. Forward stays off for a selection holding a protected message.")
         }
 
         // Every check of a chat, user or message Telegram restricts for copyright or local law asks
@@ -248,43 +258,44 @@ internal fun Method.isStoryCheck(): Boolean {
 }
 
 /**
- * Every "is a selected message protected?" check, each with the index of its one read of
- * [MESSAGE_NO_FORWARDS]: the chat's and shared media's, ahead of their Forward.
+ * Every method outside the network layer and the extension that branches on [NO_FORWARDS_FLAGS]
+ * right after reading one, with the index of each such read. The story check has its own hook.
  */
-private fun BytecodePatchContext.selectedNoForwardsReads(): List<Pair<MutableMethod, Int>> {
+private fun BytecodePatchContext.noForwardsGates(): List<Pair<MutableMethod, List<Int>>> {
     val found = mutableListOf<Method>()
-    forEachClassMentioning(Mention.reference(MESSAGE_NO_FORWARDS)) { cls ->
-        if (cls.type.startsWith("Lapp/hushtelegram/")) return@forEachClassMentioning
-        cls.methods.filterTo(found) { it.selectedNoForwardsRead() >= 0 }
+    forEachClassMentioning(Mention.anyReference(NO_FORWARDS_FLAGS)) { cls ->
+        if (cls.type.startsWith("Lapp/hushtelegram/") || cls.type.startsWith("Lorg/telegram/tgnet/")) return@forEachClassMentioning
+        cls.methods.filterTo(found) { it.noForwardsGates().isNotEmpty() }
     }
-    return found.map { check ->
-        val method = tgMutableClassDefBy(check.definingClass).methods.single {
-            it.name == check.name && it.parameterTypes.isEmpty() && it.returnType == "Z"
+    return found.map { gate ->
+        val types = gate.parameterTypes.map { it.toString() }
+        val method = tgMutableClassDefBy(gate.definingClass).methods.single {
+            it.name == gate.name && it.returnType == gate.returnType && it.parameterTypes.map { p -> p.toString() } == types
         }
-        method to method.selectedNoForwardsRead()
+        method to method.noForwardsGates()
     }
 }
 
 /**
- * Where an instance method with no arguments that answers a boolean reads a selected message's
- * [MESSAGE_NO_FORWARDS] and branches on it right away, when it holds a screen's
- * [SELECTED_MESSAGES] and does that exactly once. -1 for any other method.
+ * The indexes of this method's reads of a message's or a chat's own no-forwarding flag that an
+ * `if-eqz` or `if-nez` tests right away, on the register it was read into. Empty for the story
+ * check and for reads that only pass the flag on.
  */
-internal fun Method.selectedNoForwardsRead(): Int {
-    if (AccessFlags.STATIC.isSet(accessFlags) || parameterTypes.isNotEmpty() || returnType != "Z") return -1
-    val code = implementation?.instructions?.toList() ?: return -1
-    val selection = code.any { ins ->
-        ins.opcode == Opcode.IGET_OBJECT && ((ins as ReferenceInstruction).reference as? FieldReference)?.type == SELECTED_MESSAGES
-    }
-    if (!selection) return -1
-    val reads = code.indices.filter { at ->
+internal fun Method.noForwardsGates(): List<Int> {
+    val code = implementation?.instructions?.toList() ?: return emptyList()
+    val gates = code.indices.filter { at ->
         val read = code[at]
         val next = code.getOrNull(at + 1)
-        read.opcode == Opcode.IGET_BOOLEAN && read.origRef() == MESSAGE_NO_FORWARDS && next?.opcode == Opcode.IF_EQZ &&
-            (next as OneRegisterInstruction).registerA == (read as TwoRegisterInstruction).registerA
+        read.opcode == Opcode.IGET_BOOLEAN && (next?.opcode == Opcode.IF_EQZ || next?.opcode == Opcode.IF_NEZ) &&
+            (next as OneRegisterInstruction).registerA == (read as TwoRegisterInstruction).registerA &&
+            read.origRef() in NO_FORWARDS_FLAGS
     }
-    return reads.singleOrNull() ?: -1
+    return if (gates.isEmpty() || isStoryCheck()) emptyList() else gates
 }
+
+/** Telegram's `MessageObject.canForwardMessage()`, which the selection asks of every message it takes. */
+internal fun Method.isCanForwardMessage() = origDefiningClass == MESSAGE_OBJECT && origName == "canForwardMessage" &&
+    origReturnType == "Z" && origParameterTypes.isEmpty()
 
 internal fun Method.returns(): List<Int> =
     implementation?.instructions?.withIndex()?.filter { it.value.opcode == Opcode.RETURN }?.map { it.index }.orEmpty()
