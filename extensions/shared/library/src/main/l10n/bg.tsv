@@ -1545,6 +1545,10 @@ Rule saved	Правилото е запазено
 Open restricted channels	Отваряне на ограничени канали
 Channels, groups and messages Telegram says are unavailable for copyright or local law open anyway, as long as Telegram still sends them.	Канали, групи и съобщения, за които Telegram казва, че са недостъпни заради авторски права или местен закон, се отварят въпреки това, стига Telegram все още да ги изпраща.
 channels restricted for copyright or local law	канали, ограничени заради авторски права или местен закон
+banned channels on the web	канали, които са ви блокирали, в уеб
+A channel that banned you offers Open on the web, which shows its public posts in your browser.	Канал, който ви е блокирал, предлага „Отвори в уеб“, което показва публичните му публикации в браузъра ви.
+Open on the web	Отвори в уеб
+No browser could open %1$s.	Никой браузър не можа да отвори %1$s.
 Send photos and videos in the best quality	Изпращай снимки и видеа в най-добро качество
 Photos go out in HD and videos at their own size and quality, without touching the quality button first. You can still lower one before sending. Only sending as a file keeps a photo exactly as it is.	Снимките се изпращат в HD, а видеата в собствения си размер и качество, без първо да пипаш бутона за качество. Пак можеш да намалиш качеството на някое преди изпращане. Само изпращането като файл запазва снимката точно такава, каквато е.
 photos and videos in their best quality	снимки и видеа в най-добро качество

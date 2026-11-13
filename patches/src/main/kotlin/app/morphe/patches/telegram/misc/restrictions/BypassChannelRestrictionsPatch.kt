@@ -54,7 +54,8 @@ val bypassChannelRestrictionsPatch = bytecodePatch(
     name = PATCH,
     description = "Lets you forward, copy and save from channels and chats that turn those off. A second " +
         "switch, Open restricted channels, opens channels, groups and messages Telegram marks unavailable for " +
-        "copyright or local law, as long as Telegram still sends them. Both start off. Turn them on in " +
+        "copyright or local law, as long as Telegram still sends them, and offers a channel that banned you on " +
+        "the web. Both start off. Turn them on in " +
         "HushTelegram settings > Privacy.",
     default = true,
 ) {
@@ -65,6 +66,7 @@ val bypassChannelRestrictionsPatch = bytecodePatch(
     execute {
         requireStatusMethod("bypassChannelRestrictions")
         requireStatusMethod("openRestrictedChats")
+        requireStatusMethod("bannedChannelWeb")
 
         val owner = tgMutableClassDefByOrNull(MESSAGES_CONTROLLER)
         if (owner == null) {
@@ -125,6 +127,17 @@ val bypassChannelRestrictionsPatch = bytecodePatch(
             hooked++
         } else {
             patchLog.warning("$PATCH: getRestrictionReason is missing. Open restricted channels is left out.")
+        }
+
+        // A channel that banned you never sends its posts, whatever the app says, but its public
+        // page at t.me/s/name shows them to anyone. Telegram's alert for it gets a button that
+        // opens that page in a browser (#71).
+        try {
+            applyBannedChannelAlert(resolveBannedChannelAlert())
+            enableCapability("bannedChannelWeb")
+            hooked++
+        } catch (unfit: PatchException) {
+            patchLog.warning("$PATCH: ${unfit.message}. A banned channel's alert keeps only Telegram's OK.")
         }
 
         // The story viewer asks one method whether a story may be shared, saved or screenshot, and

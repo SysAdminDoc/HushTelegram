@@ -424,6 +424,7 @@ public enum PatchFamily {
         PASTED_LINK_TRACKING(STRIP_LINK_TRACKING, "pastedLinkTracking", "pasted links", true),
         SHARE_NUMBER_UNTICKED(HIDE_PHONE_NUMBER, "shareNumberUnticked", "number sharing on new contacts", true),
         OPEN_RESTRICTED_CHATS(BYPASS_CHANNEL_RESTRICTIONS, "openRestrictedChats", "channels restricted for copyright or local law", true),
+        BANNED_CHANNEL_WEB(BYPASS_CHANNEL_RESTRICTIONS, "bannedChannelWeb", "banned channels on the web", true),
         COMPACT_TAB_BAR(HIDE_CONTACTS_TAB, "compactTabBar", "bottom bar size", true),
         SIDE_MENU(HIDE_CONTACTS_TAB, "sideMenu", "side menu", true),
         HIDE_NEW_MESSAGE(HIDE_CONTACTS_TAB, "hideNewMessage", "new message button", true),

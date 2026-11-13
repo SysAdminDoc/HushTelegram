@@ -1549,6 +1549,10 @@ Rule saved	Kural kaydedildi
 Open restricted channels	Kısıtlanmış kanalları aç
 Channels, groups and messages Telegram says are unavailable for copyright or local law open anyway, as long as Telegram still sends them.	Telegram'ın telif hakkı veya yerel yasalar nedeniyle kullanılamıyor dediği kanallar, gruplar ve mesajlar, Telegram onları göndermeye devam ettiği sürece yine de açılır.
 channels restricted for copyright or local law	telif hakkı veya yerel yasalar nedeniyle kısıtlanmış kanallar
+banned channels on the web	sizi engelleyen kanallar, web'de
+A channel that banned you offers Open on the web, which shows its public posts in your browser.	Sizi engelleyen bir kanal, herkese açık gönderilerini tarayıcınızda gösteren Web'de aç seçeneğini sunar.
+Open on the web	Web'de aç
+No browser could open %1$s.	Hiçbir tarayıcı %1$s adresini açamadı.
 Send photos and videos in the best quality	Fotoğraf ve videoları en iyi kalitede gönder
 Photos go out in HD and videos at their own size and quality, without touching the quality button first. You can still lower one before sending. Only sending as a file keeps a photo exactly as it is.	Fotoğraflar HD, videolar kendi boyutu ve kalitesiyle gider, önce kalite düğmesine dokunmana gerek kalmaz. Göndermeden önce birinin kalitesini yine düşürebilirsin. Bir fotoğrafı tam olduğu gibi yalnızca dosya olarak göndermek korur.
 photos and videos in their best quality	en iyi kalitede fotoğraf ve videolar

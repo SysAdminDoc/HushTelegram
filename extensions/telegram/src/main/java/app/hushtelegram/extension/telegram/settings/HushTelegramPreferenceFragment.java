@@ -1597,11 +1597,19 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     Settings.BYPASS_CHANNEL_RESTRICTIONS, L10n.t("Bypass channel restrictions"),
                     PatchFamily.BYPASS_CHANNEL_RESTRICTIONS.coverageSummary(L10n.t(
                             "Channels and chats that block forwarding and saving let you forward messages and save media."))));
-            if (PatchFamily.Capability.OPEN_RESTRICTED_CHATS.installed()) {
+            boolean restricted = PatchFamily.Capability.OPEN_RESTRICTED_CHATS.installed();
+            boolean banned = PatchFamily.Capability.BANNED_CHANNEL_WEB.installed();
+            if (restricted || banned) {
+                List<String> summary = new ArrayList<>();
+                if (restricted) {
+                    summary.add(L10n.t("Channels, groups and messages Telegram says are unavailable for copyright or local "
+                            + "law open anyway, as long as Telegram still sends them."));
+                }
+                if (banned) {
+                    summary.add(L10n.t("A channel that banned you offers Open on the web, which shows its public posts in your browser."));
+                }
                 on(pages, PatchFamily.BYPASS_CHANNEL_RESTRICTIONS).addPreference(toggle(context, Settings.OPEN_RESTRICTED_CHATS,
-                        L10n.t("Open restricted channels"),
-                        L10n.t("Channels, groups and messages Telegram says are unavailable for copyright or local "
-                                + "law open anyway, as long as Telegram still sends them.")));
+                        L10n.t("Open restricted channels"), String.join(" ", summary)));
             }
         }
         if (build.contains(PatchFamily.BYPASS_INTEGRITY_CHECK)) {

@@ -1708,6 +1708,37 @@ public class HushTelegramPreferenceFragmentTest {
         }
     }
 
+    /** Open restricted channels says what this build backs: restricted chats, a banned channel's web page, or both (#71). */
+    @Test
+    public void openRestrictedChannelsSaysWhatThisBuildBacks() {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.BYPASS_CHANNEL_RESTRICTIONS);
+        String restricted = "Channels, groups and messages Telegram says are unavailable for copyright or local law open "
+                + "anyway, as long as Telegram still sends them.";
+        String banned = "A channel that banned you offers Open on the web, which shows its public posts in your browser.";
+        try {
+            PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                assertNull("no row without either", pageOf(controller).findPreference(Settings.OPEN_RESTRICTED_CHATS.key));
+            }
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.OPEN_RESTRICTED_CHATS);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                assertEquals(restricted, String.valueOf(pageOf(controller).findPreference(Settings.OPEN_RESTRICTED_CHATS.key).getSummary()));
+            }
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.BANNED_CHANNEL_WEB);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                assertEquals(banned, String.valueOf(pageOf(controller).findPreference(Settings.OPEN_RESTRICTED_CHATS.key).getSummary()));
+            }
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.OPEN_RESTRICTED_CHATS, PatchFamily.Capability.BANNED_CHANNEL_WEB);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                Preference row = pageOf(controller).findPreference(Settings.OPEN_RESTRICTED_CHATS.key);
+                assertEquals("Open restricted channels", String.valueOf(row.getTitle()));
+                assertEquals(restricted + " " + banned, String.valueOf(row.getSummary()));
+            }
+        } finally {
+            PatchFamily.capabilitiesForTests = null;
+        }
+    }
+
     /**
      * With the passcode switch on, the chats row, Hide picked chats and the passcode switch each ask for
      * Telegram's passcode before they give way, and a wrong one changes nothing.
