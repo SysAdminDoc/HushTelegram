@@ -27,11 +27,18 @@ private const val CHAT_HOOK = "Lapp/hushtelegram/extension/telegram/misc/Channel
 private const val PEER_HOOK = "Lapp/hushtelegram/extension/telegram/misc/ChannelRestrictions;->noForwards(I)I"
 private const val REASON_HOOK = "Lapp/hushtelegram/extension/telegram/misc/ChannelRestrictions;->ignoreRestrictionReason(Ljava/util/ArrayList;)Z"
 
+/** What the protected forward's stubs reach: the forward, the sends, the message and its file. */
+internal val FORWARD_HOSTS = setOf(
+    "Lorg/telegram/messenger/SendMessagesHelper;", "Lorg/telegram/messenger/AccountInstance;", "Lorg/telegram/messenger/MessageObject;",
+    "Lorg/telegram/tgnet/TLRPC\$Message;", "Lorg/telegram/tgnet/TLRPC\$Document;", "Lorg/telegram/messenger/FileLoader;",
+    "Lorg/telegram/messenger/DialogObject;", "Lorg/telegram/tgnet/TLObject;",
+)
+
 class BypassChannelRestrictionsFixtureTest {
     @Test
     fun `every restriction check asks the extension first in every declared build`() {
         for (build in Fixtures.declaredBuilds()) {
-            val hosts = FixtureDex.classes(build, setOf(MESSAGES_CONTROLLER)).values
+            val hosts = FixtureDex.classes(build, setOf(MESSAGES_CONTROLLER) + FORWARD_HOSTS).values
             val context = PatchContexts.of(ExtensionDex.classes() + hosts + storyOwners(build))
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { bypassChannelRestrictionsPatch.execute(context) })
             val controller = context.tgMutableClassDefBy(MESSAGES_CONTROLLER)
@@ -77,7 +84,7 @@ class BypassChannelRestrictionsFixtureTest {
             val owner = owners.single()
             val stockAnswers = owner.methods.single { it.isStoryCheck() }.returns().size
             assertTrue("${build.name}: the check answers more than once", stockAnswers > 1)
-            val hosts = FixtureDex.classes(build, setOf(MESSAGES_CONTROLLER)).values
+            val hosts = FixtureDex.classes(build, setOf(MESSAGES_CONTROLLER) + FORWARD_HOSTS).values
             val context = PatchContexts.of(ExtensionDex.classes() + hosts + owner)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { bypassChannelRestrictionsPatch.execute(context) })
             val check = context.tgMutableClassDefBy(owner.type).methods.single { it.isStoryCheck() }

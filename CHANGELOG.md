@@ -23,6 +23,7 @@ Every HushTelegram release, newest first.
 
 ### Fixed
 
+* **Telegram:** With **Bypass channel restrictions** on, a forward out of a channel or chat that turns forwarding off now arrives. Telegram's servers turn those forwards down whatever the app says, so HushTelegram sends each message again as a new one instead, its text or its photo, video or file with the caption. They go out as your own messages, without the "Forwarded from" line. A video or file that isn't on the phone yet downloads first. (#73)
 * **Tooling:** Release publish reads the notes GitHub serves back as UTF-8, so a bullet with an accented word like "Português" no longer looks missing after the release is already up.
 
 ## 0.0.25 (2026-11-12)

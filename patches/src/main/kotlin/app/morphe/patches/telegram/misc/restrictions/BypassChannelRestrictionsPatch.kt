@@ -6,6 +6,7 @@ package app.morphe.patches.telegram.misc.restrictions
 
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
@@ -141,6 +142,17 @@ val bypassChannelRestrictionsPatch = bytecodePatch(
             hooked++
         } else {
             patchLog.warning("$PATCH: the story viewer's check is missing or not alone. Stories are left out.")
+        }
+
+        // Telegram's servers refuse to forward from these chats whatever the app says, so the
+        // forward itself sends those messages again as new ones (#73). Only worth it once the
+        // app offers Forward there.
+        if (isChatNoForwards?.implementation != null || isPeerNoForwards?.implementation != null) {
+            try {
+                applyProtectedForward(resolveProtectedForward())
+            } catch (unfit: PatchException) {
+                patchLog.warning("$PATCH: ${unfit.message}. Forwards from protected chats stay Telegram's, which its servers refuse.")
+            }
         }
 
         if (hooked > 0) {
