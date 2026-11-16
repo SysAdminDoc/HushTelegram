@@ -333,16 +333,20 @@ public final class OutsideTranslate {
         if (!known) return false;
         String text = original(message);
         if (text == null || text.trim().isEmpty()) return false;
-        return !hasCode(entities(message));
+        return !keptAsWritten(entities(message));
     }
 
-    /** A code block or a run of code stays as written. */
-    static boolean hasCode(List<?> entities) {
+    /**
+     * A code block or a run of code stays as written, and so does a message with a spoiler: the
+     * translation comes back as plain text, which would show the covered words.
+     */
+    static boolean keptAsWritten(List<?> entities) {
         if (entities == null) return false;
         for (Object entity : entities) {
             if (entity == null) continue;
             String name = entity.getClass().getName();
-            if (name.endsWith("TL_messageEntityPre") || name.endsWith("TL_messageEntityCode")) return true;
+            if (name.endsWith("TL_messageEntityPre") || name.endsWith("TL_messageEntityCode")
+                    || name.endsWith("TL_messageEntitySpoiler")) return true;
         }
         return false;
     }

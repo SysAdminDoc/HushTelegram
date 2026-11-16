@@ -1233,9 +1233,16 @@ public class OutsideTranslateTest {
     @Test public void codeBlocksAreLeftAsWritten() {
         class TL_messageEntityPre {}
         class TL_messageEntityBold {}
-        assertTrue(OutsideTranslate.hasCode(Arrays.asList(new TL_messageEntityBold(), new TL_messageEntityPre())));
-        assertFalse(OutsideTranslate.hasCode(Collections.singletonList(new TL_messageEntityBold())));
-        assertFalse(OutsideTranslate.hasCode(null));
+        assertTrue(OutsideTranslate.keptAsWritten(Arrays.asList(new TL_messageEntityBold(), new TL_messageEntityPre())));
+        assertFalse(OutsideTranslate.keptAsWritten(Collections.singletonList(new TL_messageEntityBold())));
+        assertFalse(OutsideTranslate.keptAsWritten(null));
+    }
+
+    @Test public void aSpoilerKeepsTheMessageAsWrittenSoItsWordsStayCovered() {
+        class TL_messageEntitySpoiler {}
+        class TL_messageEntityItalic {}
+        assertTrue(OutsideTranslate.keptAsWritten(Arrays.asList(new TL_messageEntityItalic(), new TL_messageEntitySpoiler())));
+        assertFalse(OutsideTranslate.keptAsWritten(Collections.singletonList(new TL_messageEntityItalic())));
     }
 
     @Test public void theMenuEntryGoesAfterTelegramsOwnTranslateAndKeepsTheListsInStep() {
