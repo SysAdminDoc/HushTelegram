@@ -1787,6 +1787,12 @@ Add Delete for them to the message menu	Für andere löschen zum Nachrichtenmen�
 Adds Delete for them to your own messages in chats and groups. It deletes the message for everyone else and keeps it on this phone, marked deleted. Clear kept messages removes it here too.	Fügt Für andere löschen zu deinen eigenen Nachrichten in Chats und Gruppen hinzu. Die Nachricht wird für alle anderen gelöscht und bleibt auf diesem Handy, als gelöscht markiert. Behaltene Nachrichten löschen entfernt sie auch hier.
 # context: Short message shown after Delete for them: the message is gone for everyone else in the chat and stays on this phone
 Deleted for them, kept here.	Für andere gelöscht, hier behalten.
+# context: Title of the switch on the Conversations page under Add Repeat to the message menu (#83). Also delete for is the checkbox in Telegram's delete messages dialog, "Also delete for [name]" (key DeleteMessagesOptionAlso on translations.telegram.org). Telegram's German label is "Auch bei %1$s löschen", written here with the name left out as an ellipsis
+Check Also delete for by default	„Auch bei … löschen“ standardmäßig ankreuzen
+# context: Summary of the Check Also delete for by default switch. Also delete for is the checkbox in Telegram's delete messages dialog (key DeleteMessagesOptionAlso), offered only in a chat with one person. Telegram's German label is "Auch bei %1$s löschen", written here with the name left out as an ellipsis
+When you delete messages in a chat with a person, Telegram's Also delete for box starts checked, so they're deleted for both of you. Uncheck it to delete them just for you.	Wenn du in einem Chat mit einer Person Nachrichten löschst, ist Telegrams Kästchen „Auch bei … löschen“ schon angekreuzt, sodass sie für euch beide gelöscht werden. Entferne den Haken, um sie nur für dich zu löschen.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Check Also delete for by default switch (key DeleteMessagesOptionAlso). Telegram's German label is "Auch bei %1$s löschen", written here with the name left out as an ellipsis
+checking Also delete for by default	das Vorankreuzen von „Auch bei … löschen“
 # context: Item in the music player's menu (the three dots, #71) that opens the song's lyrics over the player
 Lyrics	Songtext
 # context: Line in the lyrics panel while the song's lyrics load

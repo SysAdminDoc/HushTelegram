@@ -926,6 +926,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                     + "and keeps it on this phone, marked deleted. Clear kept messages removes it here too.")));
                 }
             }
+            if (PatchFamily.Capability.ALSO_DELETE_CHECKED.installed()) {
+                on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.ALSO_DELETE_CHECKED,
+                        L10n.t("Check Also delete for by default"),
+                        L10n.t("When you delete messages in a chat with a person, Telegram's Also delete for box starts checked, "
+                                + "so they're deleted for both of you. Uncheck it to delete them just for you.")));
+            }
             if (PatchFamily.Capability.SELECT_BETWEEN.installed()) {
                 on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.SELECT_BETWEEN, L10n.t("Select between"),
                         L10n.t("Adds a Select between button to the bar that shows while you pick messages. It selects everything between the first and"

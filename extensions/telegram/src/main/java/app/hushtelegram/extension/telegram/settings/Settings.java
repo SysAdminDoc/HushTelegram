@@ -881,6 +881,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting MESSAGE_MENU_DELETE_FOR_THEM =
             new BooleanSetting("hushtelegram_message_menu_delete_for_them", FALSE);
 
+    /** Also delete for, checked from the start in Telegram's delete messages dialog (#83) ({@link app.hushtelegram.extension.telegram.misc.MessageMenu#alsoDeleteChecked}). */
+    public static final BooleanSetting ALSO_DELETE_CHECKED =
+            new BooleanSetting("hushtelegram_also_delete_checked", FALSE);
+
     /**
      * A channel's read metrics (how long each post stayed on screen), Premium screen interaction
      * reports and the camera's dual-camera report are never sent ({@link app.hushtelegram.extension.telegram.misc.Analytics}).

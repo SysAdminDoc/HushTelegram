@@ -189,6 +189,13 @@ val messageMenuPatch = bytecodePatch(
         } else {
             patchLog.warning("Add Repeat to the message menu: ${hide.missing}. The patch goes on without Hide for me.")
         }
+        val alsoDelete = resolveAlsoDeleteChecked()
+        if (alsoDelete.missing == null) {
+            alsoDelete.apply()
+            enableCapability("alsoDeleteChecked")
+        } else {
+            patchLog.warning("Add Repeat to the message menu: ${alsoDelete.missing}. The patch goes on without checking Also delete for by default.")
+        }
         enableStatus("messageMenuRepeat")
     }
 }

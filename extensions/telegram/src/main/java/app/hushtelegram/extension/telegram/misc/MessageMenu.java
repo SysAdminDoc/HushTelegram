@@ -795,6 +795,26 @@ public final class MessageMenu {
         }
     }
 
+    /**
+     * Also delete for, checked by default (#83). Injected where Telegram's delete dialog fills in
+     * the Also delete for box, in place of its unchecked start.
+     *
+     * <p>Telegram offers that box only in a chat with a person: not Saved Messages, a bot, a deleted
+     * account, a group, a channel or a secret chat, and only while at least one of the messages can
+     * still go for both sides. It starts the box unchecked and reads a one-slot flag when Delete is
+     * tapped. This sets that flag and answers true for the box's start, so the box and the flag
+     * agree, and the box's own tap flips both back. Nowhere else does the dialog change.
+     *
+     * @param choice the dialog's own flag that Delete reads, slot 0 meaning delete for both sides
+     * @return whether the box starts checked
+     */
+    public static boolean alsoDeleteChecked(boolean[] choice) {
+        if (choice == null || choice.length == 0 || !on(Settings.ALSO_DELETE_CHECKED)) return false;
+        choice[0] = true;
+        HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, "Also delete for checked");
+        return true;
+    }
+
     /** Whether the switch is on and HushTelegram isn't paused. */
     static boolean on(BooleanSetting setting) {
         HookStatus.invoked(FamilyNames.MESSAGE_MENU_REPEAT);

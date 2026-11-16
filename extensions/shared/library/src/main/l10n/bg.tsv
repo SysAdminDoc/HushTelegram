@@ -1783,6 +1783,12 @@ Add Delete for them to the message menu	Добавяне на Изтриване
 Adds Delete for them to your own messages in chats and groups. It deletes the message for everyone else and keeps it on this phone, marked deleted. Clear kept messages removes it here too.	Добавя Изтриване за другите към вашите собствени съобщения в чатове и групи. Съобщението се изтрива за всички останали и остава на този телефон, отбелязано като изтрито. Изчистване на запазените съобщения го премахва и тук.
 # context: Short message shown after Delete for them: the message is gone for everyone else in the chat and stays on this phone
 Deleted for them, kept here.	Изтрито за другите, запазено тук.
+# context: Title of the switch on the Conversations page under Add Repeat to the message menu (#83). Also delete for is the checkbox in Telegram's delete messages dialog, "Also delete for [name]" (key DeleteMessagesOptionAlso on translations.telegram.org). Telegram's Bulgarian has no applied translation of it, so Telegram shows the English "Also delete for" and this names it as shown
+Check Also delete for by default	„Also delete for“ отметнато по подразбиране
+# context: Summary of the Check Also delete for by default switch. Also delete for is the checkbox in Telegram's delete messages dialog (key DeleteMessagesOptionAlso), offered only in a chat with one person. Telegram's Bulgarian has no applied translation of it, so Telegram shows the English "Also delete for" and this names it as shown
+When you delete messages in a chat with a person, Telegram's Also delete for box starts checked, so they're deleted for both of you. Uncheck it to delete them just for you.	Когато изтривате съобщения в чат с човек, полето „Also delete for“ на Telegram е отметнато предварително и те се изтриват и за двамата. Махнете отметката, за да ги изтриете само за себе си.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Check Also delete for by default switch (key DeleteMessagesOptionAlso). Telegram's Bulgarian has no applied translation of it, so Telegram shows the English "Also delete for" and this names it as shown
+checking Also delete for by default	предварителното отмятане на „Also delete for“
 # context: Item in the music player's menu (the three dots, #71) that opens the song's lyrics over the player
 Lyrics	Текст на песента
 # context: Line in the lyrics panel while the song's lyrics load
