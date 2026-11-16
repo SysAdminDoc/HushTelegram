@@ -2133,3 +2133,37 @@ APK and EXE files get their own icon in chats and in Shared media. Once download
 file icons and thumbnails in chats	ícones e miniaturas de arquivos nas conversas
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Save downloaded files that draws file icons in a chat's Shared media page
 file icons and thumbnails in Shared media	ícones e miniaturas de arquivos na mídia compartilhada
+# context: Switch title on the Look and feel page under AMOLED black, off by default (#88). It shows a picture from the gallery behind Telegram's list screens.
+Picture behind the lists	Imagem atrás das listas
+# context: Summary of Picture behind the lists. Settings is Telegram's own Settings screen; built-in themes are the ones Telegram ships (Day, Classic, Night, Dark), not a theme installed from a file.
+Shows a picture from your gallery behind the chat list, Settings, profiles and the other lists. Chats keep their wallpaper, and menus and dialogs stay solid. Works with Telegram's built-in themes.	Mostra uma imagem da sua galeria atrás da lista de conversas, das Configurações, dos perfis e das outras listas. As conversas mantêm o papel de parede, e os menus e caixas de diálogo continuam opacos. Funciona com os temas integrados do Telegram.
+# context: Row title under Picture behind the lists. A tap picks the picture from the gallery, or changes how dim it is.
+Background picture	Imagem de fundo
+# context: Summary of the Background picture row before a picture is picked. Must fit two short lines.
+No picture yet. Tap to pick one.	Nenhuma imagem ainda. Toque para escolher.
+# context: Summary of the Background picture row once a picture is saved. %1$s is a percentage like 40%. Must fit two short lines.
+Dimmed by %1$s. Tap to change it.	Escurecida em %1$s. Toque para mudar.
+# context: Title of the dialog that lists how much the background picture is dimmed (20%, 40%, 60%, 80%).
+Dim the picture	Escurecer a imagem
+# context: Toast when the dim picked for the background picture could not be saved. Must fit two short toast lines.
+Couldn't save the dim. Try again in a moment.	Não foi salvo. Tente de novo em instantes.
+# context: Button in the Dim the picture dialog that opens the gallery to pick a different background picture.
+Choose another picture	Escolher outra imagem
+# context: Button in the Dim the picture dialog. It deletes the background picture and turns Picture behind the lists off at once.
+Remove background	Remover fundo
+# context: Toast after Remove background. Must fit two short toast lines.
+Background removed.	Fundo removido.
+# context: Toast when no app on the phone can pick a picture. Must fit two short toast lines.
+This phone has no gallery picker.	Este celular não tem seletor de galeria.
+# context: Toast when the file picked for a background picture can't be read as a picture. Must fit two short toast lines.
+That file isn't a picture.	Esse arquivo não é uma imagem.
+# context: Toast when the file picked for a background picture is over 40 MB. Must fit two short toast lines.
+That picture is too large.	Essa imagem é grande demais.
+# context: Toast when copying the picked background picture into Telegram's files failed. Must fit two short toast lines.
+Couldn't save the picture. Try again.	A imagem não foi salva. Tente de novo.
+# context: Toast once the picked picture is saved and shows behind the lists. Must fit two short toast lines.
+Background picture saved.	Imagem de fundo salva.
+# context: Label in the settings import preview, as in "Background dim: 40% to 60%". It names how much the background picture is dimmed.
+Background dim	Escurecimento do fundo
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of AMOLED black that shows a gallery picture behind the list screens.
+a picture behind the lists	uma imagem atrás das listas

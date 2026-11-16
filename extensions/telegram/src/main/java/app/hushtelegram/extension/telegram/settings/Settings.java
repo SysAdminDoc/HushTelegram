@@ -236,6 +236,18 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting AMOLED_BLACK =
             new BooleanSetting("hushtelegram_amoled_black", FALSE, true);
 
+    /**
+     * A picture from the gallery behind Telegram's list pages, with their fills see-through over it
+     * ({@link app.hushtelegram.extension.telegram.misc.ListBackground}). The picture is kept in
+     * Telegram's own files on this phone.
+     */
+    public static final BooleanSetting LIST_BACKGROUND =
+            new BooleanSetting("hushtelegram_list_background", FALSE);
+
+    /** How much of the theme's page color lies over {@link #LIST_BACKGROUND}'s picture, in percent. */
+    public static final IntegerSetting LIST_BACKGROUND_DIM =
+            new IntegerSetting("hushtelegram_list_background_dim", 40).withRange(0, 90);
+
     /** No translate bar at the top of a chat in another language unless the chat is being translated. */
     public static final BooleanSetting HIDE_TRANSLATE_BAR =
             new BooleanSetting("hushtelegram_hide_translate_bar", FALSE);

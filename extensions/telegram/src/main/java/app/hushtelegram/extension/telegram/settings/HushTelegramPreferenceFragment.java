@@ -22,6 +22,7 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
@@ -106,10 +107,12 @@ import app.hushtelegram.extension.telegram.misc.KeepAlive;
 import app.hushtelegram.extension.telegram.misc.KeepDeleted;
 import app.hushtelegram.extension.telegram.misc.KeepEdits;
 import app.hushtelegram.extension.telegram.misc.LaunchFolder;
+import app.hushtelegram.extension.telegram.misc.ListBackground;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 import app.hushtelegram.extension.telegram.misc.ProxyOrder;
 import app.hushtelegram.extension.telegram.misc.RecordChats;
 import app.hushtelegram.extension.telegram.misc.SaveDownloads;
+import app.hushtelegram.extension.telegram.misc.SavedPicture;
 import app.hushtelegram.extension.telegram.misc.SpecialContacts;
 import app.hushtelegram.extension.telegram.misc.StickerSize;
 import app.hushtelegram.extension.telegram.misc.StorageFolder;
@@ -173,6 +176,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String RECORD_FOLDER_ROW = "action_record_calls_folder";
     /** The folder picker's request, next to the settings file's 7311 and 7312. */
     static final int RECORD_FOLDER_REQUEST = 7313;
+    /** The Background picture row's key. The picture is kept by {@link SavedPicture}, its dim under {@link Settings#LIST_BACKGROUND_DIM}. */
+    static final String LIST_BACKGROUND_ROW = "action_list_background";
+    /** The gallery picker for the picture behind the lists. */
+    static final int LIST_BACKGROUND_REQUEST = 7314;
     static final String HIDDEN_ACCOUNTS_ROW = "action_hidden_accounts";
     /** The Delete account row's key. Nothing is saved: a tap asks, then sends the deletion. */
     static final String DELETE_ACCOUNT_ROW = "action_delete_account";
@@ -333,6 +340,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             if (tree != null) recordFolderChosen(tree);
             return;
         }
+        if (requestCode == LIST_BACKGROUND_REQUEST) {
+            Uri picture = resultCode == Activity.RESULT_OK && data != null ? data.getData() : null;
+            if (picture != null) pictureChosen(picture, SavedPicture.LIST_BACKGROUND);
+            return;
+        }
         SettingsBackupPreference.onResult(this, requestCode, resultCode, data);
     }
 
@@ -376,6 +388,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (icons != null) icons.setSummary(folderIconSummary());
         Preference target = findPreference(TranslateTargetPicker.KEY);
         if (target != null) target.setSummary(TranslateTargetPicker.summary(Settings.TRANSLATE_TARGET.savedValue()));
+        Preference picture = findPreference(LIST_BACKGROUND_ROW);
+        if (picture != null) picture.setSummary(listBackgroundSummary(getContext()));
     }
 
     @Override
@@ -1485,6 +1499,21 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.AMOLED_BLACK).addPreference(toggle(context, Settings.AMOLED_BLACK, L10n.t("AMOLED black"),
                     PatchFamily.AMOLED_BLACK.coverageSummary(L10n.t("Night and Dark themes use pure black screens. Message bubbles and menus keep "
                             + "their colors. Restart Telegram to see the change."))));
+            if (PatchFamily.Capability.LIST_BACKGROUND.installed()) {
+                SwitchPreference lists = toggle(context, Settings.LIST_BACKGROUND, L10n.t("Picture behind the lists"),
+                        L10n.t("Shows a picture from your gallery behind the chat list, Settings, profiles and the other lists. "
+                                + "Chats keep their wallpaper, and menus and dialogs stay solid. Works with Telegram's built-in themes."));
+                lists.setOnPreferenceChangeListener((row, value) -> {
+                    // Turned on with no picture yet: straight to the gallery, the way the row goes.
+                    if (Boolean.TRUE.equals(value) && !SavedPicture.present(context, SavedPicture.LIST_BACKGROUND)) {
+                        pickPicture(LIST_BACKGROUND_REQUEST);
+                    }
+                    Utils.runOnMainThreadDelayed(ListBackground::changed, 0);
+                    return true;
+                });
+                on(pages, PatchFamily.AMOLED_BLACK).addPreference(lists);
+                on(pages, PatchFamily.AMOLED_BLACK).addPreference(listBackgroundRow(context));
+            }
         }
         if (build.contains(PatchFamily.EXACT_NUMBERS)) {
             on(pages, PatchFamily.EXACT_NUMBERS).addPreference(toggle(context, Settings.EXACT_NUMBERS, L10n.t("Exact numbers"),
@@ -3421,6 +3450,125 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 .setNegativeButton(L10n.t("Cancel"), null));
     }
 
+    /** The picture behind the lists: the row says how dim it is, and a tap picks one or changes it. */
+    private Preference listBackgroundRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(LIST_BACKGROUND_ROW);
+        row.setTitle(L10n.t("Background picture"));
+        row.setPersistent(false);
+        row.setSummary(listBackgroundSummary(context));
+        row.setOnPreferenceClickListener(p -> {
+            showListBackground(context, p);
+            return true;
+        });
+        return row;
+    }
+
+    static String listBackgroundSummary(@Nullable Context context) {
+        if (!SavedPicture.present(context, SavedPicture.LIST_BACKGROUND)) return L10n.t("No picture yet. Tap to pick one.");
+        return L10n.f("Dimmed by %1$s. Tap to change it.", percent(Settings.LIST_BACKGROUND_DIM.savedValue()));
+    }
+
+    /**
+     * With no picture, straight to the gallery. With one, the dims with the saved one checked, and
+     * another picture or none. A dim shows at once; the list closes once it's saved.
+     */
+    void showListBackground(Context context, Preference row) {
+        if (SettingsLock.refuses()) return;
+        if (!SavedPicture.present(context, SavedPicture.LIST_BACKGROUND)) {
+            pickPicture(LIST_BACKGROUND_REQUEST);
+            return;
+        }
+        CharSequence[] labels = new CharSequence[ListBackground.DIM_STEPS.length];
+        for (int i = 0; i < labels.length; i++) labels[i] = percent(ListBackground.DIM_STEPS[i]);
+        show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("Dim the picture"))
+                .setSingleChoiceItems(labels, savedDimChoice(), (dialog, which) -> {
+                    boolean started = save((AlertDialog) dialog,
+                            () -> Settings.LIST_BACKGROUND_DIM.saveCommitted(ListBackground.DIM_STEPS[which]), landed -> {
+                                if (landed) {
+                                    ListBackground.redraw();
+                                    row.setSummary(listBackgroundSummary(context));
+                                    dialog.dismiss();
+                                } else {
+                                    ((AlertDialog) dialog).getListView().setItemChecked(savedDimChoice(), true);
+                                    Utils.showToastLong(L10n.t("Couldn't save the dim. Try again in a moment."));
+                                }
+                            });
+                    if (!started) ((AlertDialog) dialog).getListView().setItemChecked(savedDimChoice(), true);
+                })
+                .setPositiveButton(L10n.t("Choose another picture"), (dialog, which) -> pickPicture(LIST_BACKGROUND_REQUEST))
+                .setNeutralButton(L10n.t("Remove background"), (dialog, which) -> removeListBackground(context))
+                .setNegativeButton(L10n.t("Cancel"), null));
+    }
+
+    /** Where the saved dim sits among the choices, or -1 for one that's none of them. */
+    static int savedDimChoice() {
+        int saved = Settings.LIST_BACKGROUND_DIM.savedValue();
+        for (int i = 0; i < ListBackground.DIM_STEPS.length; i++) {
+            if (ListBackground.DIM_STEPS[i] == saved) return i;
+        }
+        return -1;
+    }
+
+    /** Takes the picture away and turns the switch off, so the lists look like Telegram's again at once. */
+    void removeListBackground(Context context) {
+        if (SettingsLock.refuses()) return;
+        SavedPicture.remove(context, SavedPicture.LIST_BACKGROUND);
+        Settings.LIST_BACKGROUND.save(false);
+        ListBackground.changed();
+        Utils.showToastShort(L10n.t("Background removed."));
+        refreshSwitches();
+    }
+
+    /** Android's photo picker, or the gallery on a phone without one, for a picture saved as [requestCode] says. */
+    void pickPicture(int requestCode) {
+        Intent picker = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                ? new Intent(MediaStore.ACTION_PICK_IMAGES).setType("image/*")
+                : new Intent(Intent.ACTION_GET_CONTENT).setType("image/*").addCategory(Intent.CATEGORY_OPENABLE);
+        try {
+            startActivityForResult(picker, requestCode);
+        } catch (ActivityNotFoundException | IllegalStateException missing) {
+            Logger.printInfo(() -> "No picture picker: " + missing.getClass().getSimpleName());
+            Utils.showToastLong(L10n.t("This phone has no gallery picker."));
+        }
+    }
+
+    /**
+     * Copies [picture], the picker's answer, into Telegram's own files as [name] off the main
+     * thread, then says how it went. The picker's permission to read it lasts as long as the page.
+     */
+    void pictureChosen(Uri picture, String name) {
+        Activity activity = getActivity();
+        Context context = activity != null ? activity.getApplicationContext() : Utils.getContext();
+        if (context == null) return;
+        boolean queued = Utils.runOnBackgroundThread(() -> {
+            SavedPicture.Saved saved = SavedPicture.Saved.FAILED;
+            try {
+                saved = SavedPicture.save(context, picture, name);
+            } finally {
+                SavedPicture.Saved result = saved;
+                Utils.runOnMainThread(() -> pictureSaved(name, result));
+            }
+        });
+        if (!queued) pictureSaved(name, SavedPicture.Saved.FAILED);
+    }
+
+    void pictureSaved(String name, SavedPicture.Saved saved) {
+        if (saved != SavedPicture.Saved.SAVED) {
+            Utils.showToastLong(saved == SavedPicture.Saved.NOT_A_PICTURE ? L10n.t("That file isn't a picture.")
+                    : saved == SavedPicture.Saved.TOO_LARGE ? L10n.t("That picture is too large.")
+                    : L10n.t("Couldn't save the picture. Try again."));
+            return;
+        }
+        if (SavedPicture.LIST_BACKGROUND.equals(name)) {
+            Settings.LIST_BACKGROUND.save(true);
+            ListBackground.changed();
+            Utils.showToastShort(L10n.t("Background picture saved."));
+        }
+        if (getPreferenceScreen() != null) refreshSwitches();
+    }
+
     /** Android's folder picker, asked for a folder Telegram can keep writing to after a restart. */
     private void pickRecordFolder() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -3656,7 +3804,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     }
 
     /** A percent the way this language writes one. */
-    private static String percent(int value) {
+    static String percent(int value) {
         return NumberFormat.getPercentInstance(L10n.locale()).format(value / 100.0);
     }
 

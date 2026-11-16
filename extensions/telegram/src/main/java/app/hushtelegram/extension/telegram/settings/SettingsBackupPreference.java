@@ -61,6 +61,7 @@ import app.hushtelegram.extension.shared.settings.preference.QuickSetups;
 import app.hushtelegram.extension.telegram.misc.ChatListAvatar;
 import app.hushtelegram.extension.telegram.misc.KeepRemoved;
 import app.hushtelegram.extension.telegram.misc.LinkPreviewRules;
+import app.hushtelegram.extension.telegram.misc.ListBackground;
 import app.hushtelegram.extension.telegram.misc.LocalPins;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.RecordChats;
@@ -506,6 +507,10 @@ public class SettingsBackupPreference extends Preference {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Avatar size"),
                         percent.format(ChatListAvatar.percent(Settings.CHAT_LIST_AVATAR_SIZE.savedValue()) / 100.0),
                         percent.format(((Integer) change.getValue()) / 100.0)));
+            } else if (change.getKey() == Settings.LIST_BACKGROUND_DIM) {
+                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Background dim"),
+                        HushTelegramPreferenceFragment.percent(Settings.LIST_BACKGROUND_DIM.savedValue()),
+                        HushTelegramPreferenceFragment.percent((Integer) change.getValue())));
             }
         }
         return lines;
@@ -581,6 +586,10 @@ public class SettingsBackupPreference extends Preference {
                         // A row's own change notes the restart it owes. The import's skipped that,
                         // and the card went on saying every switch was working.
                         AbstractPreferenceFragment.noteRestartPending(before);
+                        // The picture behind the lists shows a change at once, as its own rows do.
+                        if (named.contains(Settings.LIST_BACKGROUND) || named.contains(Settings.LIST_BACKGROUND_DIM)) {
+                            ListBackground.changed();
+                        }
                         importing(null);
                         finish(run);
                         if (result != null) tell(IMPORT, result);

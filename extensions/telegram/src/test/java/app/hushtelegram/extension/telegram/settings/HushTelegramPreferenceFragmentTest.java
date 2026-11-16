@@ -76,6 +76,7 @@ import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests;
 import app.hushtelegram.extension.telegram.misc.RecordChats;
+import app.hushtelegram.extension.telegram.misc.SavedPicture;
 import app.hushtelegram.extension.telegram.misc.SpecialContactsForTests;
 
 import org.json.JSONObject;
@@ -624,6 +625,17 @@ public class HushTelegramPreferenceFragmentTest {
             // Telegram's own theme colors stay until someone turns the switch on.
             assertFalse(Settings.AMOLED_BLACK.key,
                     ((SwitchPreference) page.findPreference(Settings.AMOLED_BLACK.key)).isChecked());
+            assertEquals("Picture behind the lists", String.valueOf(page.findPreference(Settings.LIST_BACKGROUND.key).getTitle()));
+            assertEquals("Shows a picture from your gallery behind the chat list, Settings, profiles and the other lists. "
+                    + "Chats keep their wallpaper, and menus and dialogs stay solid. Works with Telegram's built-in themes.",
+                    String.valueOf(page.findPreference(Settings.LIST_BACKGROUND.key).getSummary()));
+            // Telegram's own pages stay until someone turns it on and picks a picture.
+            assertFalse(Settings.LIST_BACKGROUND.key,
+                    ((SwitchPreference) page.findPreference(Settings.LIST_BACKGROUND.key)).isChecked());
+            assertEquals("Background picture",
+                    String.valueOf(page.findPreference(HushTelegramPreferenceFragment.LIST_BACKGROUND_ROW).getTitle()));
+            assertEquals("No picture yet. Tap to pick one.",
+                    String.valueOf(page.findPreference(HushTelegramPreferenceFragment.LIST_BACKGROUND_ROW).getSummary()));
             assertEquals("Hide translate bar", String.valueOf(page.findPreference(Settings.HIDE_TRANSLATE_BAR.key).getTitle()));
             assertEquals("Chats in another language stop showing the translate bar at the top. Translate moves to the "
                     + "chat's menu, and a chat you're translating keeps its bar.",
@@ -2557,6 +2569,72 @@ public class HushTelegramPreferenceFragmentTest {
             assertTrue(resolver.getPersistedUriPermissions().isEmpty());
         } finally {
             Settings.RECORD_CALLS_FOLDER.resetToDefault();
+        }
+    }
+
+    /**
+     * Background picture (#88): with none saved a tap opens the gallery, and the picked picture is
+     * copied in and turns its switch on. Then a tap offers the dims, and Remove background takes the
+     * picture away and turns the switch off at once.
+     */
+    @Test
+    @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
+    public void theBackgroundPictureRowPicksDimsAndRemovesThePicture() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.AMOLED_BLACK);
+        Context appContext = RuntimeEnvironment.getApplication();
+        Uri gallery = Uri.parse("content://media.test/picture/88");
+        android.graphics.Bitmap made = android.graphics.Bitmap.createBitmap(40, 30, android.graphics.Bitmap.Config.ARGB_8888);
+        java.io.ByteArrayOutputStream png = new java.io.ByteArrayOutputStream();
+        made.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, png);
+        shadowOf(appContext.getContentResolver()).registerInputStream(gallery, new java.io.ByteArrayInputStream(png.toByteArray()));
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            Preference row = page.findPreference(HushTelegramPreferenceFragment.LIST_BACKGROUND_ROW);
+            SwitchPreference lists = (SwitchPreference) page.findPreference(Settings.LIST_BACKGROUND.key);
+            assertFalse("it stores nothing itself", row.isPersistent());
+
+            assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+            ShadowActivity.IntentForResult picker = shadowOf(controller.get()).getNextStartedActivityForResult();
+            assertEquals(Intent.ACTION_GET_CONTENT, picker.intent.getAction());
+            assertEquals("image/*", picker.intent.getType());
+
+            // Cancelled: nothing saved and the switch stays off.
+            shadowOf(controller.get()).receiveResult(picker.intent, Activity.RESULT_CANCELED, null);
+            settle();
+            assertFalse(SavedPicture.present(appContext, SavedPicture.LIST_BACKGROUND));
+            assertFalse(Settings.LIST_BACKGROUND.get());
+
+            shadowOf(controller.get()).receiveResult(picker.intent, Activity.RESULT_OK, new Intent().setData(gallery));
+            settle();
+            settle();
+            assertTrue(SavedPicture.present(appContext, SavedPicture.LIST_BACKGROUND));
+            assertTrue(Settings.LIST_BACKGROUND.get());
+            assertTrue(lists.isChecked());
+            assertEquals("Background picture saved.", ShadowToast.getTextOfLatestToast());
+            assertEquals("Dimmed by 40%. Tap to change it.", String.valueOf(row.getSummary()));
+
+            AlertDialog dims = dialogOf(row);
+            assertEquals("Dim the picture", String.valueOf(shadowOf(dims).getTitle()));
+            assertEquals("the saved dim is checked", 1, dims.getListView().getCheckedItemPosition());
+            shadowOf(dims).clickOnItem(2);
+            settle();
+            settle();
+            assertFalse(dims.isShowing());
+            assertEquals(60, (int) Settings.LIST_BACKGROUND_DIM.savedValue());
+            assertEquals("Dimmed by 60%. Tap to change it.", String.valueOf(row.getSummary()));
+
+            dims = dialogOf(row);
+            dims.getButton(AlertDialog.BUTTON_NEUTRAL).performClick();
+            settle();
+            assertFalse(SavedPicture.present(appContext, SavedPicture.LIST_BACKGROUND));
+            assertFalse(Settings.LIST_BACKGROUND.get());
+            assertFalse(lists.isChecked());
+            assertEquals("Background removed.", ShadowToast.getTextOfLatestToast());
+            assertEquals("No picture yet. Tap to pick one.", String.valueOf(row.getSummary()));
+        } finally {
+            SavedPicture.remove(appContext, SavedPicture.LIST_BACKGROUND);
+            Settings.LIST_BACKGROUND.resetToDefault();
+            Settings.LIST_BACKGROUND_DIM.resetToDefault();
         }
     }
 

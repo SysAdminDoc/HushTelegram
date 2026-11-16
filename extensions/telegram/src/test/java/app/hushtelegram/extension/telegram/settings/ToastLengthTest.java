@@ -110,6 +110,14 @@ public class ToastLengthTest {
         assertTrue(texts.contains("Asking Telegram to make your folders."));
         // The settings lock's refusal, built by SettingsLock.note and shown by refuses().
         assertTrue(texts.contains("Settings are locked. Tap Start unlock, then wait 24 hours."));
+        // The background picture's texts, each branch of the save's answer included.
+        assertTrue(texts.contains("Background picture saved."));
+        assertTrue(texts.contains("Background removed."));
+        assertTrue(texts.contains("That file isn't a picture."));
+        assertTrue(texts.contains("That picture is too large."));
+        assertTrue(texts.contains("Couldn't save the picture. Try again."));
+        assertTrue(texts.contains("Couldn't save the dim. Try again in a moment."));
+        assertTrue(texts.contains("This phone has no gallery picker."));
     }
 
     private static int fixedLength(String text) {

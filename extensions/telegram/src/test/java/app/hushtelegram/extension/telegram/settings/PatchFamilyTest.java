@@ -96,6 +96,8 @@ public class PatchFamilyTest {
         Settings.HIDE_GREETING_STICKERS.resetToDefault();
         Settings.USE_SYSTEM_FONT.resetToDefault();
         Settings.AMOLED_BLACK.resetToDefault();
+        Settings.LIST_BACKGROUND.resetToDefault();
+        Settings.LIST_BACKGROUND_DIM.resetToDefault();
         Settings.HIDE_TRANSLATE_BAR.resetToDefault();
         Settings.HIDE_PINNED_BAR.resetToDefault();
         Settings.EXACT_NUMBERS.resetToDefault();
@@ -1213,10 +1215,15 @@ public class PatchFamilyTest {
     public void amoledBlackHasItsOwnOffByDefaultSwitchThatWaitsForARestart() {
         PatchFamily family = PatchFamily.AMOLED_BLACK;
         assertEquals("AMOLED black", family.patchName);
-        assertEquals(Collections.singletonList(Settings.AMOLED_BLACK), family.switches);
+        // The picture behind the lists (#88) rides along under the same patch and shows at once.
+        assertEquals(Arrays.asList(Settings.AMOLED_BLACK, Settings.LIST_BACKGROUND), family.switches);
         assertFalse(Settings.AMOLED_BLACK.defaultValue);
         assertTrue(Settings.AMOLED_BLACK.rebootApp);
-        assertTrue(family.expectedCapabilities().isEmpty());
+        assertFalse(Settings.LIST_BACKGROUND.defaultValue);
+        assertFalse(Settings.LIST_BACKGROUND.rebootApp);
+        assertEquals(40, (int) Settings.LIST_BACKGROUND_DIM.defaultValue);
+        assertEquals(EnumSet.of(PatchFamily.Capability.LIST_BACKGROUND), family.expectedCapabilities());
+        assertEquals("listBackground", PatchFamily.Capability.LIST_BACKGROUND.statusMethod);
         assertOnItsPage(family);
     }
 

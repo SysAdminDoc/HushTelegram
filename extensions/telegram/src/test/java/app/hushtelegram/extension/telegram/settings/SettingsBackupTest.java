@@ -218,13 +218,13 @@ public class SettingsBackupTest {
         assertEquals("a setting in Settings isn't a switch, and a settings file has no format for it",
                 Collections.emptyList(), notSwitches);
         assertEquals(Arrays.asList(Settings.MESSAGE_FILTERS_GROUPS, Settings.MESSAGE_FILTERS_CHANNELS), SettingsBackup.FILTER_LISTS);
-        assertEquals(Arrays.asList(Settings.STICKER_SIZE, Settings.RECORD_CALLS_KEEP_DAYS, Settings.CHAT_LIST_AVATAR_SIZE), SettingsBackup.NUMBERS);
+        assertEquals(Arrays.asList(Settings.STICKER_SIZE, Settings.RECORD_CALLS_KEEP_DAYS, Settings.CHAT_LIST_AVATAR_SIZE, Settings.LIST_BACKGROUND_DIM), SettingsBackup.NUMBERS);
         assertEquals(Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET, Settings.FOLDER_ICON_PACK, Settings.STORAGE_FOLDER_NAME,
                 Settings.SAVE_KINDS_LEFT_OUT, Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LOCAL_PINNED_CHATS, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS), SettingsBackup.TEXTS);
         assertEquals(Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_STORIES, Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_KEYBOARD_FEATURED, Settings.HIDE_COMMERCE, Settings.HIDE_EMOJI_STATUS, Settings.UNLOCK_PREMIUM_ICONS, Settings.LOCAL_EMOJI_STATUS,
                         Settings.HIDE_PROMOTIONAL_BANNERS, Settings.HIDE_SPONSORED_PROXY, Settings.HIDE_POPULAR_APPS, Settings.SEARCH_ONLY_MY_CHATS, Settings.SEARCH_STYLED_NAMES, Settings.BLOCK_NEW_CHATS, Settings.DISABLE_SECRET_CHATS, Settings.HIDE_CONTACTS_BLOCK,
                         Settings.HIDE_GREETING_STICKERS, Settings.DISABLE_CHAT_SWIPE, Settings.CHAT_PREVIEW_BUTTONS, Settings.DISABLE_CHANNEL_PULL, Settings.DISABLE_TOPIC_PULL, Settings.NORMAL_PASTE, Settings.MENTION_BY_ID, Settings.SHOW_LOCAL_IDS, Settings.PROFILE_DATA_CENTER, Settings.REGISTRATION_DATE, Settings.MEMBER_JOIN_DATES,
-                        Settings.SPECIAL_CONTACTS, Settings.DISABLE_DOUBLE_TAP_REACTIONS, Settings.HIDE_REACTION_ROWS, Settings.HIDE_REACTION_PICKER, Settings.HIDE_EMOJI_PACK_NOTE, Settings.QUIET_CONTACTS_NAG, Settings.HOLIDAY_LOOK, Settings.CHAT_LIST_TITLE, Settings.USE_SYSTEM_FONT, Settings.AMOLED_BLACK,
+                        Settings.SPECIAL_CONTACTS, Settings.DISABLE_DOUBLE_TAP_REACTIONS, Settings.HIDE_REACTION_ROWS, Settings.HIDE_REACTION_PICKER, Settings.HIDE_EMOJI_PACK_NOTE, Settings.QUIET_CONTACTS_NAG, Settings.HOLIDAY_LOOK, Settings.CHAT_LIST_TITLE, Settings.USE_SYSTEM_FONT, Settings.AMOLED_BLACK, Settings.LIST_BACKGROUND,
                         Settings.HIDE_TRANSLATE_BAR, Settings.HIDE_PINNED_BAR, Settings.EXACT_NUMBERS, Settings.REVEAL_SPOILERS, Settings.REVEAL_MENU, Settings.SEARCH_OPENS_QUOTES, Settings.HIDE_KEYBOARD_ON_SCROLL, Settings.KEEP_VIDEOS_MUTED, Settings.VIDEO_EITHER_LANDSCAPE, Settings.VIDEO_ONLY_FROM_BUTTON, Settings.VIDEO_STARTS_SILENT, Settings.SWIPE_BACK_ON_PROFILES,
                         Settings.HIDE_PHONE_NUMBER, Settings.SHARE_NUMBER_UNTICKED, Settings.MESSAGE_SECONDS, Settings.ALLOW_CHAT_BLUR, Settings.VOICE_ONE_AT_A_TIME, Settings.LOCKED_VOICE_GUARD, Settings.NO_HAPTICS, Settings.REACTION_EFFECTS_OFF,
                         Settings.HIDE_FOLDER_COUNTERS, Settings.LAUNCH_FOLDER, Settings.HIDE_ALL_CHATS, Settings.MOVE_ALL_CHATS, Settings.HIDDEN_CHATS, Settings.SORT_BY_DATE, Settings.SORT_OLDEST_FIRST, Settings.LOCAL_PINS, Settings.HIDDEN_CHATS_PASSCODE,
@@ -684,13 +684,15 @@ public class SettingsBackupTest {
             assertEquals(String.valueOf(bad), SettingsBackup.Reason.VALUE, reasonFor(wrong.toString()));
         }
 
-        // A saved state is read back as strictly: a sticker size that isn't a choice is left out, and the
-        // days recordings stay and the avatar size come back.
+        // A saved state is read back as strictly: a size that isn't a choice is left out, and only the
+        // days recordings stay, the avatar size and the background's dim come back.
+        Set<Object> others = new HashSet<>(Arrays.asList(Settings.RECORD_CALLS_KEEP_DAYS, Settings.CHAT_LIST_AVATAR_SIZE,
+                Settings.LIST_BACKGROUND_DIM));
         Bundle state = snapshot.toBundle();
         state.getBundle("numbers").putInt(Settings.STICKER_SIZE.key, 100);
-        assertEquals(new HashSet<>(Arrays.asList(Settings.RECORD_CALLS_KEEP_DAYS, Settings.CHAT_LIST_AVATAR_SIZE)), SettingsBackup.Snapshot.fromBundle(state).numbers.keySet());
+        assertEquals(others, new HashSet<Object>(SettingsBackup.Snapshot.fromBundle(state).numbers.keySet()));
         state.getBundle("numbers").putString(Settings.STICKER_SIZE.key, "150");
-        assertEquals(new HashSet<>(Arrays.asList(Settings.RECORD_CALLS_KEEP_DAYS, Settings.CHAT_LIST_AVATAR_SIZE)), SettingsBackup.Snapshot.fromBundle(state).numbers.keySet());
+        assertEquals(others, new HashSet<Object>(SettingsBackup.Snapshot.fromBundle(state).numbers.keySet()));
     }
 
     /** The chat list's avatar size goes out as its number, comes back only as one of its choices and shows in the preview (#89). */
@@ -1426,6 +1428,46 @@ public class SettingsBackupTest {
         } finally {
             Settings.RECORD_CALLS_WHICH.resetToDefault();
             Settings.RECORD_CALLS_KEEP_DAYS.resetToDefault();
+        }
+    }
+
+    /**
+     * The picture behind the lists (#88) goes out as its switch and its dim, never as the picture,
+     * comes back only as a dim its row offers, and shows in the preview without a restart owed.
+     */
+    @Test
+    public void theListBackgroundSwitchAndDimRoundTripWithoutThePicture() throws Exception {
+        Settings.LIST_BACKGROUND.save(true);
+        Settings.LIST_BACKGROUND_DIM.save(60);
+        String file = SettingsBackup.create();
+        JSONObject written = new JSONObject(file).getJSONObject("settings");
+        assertEquals(true, written.get(Settings.LIST_BACKGROUND.key));
+        assertEquals(60, written.get(Settings.LIST_BACKGROUND_DIM.key));
+        assertFalse("the picture stays on the phone", file.contains("list_background.img"));
+
+        for (Object bad : new Object[]{50, 0, 90, -20, "60", true}) {
+            JSONObject wrong = new JSONObject(file);
+            wrong.getJSONObject("settings").put(Settings.LIST_BACKGROUND_DIM.key, bad);
+            assertEquals(String.valueOf(bad), SettingsBackup.Reason.VALUE, reasonFor(wrong.toString()));
+        }
+
+        Settings.LIST_BACKGROUND.resetToDefault();
+        Settings.LIST_BACKGROUND_DIM.resetToDefault();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
+            deliver(activity, tap(activity, page, IMPORT_ROW), file);
+            AlertDialog preview = shownPreview();
+            assertEquals("1 switch will change.\n\nPicture behind the lists turns on\nBackground dim: 40% to 60%",
+                    String.valueOf(shadowOf(preview).getMessage()));
+            preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertTrue(Settings.LIST_BACKGROUND.savedValue());
+            assertEquals(60, (int) Settings.LIST_BACKGROUND_DIM.savedValue());
+            assertTrue(AbstractPreferenceFragment.restartPending.isEmpty());
+        } finally {
+            Settings.LIST_BACKGROUND.resetToDefault();
+            Settings.LIST_BACKGROUND_DIM.resetToDefault();
         }
     }
 

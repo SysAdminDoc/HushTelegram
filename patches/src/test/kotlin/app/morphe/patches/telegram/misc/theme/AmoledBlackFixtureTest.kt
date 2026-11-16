@@ -16,6 +16,7 @@ import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.parameterRegisterNumber
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
+import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.util.ControlFlow
@@ -59,7 +60,9 @@ class AmoledBlackFixtureTest {
             val old = ImmutableMethod.of(site.method)
             val wallpaper = key(site.wallpaper)
             val oldWallpaper = ImmutableMethod.of(site.wallpaper)
-            val untouched = hostState(build, context, setOf(reader, wallpaper))
+            val lists = context.resolveListBackground(site.method)
+            val hooked = setOf(reader, wallpaper, key(lists.refresh), key(lists.holders))
+            val untouched = hostState(build, context, hooked)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { amoledBlackPatch.execute(context) })
 
             val before = old.controlBody()
@@ -94,7 +97,7 @@ class AmoledBlackFixtureTest {
             assertEquals(listOf(at + 2), b0.normal[at + 1])
             assertEquals(listOf(at + 3), b0.normal[at + 2])
             assertTrue("$name: some stock path reaches the hook", (0 until at).any { at in b0.normal[it] })
-            assertEquals("$name: every caller and every other host method", untouched, hostState(build, context, setOf(reader, wallpaper)))
+            assertEquals("$name: every caller and every other host method", untouched, hostState(build, context, hooked))
 
             // The chat background builder hands its pattern strength, colors and picked wallpaper to the extension first.
             val shown = site.wallpaper.controlBody()
@@ -117,6 +120,99 @@ class AmoledBlackFixtureTest {
                 before[i].controlRef() == SPARSE_PUT && before.subList(maxOf(0, i - 4), i).any { it.call()?.toString() == site.keyLookup.toString() } })
             val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "amoledBlack" }.controlBody()
             assertEquals(1L, (status.first() as WideLiteralInstruction).wideLiteral)
+        }
+    }
+
+    @Test fun `the picture behind the lists hooks the color refresh and the page holders`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = context(build)
+            val site = context.resolveBlackTheme()
+            val lists = context.resolveListBackground(site.method)
+            val refresh = ImmutableMethod.of(lists.refresh)
+            val holders = ImmutableMethod.of(lists.holders)
+            assertEquals(emptyList<String>(), PatchLogCapture.warnings { amoledBlackPatch.execute(context) })
+
+            // The colors in use are worked out after the extension has had the theme's own set.
+            val refreshed = lists.refresh.controlBody()
+            assertEquals("$name: one call in front", refresh.controlBody().size + 1, refreshed.size)
+            assertEquals(Opcode.INVOKE_STATIC, refreshed[0].opcode)
+            assertEquals("$LIST_BACKGROUND->refreshing()V", refreshed[0].controlRef())
+            assertEquals("$name: stock refresh", refresh.controlBody().map { it.operand() }, refreshed.drop(1).map { it.operand() })
+            assertEquals("$name: it reads the set the reader's result goes in", lists.table.toString(), refreshed[1].controlRef())
+
+            // The holders are handed over once they're made, on every way to the end.
+            val stock = holders.controlBody()
+            val made = lists.holders.controlBody()
+            val at = lists.holderReturn
+            assertEquals("$name: one call before the return", stock.size + 1, made.size)
+            assertEquals(Opcode.INVOKE_STATIC, made[at].opcode)
+            assertEquals("$LIST_BACKGROUND->laidOut(Ljava/lang/Object;)V", made[at].controlRef())
+            assertEquals("$name: this", listOf(holders.implementation!!.registerCount - 2), made[at].namedRegisters())
+            assertEquals(Opcode.RETURN_VOID, made[at + 1].opcode)
+            val a0 = ControlFlow.of(holders)
+            val b0 = ControlFlow.of(lists.holders)
+            fun from(i: Int) = if (i < at) i else i + 1
+            fun to(i: Int) = if (i <= at) i else i + 1
+            for (i in stock.indices) {
+                assertEquals("$name: stock operand $i", stock[i].operand(), made[from(i)].operand())
+                assertEquals("$name: stock normal path $i", a0.normal[i].map(::to), b0.normal[from(i)])
+            }
+            assertTrue("$name: a branch reaches the hook", (0 until at).any { at in b0.normal[it] && it != at - 1 })
+
+            // The stubs reach the set, the refresh, the defaults, the two page holders and the rebuild.
+            fun stub(named: String) = context.tgMutableClassDefBy(LIST_BACKGROUND).methods.single { it.origName == named }.controlBody()
+            assertEquals(lists.table.toString(), stub("table")[0].controlRef())
+            val recolor = stub("recolor")
+            assertEquals(listOf(0L, 1L), recolor.take(2).map { (it as WideLiteralInstruction).wideLiteral })
+            assertEquals(key(lists.refresh), recolor[2].controlRef())
+            assertEquals(key(lists.defaultColor), stub("defaultColor")[0].controlRef())
+            assertTrue("$name: Telegram's default answers -65536 for a key it doesn't know", lists.defaultColor.controlBody()
+                .any { (it as? WideLiteralInstruction)?.wideLiteral == -65536L })
+            val pages = stub("pages").filter { it.opcode == Opcode.IGET_OBJECT }.map { it.controlRef() }
+            assertEquals(lists.pages.map { it.toString() }, pages)
+            assertEquals("$name: the two page holders, not the sheet's", 2, pages.distinct().size)
+            assertTrue("$name: holders are fields of the layout", lists.pages.all { it.definingClass == ACTION_BAR_LAYOUT })
+            assertEquals(key(lists.rebuild), stub("rebuild").single { it.opcode == Opcode.INVOKE_VIRTUAL }.controlRef())
+            assertTrue("$name: the rebuild clears each screen", lists.rebuild.controlBody().any { it.call()?.name == "clearViews" })
+            for (flag in listOf("amoledBlack", "listBackground")) {
+                val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == flag }.controlBody()
+                assertEquals("$name: $flag", 1L, (status.first() as WideLiteralInstruction).wideLiteral)
+            }
+        }
+    }
+
+    @Test fun `a build without the list targets keeps black themes and goes on without the picture`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val mutations: List<Pair<String, (BytecodePatchContext, ListBackgroundSite) -> Unit>> = listOf(
+                "rebuild turned static" to { c, s -> c.tgMutableClassDefBy(ACTION_BAR_LAYOUT).methods.single { it.name == s.rebuild.name &&
+                    it.parameterTypes.map { p -> p.toString() } == listOf("Z", "Z") }.let { it.accessFlags = it.accessFlags or AccessFlags.STATIC.value } },
+                "holders made another way" to { _, s -> s.holders.replaceInstruction(s.holders.controlBody().indexOfFirst {
+                    it.opcode == Opcode.IPUT_OBJECT && it.controlField()?.toString() == s.pages[1].toString() }, "nop") },
+                "refresh no longer copies the theme's set" to { _, s -> s.refresh.replaceInstruction(1, "nop") },
+                "missing build flag" to { c, _ -> c.tgMutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.origName == "listBackground" } },
+                "missing pages stub" to { c, _ -> c.tgMutableClassDefBy(LIST_BACKGROUND).methods.removeAll { it.origName == "pages" } },
+            )
+            for ((case, change) in mutations) {
+                val c = context(build)
+                val site = c.resolveBlackTheme()
+                val lists = c.resolveListBackground(site.method)
+                change(c, lists)
+                val refresh = ImmutableMethod.of(lists.refresh).state()
+                val holders = ImmutableMethod.of(lists.holders).state()
+                val warnings = PatchLogCapture.warnings { amoledBlackPatch.execute(c) }
+                assertEquals("${build.name}: $case warns once", 1, warnings.size)
+                assertTrue("${build.name}: $case names what's missing: $warnings", warnings.single().startsWith("AMOLED black: ") &&
+                    warnings.single().endsWith("The patch goes on without the picture behind the lists."))
+                assertEquals("${build.name}: $case leaves the refresh", refresh, lists.refresh.state())
+                assertEquals("${build.name}: $case leaves the holders", holders, lists.holders.state())
+                val status = c.tgMutableClassDefBy(SETTINGS_STATUS).methods
+                assertEquals("${build.name}: $case keeps black themes", 1L,
+                    (status.single { it.origName == "amoledBlack" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
+                status.singleOrNull { it.origName == "listBackground" }?.let {
+                    assertEquals("${build.name}: $case leaves the picture off", 0L, (it.controlBody().first() as WideLiteralInstruction).wideLiteral)
+                }
+            }
         }
     }
 
@@ -187,7 +283,7 @@ class AmoledBlackFixtureTest {
     }
 
     private fun context(build: File) = PatchContexts.of(ExtensionDex.classes() + hosts(build))
-    private fun completeState(build: File, c: BytecodePatchContext) = (hosts(build).map { it.type } + listOf(BLACK_THEME, SETTINGS_STATUS))
+    private fun completeState(build: File, c: BytecodePatchContext) = (hosts(build).map { it.type } + listOf(BLACK_THEME, LIST_BACKGROUND, SETTINGS_STATUS))
         .filter { c.tgClassDefByOrNull(it) != null }.associateWith { type -> c.tgMutableClassDefBy(type).let { cls ->
             listOf(cls.accessFlags, cls.methods.map { key(it) to it.state() }) } }
     private fun hostState(build: File, c: BytecodePatchContext, except: Set<String>) = hosts(build)
@@ -201,13 +297,21 @@ class AmoledBlackFixtureTest {
         }
     }
 
-    /** Every class with a method that parses theme text, and the owner of each String-to-int lookup the reader calls. */
+    /**
+     * Every class with a method that parses theme text, the owner of each String-to-int lookup the
+     * reader calls, and the page layout with the classes its holder setup makes.
+     */
     private fun loadHosts(build: File): List<ClassDef> {
         val parsers = FixtureDex.classesWhere(build, { true }) { method -> method.controlBody().any { it.controlString() == "WLS=" } }
         val lookups = parsers.flatMap { it.methods }.filter { it.origReturnType == SPARSE_INT_ARRAY }.flatMap { it.controlBody() }
             .mapNotNull { it.call() }.filter { it.origReturnType == "I" && it.parameterTypes.map { p -> p.toString() } == listOf("Ljava/lang/String;") }
             .map { it.definingClass }.filter { it.startsWith("Lorg/telegram/") }.toSet()
-        return (parsers + FixtureDex.classes(build, lookups).values).associateBy { it.type }.values.map(ImmutableClassDef::of)
+        val layout = FixtureDex.classes(build, setOf(ACTION_BAR_LAYOUT)).values
+        val holders = layout.flatMap { it.methods }.filter { it.name == "setFragmentStack" }.flatMap { it.controlBody() }
+            .filter { it.opcode == Opcode.NEW_INSTANCE }.map { (it as ReferenceInstruction).reference.toString() }
+            .filter { it.startsWith("Lorg/telegram/") }.toSet()
+        return (parsers + FixtureDex.classes(build, lookups).values + layout + FixtureDex.classes(build, holders).values)
+            .associateBy { it.type }.values.map(ImmutableClassDef::of)
     }
 
     private fun Method.state(): List<Any?> {

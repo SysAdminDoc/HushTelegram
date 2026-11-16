@@ -274,13 +274,26 @@ public class PausedHooksTest {
                 () -> app.hushtelegram.extension.telegram.misc.SystemFont.typeface("fonts/rmedium.ttf") != null,
                 () -> app.hushtelegram.extension.telegram.misc.SystemFont.built("fonts/rmono_var.ttf",
                         android.graphics.Typeface.DEFAULT) != android.graphics.Typeface.DEFAULT));
-        // Night's window color, as Telegram reads it from the theme file, turns black.
-        probes.put(PatchFamily.AMOLED_BLACK, Collections.singletonList(() -> {
+        // Night's window color, as Telegram reads it from the theme file, turns black, and with a
+        // picture saved the list pages of a built-in theme turn see-through over it.
+        probes.put(PatchFamily.AMOLED_BLACK, Arrays.asList(() -> {
             app.hushtelegram.extension.telegram.misc.BlackThemeForTests.useStandInIds();
             android.util.SparseIntArray night = new android.util.SparseIntArray();
             night.put(1, 0xFF181819);
             app.hushtelegram.extension.telegram.misc.BlackTheme.loaded("night.attheme", night);
             return night.get(1) == 0xFF000000;
+        }, () -> {
+            android.content.Context context = RuntimeEnvironment.getApplication();
+            try {
+                android.util.SparseIntArray day = new android.util.SparseIntArray();
+                day.put(1, 0xFFFFFFFF);
+                app.hushtelegram.extension.telegram.misc.ListBackgroundForTests.keepPicture(context);
+                app.hushtelegram.extension.telegram.misc.ListBackgroundForTests.useTable(day);
+                app.hushtelegram.extension.telegram.misc.ListBackground.refreshing();
+                return day.get(1) != 0xFFFFFFFF;
+            } finally {
+                app.hushtelegram.extension.telegram.misc.ListBackgroundForTests.forget(context);
+            }
         }));
         // A chat that isn't being translated answers that its translate bar is hidden, and the
         // pinned message bar answers hidden too.
