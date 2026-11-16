@@ -2130,6 +2130,34 @@ public class HushTelegramPreferenceFragmentTest {
         }
     }
 
+    /** Forward dates get their own switch, off until turned on, only in a build where their hooks went in (#79). */
+    @Test
+    public void forwardDatesHaveTheirOwnSwitchWhenTheirHooksAreIn() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SHOW_LOCAL_IDS);
+        try {
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.PROFILE_LOCAL_IDS, PatchFamily.Capability.MEMBER_JOIN_DATES);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                assertNull("a build without the hooks has no switch", pageOf(controller).findPreference(Settings.FORWARD_DATES.key));
+            }
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.PROFILE_LOCAL_IDS, PatchFamily.Capability.MEMBER_JOIN_DATES,
+                    PatchFamily.Capability.FORWARD_DATES);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                HushTelegramPreferenceFragment page = pageOf(controller);
+                SwitchPreference toggle = (SwitchPreference) page.findPreference(Settings.FORWARD_DATES.key);
+                assertEquals("Show when forwards were first sent", String.valueOf(toggle.getTitle()));
+                assertEquals("A forwarded message's header also shows the date and time it was first sent, after Forwarded from. "
+                        + "The date comes with the message, so nothing more is asked of Telegram.", String.valueOf(toggle.getSummary()));
+                assertFalse("off until turned on", toggle.isChecked());
+                // It sits right under the member join dates switch.
+                SwitchPreference joined = (SwitchPreference) page.findPreference(Settings.MEMBER_JOIN_DATES.key);
+                assertSame(joined.getParent(), toggle.getParent());
+                assertEquals(joined.getOrder() + 1, toggle.getOrder());
+            }
+        } finally {
+            PatchFamily.capabilitiesForTests = null;
+        }
+    }
+
     /** Pin chats on this phone gets its own switch, off until turned on, only in a build where its selection stub went in (#79). */
     @Test
     public void pinChatsOnThisPhoneHasItsOwnSwitchWhenItsStubIsIn() throws Exception {

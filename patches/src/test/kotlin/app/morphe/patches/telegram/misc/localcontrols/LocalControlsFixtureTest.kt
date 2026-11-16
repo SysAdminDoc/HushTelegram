@@ -10,6 +10,7 @@ import app.morphe.Fixtures
 import app.morphe.PatchContexts
 import app.morphe.util.names.loadsInt
 import app.morphe.util.names.origRef
+import app.morphe.util.names.addInstruction
 import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -117,7 +118,8 @@ class LocalControlsFixtureTest {
             // Special contacts' two hooks go in with the IDs; SpecialContactsFixtureTest holds them to the stock code.
             val special = context.resolveSpecialContacts().first!!
             // So do member join dates', which the member list test below holds to the stock code.
-            val hooked = setOf(plan.method, special.putUser, special.updates) + context.resolveMemberJoinDates().first!!.methods
+            val hooked = setOf(plan.method, special.putUser, special.updates) + context.resolveMemberJoinDates().first!!.methods +
+                context.resolveForwardDates().first!!.methods
             val stock = ImmutableMethod.of(plan.method)
             val untouched = hostState(build, context, hooked)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { showLocalIdsPatch.execute(context) })
@@ -196,7 +198,7 @@ class LocalControlsFixtureTest {
             assertEquals("${build.name}: member rows", 2, plan.cells.size)
             val stock = plan.methods.associate { key(it) to ImmutableMethod.of(it) }
             val sites = plan.methods.associate { key(it) to plan.sites(it) }
-            val hooked = setOf(local, special.putUser, special.updates) + plan.methods
+            val hooked = setOf(local, special.putUser, special.updates) + plan.methods + context.resolveForwardDates().first!!.methods
             val untouched = hostState(build, context, hooked)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { showLocalIdsPatch.execute(context) })
             val page = plan.binders.first()
@@ -293,6 +295,114 @@ class LocalControlsFixtureTest {
             assertEquals("${build.name} $name: the stub keeps answering 0", listOf(Opcode.CONST_4, Opcode.RETURN), date.map { it.opcode })
             flags(c, ID_FLAGS - "memberJoinDates" + "specialContacts", true)
             flags(c, listOf("memberJoinDates"), false)
+        }
+    }
+
+    @Test fun `a forward's header and its compact header pass through the date hook and nothing else changes`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = context(build)
+            val local = context.resolveLocalIds().method
+            val special = context.resolveSpecialContacts().first!!
+            val joinDates = context.resolveMemberJoinDates().first!!
+            val (found, missing) = context.resolveForwardDates()
+            assertNull("${build.name}: $missing", missing)
+            val plan = found!!
+            assertEquals("${build.name}: one class draws both", plan.line.definingClass, plan.compact.definingClass)
+            val stock = plan.methods.associate { key(it) to ImmutableMethod.of(it) }
+            val sites = plan.methods.associate { key(it) to plan.sites(it) }
+            val hooked = setOf(local, special.putUser, special.updates) + joinDates.methods + plan.methods
+            val untouched = hostState(build, context, hooked)
+            assertEquals(emptyList<String>(), PatchLogCapture.warnings { showLocalIdsPatch.execute(context) })
+
+            // The line: the message is kept where "Forwarded from" is loaded, and the text it answers goes through the hook.
+            val lineCase = "${build.name}: ${key(plan.line)}"
+            val lineStock = stock.getValue(key(plan.line))
+            val before = lineStock.controlBody()
+            val (load, returned) = sites.getValue(key(plan.line))
+            assertStockAt(lineCase, lineStock, plan.line, mapOf(load to 1, returned to 2))
+            assertTrue(lineCase, before[load].loadsInt() && before[load].controlRef() == FD_FORWARDED_FROM)
+            assertTrue(lineCase, before.any { it.opcode == Opcode.CONST_STRING &&
+                ((it as ReferenceInstruction).reference as? com.android.tools.smali.dexlib2.iface.reference.StringReference)?.string == "PsaMessage_" })
+            assertEquals(lineCase, listOf(Opcode.MOVE_RESULT_OBJECT, Opcode.RETURN_OBJECT), listOf(before[returned - 1].opcode, before[returned].opcode))
+            val after = plan.line.controlBody()
+            val kept = after[load].namedRegisters()
+            assertEquals(lineCase, Opcode.MOVE_OBJECT, after[load].opcode)
+            // The message is the cell's one parameter after itself.
+            assertEquals(lineCase, plan.line.implementation!!.registerCount - 1, kept[1])
+            assertTrue(lineCase, kept[0] < plan.line.implementation!!.registerCount - 2)
+            val text = before[returned].namedRegisters()
+            assertEquals(lineCase, FD_HEADER_HOOK, after[returned + 1].controlRef())
+            assertEquals(lineCase, listOf(kept[0]) + text, after[returned + 1].namedRegisters())
+            assertEquals(lineCase, Opcode.MOVE_RESULT_OBJECT, after[returned + 2].opcode)
+            assertEquals(lineCase, text, after[returned + 2].namedRegisters())
+            // Nothing between the two writes the kept register.
+            assertTrue(lineCase, (load + 1..returned).none { after[it].opcode.setsRegister() && after[it].namedRegisters().first() == kept[0] })
+
+            // The compact header: the row's empty text slot takes the date before the row is set.
+            val compactCase = "${build.name}: ${key(plan.compact)}"
+            val compactStock = stock.getValue(key(plan.compact))
+            val row = sites.getValue(key(plan.compact)).single()
+            assertStockAt(compactCase, compactStock, plan.compact, mapOf(row to 2))
+            val compactBefore = compactStock.controlBody()
+            val label = compactBefore.indexOfFirst { it.loadsInt() && it.controlRef() == FD_FORWARDED_FROM }
+            assertTrue(compactCase, label in 0 until row)
+            val arguments = compactBefore[row].namedRegisters()
+            assertEquals(compactCase, compactBefore[label + 2].namedRegisters(), listOf(arguments[1]))
+            // Telegram hands the row no text for a forward.
+            val nothing = (row - 1 downTo label).first { compactBefore[it].opcode.setsRegister() && compactBefore[it].namedRegisters().first() == arguments[5] }
+            assertEquals(compactCase, Opcode.CONST_4, compactBefore[nothing].opcode)
+            assertEquals(compactCase, 0L, (compactBefore[nothing] as WideLiteralInstruction).wideLiteral)
+            val compactAfter = plan.compact.controlBody()
+            assertEquals(compactCase, FD_COMPACT_HOOK, compactAfter[row].controlRef())
+            assertEquals(compactCase, Opcode.MOVE_RESULT_OBJECT, compactAfter[row + 1].opcode)
+            assertEquals(compactCase, listOf(arguments[5]), compactAfter[row + 1].namedRegisters())
+            val message = compactAfter[row].namedRegisters().first()
+            // The compact header copies its message parameter first thing, and the hook reads that copy.
+            val copied = compactBefore.indexOfFirst { it.opcode == Opcode.MOVE_OBJECT_FROM16 && it.namedRegisters() ==
+                listOf(message, plan.compact.implementation!!.registerCount - 1) }
+            assertTrue(compactCase, copied in 0 until label)
+
+            // The date comes from the message's forward header, else 0.
+            val date = context.tgMutableClassDefBy(FORWARD_DATES).methods.single { it.origName == "sentAt" }.controlBody()
+            assertEquals(listOf(Opcode.INSTANCE_OF, Opcode.IF_EQZ, Opcode.CHECK_CAST, Opcode.IGET_OBJECT, Opcode.IF_EQZ, Opcode.IGET_OBJECT,
+                Opcode.IF_EQZ, Opcode.IGET, Opcode.RETURN, Opcode.CONST_4, Opcode.RETURN), date.map { it.opcode })
+            assertEquals(listOf("$FD_MESSAGE->messageOwner:$FD_TL_MESSAGE", "$FD_TL_MESSAGE->fwd_from:$FD_FWD_HEADER", "$FD_FWD_HEADER->date:I"),
+                listOf(date[3], date[5], date[7]).map { it.controlRef() })
+            assertFalse(date.any { it.call() != null })
+            assertEquals("${build.name}: every other host method keeps its code", untouched, hostState(build, context, hooked))
+            flags(context, ID_FLAGS + "specialContacts", true)
+        }
+    }
+
+    @Test fun `profile IDs go in without forward dates when a Forwarded from site changed`() {
+        val mutations: List<Pair<String, (BytecodePatchContext, ForwardDatesPlan) -> Unit>> = listOf(
+            "a second Forwarded from line" to { c, p -> duplicate(c, p.line) },
+            "a second compact header" to { c, p -> duplicate(c, p.compact) },
+            "the line has no local left to keep the message in" to { _, p ->
+                // Reading every local right after the label leaves none free until the line answers. Its locals are
+                // the registers below this and the one message parameter.
+                val load = p.line.controlBody().indexOfFirst { it.loadsInt() && it.controlRef() == FD_FORWARDED_FROM }
+                for (register in 0 until p.line.implementation!!.registerCount - 2)
+                    p.line.addInstruction(load + 1, "invoke-static {v$register}, Ljava/util/Objects;->hashCode(Ljava/lang/Object;)I")
+            },
+            "the compact row takes another label" to { _, p -> val body = p.compact.controlBody()
+                val label = body.indexOfFirst { it.loadsInt() && it.controlRef() == FD_FORWARDED_FROM }
+                val named = body[label + 2].namedRegisters().single()
+                p.compact.replaceInstruction(label + 2, "move-result-object v${named + 1}") },
+        )
+        for (build in Fixtures.declaredBuilds()) for ((name, change) in mutations) {
+            val c = context(build)
+            val plan = c.resolveForwardDates().first!!
+            change(c, plan)
+            val stock = plan.methods.associate { key(it) to it.state() }
+            val warnings = PatchLogCapture.warnings { showLocalIdsPatch.execute(c) }
+            assertEquals("${build.name} $name: $warnings", 1, warnings.size)
+            assertTrue("${build.name} $name: $warnings", "without forward dates" in warnings.single())
+            assertEquals("${build.name} $name: both sites keep their code", stock, plan.methods.associate { key(it) to it.state() })
+            val date = c.tgMutableClassDefBy(FORWARD_DATES).methods.single { it.origName == "sentAt" }.controlBody()
+            assertEquals("${build.name} $name: the stub keeps answering 0", listOf(Opcode.CONST_4, Opcode.RETURN), date.map { it.opcode })
+            flags(c, ID_FLAGS - "forwardDates" + "specialContacts", true)
+            flags(c, listOf("forwardDates"), false)
         }
     }
 
@@ -459,7 +569,8 @@ class LocalControlsFixtureTest {
     private fun loadHosts(build: File): List<ClassDef> {
         val result = FixtureDex.classesWhere(build, { true }) { method ->
             method.origDefiningClass == PROFILE || method.origName == "onTextContextMenuItem" || method.origName == "onDoubleTap" ||
-                method.controlBody().let { body -> body.any { it.controlRef() == DOUBLE_TAP_CHOICE } || joinDateHost(body) }
+                method.controlBody().let { body -> body.any { it.controlRef() == DOUBLE_TAP_CHOICE } || joinDateHost(body) ||
+                    body.any { it.loadsInt() && it.controlRef() == FD_FORWARDED_FROM } }
         }.associateByTo(linkedMapOf()) { it.type }
         val profile = result.getValue(PROFILE)
         // The menu is identified by its overflow icon/store, rather than any obfuscated name.
@@ -479,7 +590,7 @@ class LocalControlsFixtureTest {
         // Use normal paste also reads the entities method Mention by ID hooks. LocaleController holds the
         // getString(int) wrapper whose forwarded call 13.2 inlined into the profile's Send Gram title.
         result.putAll(FixtureDex.classes(build, setOf(boundMenu, "Lorg/telegram/messenger/R\$drawable;", "Lorg/telegram/messenger/MediaDataController;",
-            "Lorg/telegram/messenger/LocaleController;") + PROFILE_DC_TYPES + JD_TYPES))
+            "Lorg/telegram/messenger/LocaleController;") + PROFILE_DC_TYPES + JD_TYPES + setOf(FD_MESSAGE, FD_TL_MESSAGE, FD_FWD_HEADER)))
         loadAncestors(build, result)
         // 13.2 declares the row factory on the menu item's superclass and takes the title as a CharSequence.
         val menuLine = generateSequence(result.getValue(boundMenu)) { menu -> menu.superclass?.let { result[it] } }.toList()
@@ -575,7 +686,7 @@ class LocalControlsFixtureTest {
     companion object {
         private val HOSTS = mutableMapOf<String, SoftReference<List<ClassDef>>>()
         private val PASTE_FLAGS = listOf("normalPaste", "composePlainPaste", "captionPlainPaste")
-        private val ID_FLAGS = listOf("showLocalIds", "profileLocalIds", "registrationDate", "memberJoinDates")
+        private val ID_FLAGS = listOf("showLocalIds", "profileLocalIds", "registrationDate", "memberJoinDates", "forwardDates")
         private val REACTION_FLAGS = listOf("disableDoubleTapReactions", "chatDoubleTapReaction", "previewDoubleTapReaction")
         private const val OVERFLOW_ICON = "Lorg/telegram/messenger/R\$drawable;->ic_ab_other:I"
         private const val COPY_ICON = "drawable/msg_copy"

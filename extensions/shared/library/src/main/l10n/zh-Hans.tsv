@@ -2248,3 +2248,9 @@ Outline the bottom bar	为底栏加描边
 Draws a thin Telegram blue line around the bar at the bottom of the main screen, so it stands out on a black background. Restart Telegram to see the change.	在主屏幕底部的栏周围画一条细细的 Telegram 蓝色线条，让它在黑色背景上更醒目。重启 Telegram 后生效.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Contacts tab that outlines the bottom bar.
 bottom bar outline	底栏描边
+# context: Title of a switch under Show user and chat IDs (#79). It adds the date and time a forwarded message was originally sent to the header of that message in a chat
+Show when forwards were first sent	显示转发消息的原始发送时间
+# context: Summary under the Show when forwards were first sent switch. Forwarded from is Telegram's own header on a forwarded message (Telegram key ForwardedFrom); use Telegram's wording for it
+A forwarded message's header also shows the date and time it was first sent, after Forwarded from. The date comes with the message, so nothing more is asked of Telegram.	转发消息的标题在“转发自”后面还会显示它最初发送的日期和时间。日期随消息一起提供，因此不会再向 Telegram 请求任何内容.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Show user and chat IDs that shows when a forwarded message was first sent
+forward dates	转发日期

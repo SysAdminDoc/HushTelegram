@@ -2248,3 +2248,9 @@ Outline the bottom bar	Contorno en la barra inferior
 Draws a thin Telegram blue line around the bar at the bottom of the main screen, so it stands out on a black background. Restart Telegram to see the change.	Dibuja una línea fina azul Telegram alrededor de la barra inferior de la pantalla principal, para que destaque sobre un fondo negro. Reinicia Telegram para ver el cambio.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Contacts tab that outlines the bottom bar.
 bottom bar outline	contorno de la barra inferior
+# context: Title of a switch under Show user and chat IDs (#79). It adds the date and time a forwarded message was originally sent to the header of that message in a chat
+Show when forwards were first sent	Mostrar cuándo se envió primero lo reenviado
+# context: Summary under the Show when forwards were first sent switch. Forwarded from is Telegram's own header on a forwarded message (Telegram key ForwardedFrom); use Telegram's wording for it
+A forwarded message's header also shows the date and time it was first sent, after Forwarded from. The date comes with the message, so nothing more is asked of Telegram.	La cabecera de un mensaje reenviado también muestra la fecha y la hora en que se envió por primera vez, después de Reenviado de. La fecha viene con el mensaje, así que no se le pide nada más a Telegram.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Show user and chat IDs that shows when a forwarded message was first sent
+forward dates	fechas de los reenvíos

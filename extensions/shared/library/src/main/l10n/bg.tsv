@@ -2244,3 +2244,9 @@ Outline the bottom bar	Контур на долната лента
 Draws a thin Telegram blue line around the bar at the bottom of the main screen, so it stands out on a black background. Restart Telegram to see the change.	Рисува тънка синя линия в цвета на Telegram около лентата в долната част на главния екран, за да се откроява на черен фон. Рестартирайте Telegram, за да видите промяната.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Contacts tab that outlines the bottom bar.
 bottom bar outline	контура на долната лента
+# context: Title of a switch under Show user and chat IDs (#79). It adds the date and time a forwarded message was originally sent to the header of that message in a chat
+Show when forwards were first sent	Показване кога е изпратено препратеното
+# context: Summary under the Show when forwards were first sent switch. Forwarded from is Telegram's own header on a forwarded message (Telegram key ForwardedFrom); use Telegram's wording for it
+A forwarded message's header also shows the date and time it was first sent, after Forwarded from. The date comes with the message, so nothing more is asked of Telegram.	Заглавието на препратено съобщение показва и датата и часа, когато е изпратено за първи път, след „Препратено от“. Датата идва със съобщението, така че от Telegram не се иска нищо повече.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Show user and chat IDs that shows when a forwarded message was first sent
+forward dates	датите на препратените съобщения

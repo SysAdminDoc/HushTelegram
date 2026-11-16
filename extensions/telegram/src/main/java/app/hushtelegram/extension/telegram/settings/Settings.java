@@ -171,6 +171,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting MEMBER_JOIN_DATES =
             new BooleanSetting("hushtelegram_member_join_dates", FALSE);
 
+    /** A forwarded message's header also shows when it was first sent, from the date Telegram keeps with the forward (#79). */
+    public static final BooleanSetting FORWARD_DATES =
+            new BooleanSetting("hushtelegram_forward_dates", FALSE);
+
     /** A profile menu offers Track this user, and the people tracked get a history of what Telegram shows of them. */
     public static final BooleanSetting SPECIAL_CONTACTS =
             new BooleanSetting("hushtelegram_special_contacts", FALSE);

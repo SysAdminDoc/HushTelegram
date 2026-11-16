@@ -1491,6 +1491,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "next to their last seen. The date comes with the list, so nothing more is asked of Telegram. "
                                 + "Admins and the owner keep their role.")));
             }
+            if (PatchFamily.Capability.FORWARD_DATES.installed()) {
+                on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(toggle(context, Settings.FORWARD_DATES, L10n.t("Show when forwards were first sent"),
+                        L10n.t("A forwarded message's header also shows the date and time it was first sent, after Forwarded from. "
+                                + "The date comes with the message, so nothing more is asked of Telegram.")));
+            }
             on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(openByIdRow(context));
             if (PatchFamily.Capability.SPECIAL_CONTACTS.installed()) {
                 on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(toggle(context, Settings.SPECIAL_CONTACTS, L10n.t("Special contacts"),
