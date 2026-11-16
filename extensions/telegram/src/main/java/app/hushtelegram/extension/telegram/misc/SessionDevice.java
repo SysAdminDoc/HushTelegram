@@ -19,8 +19,12 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * <p>Telegram builds both in ConnectionsManager's constructor (the phone's maker and model run
  * together, and "SDK" with the Android API level) and hands them to init, which passes them to the
  * native connection. The patch runs each through {@link #model} and {@link #system} at the top of
- * init, so a name saved here goes out instead and an empty one leaves Telegram's own. Each account
- * connects once per launch, so a change shows after a restart.
+ * init, so a name saved here goes out instead and an empty one leaves Telegram's own.
+ *
+ * <p>The connection doesn't send them on every launch, though: it tells the server the device again
+ * only when the build number init gets differs from the one it saved the last time it did (or after
+ * a language or proxy change). {@link #version} folds the saved name and system version into that
+ * number, so a change goes out on the next launch, and clearing both gives Telegram's own back.
  */
 public final class SessionDevice {
     /** Room for a long name, and far less than a line the sessions list can't show. */
@@ -36,6 +40,26 @@ public final class SessionDevice {
     /** Injected at the top of ConnectionsManager.init on the system version Telegram built. */
     public static String system(String stock) {
         return chosen(Settings.SESSION_SYSTEM_VERSION, stock, "session system version");
+    }
+
+    /**
+     * Injected at the top of ConnectionsManager.init on Telegram's build number, which the native
+     * connection only compares with the one it saved to decide whether to send the device again.
+     * Telegram's own with both boxes empty, otherwise mixed with what {@link #model} and
+     * {@link #system} send, so each different pair gets its own number and goes out once.
+     */
+    public static int version(int stock) {
+        try {
+            if (!Utils.settingsReady()) return stock;
+            String model = clean(Settings.SESSION_DEVICE_NAME.get());
+            String system = clean(Settings.SESSION_SYSTEM_VERSION.get());
+            if (model.isEmpty() && system.isEmpty()) return stock;
+            int mix = (model + '\n' + system).hashCode();
+            return stock ^ (mix == 0 ? 1 : mix);
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "session device version", failure);
+            return stock;
+        }
     }
 
     private static String chosen(StringSetting setting, String stock, String what) {

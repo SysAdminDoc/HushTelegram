@@ -49,21 +49,27 @@ class SessionDeviceFixtureTest {
             val model = site.method.parameterRegisterNumber(INIT_MODEL_PARAMETER)
             val system = site.method.parameterRegisterNumber(INIT_SYSTEM_PARAMETER)
             assertEquals("$where: the system version is the next register", model + 1, system)
+            // this, then the build number: the first declared parameter sits right past the locals plus one.
+            val version = site.method.parameterRegisterNumber(INIT_VERSION_PARAMETER)
+            assertEquals("$where: the build number is three registers before the device name", model - 3, version)
             val before = site.method.instructions()
 
             site.apply()
             val after = site.method.instructions()
-            assertEquals(where, before.size + 4, after.size)
-            for ((at, register, hook) in listOf(Triple(0, model, SESSION_DEVICE_MODEL), Triple(2, system, SESSION_DEVICE_SYSTEM))) {
+            assertEquals(where, before.size + 6, after.size)
+            for ((at, register, hook, result) in listOf(
+                Hooked(0, model, SESSION_DEVICE_MODEL, Opcode.MOVE_RESULT_OBJECT),
+                Hooked(2, system, SESSION_DEVICE_SYSTEM, Opcode.MOVE_RESULT_OBJECT),
+                Hooked(4, version, SESSION_DEVICE_VERSION, Opcode.MOVE_RESULT))) {
                 val call = after[at]
                 assertEquals("$where: $hook", Opcode.INVOKE_STATIC_RANGE, call.opcode)
                 assertEquals(hook, (call as ReferenceInstruction).reference.origString())
                 assertEquals("$where: the hook gets init's own value", register, (call as RegisterRangeInstruction).startRegister)
                 assertEquals(1, call.registerCount)
-                assertEquals(Opcode.MOVE_RESULT_OBJECT, after[at + 1].opcode)
+                assertEquals("$where: $hook", result, after[at + 1].opcode)
                 assertEquals("$where: the answer replaces it", register, (after[at + 1] as OneRegisterInstruction).registerA)
             }
-            assertEquals("$where: stock code kept in order", before.map { it.opcode }, after.drop(4).map { it.opcode })
+            assertEquals("$where: stock code kept in order", before.map { it.opcode }, after.drop(6).map { it.opcode })
         }
     }
 
@@ -75,6 +81,19 @@ class SessionDeviceFixtureTest {
         init.addInstructions(0, "const-string ${init.parameterRegister(INIT_MODEL_PARAMETER)}, \"stock\"")
         assertThrows(PatchException::class.java) { context.resolveSessionDevice() }
     }
+
+    @Test
+    fun `an init that writes over the build number before the native call is left alone`() {
+        val build = Fixtures.declaredBuilds().first()
+        val context = PatchContexts.of(ExtensionDex.classes() + ghostModeHosts(build))
+        val init = context.resolveSessionDevice().method
+        // init has more registers than a 4-bit or 8-bit form can name, so the layer goes over it with move/16.
+        init.addInstructions(0, "move/16 ${init.parameterRegister(INIT_VERSION_PARAMETER)}, ${init.parameterRegister(1)}")
+        val refused = assertThrows(PatchException::class.java) { context.resolveSessionDevice() }
+        assertTrue(refused.message, "build number" in refused.message.orEmpty())
+    }
+
+    private data class Hooked(val at: Int, val register: Int, val hook: String, val result: Opcode)
 
     @Test
     fun `the whole patch claims the device in Active sessions, and a build without ConnectionsManager goes on without it`() {

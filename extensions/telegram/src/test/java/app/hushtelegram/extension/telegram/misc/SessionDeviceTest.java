@@ -6,6 +6,7 @@ package app.hushtelegram.extension.telegram.misc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import app.hushtelegram.extension.shared.SettingsContextRule;
@@ -71,6 +72,62 @@ public class SessionDeviceTest {
         String report = String.join("\n", HookStatus.report());
         assertFalse(report, report.contains("session system version changed"));
         assertEquals("the saved value comes back once the read does", "Windows 11", SessionDevice.system("SDK 36"));
+    }
+
+    @Test public void emptyBoxesKeepTelegramsBuildNumber() {
+        assertEquals(73039, SessionDevice.version(73039));
+        Settings.SESSION_DEVICE_NAME.save("  \t ");
+        Settings.SESSION_SYSTEM_VERSION.save("\n");
+        assertEquals("only spaces is empty", 73039, SessionDevice.version(73039));
+    }
+
+    @Test public void eachSavedPairGetsItsOwnBuildNumberSoItGoesOutOnce() {
+        Settings.SESSION_DEVICE_NAME.save("Office PC");
+        int office = SessionDevice.version(73039);
+        assertNotEquals("a saved name makes the connection send the device again", 73039, office);
+        assertEquals("the same name keeps its number, so it isn't sent every launch", office, SessionDevice.version(73039));
+        assertEquals("the number follows what goes out, not how it was typed", office,
+                withName(" Office \n PC ", () -> SessionDevice.version(73039)));
+
+        Settings.SESSION_DEVICE_NAME.save("Home PC");
+        int home = SessionDevice.version(73039);
+        assertNotEquals("a second name goes out too", office, home);
+        assertNotEquals(73039, home);
+
+        Settings.SESSION_SYSTEM_VERSION.save("Windows 11");
+        int homeWindows = SessionDevice.version(73039);
+        assertNotEquals("a system version alone changes it", home, homeWindows);
+
+        Settings.SESSION_DEVICE_NAME.resetToDefault();
+        int windows = SessionDevice.version(73039);
+        assertNotEquals("the system version by itself still goes out", 73039, windows);
+        assertNotEquals(homeWindows, windows);
+
+        Settings.SESSION_SYSTEM_VERSION.resetToDefault();
+        assertEquals("clearing both sends Telegram's own again", 73039, SessionDevice.version(73039));
+        assertNotEquals("an app update still changes the number", SessionDevice.version(73039), SessionDevice.version(73040));
+    }
+
+    @Test public void theBuildNumberFollowsWhatTheDeviceHooksSend() {
+        Settings.SESSION_DEVICE_NAME.save("Office PC");
+        SettingsContextRule.withoutContext(() -> assertEquals(73039, SessionDevice.version(73039)));
+        SettingReadsForTests.breakReads(Settings.SESSION_DEVICE_NAME);
+        try {
+            assertEquals("a read that comes back empty sends Telegram's own name, and its number", 73039,
+                    SessionDevice.version(73039));
+        } finally {
+            SettingReadsForTests.mend(Settings.SESSION_DEVICE_NAME);
+        }
+    }
+
+    private static int withName(String typed, java.util.function.IntSupplier read) {
+        String saved = Settings.SESSION_DEVICE_NAME.get();
+        Settings.SESSION_DEVICE_NAME.save(typed);
+        try {
+            return read.getAsInt();
+        } finally {
+            Settings.SESSION_DEVICE_NAME.save(saved);
+        }
     }
 
     @Test public void cleanKeepsOneLineAndCutsWholeCharacters() {
