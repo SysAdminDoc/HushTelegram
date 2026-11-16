@@ -1188,6 +1188,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("Start videos without sound"), L10n.t("A video you open plays muted until you press a"
                                 + " volume key. Round videos keep their sound.")));
             }
+            if (PatchFamily.Capability.VIDEO_TRACKS.installed()) {
+                on(pages, PatchFamily.KEEP_VIDEOS_MUTED).addPreference(toggle(context, Settings.VIDEO_TRACKS,
+                        L10n.t("Audio track and subtitles"), L10n.t("A video's settings menu gets Audio track when the"
+                                + " video has more than one, and Subtitles when it has any. The subtitles you pick show over"
+                                + " the video.")));
+            }
             if (PatchFamily.Capability.VIDEO_EITHER_LANDSCAPE.installed()) {
                 on(pages, PatchFamily.KEEP_VIDEOS_MUTED).addPreference(toggle(context, Settings.VIDEO_EITHER_LANDSCAPE,
                         L10n.t("Full screen videos turn either way"), L10n.t("After you tap full screen, a video follows"

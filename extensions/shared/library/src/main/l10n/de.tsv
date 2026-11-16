@@ -1488,6 +1488,20 @@ Start videos without sound	Videos ohne Ton starten
 A video you open plays muted until you press a volume key. Round videos keep their sound.	Ein geöffnetes Video läuft stumm, bis du eine Lautstärketaste drückst. Rundvideos behalten ihren Ton.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep videos muted on volume keys that starts opened videos without sound.
 videos starting without sound	Starten von Videos ohne Ton
+# context: a switch under Keep videos muted on volume keys (#79). With it on, Telegram's video viewer menu offers a choice of audio track and subtitles.
+Audio track and subtitles	Tonspur und Untertitel
+# context: that switch's summary. Audio track and Subtitles are the names of the two rows it adds to the menu that opens from the three dots in Telegram's video viewer.
+A video's settings menu gets Audio track when the video has more than one, and Subtitles when it has any. The subtitles you pick show over the video.	Das Einstellungsmenü eines Videos bekommt „Tonspur“, wenn das Video mehr als eine hat, und „Untertitel“, wenn es welche hat. Die gewählten Untertitel erscheinen über dem Video.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep videos muted on volume keys that lets you pick a video's audio track and subtitles.
+audio track and subtitle choice	Auswahl von Tonspur und Untertiteln
+# context: a row in the menu of Telegram's video viewer, and the title of the list it opens. Picks which audio track (language) of a video plays.
+Audio track	Tonspur
+# context: a row in the menu of Telegram's video viewer, and the title of the list it opens. Picks which subtitles show over a video.
+Subtitles	Untertitel
+# context: the first choice in the Audio track list. Telegram's player picks the audio track itself.
+Automatic	Automatisch
+# context: a name for an audio or subtitle track that has no language or label. %1$d is its place in the list, starting at 1.
+Track %1$d	Spur %1$d
 # context: a switch under Ghost mode (#62). With it on, a ghost button sits at the top of the chat list, among Telegram's own buttons there.
 Ghost mode button	Geistermodus-Taste
 # context: that switch's summary. Filled means the ghost icon is drawn solid rather than as an outline.

@@ -157,6 +157,7 @@ public final class SettingsBackup {
             Settings.VIDEO_EITHER_LANDSCAPE,
             Settings.VIDEO_ONLY_FROM_BUTTON,
             Settings.VIDEO_STARTS_SILENT,
+            Settings.VIDEO_TRACKS,
             Settings.SWIPE_BACK_ON_PROFILES,
             Settings.HIDE_PHONE_NUMBER,
             Settings.SHARE_NUMBER_UNTICKED,

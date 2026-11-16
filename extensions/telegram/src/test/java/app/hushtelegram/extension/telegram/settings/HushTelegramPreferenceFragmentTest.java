@@ -716,6 +716,12 @@ public class HushTelegramPreferenceFragmentTest {
             // Videos follow the phone as Telegram has it until the switch is turned on.
             assertFalse(Settings.VIDEO_ONLY_FROM_BUTTON.key,
                     ((SwitchPreference) page.findPreference(Settings.VIDEO_ONLY_FROM_BUTTON.key)).isChecked());
+            assertEquals("Audio track and subtitles", String.valueOf(page.findPreference(Settings.VIDEO_TRACKS.key).getTitle()));
+            assertEquals("A video's settings menu gets Audio track when the video has more than one, and Subtitles when it "
+                    + "has any. The subtitles you pick show over the video.",
+                    String.valueOf(page.findPreference(Settings.VIDEO_TRACKS.key).getSummary()));
+            // The video menu stays as Telegram has it until the switch is turned on.
+            assertFalse(Settings.VIDEO_TRACKS.key, ((SwitchPreference) page.findPreference(Settings.VIDEO_TRACKS.key)).isChecked());
             assertEquals("Swipe back on profiles", String.valueOf(page.findPreference(Settings.SWIPE_BACK_ON_PROFILES.key).getTitle()));
             assertEquals("Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, "
                     + "instead of showing the previous photo or tab.",

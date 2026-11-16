@@ -444,6 +444,7 @@ public final class SelectionCheck {
         hook(calls, flags, "videoEitherLandscape", "misc/VideoTurn", "fullScreen");
         hook(calls, flags, "videoOnlyFromButton", "misc/VideoUpright", "listenerOn", "listenerOff", "requested", "restore");
         hook(calls, flags, "videoStartsSilent", "misc/VideoSound", "setMute", "setVolume");
+        hook(calls, flags, "videoTracks", "misc/VideoTracks", "menu", "menuChoice", "cues");
         hook(calls, flags, "swipeBackOnProfiles", "misc/SwipeBack", "touchBlocks");
         hook(calls, flags, "hidePhoneNumber", "misc/HidePhone", "shown");
         hook(calls, flags, "shareNumberUnticked", "misc/ContactShare", "startsTicked");

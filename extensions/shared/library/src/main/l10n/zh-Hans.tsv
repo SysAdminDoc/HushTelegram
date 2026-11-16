@@ -1462,6 +1462,20 @@ Start videos without sound	视频静音开始播放
 A video you open plays muted until you press a volume key. Round videos keep their sound.	你打开的视频会静音播放，直到你按下音量键。圆形视频保留声音.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep videos muted on volume keys that starts opened videos without sound.
 videos starting without sound	静音开始播放的视频
+# context: a switch under Keep videos muted on volume keys (#79). With it on, Telegram's video viewer menu offers a choice of audio track and subtitles.
+Audio track and subtitles	音轨和字幕
+# context: that switch's summary. Audio track and Subtitles are the names of the two rows it adds to the menu that opens from the three dots in Telegram's video viewer.
+A video's settings menu gets Audio track when the video has more than one, and Subtitles when it has any. The subtitles you pick show over the video.	视频有多个音轨时，其设置菜单会出现“音轨”，有字幕时会出现“字幕”。你选的字幕会显示在视频上.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep videos muted on volume keys that lets you pick a video's audio track and subtitles.
+audio track and subtitle choice	选择音轨和字幕
+# context: a row in the menu of Telegram's video viewer, and the title of the list it opens. Picks which audio track (language) of a video plays.
+Audio track	音轨
+# context: a row in the menu of Telegram's video viewer, and the title of the list it opens. Picks which subtitles show over a video.
+Subtitles	字幕
+# context: the first choice in the Audio track list. Telegram's player picks the audio track itself.
+Automatic	自动
+# context: a name for an audio or subtitle track that has no language or label. %1$d is its place in the list, starting at 1.
+Track %1$d	轨道 %1$d
 # context: a switch under Ghost mode (#62). With it on, a ghost button sits at the top of the chat list, among Telegram's own buttons there.
 Ghost mode button	幽灵模式按钮
 # context: that switch's summary. Filled means the ghost icon is drawn solid rather than as an outline.

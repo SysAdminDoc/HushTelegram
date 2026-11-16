@@ -338,6 +338,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_video_starts_silent", FALSE);
 
     /**
+     * A video's settings menu offers Audio track and Subtitles when it has more than one audio
+     * track or has subtitles, and the subtitles picked show over the video (#79).
+     */
+    public static final BooleanSetting VIDEO_TRACKS =
+            new BooleanSetting("hushtelegram_video_tracks", FALSE);
+
+    /**
      * A swipe to the right on a profile's photos or media tabs goes back instead of to the previous
      * photo or tab.
      */
