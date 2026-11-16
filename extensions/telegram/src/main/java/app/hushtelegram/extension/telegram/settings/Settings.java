@@ -631,6 +631,17 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_keep_encrypted_timed", FALSE);
 
     /**
+     * A group or channel that removes or bans you stays in the chat list with what this phone saved
+     * of it, and opens to that instead of closing (#71).
+     */
+    public static final BooleanSetting KEEP_REMOVED_CHATS =
+            new BooleanSetting("hushtelegram_keep_removed_chats", FALSE);
+
+    /** The chats Keep chats you're removed from kept, as comma-separated dialog ids, the same on every account. */
+    public static final StringSetting KEPT_REMOVED_CHATS =
+            new StringSetting("hushtelegram_kept_removed_chats", "");
+
+    /**
      * A sticker you tap asks Send or Cancel before it goes into the chat.
      */
     public static final BooleanSetting ASK_BEFORE_STICKER =

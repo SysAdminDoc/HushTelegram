@@ -151,6 +151,7 @@ public final class SettingsStatus {
     public static boolean keepEditHistory() { return false; }
     public static boolean keepTimedMedia() { return false; }
     public static boolean keepSecretTimed() { return false; }
+    public static boolean keepRemovedChats() { return false; }
     public static boolean askBeforeSending() { return false; }
     public static boolean askBeforeText() { return false; }
     public static boolean askBeforeJoin() { return false; }

@@ -1001,6 +1001,14 @@ public class HushTelegramPreferenceFragmentTest {
             // A secret chat's timer deletes as usual until the switch is turned on.
             assertFalse(Settings.KEEP_SECRET_TIMED.key,
                     ((SwitchPreference) page.findPreference(Settings.KEEP_SECRET_TIMED.key)).isChecked());
+            assertEquals("Keep chats you're removed from",
+                    String.valueOf(page.findPreference(Settings.KEEP_REMOVED_CHATS.key).getTitle()));
+            assertEquals("When a group or channel removes or bans you, it stays in your chats with what this phone saved, "
+                    + "and you can still open and scroll it. Delete it from the chat list to let it go.",
+                    String.valueOf(page.findPreference(Settings.KEEP_REMOVED_CHATS.key).getSummary()));
+            // A group or channel that removes you leaves the chat list as usual until the switch is turned on.
+            assertFalse(Settings.KEEP_REMOVED_CHATS.key,
+                    ((SwitchPreference) page.findPreference(Settings.KEEP_REMOVED_CHATS.key)).isChecked());
             assertEquals("Ask before sending a sticker", String.valueOf(page.findPreference(Settings.ASK_BEFORE_STICKER.key).getTitle()));
             assertEquals("Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled "
                     + "stickers go out without asking.",

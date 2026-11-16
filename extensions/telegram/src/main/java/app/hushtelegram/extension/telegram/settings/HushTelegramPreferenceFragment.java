@@ -1015,6 +1015,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + " stay on this phone when their self-destruct timer runs out. The other person's copy still"
                                 + " disappears on their own timer, and they aren't told.")));
             }
+            if (PatchFamily.Capability.REMOVED_CHATS.installed()) {
+                on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(toggle(context, Settings.KEEP_REMOVED_CHATS,
+                        L10n.t("Keep chats you're removed from"), L10n.t("When a group or channel removes or bans you, it"
+                                + " stays in your chats with what this phone saved, and you can still open and scroll it."
+                                + " Delete it from the chat list to let it go.")));
+            }
         }
         if (build.contains(PatchFamily.ASK_BEFORE_STICKER)) {
             on(pages, PatchFamily.ASK_BEFORE_STICKER).addPreference(toggle(context, Settings.ASK_BEFORE_STICKER, L10n.t("Ask before sending a sticker"),

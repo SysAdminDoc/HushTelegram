@@ -502,6 +502,16 @@ Keep self-destructing secret chat messages	Simpan pesan hancur otomatis di obrol
 Messages, photos and videos in secret chats stay on this phone when their self-destruct timer runs out. The other person's copy still disappears on their own timer, and they aren't told.	Pesan, foto, dan video di obrolan rahasia tetap ada di ponsel ini saat penghitung waktu hancur otomatisnya habis. Salinan milik orang lain tetap hilang sesuai penghitung waktunya sendiri, dan mereka tidak diberi tahu.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep deleted messages that keeps self-destructing secret chat messages.
 self-destructing secret chat messages	pesan hancur otomatis di obrolan rahasia
+# context: a sixth switch under Keep deleted messages (#71). Turned on, a group or channel that removes you or bans you stays in the chat list with the messages this phone already saved, and opens read-only. Same removed and banned terms Telegram uses for a member an admin takes out.
+Keep chats you're removed from	Simpan obrolan tempat Anda dikeluarkan
+# context: that switch's summary. "Let it go" means deleting the kept chat from the chat list removes it for good, from the list and from this phone.
+When a group or channel removes or bans you, it stays in your chats with what this phone saved, and you can still open and scroll it. Delete it from the chat list to let it go.	Saat grup atau saluran mengeluarkan atau memblokir Anda, obrolannya tetap ada di daftar obrolan Anda dengan isi yang disimpan ponsel ini, dan Anda masih bisa membuka serta menggulirnya. Hapus dari daftar obrolan untuk membuangnya sepenuhnya.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep deleted messages that keeps chats you're removed from.
+chats you're removed from	obrolan tempat Anda dikeluarkan
+# context: Toast when you open a chat Keep chats you're removed from kept, in place of Telegram's alert that the chat can't be opened. Short, two lines at most.
+You were removed. This is what's saved on this phone.	Anda dikeluarkan. Ini yang tersimpan di ponsel ini.
+# context: Name of the list Keep chats you're removed from keeps, in the import preview line "%1$s: %2$s to %3$s", where the counts follow
+Chats you were removed from	Obrolan tempat Anda dikeluarkan
 Forgets the earlier text this phone kept for edited messages, in every account.	Melupakan teks lama yang disimpan ponsel ini untuk pesan yang diedit, di setiap akun.
 # context: the notice after that tap when nothing was kept. A toast: two short lines at most.
 There's no edit history to clear.	Tidak ada riwayat edit untuk dihapus.

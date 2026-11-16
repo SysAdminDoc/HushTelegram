@@ -143,6 +143,7 @@ public class PatchFamilyTest {
         Settings.RED_DELETED_LABEL.resetToDefault();
         Settings.KEEP_OWN_DELETED.resetToDefault();
         Settings.KEEP_SECRET_TIMED.resetToDefault();
+        Settings.KEEP_REMOVED_CHATS.resetToDefault();
         Settings.ASK_BEFORE_STICKER.resetToDefault();
         Settings.OUTSIDE_TRANSLATE.resetToDefault();
         Settings.HIDE_CHANNEL_BUTTONS.resetToDefault();
@@ -458,19 +459,21 @@ public class PatchFamilyTest {
         // The second switch, the red label, starts off too and shows at the next measuring. The third, your
         // own messages, starts off and keeps from the next deletion on. The edit history starts off and keeps
         // from the next edit on. Timed media starts off and holds the next timed media you open. Secret chat
-        // timers start off and keep what's due from the next timer on.
+        // timers start off and keep what's due from the next timer on. Chats you're removed from start off and
+        // are kept from the next removal on.
         assertEquals(Arrays.asList(Settings.KEEP_DELETED_MESSAGES, Settings.RED_DELETED_LABEL, Settings.KEEP_OWN_DELETED, Settings.KEEP_EDIT_HISTORY,
-                Settings.KEEP_TIMED_MEDIA, Settings.KEEP_SECRET_TIMED), family.switches);
+                Settings.KEEP_TIMED_MEDIA, Settings.KEEP_SECRET_TIMED, Settings.KEEP_REMOVED_CHATS), family.switches);
         for (BooleanSetting setting : family.switches) {
             assertFalse(setting.key, setting.defaultValue);
             assertFalse(setting.key, setting.rebootApp);
         }
         assertEquals(EnumSet.of(PatchFamily.Capability.RED_DELETED_LABEL, PatchFamily.Capability.EDIT_HISTORY,
-                PatchFamily.Capability.TIMED_MEDIA, PatchFamily.Capability.SECRET_TIMED), family.expectedCapabilities());
+                PatchFamily.Capability.TIMED_MEDIA, PatchFamily.Capability.SECRET_TIMED, PatchFamily.Capability.REMOVED_CHATS), family.expectedCapabilities());
         assertEquals("redDeletedLabel", PatchFamily.Capability.RED_DELETED_LABEL.statusMethod);
         assertEquals("keepEditHistory", PatchFamily.Capability.EDIT_HISTORY.statusMethod);
         assertEquals("keepTimedMedia", PatchFamily.Capability.TIMED_MEDIA.statusMethod);
         assertEquals("keepSecretTimed", PatchFamily.Capability.SECRET_TIMED.statusMethod);
+        assertEquals("keepRemovedChats", PatchFamily.Capability.REMOVED_CHATS.statusMethod);
         assertOnItsPage(family);
     }
 

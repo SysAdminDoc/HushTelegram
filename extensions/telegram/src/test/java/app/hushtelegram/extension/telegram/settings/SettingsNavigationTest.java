@@ -294,6 +294,7 @@ public class SettingsNavigationTest {
         assertEquals(position(Settings.KEEP_EDIT_HISTORY.key) + 1, position(HushTelegramPreferenceFragment.CLEAR_EDITS));
         assertEquals(position(HushTelegramPreferenceFragment.CLEAR_EDITS) + 1, position(Settings.KEEP_TIMED_MEDIA.key));
         assertEquals(position(Settings.KEEP_TIMED_MEDIA.key) + 1, position(Settings.KEEP_SECRET_TIMED.key));
+        assertEquals(position(Settings.KEEP_SECRET_TIMED.key) + 1, position(Settings.KEEP_REMOVED_CHATS.key));
         page.navigation.navigate(PatchFamily.Page.LOOK.title);
         assertEquals(position(Settings.CHANGE_STICKER_SIZE.key) + 1, position(HushTelegramPreferenceFragment.STICKER_SIZE_ROW));
         assertEquals(position(Settings.HOLIDAY_LOOK.key) + 1, position(TitleEmojiEditor.KEY));

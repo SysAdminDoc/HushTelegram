@@ -133,6 +133,14 @@ val keepDeletedPatch = bytecodePatch(
         } else {
             patchLog.warning("Keep deleted messages: ${secretTimed.missing}. The patch goes on without Keep self-destructing secret chat messages.")
         }
+        // Found once everything above is in, so its places are read as they now are; it changes nothing it can't finish.
+        val removed = resolveKeepRemovedChats()
+        if (removed.missing == null) {
+            applyKeepRemovedChats(removed)
+            enableCapability("keepRemovedChats")
+        } else {
+            patchLog.warning("Keep deleted messages: ${removed.missing}. The patch goes on without Keep chats you're removed from.")
+        }
         enableStatus("keepDeleted")
     }
 }

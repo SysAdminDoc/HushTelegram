@@ -58,6 +58,7 @@ import app.hushtelegram.extension.shared.settings.StringSetting;
 import app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 import app.hushtelegram.extension.shared.settings.preference.QuickSetups;
+import app.hushtelegram.extension.telegram.misc.KeepRemoved;
 import app.hushtelegram.extension.telegram.misc.LinkPreviewRules;
 import app.hushtelegram.extension.telegram.misc.LocalPins;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
@@ -477,6 +478,9 @@ public class SettingsBackupPreference extends Preference {
                 // How many, not which: the ids are the person's own chats.
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Chats pinned on this phone"),
                         chatCount(Settings.LOCAL_PINNED_CHATS.savedValue()), chatCount((String) change.getValue())));
+            } else if (change.getKey() == Settings.KEPT_REMOVED_CHATS) {
+                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Chats you were removed from"),
+                        keptCount(Settings.KEPT_REMOVED_CHATS.savedValue()), keptCount((String) change.getValue())));
             } else if (change.getKey() == Settings.RECORD_CALLS_KEEP_DAYS) {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Keep recordings"),
                         HushTelegramPreferenceFragment.recordKeepShort(Settings.RECORD_CALLS_KEEP_DAYS.savedValue()),
@@ -504,6 +508,12 @@ public class SettingsBackupPreference extends Preference {
     /** "3 chats" for the chats pinned on this phone that [saved] holds. */
     private static String chatCount(String saved) {
         int count = LocalPins.count(saved);
+        return L10n.quantity(count, "%1$d chat", "%1$d chats", count);
+    }
+
+    /** "2 chats" for the chats Keep chats you're removed from kept that [saved] holds. */
+    private static String keptCount(String saved) {
+        int count = KeepRemoved.count(saved);
         return L10n.quantity(count, "%1$d chat", "%1$d chats", count);
     }
 

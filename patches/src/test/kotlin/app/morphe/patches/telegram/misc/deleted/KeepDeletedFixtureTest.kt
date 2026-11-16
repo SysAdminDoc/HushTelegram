@@ -210,6 +210,12 @@ class KeepDeletedFixtureTest {
             assertEquals("$name: the timed media switch shows", 1L, (timed.first() as WideLiteralInstruction).wideLiteral)
             val secretTimed = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "keepSecretTimed" }.controlBody()
             assertEquals("$name: the secret chat timer switch shows", 1L, (secretTimed.first() as WideLiteralInstruction).wideLiteral)
+            // A group or channel that removes you stays, and so does its chat list row (#71).
+            val removed = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "keepRemovedChats" }.controlBody()
+            assertEquals("$name: the removed chats switch shows", 1L, (removed.first() as WideLiteralInstruction).wideLiteral)
+            val controller = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.flatMap { it.controlBody() }
+            assertEquals("$name: both removals ask first", 2, controller.count { it.controlRef() == REMOVED_REMOVING })
+            assertEquals("$name: the whole delete tells first", 1, controller.count { it.controlRef() == REMOVED_DELETING })
             // Message times with seconds wasn't picked, so its switch stays hidden (#49).
             val seconds = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "messageSeconds" }.controlBody()
             assertEquals("$name: no seconds switch without its patch", 0L, (seconds.first() as WideLiteralInstruction).wideLiteral)
@@ -273,6 +279,25 @@ class KeepDeletedFixtureTest {
             assertEquals(1L, (status.single { it.origName == "keepDeleted" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
             assertEquals(1L, (status.single { it.origName == "keepTimedMedia" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
             assertEquals(0L, (status.single { it.origName == "keepSecretTimed" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
+        }
+    }
+
+    @Test fun `a moved can't-open alert leaves Keep chats you're removed from out and keeps the rest`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = context(build)
+            assertEquals(emptyList<String>(), PatchLogCapture.warnings { messageTimePatch.execute(context) })
+            context.breakRemovedAlertCheck()
+            val warnings = PatchLogCapture.warnings { keepDeletedPatch.execute(context) }
+            assertEquals("$name: $warnings", 1, warnings.size)
+            assertTrue(warnings.single(), "isn't checked right after" in warnings.single() &&
+                warnings.single().endsWith("The patch goes on without Keep chats you're removed from."))
+            val controller = context.tgMutableClassDefBy(MESSAGES_CONTROLLER).methods.flatMap { it.controlBody() }
+            assertTrue("$name: no removal hook", controller.none { it.controlRef()?.startsWith(KEEP_REMOVED) == true })
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods
+            assertEquals(1L, (status.single { it.origName == "keepDeleted" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
+            assertEquals(1L, (status.single { it.origName == "keepSecretTimed" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
+            assertEquals(0L, (status.single { it.origName == "keepRemovedChats" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
         }
     }
 
@@ -435,7 +460,9 @@ class KeepDeletedFixtureTest {
             } || it.controlString() == TIMED_EMPTY_QUERY }
         }.filter { it.origType !in telegram.keys && it.origType !in sparse.keys && it.origType != TIMED_DIALOG_OBJECT }
             .distinctBy { it.type }.filter { host -> runnables.none { it.type == host.type } }.map(ImmutableClassDef::of)
-        return PatchContexts.of(ExtensionDex.classes() + telegram.values + sparse.values + dialog.values + hosts + runnables)
+        // And what Keep chats you're removed from reads (#71).
+        return PatchContexts.of((ExtensionDex.classes() + telegram.values + sparse.values + dialog.values + hosts + runnables +
+            removedHosts(build)).distinctBy { it.type })
     }
 
     /** 13.2: what replaceMessageIfExists queues, and what that posts to the UI thread, where the event went. */

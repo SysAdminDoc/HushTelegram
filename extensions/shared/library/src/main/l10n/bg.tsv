@@ -499,6 +499,16 @@ Keep self-destructing secret chat messages	Запазване на самоун�
 Messages, photos and videos in secret chats stay on this phone when their self-destruct timer runs out. The other person's copy still disappears on their own timer, and they aren't told.	Съобщенията, снимките и видеата в тайните чатове остават на този телефон, когато таймерът им за самоунищожение изтече. Копието на другия човек пак изчезва по неговия таймер и той не разбира.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep deleted messages that keeps self-destructing secret chat messages.
 self-destructing secret chat messages	самоунищожаващите се съобщения в тайни чатове
+# context: a sixth switch under Keep deleted messages (#71). Turned on, a group or channel that removes you or bans you stays in the chat list with the messages this phone already saved, and opens read-only. Same removed and banned terms Telegram uses for a member an admin takes out.
+Keep chats you're removed from	Запазване на чатовете, от които сте премахнати
+# context: that switch's summary. "Let it go" means deleting the kept chat from the chat list removes it for good, from the list and from this phone.
+When a group or channel removes or bans you, it stays in your chats with what this phone saved, and you can still open and scroll it. Delete it from the chat list to let it go.	Когато група или канал ви премахне или блокира, чатът остава в списъка ви с това, което този телефон е запазил, и пак можете да го отваряте и превъртате. Изтрийте го от списъка с чатове, за да го премахнете окончателно.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep deleted messages that keeps chats you're removed from.
+chats you're removed from	чатовете, от които сте премахнати
+# context: Toast when you open a chat Keep chats you're removed from kept, in place of Telegram's alert that the chat can't be opened. Short, two lines at most.
+You were removed. This is what's saved on this phone.	Премахнати сте. Това е запазеното на този телефон.
+# context: Name of the list Keep chats you're removed from keeps, in the import preview line "%1$s: %2$s to %3$s", where the counts follow
+Chats you were removed from	Чатове, от които сте премахнати
 Forgets the earlier text this phone kept for edited messages, in every account.	Забравя предишния текст, който този телефон е запазил за редактирани съобщения, във всички акаунти.
 # context: the notice after that tap when nothing was kept. A toast: two short lines at most.
 There's no edit history to clear.	Няма история на редакциите за изчистване.

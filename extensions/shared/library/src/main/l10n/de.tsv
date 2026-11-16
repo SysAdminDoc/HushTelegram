@@ -502,6 +502,16 @@ Keep self-destructing secret chat messages	Selbstzerstörende Nachrichten in geh
 Messages, photos and videos in secret chats stay on this phone when their self-destruct timer runs out. The other person's copy still disappears on their own timer, and they aren't told.	Nachrichten, Fotos und Videos in geheimen Chats bleiben auf diesem Handy, wenn ihr Selbstzerstörungs-Timer abläuft. Die Kopie der anderen Person verschwindet trotzdem nach ihrem eigenen Timer, und sie erfährt nichts davon.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep deleted messages that keeps self-destructing secret chat messages.
 self-destructing secret chat messages	selbstzerstörende Nachrichten in geheimen Chats
+# context: a sixth switch under Keep deleted messages (#71). Turned on, a group or channel that removes you or bans you stays in the chat list with the messages this phone already saved, and opens read-only. Same removed and banned terms Telegram uses for a member an admin takes out.
+Keep chats you're removed from	Chats behalten, aus denen du entfernt wirst
+# context: that switch's summary. "Let it go" means deleting the kept chat from the chat list removes it for good, from the list and from this phone.
+When a group or channel removes or bans you, it stays in your chats with what this phone saved, and you can still open and scroll it. Delete it from the chat list to let it go.	Wenn eine Gruppe oder ein Kanal dich entfernt oder sperrt, bleibt der Chat mit dem, was dieses Handy gespeichert hat, in deinen Chats, und du kannst ihn weiter öffnen und durchscrollen. Lösche ihn aus der Chatliste, um ihn endgültig zu entfernen.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep deleted messages that keeps chats you're removed from.
+chats you're removed from	Chats, aus denen du entfernt wirst
+# context: Toast when you open a chat Keep chats you're removed from kept, in place of Telegram's alert that the chat can't be opened. Short, two lines at most.
+You were removed. This is what's saved on this phone.	Du wurdest entfernt. Das hier hat dieses Handy gespeichert.
+# context: Name of the list Keep chats you're removed from keeps, in the import preview line "%1$s: %2$s to %3$s", where the counts follow
+Chats you were removed from	Chats, aus denen du entfernt wurdest
 Forgets the earlier text this phone kept for edited messages, in every account.	Vergisst den früheren Text, den dieses Handy für bearbeitete Nachrichten behalten hat, in jedem Konto.
 # context: the notice after that tap when nothing was kept. A toast: two short lines at most.
 There's no edit history to clear.	Kein Bearbeitungsverlauf vorhanden.

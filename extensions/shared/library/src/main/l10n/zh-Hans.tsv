@@ -476,6 +476,16 @@ Keep self-destructing secret chat messages	保留私密聊天中的阅后即焚�
 Messages, photos and videos in secret chats stay on this phone when their self-destruct timer runs out. The other person's copy still disappears on their own timer, and they aren't told.	私密聊天中的消息、照片和视频在阅后即焚计时结束后仍会留在这部手机上。对方的副本仍会按对方的计时消失，而且对方不会收到通知.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep deleted messages that keeps self-destructing secret chat messages.
 self-destructing secret chat messages	私密聊天中的阅后即焚消息
+# context: a sixth switch under Keep deleted messages (#71). Turned on, a group or channel that removes you or bans you stays in the chat list with the messages this phone already saved, and opens read-only. Same removed and banned terms Telegram uses for a member an admin takes out.
+Keep chats you're removed from	保留你被移出的聊天
+# context: that switch's summary. "Let it go" means deleting the kept chat from the chat list removes it for good, from the list and from this phone.
+When a group or channel removes or bans you, it stays in your chats with what this phone saved, and you can still open and scroll it. Delete it from the chat list to let it go.	群组或频道将你移出或封禁后，该聊天会连同这部手机保存的内容留在你的聊天列表中，你仍可打开并滚动查看。从聊天列表中删除它即可彻底移除.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep deleted messages that keeps chats you're removed from.
+chats you're removed from	你被移出的聊天
+# context: Toast when you open a chat Keep chats you're removed from kept, in place of Telegram's alert that the chat can't be opened. Short, two lines at most.
+You were removed. This is what's saved on this phone.	你已被移出。这是这部手机保存的内容.
+# context: Name of the list Keep chats you're removed from keeps, in the import preview line "%1$s: %2$s to %3$s", where the counts follow
+Chats you were removed from	你被移出的聊天
 Forgets the earlier text this phone kept for edited messages, in every account.	清除这部手机为已编辑消息保留的原先文字，包括所有账号.
 # context: the notice after that tap when nothing was kept. A toast: two short lines at most.
 There's no edit history to clear.	没有可清除的编辑历史.
