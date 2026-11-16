@@ -201,7 +201,10 @@ val disableAnalyticsPatch = bytecodePatch(
         if (ghost.missing == null) {
             ghost.apply(GHOST_MODE_DROP)
             enableCapability("ghostMode")
-            if (writeHeldReadSend()) writeReadsMenu()
+            if (writeHeldReadSend()) {
+                writeReadsMenu()
+                writeFolderReads()
+            }
         } else {
             patchLog.warning("$PATCH: ${ghost.missing}. The patch goes on without Ghost mode.")
         }
@@ -284,6 +287,17 @@ private fun BytecodePatchContext.writeReadsMenu() {
         return
     }
     installReadsMenu(site)
+}
+
+/** Send read receipts under Mark all as read in a folder tab's long-press menu (#65). */
+private fun BytecodePatchContext.writeFolderReads() {
+    val site = try {
+        resolveFolderReads()
+    } catch (unfit: PatchException) {
+        patchLog.warning("$PATCH: ${unfit.message}. Ghost mode goes on without Send read receipts in the folder tab menu.")
+        return
+    }
+    installFolderReads(site)
 }
 
 /**
