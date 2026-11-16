@@ -191,7 +191,7 @@ public class ReadReceiptTest {
     }
 
     @Test public void notOfferedWithoutGhostModeInTheBuildOrWhilePaused() {
-        PatchFamilyForTests.resetCapabilities();
+        PatchFamilyForTests.installed();
         assertFalse(ReadReceipt.offered(from(PERSON, 10)));
         PatchFamilyForTests.installed(PatchFamily.Capability.GHOST_MODE);
         PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
