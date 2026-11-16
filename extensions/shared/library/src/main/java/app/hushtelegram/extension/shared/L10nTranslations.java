@@ -21,7 +21,7 @@ public final class L10nTranslations {
     }
 
     /** The language tags with a table, lower case. */
-    static final String[] LANGUAGES = {"bg", "de", "es", "in", "pt-rbr", "tr"};
+    static final String[] LANGUAGES = {"bg", "de", "es", "in", "pt-rbr", "tr", "zh-hans"};
 
     /**
      * The table for one language tag, or null when nothing was translated into it.
@@ -43,6 +43,8 @@ public final class L10nTranslations {
                 return buildPt_rBR();
             case "tr":
                 return buildTr();
+            case "zh-hans":
+                return buildZh_Hans();
             default:
                 return null;
         }
@@ -16781,5 +16783,2792 @@ public final class L10nTranslations {
                 "bu telefondaki durum ifadeniz");
         table.put("your own chat list title",
                 "kendi sohbet listesi ba\u015fl\u0131\u011f\u0131n\u0131z");
+    }
+
+    private static Map<String, String> buildZh_Hans() {
+        Map<String, String> table = new HashMap<>(2690);
+        fillZh_Hans0(table);
+        fillZh_Hans1(table);
+        fillZh_Hans2(table);
+        fillZh_Hans3(table);
+        fillZh_Hans4(table);
+        fillZh_Hans5(table);
+        fillZh_Hans6(table);
+        fillZh_Hans7(table);
+        fillZh_Hans8(table);
+        fillZh_Hans9(table);
+        fillZh_Hans10(table);
+        fillZh_Hans11(table);
+        fillZh_Hans12(table);
+        fillZh_Hans13(table);
+        fillZh_Hans14(table);
+        fillZh_Hans15(table);
+        fillZh_Hans16(table);
+        fillZh_Hans17(table);
+        fillZh_Hans18(table);
+        fillZh_Hans19(table);
+        fillZh_Hans20(table);
+        fillZh_Hans21(table);
+        fillZh_Hans22(table);
+        return table;
+    }
+
+    private static void fillZh_Hans0(Map<String, String> table) {
+        table.put("%1$d day",
+                "%1$d \u5929");
+        table.put("%1$d days",
+                "%1$d \u5929");
+        table.put("%1$d filter",
+                "%1$d \u4e2a\u8fc7\u6ee4\u6761\u4ef6");
+        table.put("%1$d filter.",
+                "%1$d \u4e2a\u8fc7\u6ee4\u6761\u4ef6.");
+        table.put("%1$d filters",
+                "%1$d \u4e2a\u8fc7\u6ee4\u6761\u4ef6");
+        table.put("%1$d filters.",
+                "%1$d \u4e2a\u8fc7\u6ee4\u6761\u4ef6.");
+        table.put("%1$d item in that file isn't a setting this version of HushTelegram knows, so it'll be left out.",
+                "\u8be5\u6587\u4ef6\u4e2d\u6709 %1$d \u9879\u4e0d\u662f\u6b64\u7248\u672c HushTelegram \u8ba4\u8bc6\u7684\u8bbe\u7f6e\uff0c\u5c06\u88ab\u7565\u8fc7.");
+        table.put("%1$d items in that file aren't settings this version of HushTelegram knows, so they'll be left out.",
+                "\u8be5\u6587\u4ef6\u4e2d\u6709 %1$d \u9879\u4e0d\u662f\u6b64\u7248\u672c HushTelegram \u8ba4\u8bc6\u7684\u8bbe\u7f6e\uff0c\u5c06\u88ab\u7565\u8fc7.");
+        table.put("%1$d list of message filters will change.",
+                "%1$d \u4e2a\u6d88\u606f\u8fc7\u6ee4\u5217\u8868\u5c06\u4f1a\u66f4\u6539.");
+        table.put("%1$d lists of message filters will change.",
+                "%1$d \u4e2a\u6d88\u606f\u8fc7\u6ee4\u5217\u8868\u5c06\u4f1a\u66f4\u6539.");
+        table.put("%1$d message shows again.",
+                "%1$d \u6761\u6d88\u606f\u5c06\u91cd\u65b0\u663e\u793a.");
+        table.put("%1$d messages show again.",
+                "%1$d \u6761\u6d88\u606f\u5c06\u91cd\u65b0\u663e\u793a.");
+        table.put("%1$d other switch was already set.",
+                "\u53e6\u6709 %1$d \u4e2a\u5f00\u5173\u539f\u672c\u5c31\u662f\u8fd9\u6837\u8bbe\u7f6e\u7684.");
+        table.put("%1$d other switches were already set.",
+                "\u53e6\u6709 %1$d \u4e2a\u5f00\u5173\u539f\u672c\u5c31\u662f\u8fd9\u6837\u8bbe\u7f6e\u7684.");
+        table.put("%1$d people tracked",
+                "\u5df2\u8ffd\u8e2a %1$d \u4eba");
+        table.put("%1$d person tracked",
+                "\u5df2\u8ffd\u8e2a %1$d \u4eba");
+        table.put("%1$d proxies pinned on top of Telegram's proxy list. The rest keep Telegram's order.",
+                "Telegram \u7684\u4ee3\u7406\u5217\u8868\u4e2d\u6709 %1$d \u4e2a\u4ee3\u7406\u7f6e\u9876\u3002\u5176\u4f59\u7684\u4fdd\u6301 Telegram \u7684\u987a\u5e8f.");
+        table.put("%1$d proxy pinned on top of Telegram's proxy list. The rest keep Telegram's order.",
+                "Telegram \u7684\u4ee3\u7406\u5217\u8868\u4e2d\u6709 %1$d \u4e2a\u4ee3\u7406\u7f6e\u9876\u3002\u5176\u4f59\u7684\u4fdd\u6301 Telegram \u7684\u987a\u5e8f.");
+        table.put("%1$d setting found",
+                "\u627e\u5230 %1$d \u9879\u8bbe\u7f6e");
+        table.put("%1$d settings found",
+                "\u627e\u5230 %1$d \u9879\u8bbe\u7f6e");
+        table.put("%1$d switch couldn't change.",
+                "\u6709 %1$d \u4e2a\u5f00\u5173\u65e0\u6cd5\u66f4\u6539.");
+        table.put("%1$d switch differs from how it started. Open to flip it back.",
+                "\u6709 %1$d \u4e2a\u5f00\u5173\u4e0e\u521d\u59cb\u72b6\u6001\u4e0d\u540c\u3002\u6253\u5f00\u5373\u53ef\u6539\u56de.");
+        table.put("%1$d switch will change.",
+                "\u5c06\u66f4\u6539 %1$d \u4e2a\u5f00\u5173.");
+        table.put("%1$d switch you changed since stays as you set it.",
+                "\u6709 %1$d \u4e2a\u5f00\u5173\u5728\u90a3\u4e4b\u540e\u88ab\u4f60\u6539\u8fc7\uff0c\u4f1a\u4fdd\u6301\u4f60\u7684\u8bbe\u7f6e.");
+        table.put("%1$d switches couldn't change.",
+                "\u6709 %1$d \u4e2a\u5f00\u5173\u65e0\u6cd5\u66f4\u6539.");
+        table.put("%1$d switches differ from how they started. Open to flip any of them back.",
+                "\u6709 %1$d \u4e2a\u5f00\u5173\u4e0e\u521d\u59cb\u72b6\u6001\u4e0d\u540c\u3002\u6253\u5f00\u5373\u53ef\u6539\u56de.");
+        table.put("%1$d switches will change.",
+                "\u5c06\u66f4\u6539 %1$d \u4e2a\u5f00\u5173.");
+        table.put("%1$d switches you changed since stay as you set them.",
+                "\u6709 %1$d \u4e2a\u5f00\u5173\u5728\u90a3\u4e4b\u540e\u88ab\u4f60\u6539\u8fc7\uff0c\u4f1a\u4fdd\u6301\u4f60\u7684\u8bbe\u7f6e.");
+        table.put("%1$s (%2$s)",
+                "%1$s (%2$s)");
+        table.put("%1$s ended the sign-up. Turn the switch off and on to sign up again.",
+                "%1$s \u7ed3\u675f\u4e86\u6ce8\u518c\u3002\u5173\u95ed\u518d\u6253\u5f00\u5f00\u5173\u5373\u53ef\u91cd\u65b0\u6ce8\u518c.");
+        table.put("%1$s gave an address without https, which Telegram's servers won't call.",
+                "%1$s \u63d0\u4f9b\u7684\u5730\u5740\u4e0d\u662f https\uff0cTelegram \u7684\u670d\u52a1\u5668\u4e0d\u4f1a\u8c03\u7528\u5b83.");
+        table.put("%1$s h ago",
+                "%1$s \u5c0f\u65f6\u524d");
+        table.put("%1$s min ago",
+                "%1$s \u5206\u949f\u524d");
+        table.put("%1$s of Telegram's size",
+                "Telegram \u539f\u59cb\u5927\u5c0f\u7684 %1$s");
+        table.put("%1$s shows after Telegram's name at the top of the chat list, on this phone only. Tap to change it.",
+                "%1$s \u4f1a\u663e\u793a\u5728\u804a\u5929\u5217\u8868\u9876\u90e8\u7684 Telegram \u540d\u79f0\u540e\uff0c\u4ec5\u5728\u8fd9\u90e8\u624b\u673a\u4e0a\u663e\u793a\u3002\u70b9\u6309\u4ee5\u66f4\u6539.");
+        table.put("%1$s shows in place of Telegram's name while Your own chat list title is on. Tap to change it.",
+                "\u201c\u81ea\u5b9a\u4e49\u804a\u5929\u5217\u8868\u6807\u9898\u201d\u5f00\u542f\u65f6\uff0c%1$s \u4f1a\u4ee3\u66ff Telegram \u7684\u540d\u79f0\u663e\u793a\u3002\u70b9\u6309\u5373\u53ef\u66f4\u6539.");
+        table.put("%1$s to %2$s",
+                "\u4ece %1$s \u8f6c\u53d1\u5230 %2$s");
+        table.put("%1$s to %2$s, media only",
+                "\u4ece %1$s \u8f6c\u53d1\u5230 %2$s\uff0c\u4ec5\u5a92\u4f53");
+        table.put("%1$s turned the sign-up down. Check that it allows UnifiedPush.",
+                "%1$s \u62d2\u7edd\u4e86\u6ce8\u518c\u3002\u8bf7\u68c0\u67e5\u5b83\u662f\u5426\u5141\u8bb8 UnifiedPush.");
+        table.put("%1$s turns off",
+                "%1$s \u5c06\u5173\u95ed");
+        table.put("%1$s turns on",
+                "%1$s \u5c06\u5f00\u542f");
+        table.put("%1$s, and more",
+                "%1$s\u7b49");
+        table.put("%1$s. Icons show beside folder names in HushTelegram's own lists, and on the folder tabs with Folder icons on tabs on.",
+                "%1$s\u3002\u56fe\u6807\u4f1a\u663e\u793a\u5728 HushTelegram \u81ea\u5df1\u7684\u5217\u8868\u4e2d\u7684\u6587\u4ef6\u5939\u540d\u79f0\u65c1\uff1b\u5f00\u542f\u201c\u6807\u7b7e\u9875\u4e0a\u7684\u6587\u4ef6\u5939\u56fe\u6807\u201d\u540e\uff0c\u4e5f\u4f1a\u663e\u793a\u5728\u6587\u4ef6\u5939\u6807\u7b7e\u9875\u4e0a.");
+        table.put("%1$s. Icons show beside folder names in HushTelegram's own lists. Telegram's folder tabs stay as they are.",
+                "%1$s\u3002\u56fe\u6807\u4f1a\u663e\u793a\u5728 HushTelegram \u81ea\u5df1\u7684\u5217\u8868\u4e2d\u7684\u6587\u4ef6\u5939\u540d\u79f0\u65c1\u3002Telegram \u7684\u6587\u4ef6\u5939\u6807\u7b7e\u9875\u4fdd\u6301\u4e0d\u53d8.");
+        table.put("%1$s. It was set when you patched, so Pause can't turn it off. To get rid of it, patch again without that patch.",
+                "%1$s\u3002\u5b83\u662f\u5728\u6253\u8865\u4e01\u65f6\u8bbe\u5b9a\u7684\uff0c\u56e0\u6b64\u201c\u6682\u505c\u201d\u65e0\u6cd5\u5173\u95ed\u5b83\u3002\u8981\u53bb\u6389\u5b83\uff0c\u8bf7\u91cd\u65b0\u6253\u8865\u4e01\uff0c\u5e76\u4e14\u4e0d\u8981\u9009\u62e9\u8be5\u8865\u4e01.");
+        table.put("%1$s. They were set when you patched, so Pause can't turn them off. To get rid of one, patch again without the patch named in brackets after it.",
+                "%1$s\u3002\u5b83\u4eec\u662f\u5728\u6253\u8865\u4e01\u65f6\u8bbe\u5b9a\u7684\uff0c\u56e0\u6b64\u201c\u6682\u505c\u201d\u65e0\u6cd5\u5173\u95ed\u5b83\u4eec\u3002\u8981\u53bb\u6389\u5176\u4e2d\u4e00\u9879\uff0c\u8bf7\u91cd\u65b0\u6253\u8865\u4e01\uff0c\u5e76\u4e14\u4e0d\u8981\u9009\u62e9\u5b83\u540e\u9762\u62ec\u53f7\u4e2d\u6ce8\u660e\u7684\u8865\u4e01.");
+        table.put("%1$s. Turn the switch on to sign up with it.",
+                "%1$s\u3002\u6253\u5f00\u5f00\u5173\u5373\u53ef\u7528\u5b83\u6ce8\u518c.");
+        table.put("%1$s: %2$s to %3$s",
+                "%1$s\uff1a\u4ece %2$s \u6539\u4e3a %3$s");
+        table.put("(Off)",
+                "\uff08\u5df2\u505c\u7528\uff09");
+        table.put("(Read only)",
+                "\uff08\u53ea\u8bfb\uff09");
+        table.put("(Translated. Open the message menu for the original.)",
+                "\uff08\u5df2\u7ffb\u8bd1\u3002\u6253\u5f00\u6d88\u606f\u83dc\u5355\u67e5\u770b\u539f\u6587\u3002\uff09");
+        table.put("A button on the call and voice chat screens records just that call, or stops recording it when Record calls is on.",
+                "\u901a\u8bdd\u548c\u8bed\u97f3\u804a\u5929\u754c\u9762\u4e0a\u7684\u6309\u94ae\u53ef\u4ee5\u53ea\u5f55\u5236\u5f53\u524d\u901a\u8bdd\uff1b\u5728\u201c\u901a\u8bdd\u5f55\u97f3\u201d\u5f00\u542f\u65f6\uff0c\u5219\u53ef\u505c\u6b62\u5f55\u5236\u5f53\u524d\u901a\u8bdd.");
+        table.put("A change here applies after Telegram restarts.",
+                "\u6b64\u5904\u7684\u66f4\u6539\u4f1a\u5728 Telegram \u91cd\u542f\u540e\u751f\u6548.");
+        table.put("A channel that banned you offers Open on the web, which shows its public posts in your browser.",
+                "\u5c01\u7981\u4f60\u7684\u9891\u9053\u4f1a\u63d0\u4f9b\u201c\u5728\u7f51\u9875\u4e0a\u6253\u5f00\u201d\uff0c\u5728\u6d4f\u89c8\u5668\u4e2d\u663e\u793a\u5176\u516c\u5f00\u5e16\u5b50.");
+        table.put("A chat or message you turn on stays on only in the account you turned it on in.",
+                "\u4f60\u5f00\u542f\u7684\u804a\u5929\u6216\u6d88\u606f\u53ea\u5728\u4f60\u5f00\u542f\u5b83\u7684\u90a3\u4e2a\u8d26\u53f7\u4e2d\u4fdd\u6301\u5f00\u542f.");
+        table.put("A chat's menu at the top gets Show all spoilers and Expand all quotes, for the messages loaded so far.",
+                "\u804a\u5929\u9876\u90e8\u7684\u83dc\u5355\u4e2d\u4f1a\u51fa\u73b0\u201c\u663e\u793a\u6240\u6709\u906e\u7f69\u5185\u5bb9\u201d\u548c\u201c\u5c55\u5f00\u6240\u6709\u5f15\u7528\u201d\uff0c\u4f5c\u7528\u4e8e\u76ee\u524d\u5df2\u52a0\u8f7d\u7684\u6d88\u606f.");
+        table.put("A diagnostic report is already being saved.",
+                "\u8bca\u65ad\u62a5\u544a\u5df2\u5728\u4fdd\u5b58\u4e2d.");
+        table.put("A double check at the top of the chat list sends the read receipts Ghost mode is holding for the account you're on, from chats read since Telegram last started. Send read receipts in a chat's menu sends just that chat's. Shows with Ghost mode and No read receipts on.",
+                "\u804a\u5929\u5217\u8868\u9876\u90e8\u7684\u53cc\u52fe\u6309\u94ae\u4f1a\u53d1\u9001\u201c\u5e7d\u7075\u6a21\u5f0f\u201d\u4e3a\u5f53\u524d\u8d26\u53f7\u6682\u7f13\u7684\u5df2\u8bfb\u56de\u6267\uff0c\u8303\u56f4\u662f\u81ea Telegram \u4e0a\u6b21\u542f\u52a8\u4ee5\u6765\u8bfb\u8fc7\u7684\u804a\u5929\u3002\u804a\u5929\u83dc\u5355\u4e2d\u7684\u201c\u53d1\u9001\u5df2\u8bfb\u56de\u6267\u201d\u53ea\u53d1\u9001\u8be5\u804a\u5929\u7684\u56de\u6267\u3002\u5728\u201c\u5e7d\u7075\u6a21\u5f0f\u201d\u548c\u201c\u4e0d\u53d1\u9001\u5df2\u8bfb\u56de\u6267\u201d\u5f00\u542f\u65f6\u663e\u793a.");
+        table.put("A few things belong to the account you have open instead, and their descriptions say so.",
+                "\u5c11\u6570\u8bbe\u7f6e\u53ea\u5c5e\u4e8e\u4f60\u5f53\u524d\u6253\u5f00\u7684\u8d26\u53f7\uff0c\u5b83\u4eec\u7684\u8bf4\u660e\u4e2d\u4f1a\u6ce8\u660e.");
+        table.put("A file named %1$s in %2$s paused HushTelegram.",
+                "%2$s \u4e2d\u540d\u4e3a %1$s \u7684\u6587\u4ef6\u6682\u505c\u4e86 HushTelegram.");
+    }
+
+    private static void fillZh_Hans1(Map<String, String> table) {
+        table.put("A ghost at the top of the chat list turns Ghost mode on and off with a tap. It's filled while Ghost mode is on.",
+                "\u70b9\u6309\u804a\u5929\u5217\u8868\u9876\u90e8\u7684\u5e7d\u7075\u56fe\u6807\u5373\u53ef\u5f00\u542f\u6216\u5173\u95ed\u201c\u5e7d\u7075\u6a21\u5f0f\u201d\u3002\u201c\u5e7d\u7075\u6a21\u5f0f\u201d\u5f00\u542f\u65f6\u56fe\u6807\u4e3a\u5b9e\u5fc3.");
+        table.put("A group's menu at the top gets My messages, which shows the messages you sent there in the chat's search.",
+                "\u7fa4\u7ec4\u9876\u90e8\u7684\u83dc\u5355\u4e2d\u4f1a\u51fa\u73b0\u201c\u6211\u7684\u6d88\u606f\u201d\uff0c\u5b83\u4f1a\u5728\u804a\u5929\u641c\u7d22\u4e2d\u663e\u793a\u4f60\u5728\u8be5\u7fa4\u7ec4\u53d1\u9001\u7684\u6d88\u606f.");
+        table.put("A link you copy in Telegram, or paste into the message box, loses the same tracking tags. Only text that is one link and nothing else is changed.",
+                "\u4f60\u5728 Telegram \u4e2d\u590d\u5236\u7684\u94fe\u63a5\uff0c\u6216\u7c98\u8d34\u5230\u8f93\u5165\u6846\u4e2d\u7684\u94fe\u63a5\uff0c\u4f1a\u53bb\u6389\u540c\u6837\u7684\u8ddf\u8e2a\u53c2\u6570\u3002\u53ea\u6709\u5185\u5bb9\u4ec5\u4e3a\u4e00\u4e2a\u94fe\u63a5\u7684\u6587\u5b57\u624d\u4f1a\u88ab\u4fee\u6539.");
+        table.put("A list holds up to %1$d filters.",
+                "\u6bcf\u4e2a\u5217\u8868\u6700\u591a %1$d \u4e2a\u8fc7\u6ee4\u6761\u4ef6.");
+        table.put("A message you start but don't send stays on this phone and stops syncing to your other devices. Clearing a draft still clears it there.",
+                "\u4f60\u5f00\u59cb\u5199\u4f46\u6ca1\u6709\u53d1\u9001\u7684\u6d88\u606f\u4f1a\u7559\u5728\u8fd9\u90e8\u624b\u673a\u4e0a\uff0c\u4e0d\u518d\u540c\u6b65\u5230\u4f60\u7684\u5176\u4ed6\u8bbe\u5907\u3002\u6e05\u7a7a\u8349\u7a3f\u65f6\uff0c\u5176\u4ed6\u8bbe\u5907\u4e0a\u7684\u8349\u7a3f\u4ecd\u4f1a\u4e00\u8d77\u6e05\u7a7a.");
+        table.put("A person's profile menu gets Track this user. For anyone you track, a history builds up from what Telegram already shows you: coming online and going offline, typing, and changes to their name, username, phone number, photo or contacts. Nothing extra is asked of Telegram, and the history stays on this phone.",
+                "\u4e2a\u4eba\u8d44\u6599\u83dc\u5355\u4e2d\u4f1a\u51fa\u73b0\u201c\u8ffd\u8e2a\u6b64\u7528\u6237\u201d\u3002\u5bf9\u4e8e\u4f60\u8ffd\u8e2a\u7684\u6bcf\u4e2a\u4eba\uff0c\u4f1a\u6839\u636e Telegram \u5df2\u7ecf\u5411\u4f60\u663e\u793a\u7684\u4fe1\u606f\u5efa\u7acb\u5386\u53f2\u8bb0\u5f55\uff1a\u4e0a\u7ebf\u548c\u4e0b\u7ebf\u3001\u6b63\u5728\u8f93\u5165\uff0c\u4ee5\u53ca\u540d\u5b57\u3001\u7528\u6237\u540d\u3001\u624b\u673a\u53f7\u7801\u3001\u5934\u50cf\u6216\u8054\u7cfb\u4eba\u7684\u53d8\u5316\u3002\u4e0d\u4f1a\u5411 Telegram \u989d\u5916\u8bf7\u6c42\u4efb\u4f55\u5185\u5bb9\uff0c\u5386\u53f2\u8bb0\u5f55\u53ea\u4fdd\u5b58\u5728\u8fd9\u90e8\u624b\u673a\u4e0a.");
+        table.put("A profile's menu also shows which of Telegram's five data centers (its server locations) stores the profile photo. No photo, no number.",
+                "\u4e2a\u4eba\u8d44\u6599\u83dc\u5355\u8fd8\u4f1a\u663e\u793a\u5934\u50cf\u5b58\u50a8\u5728 Telegram \u4e94\u4e2a\u6570\u636e\u4e2d\u5fc3\uff08\u5373\u670d\u52a1\u5668\u6240\u5728\u5730\uff09\u4e2d\u7684\u54ea\u4e00\u4e2a\u3002\u6ca1\u6709\u5934\u50cf\u5c31\u4e0d\u663e\u793a\u7f16\u53f7.");
+        table.put("A rule needs two chats.",
+                "\u4e00\u6761\u89c4\u5219\u9700\u8981\u4e24\u4e2a\u804a\u5929.");
+        table.put("A short name",
+                "\u4e00\u4e2a\u7b80\u77ed\u7684\u540d\u79f0");
+        table.put("A switch you turn on or off shows up here until you put it back.",
+                "\u4f60\u5f00\u542f\u6216\u5173\u95ed\u7684\u5f00\u5173\u4f1a\u663e\u793a\u5728\u8fd9\u91cc\uff0c\u76f4\u5230\u4f60\u628a\u5b83\u6539\u56de\u53bb.");
+        table.put("A tap on the notification plays the recording. Its buttons share it or send it to your Saved Messages.",
+                "\u70b9\u6309\u901a\u77e5\u5373\u53ef\u64ad\u653e\u5f55\u97f3\u3002\u901a\u77e5\u4e0a\u7684\u6309\u94ae\u53ef\u4ee5\u5206\u4eab\u5f55\u97f3\uff0c\u6216\u5c06\u5176\u53d1\u9001\u5230\u201c\u6211\u7684\u6536\u85cf\u201d.");
+        table.put("A value in that file can't be read. Nothing was changed.",
+                "\u8be5\u6587\u4ef6\u4e2d\u6709\u4e00\u4e2a\u503c\u65e0\u6cd5\u8bfb\u53d6\u3002\u6ca1\u6709\u505a\u4efb\u4f55\u66f4\u6539.");
+        table.put("A video you open plays muted until you press a volume key. Round videos keep their sound.",
+                "\u4f60\u6253\u5f00\u7684\u89c6\u9891\u4f1a\u9759\u97f3\u64ad\u653e\uff0c\u76f4\u5230\u4f60\u6309\u4e0b\u97f3\u91cf\u952e\u3002\u5706\u5f62\u89c6\u9891\u4fdd\u7559\u58f0\u97f3.");
+        table.put("AMOLED black",
+                "AMOLED \u7eaf\u9ed1");
+        table.put("API key",
+                "API \u5bc6\u94a5");
+        table.put("APP_PUSH_APIKEY_MISSING means Telegram's servers have no push key set up for this app. That's configured on Telegram's side, so no setting on this phone fixes it.",
+                "APP_PUSH_APIKEY_MISSING \u8868\u793a Telegram \u7684\u670d\u52a1\u5668\u6ca1\u6709\u4e3a\u8fd9\u4e2a\u5e94\u7528\u8bbe\u7f6e\u63a8\u9001\u5bc6\u94a5\u3002\u8fd9\u662f\u5728 Telegram \u90a3\u8fb9\u914d\u7f6e\u7684\uff0c\u6240\u4ee5\u8fd9\u90e8\u624b\u673a\u4e0a\u7684\u4efb\u4f55\u8bbe\u7f6e\u90fd\u65e0\u6cd5\u89e3\u51b3.");
+        table.put("About",
+                "\u5173\u4e8e");
+        table.put("Accepted",
+                "\u5df2\u63a5\u53d7");
+        table.put("Account %1$s",
+                "\u8d26\u53f7 %1$s");
+        table.put("Account deleted.",
+                "\u8d26\u53f7\u5df2\u5220\u9664.");
+        table.put("Accounts",
+                "\u8d26\u53f7");
+        table.put("Accounts Telegram confirmed for notifications: %1$s",
+                "Telegram \u5df2\u786e\u8ba4\u63a5\u6536\u901a\u77e5\u7684\u8d26\u53f7\uff1a%1$s");
+        table.put("Accounts to hide",
+                "\u8981\u9690\u85cf\u7684\u8d26\u53f7");
+        table.put("Add Clear from cache to the message menu",
+                "\u5728\u6d88\u606f\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u4ece\u7f13\u5b58\u4e2d\u6e05\u9664\u201d");
+        table.put("Add Copy photo to the message menu",
+                "\u5728\u6d88\u606f\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u590d\u5236\u7167\u7247\u201d");
+        table.put("Add Delete for them to the message menu",
+                "\u5728\u6d88\u606f\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u4e3a\u5bf9\u65b9\u5220\u9664\u201d");
+        table.put("Add Fast forward to the message menu",
+                "\u5728\u6d88\u606f\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u6781\u901f\u8f6c\u53d1\u201d");
+        table.put("Add Forward as copy to the message menu",
+                "\u5728\u6d88\u606f\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u4f5c\u4e3a\u526f\u672c\u8f6c\u53d1\u201d");
+        table.put("Add Forward as plain text to the message menu",
+                "\u5728\u6d88\u606f\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u4f5c\u4e3a\u7eaf\u6587\u672c\u8f6c\u53d1\u201d");
+        table.put("Add Forward to Saved Messages to the message menu",
+                "\u5728\u6d88\u606f\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u8f6c\u53d1\u5230\u6211\u7684\u6536\u85cf\u201d");
+        table.put("Add Hide for me to the message menu",
+                "\u5728\u6d88\u606f\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u4ec5\u4e3a\u6211\u9690\u85cf\u201d");
+        table.put("Add Message details to the message menu",
+                "\u5728\u6d88\u606f\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u6d88\u606f\u8be6\u60c5\u201d");
+        table.put("Add Quick forward to the message menu",
+                "\u5728\u6d88\u606f\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u5feb\u901f\u8f6c\u53d1\u201d");
+        table.put("Add Repeat to the message menu",
+                "\u5728\u6d88\u606f\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u91cd\u590d\u53d1\u9001\u201d");
+        table.put("Add Save album art to the message menu",
+                "\u5728\u6d88\u606f\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u4fdd\u5b58\u4e13\u8f91\u5c01\u9762\u201d");
+        table.put("Add Save to Downloads to the message menu",
+                "\u5728\u6d88\u606f\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u4fdd\u5b58\u5230\u4e0b\u8f7d\u6587\u4ef6\u5939\u201d");
+        table.put("Add Save to Gallery to stories",
+                "\u4e3a\u52a8\u6001\u6dfb\u52a0\u201c\u4fdd\u5b58\u5230\u76f8\u518c\u201d");
+        table.put("Add Save video cover to the message menu",
+                "\u5728\u6d88\u606f\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u4fdd\u5b58\u89c6\u9891\u5c01\u9762\u201d");
+        table.put("Add an emoji or a few letters after Telegram's name at the top of the chat list. It stays on this phone, and your Premium emoji status is left alone.",
+                "\u5728\u804a\u5929\u5217\u8868\u9876\u90e8\u7684 Telegram \u540d\u79f0\u540e\u6dfb\u52a0\u4e00\u4e2a\u8868\u60c5\u6216\u51e0\u4e2a\u5b57\u3002\u5b83\u53ea\u4fdd\u5b58\u5728\u8fd9\u90e8\u624b\u673a\u4e0a\uff0c\u4e0d\u4f1a\u5f71\u54cd\u4f60\u7684 Premium \u8868\u60c5\u7b26\u53f7\u72b6\u6001.");
+        table.put("Add rule",
+                "\u6dfb\u52a0\u89c4\u5219");
+        table.put("Add the addresses of proxy lists you trust, and Free proxies reads those instead of the public ones.",
+                "\u6dfb\u52a0\u4f60\u4fe1\u4efb\u7684\u4ee3\u7406\u5217\u8868\u5730\u5740\uff0c\u201c\u514d\u8d39\u4ee3\u7406\u201d\u5c31\u4f1a\u8bfb\u53d6\u8fd9\u4e9b\u5217\u8868\uff0c\u800c\u4e0d\u662f\u516c\u5f00\u5217\u8868.");
+        table.put("Added a profile photo",
+                "\u6dfb\u52a0\u4e86\u5934\u50cf");
+        table.put("Added you to their contacts",
+                "\u5c06\u4f60\u6dfb\u52a0\u4e3a\u8054\u7cfb\u4eba");
+        table.put("Adds Clear from cache to a video or file message. It stops a running download, deletes what Telegram kept of it and brings the download arrow back. Saved copies in Downloads or Pictures stay.",
+                "\u4e3a\u89c6\u9891\u6216\u6587\u4ef6\u6d88\u606f\u6dfb\u52a0\u201c\u4ece\u7f13\u5b58\u4e2d\u6e05\u9664\u201d\u3002\u5b83\u4f1a\u505c\u6b62\u6b63\u5728\u8fdb\u884c\u7684\u4e0b\u8f7d\uff0c\u5220\u9664 Telegram \u4fdd\u7559\u7684\u90e8\u5206\uff0c\u5e76\u6062\u590d\u4e0b\u8f7d\u7bad\u5934\u3002\u4fdd\u5b58\u5728\u4e0b\u8f7d\u6587\u4ef6\u5939\u6216 Pictures \u4e2d\u7684\u526f\u672c\u4fdd\u7559.");
+        table.put("Adds Copy photo to a downloaded photo's menu, so you can paste the picture into another app. Not shown in protected or secret chats.",
+                "\u5728\u5df2\u4e0b\u8f7d\u7167\u7247\u7684\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u590d\u5236\u7167\u7247\u201d\uff0c\u65b9\u4fbf\u4f60\u628a\u56fe\u7247\u7c98\u8d34\u5230\u5176\u4ed6\u5e94\u7528\u3002\u5728\u53d7\u4fdd\u62a4\u7684\u804a\u5929\u548c\u79c1\u5bc6\u804a\u5929\u4e2d\u4e0d\u663e\u793a.");
+        table.put("Adds Delete for them to your own messages in chats and groups. It deletes the message for everyone else and keeps it on this phone, marked deleted. Clear kept messages removes it here too.",
+                "\u5728\u79c1\u804a\u548c\u7fa4\u7ec4\u4e2d\u4e3a\u4f60\u81ea\u5df1\u7684\u6d88\u606f\u6dfb\u52a0\u201c\u4e3a\u5bf9\u65b9\u5220\u9664\u201d\u3002\u5b83\u4f1a\u4e3a\u5176\u4ed6\u6240\u6709\u4eba\u5220\u9664\u8fd9\u6761\u6d88\u606f\uff0c\u5e76\u5728\u8fd9\u90e8\u624b\u673a\u4e0a\u4fdd\u7559\uff0c\u6807\u6ce8\u4e3a\u201c\u5df2\u5220\u9664\u201d\u3002\u201c\u6e05\u9664\u4fdd\u7559\u7684\u6d88\u606f\u201d\u4e5f\u4f1a\u628a\u5b83\u4ece\u8fd9\u91cc\u79fb\u9664.");
+        table.put("Adds Fake typing to the three dots menu when you long press chats in the chat list. The chats you pick show you typing for 10 minutes, or until you pick them again, even with Ghost mode on.",
+                "\u5728\u804a\u5929\u5217\u8868\u4e2d\u957f\u6309\u804a\u5929\u65f6\uff0c\u4e09\u70b9\u83dc\u5355\u4e2d\u4f1a\u51fa\u73b0\u201c\u5047\u88c5\u6b63\u5728\u8f93\u5165\u201d\u3002\u4f60\u9009\u62e9\u7684\u804a\u5929\u4f1a\u663e\u793a\u4f60\u6b63\u5728\u8f93\u5165\uff0c\u6301\u7eed 10 \u5206\u949f\u6216\u76f4\u5230\u4f60\u518d\u6b21\u9009\u62e9\u5b83\u4eec\uff0c\u5373\u4f7f\u201c\u5e7d\u7075\u6a21\u5f0f\u201d\u5f00\u542f\u4e5f\u662f\u5982\u6b64.");
+        table.put("Adds Fast forward to a message you can forward. Pick without the sender's name, without the caption, or both, then pick a chat.",
+                "\u4e3a\u53ef\u8f6c\u53d1\u7684\u6d88\u606f\u6dfb\u52a0\u201c\u6781\u901f\u8f6c\u53d1\u201d\u3002\u9009\u62e9\u4e0d\u5e26\u53d1\u9001\u8005\u540d\u79f0\u3001\u4e0d\u5e26\u8bf4\u660e\u6216\u4e24\u8005\u90fd\u4e0d\u5e26\uff0c\u7136\u540e\u9009\u62e9\u4e00\u4e2a\u804a\u5929.");
+        table.put("Adds Forward as copy to a message in a chat that doesn't allow forwarding. Pick a chat and the message's text, or its downloaded photo or file, is sent there as a new message.",
+                "\u5728\u4e0d\u5141\u8bb8\u8f6c\u53d1\u7684\u804a\u5929\u4e2d\uff0c\u4e3a\u6d88\u606f\u6dfb\u52a0\u201c\u4f5c\u4e3a\u526f\u672c\u8f6c\u53d1\u201d\u3002\u9009\u62e9\u4e00\u4e2a\u804a\u5929\u540e\uff0c\u6d88\u606f\u7684\u6587\u5b57\u6216\u5df2\u4e0b\u8f7d\u7684\u7167\u7247\u6216\u6587\u4ef6\u4f1a\u4f5c\u4e3a\u65b0\u6d88\u606f\u53d1\u9001\u8fc7\u53bb.");
+        table.put("Adds Forward as plain text to a message you can forward. Pick a chat and its text is sent there as a new message, with no formatting or sender name. Custom emoji become regular ones.",
+                "\u4e3a\u53ef\u8f6c\u53d1\u7684\u6d88\u606f\u6dfb\u52a0\u201c\u4f5c\u4e3a\u7eaf\u6587\u672c\u8f6c\u53d1\u201d\u3002\u9009\u62e9\u4e00\u4e2a\u804a\u5929\u540e\uff0c\u6d88\u606f\u7684\u6587\u5b57\u4f1a\u4f5c\u4e3a\u65b0\u6d88\u606f\u53d1\u9001\u8fc7\u53bb\uff0c\u4e0d\u5e26\u683c\u5f0f\u548c\u53d1\u9001\u8005\u540d\u79f0\u3002\u81ea\u5b9a\u4e49\u8868\u60c5\u4f1a\u53d8\u6210\u666e\u901a\u8868\u60c5.");
+        table.put("Adds Forward to Saved Messages to a message you can forward. Pick as is, without the sender's name, without the caption, or both, and it lands in your Saved Messages at once.",
+                "\u4e3a\u53ef\u8f6c\u53d1\u7684\u6d88\u606f\u6dfb\u52a0\u201c\u8f6c\u53d1\u5230\u6211\u7684\u6536\u85cf\u201d\u3002\u53ef\u9009\u62e9\u539f\u6837\u8f6c\u53d1\u3001\u4e0d\u5e26\u53d1\u9001\u8005\u540d\u79f0\u3001\u4e0d\u5e26\u8bf4\u660e\u6216\u4e24\u8005\u90fd\u4e0d\u5e26\uff0c\u6d88\u606f\u4f1a\u7acb\u5373\u51fa\u73b0\u5728\u201c\u6211\u7684\u6536\u85cf\u201d\u4e2d.");
+        table.put("Adds Hide for me to a message. It leaves the chat on this phone only, with nothing sent to Telegram, so everyone else still sees it. Turn this off and hidden messages show again.",
+                "\u4e3a\u6d88\u606f\u6dfb\u52a0\u201c\u4ec5\u4e3a\u6211\u9690\u85cf\u201d\u3002\u6d88\u606f\u53ea\u4f1a\u4ece\u8fd9\u90e8\u624b\u673a\u4e0a\u7684\u804a\u5929\u4e2d\u6d88\u5931\uff0c\u4e0d\u4f1a\u5411 Telegram \u53d1\u9001\u4efb\u4f55\u5185\u5bb9\uff0c\u6240\u4ee5\u5176\u4ed6\u4eba\u4ecd\u80fd\u770b\u5230\u3002\u5173\u95ed\u6b64\u5f00\u5173\u540e\uff0c\u9690\u85cf\u7684\u6d88\u606f\u4f1a\u91cd\u65b0\u663e\u793a.");
+        table.put("Adds HushTelegram to the menu you get from holding Telegram's icon.",
+                "\u5c06 HushTelegram \u6dfb\u52a0\u5230\u957f\u6309 Telegram \u56fe\u6807\u65f6\u51fa\u73b0\u7684\u83dc\u5355\u4e2d.");
+        table.put("Adds Message details to a message's menu. It shows IDs, send and edit times, where it was forwarded from, and file info.",
+                "\u5728\u6d88\u606f\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u6d88\u606f\u8be6\u60c5\u201d\uff0c\u663e\u793a ID\u3001\u53d1\u9001\u548c\u7f16\u8f91\u65f6\u95f4\u3001\u8f6c\u53d1\u6765\u6e90\u4ee5\u53ca\u6587\u4ef6\u4fe1\u606f.");
+        table.put("Adds Quick forward to a message's menu. One tap sends it to Saved Messages or a recent chat. Not in protected or secret chats.",
+                "\u5728\u6d88\u606f\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u5feb\u901f\u8f6c\u53d1\u201d\uff0c\u70b9\u6309\u4e00\u4e0b\u5373\u53ef\u53d1\u9001\u5230\u201c\u6211\u7684\u6536\u85cf\u201d\u6216\u6700\u8fd1\u7684\u804a\u5929\u3002\u5728\u53d7\u4fdd\u62a4\u7684\u804a\u5929\u548c\u79c1\u5bc6\u804a\u5929\u4e2d\u4e0d\u53ef\u7528.");
+        table.put("Adds Repeat under Forward in a message's menu. It sends the same message again to the chat. Not shown in protected or secret chats.",
+                "\u5728\u6d88\u606f\u83dc\u5355\u7684\u201c\u8f6c\u53d1\u201d\u4e0b\u65b9\u6dfb\u52a0\u201c\u91cd\u590d\u53d1\u9001\u201d\uff0c\u5b83\u4f1a\u628a\u540c\u4e00\u6761\u6d88\u606f\u518d\u6b21\u53d1\u9001\u5230\u8be5\u804a\u5929\u3002\u5728\u53d7\u4fdd\u62a4\u7684\u804a\u5929\u548c\u79c1\u5bc6\u804a\u5929\u4e2d\u4e0d\u663e\u793a.");
+        table.put("Adds Save album art to a song that has art, inside the file or on Telegram. The picture goes to Pictures.",
+                "\u4e3a\u5e26\u6709\u5c01\u9762\u7684\u6b4c\u66f2\u6dfb\u52a0\u201c\u4fdd\u5b58\u4e13\u8f91\u5c01\u9762\u201d\uff0c\u5c01\u9762\u53ef\u4ee5\u5728\u6587\u4ef6\u4e2d\uff0c\u4e5f\u53ef\u4ee5\u5728 Telegram \u4e0a\u3002\u56fe\u7247\u4f1a\u4fdd\u5b58\u5230 Pictures.");
+        table.put("Adds Save to Downloads to a downloaded photo, video, file or song in a chat that doesn't allow saving. Nothing is copied until you tap it.",
+                "\u5728\u4e0d\u5141\u8bb8\u4fdd\u5b58\u7684\u804a\u5929\u4e2d\uff0c\u4e3a\u5df2\u4e0b\u8f7d\u7684\u7167\u7247\u3001\u89c6\u9891\u3001\u6587\u4ef6\u6216\u6b4c\u66f2\u6dfb\u52a0\u201c\u4fdd\u5b58\u5230\u4e0b\u8f7d\u6587\u4ef6\u5939\u201d\u3002\u70b9\u6309\u4e4b\u524d\u4e0d\u4f1a\u590d\u5236\u4efb\u4f55\u5185\u5bb9.");
+        table.put("Adds Save video cover to a video message. The biggest cover or thumbnail Telegram has goes to Pictures, fetched first if it is not on the phone yet.",
+                "\u4e3a\u89c6\u9891\u6d88\u606f\u6dfb\u52a0\u201c\u4fdd\u5b58\u89c6\u9891\u5c01\u9762\u201d\u3002Telegram \u63d0\u4f9b\u7684\u6700\u5927\u5c01\u9762\u6216\u7f29\u7565\u56fe\u4f1a\u4fdd\u5b58\u5230 Pictures\uff0c\u5982\u679c\u624b\u673a\u4e0a\u8fd8\u6ca1\u6709\uff0c\u4f1a\u5148\u4e0b\u8f7d.");
+        table.put("Adds Translate here to a message's menu and Translate this chat to a chat's menu, using the translation service you choose. The text you ask to translate is sent to that service, one message at a time. Nothing leaves your phone until you turn a chat or message on.",
+                "\u5728\u6d88\u606f\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u5728\u6b64\u7ffb\u8bd1\u201d\uff0c\u5728\u804a\u5929\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u7ffb\u8bd1\u6b64\u804a\u5929\u201d\uff0c\u4f7f\u7528\u4f60\u9009\u62e9\u7684\u7ffb\u8bd1\u670d\u52a1\u3002\u4f60\u8981\u7ffb\u8bd1\u7684\u6587\u5b57\u4f1a\u9010\u6761\u53d1\u9001\u5230\u8be5\u670d\u52a1\u3002\u5728\u4f60\u4e3a\u67d0\u4e2a\u804a\u5929\u6216\u67d0\u6761\u6d88\u606f\u5f00\u542f\u4e4b\u524d\uff0c\u4e0d\u4f1a\u6709\u4efb\u4f55\u5185\u5bb9\u79bb\u5f00\u4f60\u7684\u624b\u673a.");
+    }
+
+    private static void fillZh_Hans2(Map<String, String> table) {
+        table.put("Adds a HushTelegram row to Telegram's Settings page.",
+                "\u5728 Telegram \u7684\u201c\u8bbe\u7f6e\u201d\u9875\u9762\u4e2d\u6dfb\u52a0 HushTelegram \u4e00\u884c.");
+        table.put("Adds a HushTelegram row to the side menu, which has its own switch.",
+                "\u5728\u4fa7\u8fb9\u83dc\u5355\u4e2d\u6dfb\u52a0 HushTelegram \u4e00\u884c\u3002\u4fa7\u8fb9\u83dc\u5355\u6709\u81ea\u5df1\u7684\u5f00\u5173.");
+        table.put("Adds a Screenshot button to the bar that shows while you pick messages. It saves a picture of them as the chat shows them, background, dates and times included, to Pictures/Telegram.",
+                "\u5728\u4f60\u9009\u62e9\u6d88\u606f\u65f6\u51fa\u73b0\u7684\u680f\u4e2d\u6dfb\u52a0\u201c\u622a\u56fe\u201d\u6309\u94ae\u3002\u5b83\u4f1a\u6309\u804a\u5929\u4e2d\u7684\u663e\u793a\u6548\u679c\u4fdd\u5b58\u8fd9\u4e9b\u6d88\u606f\u7684\u56fe\u7247\uff0c\u5305\u62ec\u80cc\u666f\u3001\u65e5\u671f\u548c\u65f6\u95f4\uff0c\u4fdd\u5b58\u5230 Pictures/Telegram.");
+        table.put("Adds a Select all button to the bar that shows while you pick messages, in chats and in a chat's shared media. It selects everything loaded, newest first, up to Telegram's limit of 100.",
+                "\u5728\u4f60\u9009\u62e9\u6d88\u606f\u65f6\u51fa\u73b0\u7684\u680f\u4e2d\u6dfb\u52a0\u201c\u5168\u9009\u201d\u6309\u94ae\uff0c\u9002\u7528\u4e8e\u804a\u5929\u548c\u804a\u5929\u4e2d\u5206\u4eab\u7684\u5a92\u4f53\u3002\u5b83\u4f1a\u4ece\u6700\u65b0\u7684\u5f00\u59cb\u9009\u4e2d\u6240\u6709\u5df2\u52a0\u8f7d\u7684\u5185\u5bb9\uff0c\u6700\u591a\u8fbe\u5230 Telegram \u7684 100 \u6761\u4e0a\u9650.");
+        table.put("Adds a Select between button to the bar that shows while you pick messages. It selects everything between the first and last one you picked. Pick one past the end and the gap fills in.",
+                "\u5728\u4f60\u9009\u62e9\u6d88\u606f\u65f6\u51fa\u73b0\u7684\u680f\u4e2d\u6dfb\u52a0\u201c\u9009\u62e9\u533a\u95f4\u201d\u6309\u94ae\u3002\u5b83\u4f1a\u9009\u4e2d\u4f60\u9009\u62e9\u7684\u7b2c\u4e00\u6761\u548c\u6700\u540e\u4e00\u6761\u6d88\u606f\u4e4b\u95f4\u7684\u6240\u6709\u6d88\u606f\u3002\u518d\u9009\u4e00\u6761\u8d85\u51fa\u672b\u5c3e\u7684\u6d88\u606f\uff0c\u4e2d\u95f4\u7684\u7a7a\u7f3a\u4e5f\u4f1a\u8865\u4e0a.");
+        table.put("Adds a copyable ID number for a user or chat to the profile's menu. Telegram isn't asked for anything extra.",
+                "\u5728\u4e2a\u4eba\u8d44\u6599\u83dc\u5355\u4e2d\u6dfb\u52a0\u53ef\u590d\u5236\u7684\u7528\u6237\u6216\u804a\u5929 ID\u3002\u4e0d\u4f1a\u5411 Telegram \u989d\u5916\u8bf7\u6c42\u4efb\u4f55\u5185\u5bb9.");
+        table.put("Adds an Administrators row to the side menu, so one tap lists only the groups and channels you own or manage and another brings every chat back. It needs the side menu switch on, only changes how this phone lists chats, and starts off again when Telegram restarts.",
+                "\u5728\u4fa7\u8fb9\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u7ba1\u7406\u5458\u201d\u884c\uff0c\u70b9\u6309\u4e00\u6b21\u53ea\u5217\u51fa\u4f60\u62e5\u6709\u6216\u7ba1\u7406\u7684\u7fa4\u7ec4\u548c\u9891\u9053\uff0c\u518d\u70b9\u6309\u4e00\u6b21\u5373\u53ef\u663e\u793a\u6240\u6709\u804a\u5929\u3002\u9700\u8981\u5f00\u542f\u4fa7\u8fb9\u83dc\u5355\u5f00\u5173\uff0c\u53ea\u6539\u53d8\u8fd9\u90e8\u624b\u673a\u4e0a\u804a\u5929\u7684\u5217\u51fa\u65b9\u5f0f\uff0cTelegram \u91cd\u542f\u540e\u4f1a\u6062\u590d\u5173\u95ed.");
+        table.put("Administrators",
+                "\u7ba1\u7406\u5458");
+        table.put("Administrators row in the side menu",
+                "\u4fa7\u8fb9\u83dc\u5355\u4e2d\u7684\u201c\u7ba1\u7406\u5458\u201d\u884c");
+        table.put("Ads",
+                "\u5e7f\u544a");
+        table.put("Ads in channels",
+                "\u9891\u9053\u4e2d\u7684\u5e7f\u544a");
+        table.put("Ads in channels and search",
+                "\u9891\u9053\u548c\u641c\u7d22\u4e2d\u7684\u5e7f\u544a");
+        table.put("Ads in search",
+                "\u641c\u7d22\u4e2d\u7684\u5e7f\u544a");
+        table.put("After Telegram restarts, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.",
+                "Telegram \u91cd\u542f\u540e\uff0c\u9664\u201c\u8c03\u8bd5\u65e5\u5fd7\u201d\u5916\uff0c\u6240\u6709\u5f00\u5173\u90fd\u6309\u5173\u95ed\u5904\u7406\u3002\u4f60\u7684\u9009\u62e9\u4ecd\u4f1a\u4fdd\u5b58\u3002\u6253\u8865\u4e01\u65f6\u505a\u51fa\u7684\u4fee\u6539\u4ecd\u4f1a\u4fdd\u7559.");
+        table.put("After you say no to contacts access, the Contacts tab stops asking again and its warning badge goes away.",
+                "\u4f60\u62d2\u7edd\u8054\u7cfb\u4eba\u6743\u9650\u540e\uff0c\u201c\u8054\u7cfb\u4eba\u201d\u6807\u7b7e\u9875\u4e0d\u518d\u53cd\u590d\u8be2\u95ee\uff0c\u5176\u8b66\u544a\u6807\u8bb0\u4e5f\u4f1a\u6d88\u5931.");
+        table.put("After you tap full screen, a video follows your phone to either landscape side, even with auto-rotate off. Turning your phone upright doesn't end full screen. Tap the button to leave it.",
+                "\u70b9\u6309\u5168\u5c4f\u540e\uff0c\u89c6\u9891\u4f1a\u8ddf\u968f\u624b\u673a\u8f6c\u5230\u4efb\u610f\u4e00\u4fa7\u6a2a\u5c4f\uff0c\u5373\u4f7f\u201c\u81ea\u52a8\u65cb\u8f6c\u5c4f\u5e55\u201d\u5df2\u5173\u95ed\u3002\u628a\u624b\u673a\u7ad6\u8fc7\u6765\u4e0d\u4f1a\u9000\u51fa\u5168\u5c4f\u3002\u70b9\u6309\u6309\u94ae\u5373\u53ef\u9000\u51fa.");
+        table.put("Album art isn't available yet",
+                "\u4e13\u8f91\u5c01\u9762\u6682\u65f6\u4e0d\u53ef\u7528");
+        table.put("Album art saved to Pictures",
+                "\u4e13\u8f91\u5c01\u9762\u5df2\u4fdd\u5b58\u5230 Pictures");
+        table.put("All Chats",
+                "\u6240\u6709\u804a\u5929");
+        table.put("All Chats is still showing because it holds your only way to Archived Chats. Patch again with Disable pull to archive to give the archive another way in.",
+                "\u201c\u6240\u6709\u804a\u5929\u201d\u4ecd\u4f1a\u663e\u793a\uff0c\u56e0\u4e3a\u5b83\u662f\u4f60\u8fdb\u5165\u201c\u5df2\u5f52\u6863\u7684\u804a\u5929\u201d\u7684\u552f\u4e00\u9014\u5f84\u3002\u8bf7\u7528\u201c\u5173\u95ed\u4e0b\u62c9\u67e5\u770b\u5f52\u6863\u201d\u91cd\u65b0\u6253\u8865\u4e01\uff0c\u5c31\u80fd\u901a\u8fc7\u53e6\u4e00\u79cd\u65b9\u5f0f\u8fdb\u5165\u5f52\u6863.");
+        table.put("All Chats is still showing because it holds your only way to Archived Chats. Turn on the side menu to give the archive another way in.",
+                "\u201c\u6240\u6709\u804a\u5929\u201d\u4ecd\u4f1a\u663e\u793a\uff0c\u56e0\u4e3a\u5b83\u662f\u4f60\u8fdb\u5165\u201c\u5df2\u5f52\u6863\u7684\u804a\u5929\u201d\u7684\u552f\u4e00\u9014\u5f84\u3002\u5f00\u542f\u4fa7\u8fb9\u83dc\u5355\uff0c\u5c31\u80fd\u901a\u8fc7\u53e6\u4e00\u79cd\u65b9\u5f0f\u8fdb\u5165\u5f52\u6863.");
+        table.put("All Chats is still showing because the folder tabs couldn't be read. The diagnostic report has the details.",
+                "\u201c\u6240\u6709\u804a\u5929\u201d\u4ecd\u4f1a\u663e\u793a\uff0c\u56e0\u4e3a\u65e0\u6cd5\u8bfb\u53d6\u6587\u4ef6\u5939\u6807\u7b7e\u9875\u3002\u8bca\u65ad\u62a5\u544a\u4e2d\u6709\u8be6\u7ec6\u4fe1\u606f.");
+        table.put("All Chats is still showing because this account has no folder of its own to open, or each one is locked.",
+                "\u201c\u6240\u6709\u804a\u5929\u201d\u4ecd\u4f1a\u663e\u793a\uff0c\u56e0\u4e3a\u8fd9\u4e2a\u8d26\u53f7\u6ca1\u6709\u81ea\u5df1\u7684\u6587\u4ef6\u5939\u53ef\u6253\u5f00\uff0c\u6216\u8005\u6bcf\u4e2a\u6587\u4ef6\u5939\u90fd\u5df2\u88ab\u9501\u5b9a.");
+        table.put("All files access is off, so Telegram's files stay in Android/data. Turning this on opens the setting.",
+                "\u201c\u6240\u6709\u6587\u4ef6\u8bbf\u95ee\u6743\u9650\u201d\u5df2\u5173\u95ed\uff0c\u6240\u4ee5 Telegram \u7684\u6587\u4ef6\u4ecd\u7559\u5728 Android/data\u3002\u5f00\u542f\u6b64\u5f00\u5173\u4f1a\u6253\u5f00\u8be5\u8bbe\u7f6e.");
+        table.put("All files access is on.",
+                "\u201c\u6240\u6709\u6587\u4ef6\u8bbf\u95ee\u6743\u9650\u201d\u5df2\u5f00\u542f.");
+        table.put("Allow chat blur on slower phones",
+                "\u5728\u8f83\u6162\u7684\u624b\u673a\u4e0a\u4e5f\u5141\u8bb8\u804a\u5929\u6a21\u7cca");
+        table.put("Allow screenshots in chats that don't allow saving",
+                "\u5728\u4e0d\u5141\u8bb8\u4fdd\u5b58\u7684\u804a\u5929\u4e2d\u5141\u8bb8\u622a\u5c4f");
+        table.put("Allowed",
+                "\u5df2\u5141\u8bb8");
+        table.put("Already in Downloads",
+                "\u5df2\u5728\u4e0b\u8f7d\u6587\u4ef6\u5939\u4e2d");
+        table.put("Already set that way.",
+                "\u5df2\u7ecf\u662f\u8fd9\u6837\u8bbe\u7f6e\u7684.");
+        table.put("Also allow screenshots in secret chats",
+                "\u4e5f\u5141\u8bb8\u5728\u79c1\u5bc6\u804a\u5929\u4e2d\u622a\u5c4f");
+        table.put("Also save from chats that don't allow saving",
+                "\u4e5f\u4fdd\u5b58\u4e0d\u5141\u8bb8\u4fdd\u5b58\u7684\u804a\u5929\u4e2d\u7684\u6587\u4ef6");
+        table.put("Also save from secret chats",
+                "\u4e5f\u4fdd\u5b58\u79c1\u5bc6\u804a\u5929\u4e2d\u7684\u6587\u4ef6");
+        table.put("Also save view-once and timed media",
+                "\u4e5f\u4fdd\u5b58\u4ec5\u67e5\u770b\u4e00\u6b21\u548c\u9605\u540e\u5373\u711a\u7684\u5a92\u4f53");
+        table.put("An open video stays upright when you turn your phone. It goes landscape only when you tap full screen, and back only when you tap the button again.",
+                "\u6253\u5f00\u7684\u89c6\u9891\u5728\u4f60\u8f6c\u52a8\u624b\u673a\u65f6\u4fdd\u6301\u7ad6\u5c4f\u3002\u53ea\u6709\u70b9\u6309\u5168\u5c4f\u540e\u624d\u4f1a\u6a2a\u5c4f\uff0c\u518d\u6b21\u70b9\u6309\u8be5\u6309\u94ae\u624d\u4f1a\u6062\u590d.");
+        table.put("Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.",
+                "Android 11 \u53ca\u66f4\u65e9\u7248\u672c\u4e0d\u4f1a\u8bf4\u660e\u54ea\u4e9b\u94fe\u63a5\u5728\u8fd9\u91cc\u6253\u5f00\u3002\u70b9\u6309\u4ee5\u6253\u5f00\u6b64\u5e94\u7528\u7684\u8bbe\u7f6e\uff0c\u7136\u540e\u9009\u62e9\u201c\u9ed8\u8ba4\u6253\u5f00\u201d.");
+        table.put("Android didn't say which links open here. Tap to check in Android's settings.",
+                "Android \u6ca1\u6709\u8bf4\u660e\u54ea\u4e9b\u94fe\u63a5\u4f1a\u5728\u8fd9\u91cc\u6253\u5f00\u3002\u70b9\u6309\u4ee5\u5728 Android \u8bbe\u7f6e\u4e2d\u67e5\u770b.");
+        table.put("Android doesn't say whether Data Saver is on.",
+                "Android \u6ca1\u6709\u8bf4\u660e\u6d41\u91cf\u8282\u7701\u7a0b\u5e8f\u662f\u5426\u5f00\u542f.");
+        table.put("Android doesn't say whether this network is metered.",
+                "Android \u6ca1\u6709\u8bf4\u660e\u6b64\u7f51\u7edc\u662f\u5426\u6309\u6d41\u91cf\u8ba1\u8d39.");
+        table.put("Android opens t.me links in this Telegram app only if you select their addresses on its Open by default page. Other link settings don't change.",
+                "\u53ea\u6709\u5728\u6b64\u5e94\u7528\u7684\u201c\u9ed8\u8ba4\u6253\u5f00\u201d\u9875\u9762\u4e2d\u9009\u4e2d\u76f8\u5e94\u7f51\u5740\uff0cAndroid \u624d\u4f1a\u7528\u8fd9\u4e2a Telegram \u5e94\u7528\u6253\u5f00 t.me \u94fe\u63a5\u3002\u5176\u4ed6\u94fe\u63a5\u8bbe\u7f6e\u4e0d\u53d7\u5f71\u54cd.");
+        table.put("Android stops Telegram's Keep-Alive Service soon after you leave the app, so messages wait until you open it again. With this on, the service shows a quiet notification and keeps running. It only does something while Keep-Alive Service is on in Telegram's own Settings > Notifications, under Other.",
+                "\u4f60\u79bb\u5f00\u5e94\u7528\u540e\u4e0d\u4e45\uff0cAndroid \u5c31\u4f1a\u505c\u6b62 Telegram \u7684\u201c\u540e\u53f0\u670d\u52a1\u5e38\u9a7b\u201d\uff0c\u6d88\u606f\u8981\u7b49\u4f60\u518d\u6b21\u6253\u5f00\u5e94\u7528\u624d\u4f1a\u6536\u5230\u3002\u5f00\u542f\u540e\uff0c\u8be5\u670d\u52a1\u4f1a\u663e\u793a\u4e00\u6761\u9759\u9ed8\u901a\u77e5\u5e76\u6301\u7eed\u8fd0\u884c\u3002\u53ea\u6709\u5728 Telegram \u81ea\u5df1\u7684\u201c\u8bbe\u7f6e > \u901a\u77e5\u201d\u4e2d\u201c\u5176\u5b83\u201d\u4e0b\u7684\u201c\u540e\u53f0\u670d\u52a1\u5e38\u9a7b\u201d\u5f00\u542f\u65f6\u624d\u4f1a\u8d77\u4f5c\u7528.");
+        table.put("Android verified this app for Telegram's web addresses, so their links open here.",
+                "Android \u5df2\u9a8c\u8bc1\u6b64\u5e94\u7528\u53ef\u5904\u7406 Telegram \u7684\u7f51\u5740\uff0c\u56e0\u6b64\u8fd9\u4e9b\u94fe\u63a5\u4f1a\u5728\u8fd9\u91cc\u6253\u5f00.");
+        table.put("Android's Data Saver is off.",
+                "Android \u7684\u6d41\u91cf\u8282\u7701\u7a0b\u5e8f\u5df2\u5173\u95ed.");
+        table.put("Android's Data Saver is on, but Telegram may use data freely.",
+                "Android \u7684\u6d41\u91cf\u8282\u7701\u7a0b\u5e8f\u5df2\u5f00\u542f\uff0c\u4f46 Telegram \u53ef\u4ee5\u4e0d\u53d7\u9650\u5236\u5730\u4f7f\u7528\u6570\u636e.");
+        table.put("Android's Data Saver is on.",
+                "Android \u7684\u6d41\u91cf\u8282\u7701\u7a0b\u5e8f\u5df2\u5f00\u542f.");
+        table.put("App settings didn't open. Try App info, then Open by default.",
+                "\u5e94\u7528\u8bbe\u7f6e\u672a\u80fd\u6253\u5f00\u3002\u8bf7\u5c1d\u8bd5\u201c\u5e94\u7528\u4fe1\u606f\u201d\uff0c\u7136\u540e\u9009\u62e9\u201c\u9ed8\u8ba4\u6253\u5f00\u201d.");
+        table.put("Ask before sending a GIF",
+                "\u53d1\u9001 GIF \u524d\u8be2\u95ee");
+        table.put("Ask before sending a sticker",
+                "\u53d1\u9001\u8d34\u7eb8\u524d\u8be2\u95ee");
+        table.put("Ask before sending a voice or video message",
+                "\u53d1\u9001\u8bed\u97f3\u6216\u89c6\u9891\u6d88\u606f\u524d\u8be2\u95ee");
+        table.put("Ask before starting a call",
+                "\u53d1\u8d77\u901a\u8bdd\u524d\u8be2\u95ee");
+        table.put("Asking Telegram to make your folders.",
+                "\u6b63\u5728\u8bf7\u6c42 Telegram \u521b\u5efa\u4f60\u7684\u6587\u4ef6\u5939.");
+        table.put("Asking Telegram to remove the folders.",
+                "\u6b63\u5728\u8bf7\u6c42 Telegram \u79fb\u9664\u8fd9\u4e9b\u6587\u4ef6\u5939.");
+        table.put("Asks Call or Cancel before the call button in a chat or on a profile starts a call.",
+                "\u804a\u5929\u6216\u4e2a\u4eba\u8d44\u6599\u4e2d\u7684\u901a\u8bdd\u6309\u94ae\u53d1\u8d77\u901a\u8bdd\u524d\uff0c\u4f1a\u8be2\u95ee\u201c\u901a\u8bdd\u201d\u6216\u201c\u53d6\u6d88\u201d.");
+        table.put("Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.",
+                "\u70b9\u6309\u7684 GIF \u53d1\u9001\u5230\u804a\u5929\u524d\uff0c\u4f1a\u8be2\u95ee\u201c\u53d1\u9001\u201d\u6216\u201c\u53d6\u6d88\u201d\u3002\u9009\u62e9\u201c\u53d6\u6d88\u201d\u5219\u4e0d\u53d1\u9001\u3002\u5b9a\u65f6\u53d1\u9001\u7684 GIF \u4e0d\u4f1a\u8be2\u95ee.");
+        table.put("Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.",
+                "\u70b9\u6309\u7684\u8d34\u7eb8\u53d1\u9001\u5230\u804a\u5929\u524d\uff0c\u4f1a\u8be2\u95ee\u201c\u53d1\u9001\u201d\u6216\u201c\u53d6\u6d88\u201d\u3002\u9009\u62e9\u201c\u53d6\u6d88\u201d\u5219\u4e0d\u53d1\u9001\u3002\u5b9a\u65f6\u53d1\u9001\u7684\u8d34\u7eb8\u4e0d\u4f1a\u8be2\u95ee.");
+        table.put("Asks Send or Cancel before a voice or video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.",
+                "\u4f60\u5f55\u5236\u7684\u8bed\u97f3\u6216\u89c6\u9891\u6d88\u606f\u53d1\u9001\u524d\uff0c\u4f1a\u8be2\u95ee\u201c\u53d1\u9001\u201d\u6216\u201c\u53d6\u6d88\u201d\u3002\u5f55\u97f3\u4f1a\u5148\u6682\u505c\uff0c\u9009\u62e9\u201c\u53d6\u6d88\u201d\u540e\u4fdd\u6301\u6682\u505c\uff0c\u4f60\u53ef\u4ee5\u64ad\u653e\u3001\u5220\u9664\u6216\u53d1\u9001.");
+        table.put("Attachment menu",
+                "\u9644\u4ef6\u83dc\u5355");
+        table.put("Auto-forwarding rules",
+                "\u81ea\u52a8\u8f6c\u53d1\u89c4\u5219");
+        table.put("Back",
+                "\u8fd4\u56de");
+        table.put("Back to Google's web translate.",
+                "\u5df2\u6539\u56de Google \u7f51\u9875\u7ffb\u8bd1.");
+    }
+
+    private static void fillZh_Hans3(Map<String, String> table) {
+        table.put("Back to defaults",
+                "\u6062\u590d\u9ed8\u8ba4");
+        table.put("Background use: %1$s",
+                "\u540e\u53f0\u4f7f\u7528\uff1a%1$s");
+        table.put("Battery optimization: Off",
+                "\u7535\u6c60\u4f18\u5316\uff1a\u5173\u95ed");
+        table.put("Battery optimization: On",
+                "\u7535\u6c60\u4f18\u5316\uff1a\u5f00\u542f");
+        table.put("Battery optimization: Unknown",
+                "\u7535\u6c60\u4f18\u5316\uff1a\u672a\u77e5");
+        table.put("Before the edit at %1$s: %2$s",
+                "%1$s \u7f16\u8f91\u524d\uff1a%2$s");
+        table.put("Bitrate: %1$s kbps",
+                "\u6bd4\u7279\u7387\uff1a%1$s kbps");
+        table.put("Block new channels and groups",
+                "\u963b\u6b62\u52a0\u5165\u65b0\u7684\u9891\u9053\u548c\u7fa4\u7ec4");
+        table.put("Blocked",
+                "\u5df2\u963b\u6b62");
+        table.put("Bold",
+                "\u7c97\u7ebf");
+        table.put("Bold, italic and code text use your phone's font instead of Telegram's built-in one. Restart Telegram to see the change.",
+                "\u7c97\u4f53\u3001\u659c\u4f53\u548c\u4ee3\u7801\u6587\u5b57\u4f7f\u7528\u624b\u673a\u7684\u5b57\u4f53\uff0c\u800c\u4e0d\u662f Telegram \u5185\u7f6e\u5b57\u4f53\u3002\u91cd\u542f Telegram \u540e\u751f\u6548.");
+        table.put("Bot token",
+                "\u673a\u5668\u4eba\u4ee4\u724c");
+        table.put("Bot token sign-in",
+                "\u673a\u5668\u4eba\u4ee4\u724c\u767b\u5f55");
+        table.put("Both work on the account you have open.",
+                "\u4e24\u8005\u90fd\u4f5c\u7528\u4e8e\u4f60\u5f53\u524d\u6253\u5f00\u7684\u8d26\u53f7.");
+        table.put("Bots",
+                "\u673a\u5668\u4eba");
+        table.put("Brings back every message you hid with Hide for me, in every account. Open the chat again to see them.",
+                "\u6062\u590d\u4f60\u5728\u6240\u6709\u8d26\u53f7\u4e2d\u7528\u201c\u4ec5\u4e3a\u6211\u9690\u85cf\u201d\u9690\u85cf\u7684\u6240\u6709\u6d88\u606f\u3002\u91cd\u65b0\u6253\u5f00\u804a\u5929\u5373\u53ef\u770b\u5230.");
+        table.put("Buttons in chat previews",
+                "\u804a\u5929\u9884\u89c8\u4e2d\u7684\u6309\u94ae");
+        table.put("Bypass channel restrictions",
+                "\u7ed5\u8fc7\u9891\u9053\u9650\u5236");
+        table.put("Bypass integrity check",
+                "\u7ed5\u8fc7\u5b8c\u6574\u6027\u68c0\u67e5");
+        table.put("Call",
+                "\u901a\u8bdd");
+        table.put("Call diagnostics",
+                "\u901a\u8bdd\u8bca\u65ad");
+        table.put("Call recording saved",
+                "\u901a\u8bdd\u5f55\u97f3\u5df2\u4fdd\u5b58");
+        table.put("Call recordings",
+                "\u901a\u8bdd\u5f55\u97f3");
+        table.put("Call saved to %1$s",
+                "\u901a\u8bdd\u5df2\u4fdd\u5b58\u5230 %1$s");
+        table.put("Calls in these chats are recorded.",
+                "\u8fd9\u4e9b\u804a\u5929\u4e2d\u7684\u901a\u8bdd\u4f1a\u5f55\u97f3.");
+        table.put("Calls in these chats aren't recorded anymore.",
+                "\u8fd9\u4e9b\u804a\u5929\u4e2d\u7684\u901a\u8bdd\u4e0d\u518d\u5f55\u97f3.");
+        table.put("Calls to record",
+                "\u8981\u5f55\u97f3\u7684\u901a\u8bdd");
+        table.put("Came online",
+                "\u4e0a\u7ebf");
+        table.put("Camera only on tap",
+                "\u70b9\u6309\u540e\u624d\u542f\u52a8\u76f8\u673a");
+        table.put("Can't forward there",
+                "\u65e0\u6cd5\u8f6c\u53d1\u5230\u90a3\u91cc");
+        table.put("Can't open the link. Go to %1$s.",
+                "\u65e0\u6cd5\u6253\u5f00\u94fe\u63a5\u3002\u8bf7\u524d\u5f80 %1$s.");
+        table.put("Cancel",
+                "\u53d6\u6d88");
+        table.put("Cancel unlock",
+                "\u53d6\u6d88\u89e3\u9501");
+        table.put("Cards. Tap for plain rows.",
+                "\u5361\u7247\u3002\u70b9\u6309\u5207\u6362\u4e3a\u666e\u901a\u5217\u8868.");
+        table.put("Change sticker size",
+                "\u66f4\u6539\u8d34\u7eb8\u5927\u5c0f");
+        table.put("Changed %1$d setting. Undo it from Quick setups.",
+                "\u5df2\u66f4\u6539 %1$d \u9879\u8bbe\u7f6e\u3002\u53ef\u5728\u201c\u4e00\u952e\u8bbe\u7f6e\u201d\u4e2d\u64a4\u9500.");
+        table.put("Changed %1$d settings. Undo them from Quick setups.",
+                "\u5df2\u66f4\u6539 %1$d \u9879\u8bbe\u7f6e\u3002\u53ef\u5728\u201c\u4e00\u952e\u8bbe\u7f6e\u201d\u4e2d\u64a4\u9500.");
+        table.put("Changed name from %1$s to %2$s",
+                "\u540d\u5b57\u4ece %1$s \u6539\u4e3a %2$s");
+        table.put("Changed phone number from %1$s to %2$s",
+                "\u624b\u673a\u53f7\u7801\u4ece %1$s \u6539\u4e3a %2$s");
+        table.put("Changed switches",
+                "\u5df2\u66f4\u6539\u7684\u5f00\u5173");
+        table.put("Changed their profile photo",
+                "\u66f4\u6362\u4e86\u5934\u50cf");
+        table.put("Changed username from %1$s to %2$s",
+                "\u7528\u6237\u540d\u4ece %1$s \u6539\u4e3a %2$s");
+        table.put("Channels",
+                "\u9891\u9053");
+        table.put("Channels and chats that block forwarding and saving let you forward messages and save media.",
+                "\u5728\u7981\u6b62\u8f6c\u53d1\u548c\u4fdd\u5b58\u7684\u9891\u9053\u548c\u804a\u5929\u4e2d\uff0c\u4e5f\u80fd\u8f6c\u53d1\u6d88\u606f\u548c\u4fdd\u5b58\u5a92\u4f53.");
+        table.put("Channels, groups and messages Telegram says are unavailable for copyright or local law open anyway, as long as Telegram still sends them.",
+                "Telegram \u6807\u8bb0\u4e3a\u56e0\u7248\u6743\u6216\u5f53\u5730\u6cd5\u5f8b\u800c\u4e0d\u53ef\u7528\u7684\u9891\u9053\u3001\u7fa4\u7ec4\u548c\u6d88\u606f\uff0c\u53ea\u8981 Telegram \u4ecd\u4f1a\u53d1\u9001\u5b83\u4eec\uff0c\u5c31\u7167\u6837\u53ef\u4ee5\u6253\u5f00.");
+        table.put("Chat ID %1$s",
+                "\u804a\u5929 ID %1$s");
+        table.put("Chat ID: %1$s",
+                "\u804a\u5929 ID\uff1a%1$s");
+        table.put("Chat list",
+                "\u804a\u5929\u5217\u8868");
+        table.put("Chats in another language stop showing the translate bar at the top. Translate moves to the chat's menu, and a chat you're translating keeps its bar.",
+                "\u5176\u4ed6\u8bed\u8a00\u7684\u804a\u5929\u4e0d\u518d\u5728\u9876\u90e8\u663e\u793a\u7ffb\u8bd1\u680f\u3002\u201c\u7ffb\u8bd1\u201d\u79fb\u5230\u804a\u5929\u83dc\u5355\u4e2d\uff0c\u6b63\u5728\u7ffb\u8bd1\u7684\u804a\u5929\u4f1a\u4fdd\u7559\u7ffb\u8bd1\u680f.");
+        table.put("Chats to hide",
+                "\u8981\u9690\u85cf\u7684\u804a\u5929");
+        table.put("Chats to record",
+                "\u8981\u5f55\u97f3\u7684\u804a\u5929");
+        table.put("Check Also delete for by default",
+                "\u9ed8\u8ba4\u52fe\u9009\u201c\u540c\u65f6\u4e3a\u2026\u5220\u9664\u201d");
+        table.put("Check for new HushTelegram releases",
+                "\u68c0\u67e5 HushTelegram \u65b0\u7248\u672c");
+        table.put("Check now",
+                "\u7acb\u5373\u68c0\u67e5");
+        table.put("Checking GitHub now.",
+                "\u6b63\u5728\u68c0\u67e5 GitHub.");
+        table.put("Checks GitHub for the newest release right now, even if the switch above is off.",
+                "\u7acb\u5373\u5230 GitHub \u68c0\u67e5\u6700\u65b0\u7248\u672c\uff0c\u5373\u4f7f\u4e0a\u9762\u7684\u5f00\u5173\u5df2\u5173\u95ed.");
+        table.put("Choose another folder",
+                "\u9009\u62e9\u5176\u4ed6\u6587\u4ef6\u5939");
+        table.put("Clean links when you copy or paste",
+                "\u590d\u5236\u6216\u7c98\u8d34\u65f6\u6e05\u7406\u94fe\u63a5");
+        table.put("Clear diagnostic data",
+                "\u6e05\u9664\u8bca\u65ad\u6570\u636e");
+        table.put("Clear edit history",
+                "\u6e05\u9664\u7f16\u8f91\u5386\u53f2");
+    }
+
+    private static void fillZh_Hans4(Map<String, String> table) {
+        table.put("Clear from cache",
+                "\u4ece\u7f13\u5b58\u4e2d\u6e05\u9664");
+        table.put("Clear history",
+                "\u6e05\u7a7a\u5386\u53f2\u8bb0\u5f55");
+        table.put("Clear kept messages",
+                "\u6e05\u9664\u4fdd\u7559\u7684\u6d88\u606f");
+        table.put("Clear search",
+                "\u6e05\u9664\u641c\u7d22");
+        table.put("Cleared %1$s",
+                "\u5df2\u6e05\u9664 %1$s");
+        table.put("Cleared the edit history of %1$d message.",
+                "\u5df2\u6e05\u9664 %1$d \u6761\u6d88\u606f\u7684\u7f16\u8f91\u5386\u53f2.");
+        table.put("Cleared the edit history of %1$d messages.",
+                "\u5df2\u6e05\u9664 %1$d \u6761\u6d88\u606f\u7684\u7f16\u8f91\u5386\u53f2.");
+        table.put("Clears the activity log and patch checks that a report would include.",
+                "\u6e05\u9664\u62a5\u544a\u4e2d\u4f1a\u5305\u542b\u7684\u6d3b\u52a8\u65e5\u5fd7\u548c\u8865\u4e01\u68c0\u67e5\u7ed3\u679c.");
+        table.put("Close",
+                "\u5173\u95ed");
+        table.put("Close preview",
+                "\u5173\u95ed\u9884\u89c8");
+        table.put("Compact bottom bar",
+                "\u7d27\u51d1\u5e95\u680f");
+        table.put("Control character",
+                "\u63a7\u5236\u5b57\u7b26");
+        table.put("Conversations",
+                "\u5bf9\u8bdd");
+        table.put("Copy",
+                "\u590d\u5236");
+        table.put("Copy a short report or save the full one to a file. The saved location is shown afterward. Links, IDs and sign-in details are left out. Look it over before sharing.",
+                "\u590d\u5236\u7b80\u77ed\u62a5\u544a\uff0c\u6216\u5c06\u5b8c\u6574\u62a5\u544a\u4fdd\u5b58\u5230\u6587\u4ef6\u3002\u4fdd\u5b58\u540e\u4f1a\u663e\u793a\u4fdd\u5b58\u4f4d\u7f6e\u3002\u94fe\u63a5\u3001ID \u548c\u767b\u5f55\u4fe1\u606f\u4e0d\u4f1a\u5305\u542b\u5728\u5185\u3002\u5206\u4eab\u524d\u8bf7\u5148\u68c0\u67e5\u4e00\u904d.");
+        table.put("Copy a short report to the clipboard.",
+                "\u5c06\u7b80\u8981\u62a5\u544a\u590d\u5236\u5230\u526a\u8d34\u677f.");
+        table.put("Copy chat ID %1$s",
+                "\u590d\u5236\u804a\u5929 ID %1$s");
+        table.put("Copy data center %1$s",
+                "\u590d\u5236\u6570\u636e\u4e2d\u5fc3 %1$s");
+        table.put("Copy photo",
+                "\u590d\u5236\u7167\u7247");
+        table.put("Copy quick report",
+                "\u590d\u5236\u7b80\u8981\u62a5\u544a");
+        table.put("Copy text from chats that don't allow saving",
+                "\u4ece\u4e0d\u5141\u8bb8\u4fdd\u5b58\u7684\u804a\u5929\u4e2d\u590d\u5236\u6587\u5b57");
+        table.put("Copy user ID %1$s",
+                "\u590d\u5236\u7528\u6237 ID %1$s");
+        table.put("Couldn't change the lock. Try again in a moment.",
+                "\u65e0\u6cd5\u66f4\u6539\u9501\u5b9a\u72b6\u6001\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Couldn't change the text.",
+                "\u65e0\u6cd5\u66f4\u6539\u6587\u5b57.");
+        table.put("Couldn't change your folders. Try again in a moment.",
+                "\u65e0\u6cd5\u66f4\u6539\u4f60\u7684\u6587\u4ef6\u5939\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Couldn't clear that. Try again.",
+                "\u65e0\u6cd5\u6e05\u9664\u3002\u8bf7\u91cd\u8bd5.");
+        table.put("Couldn't complete that action. Try again.",
+                "\u65e0\u6cd5\u5b8c\u6210\u8be5\u64cd\u4f5c\u3002\u8bf7\u91cd\u8bd5.");
+        table.put("Couldn't copy that. Try again.",
+                "\u65e0\u6cd5\u590d\u5236\u3002\u8bf7\u91cd\u8bd5.");
+        table.put("Couldn't crop the photo. Try again.",
+                "\u65e0\u6cd5\u88c1\u526a\u7167\u7247\u3002\u8bf7\u91cd\u8bd5.");
+        table.put("Couldn't download a proxy list last time. Check your connection and try again.",
+                "\u4e0a\u6b21\u65e0\u6cd5\u4e0b\u8f7d\u4ee3\u7406\u5217\u8868\u3002\u8bf7\u68c0\u67e5\u7f51\u7edc\u8fde\u63a5\u540e\u91cd\u8bd5.");
+        table.put("Couldn't import or restore old settings. Check the switches.",
+                "\u65e0\u6cd5\u5bfc\u5165\u6216\u6062\u590d\u65e7\u8bbe\u7f6e\u3002\u8bf7\u68c0\u67e5\u5404\u4e2a\u5f00\u5173.");
+        table.put("Couldn't import the settings. Nothing was changed.",
+                "\u65e0\u6cd5\u5bfc\u5165\u8bbe\u7f6e\u3002\u6ca1\u6709\u505a\u4efb\u4f55\u66f4\u6539.");
+        table.put("Couldn't load the lyrics. Tap to try again.",
+                "\u65e0\u6cd5\u52a0\u8f7d\u6b4c\u8bcd\u3002\u70b9\u6309\u4ee5\u91cd\u8bd5.");
+        table.put("Couldn't open All files access.",
+                "\u65e0\u6cd5\u6253\u5f00\u201c\u6240\u6709\u6587\u4ef6\u8bbf\u95ee\u6743\u9650\u201d.");
+        table.put("Couldn't open app info. Open Android settings.",
+                "\u65e0\u6cd5\u6253\u5f00\u5e94\u7528\u4fe1\u606f\u3002\u8bf7\u6253\u5f00 Android \u8bbe\u7f6e.");
+        table.put("Couldn't open battery optimization. Open Android settings.",
+                "\u65e0\u6cd5\u6253\u5f00\u7535\u6c60\u4f18\u5316\u3002\u8bf7\u6253\u5f00 Android \u8bbe\u7f6e.");
+        table.put("Couldn't open notification settings. Open Android settings.",
+                "\u65e0\u6cd5\u6253\u5f00\u901a\u77e5\u8bbe\u7f6e\u3002\u8bf7\u6253\u5f00 Android \u8bbe\u7f6e.");
+        table.put("Couldn't open that file. Nothing was changed.",
+                "\u65e0\u6cd5\u6253\u5f00\u8be5\u6587\u4ef6\u3002\u6ca1\u6709\u505a\u4efb\u4f55\u66f4\u6539.");
+        table.put("Couldn't open that. Try again.",
+                "\u65e0\u6cd5\u6253\u5f00\u3002\u8bf7\u91cd\u8bd5.");
+        table.put("Couldn't open the file picker. Try again.",
+                "\u65e0\u6cd5\u6253\u5f00\u6587\u4ef6\u9009\u62e9\u5668\u3002\u8bf7\u91cd\u8bd5.");
+        table.put("Couldn't open your messages here.",
+                "\u65e0\u6cd5\u5728\u8fd9\u91cc\u6253\u5f00\u4f60\u7684\u6d88\u606f.");
+        table.put("Couldn't put back the diagnostic data. Try again.",
+                "\u65e0\u6cd5\u6062\u590d\u8bca\u65ad\u6570\u636e\u3002\u8bf7\u91cd\u8bd5.");
+        table.put("Couldn't reach GitHub. Try again later.",
+                "\u65e0\u6cd5\u8fde\u63a5 GitHub\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Couldn't read the list.",
+                "\u65e0\u6cd5\u8bfb\u53d6\u5217\u8868.");
+        table.put("Couldn't read your accounts.",
+                "\u65e0\u6cd5\u8bfb\u53d6\u4f60\u7684\u8d26\u53f7.");
+        table.put("Couldn't read your chats.",
+                "\u65e0\u6cd5\u8bfb\u53d6\u4f60\u7684\u804a\u5929.");
+        table.put("Couldn't read your folders.",
+                "\u65e0\u6cd5\u8bfb\u53d6\u4f60\u7684\u6587\u4ef6\u5939.");
+        table.put("Couldn't remove %1$s. Delete it by hand.",
+                "\u65e0\u6cd5\u5220\u9664 %1$s\u3002\u8bf7\u624b\u52a8\u5220\u9664.");
+        table.put("Couldn't save that. It's back to the saved value. Try again.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u3002\u5df2\u6062\u590d\u4e3a\u4e4b\u524d\u4fdd\u5b58\u7684\u503c\u3002\u8bf7\u91cd\u8bd5.");
+        table.put("Couldn't save that. Try again.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u3002\u8bf7\u91cd\u8bd5.");
+        table.put("Couldn't save the accounts. Try again in a moment.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u8d26\u53f7\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Couldn't save the call recording.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u901a\u8bdd\u5f55\u97f3.");
+        table.put("Couldn't save the chats. Try again in a moment.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u804a\u5929\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Couldn't save the choice. Try again in a moment.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u9009\u62e9\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Couldn't save the device. Try again in a moment.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u8bbe\u5907\u4fe1\u606f\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Couldn't save the emoji. Try again in a moment.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u8868\u60c5\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Couldn't save the filters. Try again in a moment.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u8fc7\u6ee4\u6761\u4ef6\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Couldn't save the folder. Try again in a moment.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u6587\u4ef6\u5939\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Couldn't save the kinds. Try again in a moment.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u6587\u4ef6\u7c7b\u578b\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Couldn't save the language. Try again in a moment.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u8bed\u8a00\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+    }
+
+    private static void fillZh_Hans5(Map<String, String> table) {
+        table.put("Couldn't save the lists. Try again in a moment.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u5217\u8868\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Couldn't save the order. Try again.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u987a\u5e8f\u3002\u8bf7\u91cd\u8bd5.");
+        table.put("Couldn't save the picture",
+                "\u65e0\u6cd5\u4fdd\u5b58\u56fe\u7247");
+        table.put("Couldn't save the rules. Try again in a moment.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u89c4\u5219\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Couldn't save the settings file. Try again.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u8bbe\u7f6e\u6587\u4ef6\u3002\u8bf7\u91cd\u8bd5.");
+        table.put("Couldn't save the size. Try again in a moment.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u5927\u5c0f\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Couldn't save the title. Try again in a moment.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u6807\u9898\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Couldn't save the translation service. Try again in a moment.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u7ffb\u8bd1\u670d\u52a1\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Couldn't send read receipts",
+                "\u65e0\u6cd5\u53d1\u9001\u5df2\u8bfb\u56de\u6267");
+        table.put("Couldn't send the read receipt. Try again.",
+                "\u65e0\u6cd5\u53d1\u9001\u5df2\u8bfb\u56de\u6267\u3002\u8bf7\u91cd\u8bd5.");
+        table.put("Couldn't start that. Try again in a moment.",
+                "\u65e0\u6cd5\u542f\u52a8\u8be5\u64cd\u4f5c\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Couldn't start the report export. Try again in a moment.",
+                "\u65e0\u6cd5\u5f00\u59cb\u5bfc\u51fa\u62a5\u544a\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Couldn't start tracking",
+                "\u65e0\u6cd5\u5f00\u59cb\u8ffd\u8e2a");
+        table.put("Couldn't try it now. Try again in a moment.",
+                "\u73b0\u5728\u65e0\u6cd5\u6d4b\u8bd5\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Couldn't turn HushTelegram back on. Try again.",
+                "\u65e0\u6cd5\u91cd\u65b0\u5f00\u542f HushTelegram\u3002\u8bf7\u91cd\u8bd5.");
+        table.put("Couldn't update the messages here.",
+                "\u65e0\u6cd5\u66f4\u65b0\u8fd9\u91cc\u7684\u6d88\u606f.");
+        table.put("Couldn't update the preview. Copy and Save still use only what's ticked.",
+                "\u65e0\u6cd5\u66f4\u65b0\u9884\u89c8\u3002\u201c\u590d\u5236\u201d\u548c\u201c\u4fdd\u5b58\u201d\u4ecd\u53ea\u4f7f\u7528\u5df2\u52fe\u9009\u7684\u5185\u5bb9.");
+        table.put("Couldn't use that folder. Pick another one.",
+                "\u65e0\u6cd5\u4f7f\u7528\u8be5\u6587\u4ef6\u5939\u3002\u8bf7\u9009\u62e9\u5176\u4ed6\u6587\u4ef6\u5939.");
+        table.put("Cover isn't available yet",
+                "\u5c01\u9762\u6682\u65f6\u4e0d\u53ef\u7528");
+        table.put("Cover saved to Pictures",
+                "\u5c01\u9762\u5df2\u4fdd\u5b58\u5230 Pictures");
+        table.put("Data center %1$s",
+                "\u6570\u636e\u4e2d\u5fc3 %1$s");
+        table.put("Data center copied",
+                "\u5df2\u590d\u5236\u6570\u636e\u4e2d\u5fc3");
+        table.put("Dates on your profile songs",
+                "\u4e2a\u4eba\u8d44\u6599\u6b4c\u66f2\u7684\u6dfb\u52a0\u65e5\u671f");
+        table.put("Debug logging",
+                "\u8c03\u8bd5\u65e5\u5fd7");
+        table.put("Delete account",
+                "\u5220\u9664\u8d26\u53f7");
+        table.put("Delete for them",
+                "\u4e3a\u5bf9\u65b9\u5220\u9664");
+        table.put("Delete this account?",
+                "\u8981\u5220\u9664\u8fd9\u4e2a\u8d26\u53f7\u5417?");
+        table.put("Deleted for them, kept here.",
+                "\u5df2\u4e3a\u5bf9\u65b9\u5220\u9664\uff0c\u672c\u673a\u4fdd\u7559.");
+        table.put("Deleted messages",
+                "\u5df2\u5220\u9664\u6d88\u606f");
+        table.put("Deleted their account",
+                "\u5220\u9664\u4e86\u8d26\u53f7");
+        table.put("Deletes the account you're using now, with its messages and contacts. If it has a cloud password, Telegram waits a week first.",
+                "\u5220\u9664\u4f60\u5f53\u524d\u4f7f\u7528\u7684\u8d26\u53f7\u53ca\u5176\u6d88\u606f\u548c\u8054\u7cfb\u4eba\u3002\u5982\u679c\u8bbe\u7f6e\u4e86\u4e91\u7aef\u5bc6\u7801\uff0cTelegram \u4f1a\u5148\u7b49\u5f85\u4e00\u5468.");
+        table.put("Deletes the messages this phone kept after others deleted them, in every account, the way Telegram would have.",
+                "\u5220\u9664\u8fd9\u90e8\u624b\u673a\u5728\u5176\u4ed6\u4eba\u5220\u9664\u540e\u4fdd\u7559\u4e0b\u6765\u7684\u6d88\u606f\uff0c\u5305\u62ec\u6240\u6709\u8d26\u53f7\uff0c\u5c31\u50cf Telegram \u539f\u672c\u4f1a\u505a\u7684\u90a3\u6837.");
+        table.put("Device in Active sessions",
+                "\u6d3b\u8dc3\u4f1a\u8bdd\u4e2d\u7684\u8bbe\u5907");
+        table.put("Device name",
+                "\u8bbe\u5907\u540d\u79f0");
+        table.put("Diagnostic data cleared. Tap again to put it back.",
+                "\u8bca\u65ad\u6570\u636e\u5df2\u6e05\u9664\u3002\u518d\u6b21\u70b9\u6309\u53ef\u6062\u590d.");
+        table.put("Diagnostic data put back.",
+                "\u8bca\u65ad\u6570\u636e\u5df2\u6062\u590d.");
+        table.put("Diagnostic report copied to the clipboard.",
+                "\u8bca\u65ad\u62a5\u544a\u5df2\u590d\u5236\u5230\u526a\u8d34\u677f.");
+        table.put("Diagnostics",
+                "\u8bca\u65ad");
+        table.put("Disable double-tap reactions",
+                "\u5173\u95ed\u53cc\u51fb\u8868\u60c5\u56de\u5e94");
+        table.put("Disable pull to archive",
+                "\u5173\u95ed\u4e0b\u62c9\u67e5\u770b\u5f52\u6863");
+        table.put("Disable secret chats",
+                "\u505c\u7528\u79c1\u5bc6\u804a\u5929");
+        table.put("Documents",
+                "\u6587\u6863");
+        table.put("Don't notify contacts",
+                "\u4e0d\u901a\u77e5\u8054\u7cfb\u4eba");
+        table.put("Don't share my number by default",
+                "\u9ed8\u8ba4\u4e0d\u5206\u4eab\u6211\u7684\u53f7\u7801");
+        table.put("Done",
+                "\u5b8c\u6210");
+        table.put("Double-tapping a message no longer adds a reaction. Scrolling, normal taps, selecting and the reaction menu work as before.",
+                "\u53cc\u51fb\u6d88\u606f\u4e0d\u518d\u6dfb\u52a0\u8868\u60c5\u56de\u5e94\u3002\u6eda\u52a8\u3001\u666e\u901a\u70b9\u6309\u3001\u9009\u62e9\u548c\u8868\u60c5\u56de\u5e94\u83dc\u5355\u7167\u5e38\u5de5\u4f5c.");
+        table.put("Download manager",
+                "\u4e0b\u8f7d\u7ba1\u7406\u5668");
+        table.put("Downloading",
+                "\u6b63\u5728\u4e0b\u8f7d");
+        table.put("Downloads",
+                "\u4e0b\u8f7d");
+        table.put("Downloads a public list of proxies now, times them and adds the fastest to Telegram's proxy list, even with the switch above off.",
+                "\u7acb\u5373\u4e0b\u8f7d\u4e00\u4efd\u516c\u5f00\u4ee3\u7406\u5217\u8868\uff0c\u6d4b\u8bd5\u5b83\u4eec\u7684\u901f\u5ea6\uff0c\u5e76\u5c06\u6700\u5feb\u7684\u6dfb\u52a0\u5230 Telegram \u7684\u4ee3\u7406\u5217\u8868\u4e2d\uff0c\u5373\u4f7f\u4e0a\u65b9\u7684\u5f00\u5173\u5df2\u5173\u95ed.");
+        table.put("Downloads your proxy lists now, times them and adds the fastest to Telegram's proxy list, even with the switch above off.",
+                "\u7acb\u5373\u4e0b\u8f7d\u4f60\u7684\u4ee3\u7406\u5217\u8868\uff0c\u6d4b\u8bd5\u5b83\u4eec\u7684\u901f\u5ea6\uff0c\u5e76\u5c06\u6700\u5feb\u7684\u6dfb\u52a0\u5230 Telegram \u7684\u4ee3\u7406\u5217\u8868\u4e2d\uff0c\u5373\u4f7f\u4e0a\u65b9\u7684\u5f00\u5173\u5df2\u5173\u95ed.");
+        table.put("Draft link previews",
+                "\u8349\u7a3f\u94fe\u63a5\u9884\u89c8");
+        table.put("Drag a proxy by its handle to move it, and pin the ones you want on top. Telegram's proxy screen shows them in this order. Once you've moved one, proxies added later go below in Telegram's order.",
+                "\u6309\u4f4f\u4ee3\u7406\u7684\u62d6\u52a8\u624b\u67c4\u5373\u53ef\u79fb\u52a8\u5b83\uff0c\u628a\u4f60\u60f3\u653e\u5728\u6700\u4e0a\u9762\u7684\u4ee3\u7406\u7f6e\u9876\u3002Telegram \u7684\u4ee3\u7406\u9875\u9762\u4f1a\u6309\u8fd9\u4e2a\u987a\u5e8f\u663e\u793a\u3002\u4e00\u65e6\u4f60\u79fb\u52a8\u8fc7\u67d0\u4e2a\u4ee3\u7406\uff0c\u4e4b\u540e\u6dfb\u52a0\u7684\u4ee3\u7406\u4f1a\u6309 Telegram \u7684\u987a\u5e8f\u6392\u5728\u4e0b\u9762.");
+        table.put("Drag the proxies in Telegram's proxy list into your own order, or pin some on top.",
+                "\u5c06 Telegram \u4ee3\u7406\u5217\u8868\u4e2d\u7684\u4ee3\u7406\u62d6\u6210\u4f60\u81ea\u5df1\u7684\u987a\u5e8f\uff0c\u6216\u5c06\u4e00\u4e9b\u7f6e\u9876.");
+        table.put("Duration: %1$s",
+                "\u65f6\u957f\uff1a%1$s");
+        table.put("Each file or song you download also goes to Download/Telegram on your phone, where file managers and other apps can open it. Files from secret chats and chats that don't allow saving stay in Telegram.",
+                "\u4f60\u4e0b\u8f7d\u7684\u6bcf\u4e2a\u6587\u4ef6\u6216\u6b4c\u66f2\u4e5f\u4f1a\u4fdd\u5b58\u5230\u624b\u673a\u4e0a\u7684 Download/Telegram\uff0c\u6587\u4ef6\u7ba1\u7406\u5668\u548c\u5176\u4ed6\u5e94\u7528\u90fd\u80fd\u6253\u5f00\u3002\u6765\u81ea\u79c1\u5bc6\u804a\u5929\u548c\u4e0d\u5141\u8bb8\u4fdd\u5b58\u7684\u804a\u5929\u7684\u6587\u4ef6\u53ea\u7559\u5728 Telegram \u4e2d.");
+        table.put("Each line needs an https address",
+                "\u6bcf\u884c\u90fd\u9700\u8981\u4e00\u4e2a https \u5730\u5740");
+        table.put("Each list is a page of t.me/proxy or tg://proxy links. Free proxies times them and adds the 10 fastest. Leave it empty to use the public lists again.",
+                "\u6bcf\u4e2a\u5217\u8868\u90fd\u662f\u4e00\u4e2a\u5305\u542b t.me/proxy \u6216 tg://proxy \u94fe\u63a5\u7684\u9875\u9762\u3002\u201c\u514d\u8d39\u4ee3\u7406\u201d\u4f1a\u6d4b\u8bd5\u5b83\u4eec\u7684\u901f\u5ea6\u5e76\u6dfb\u52a0\u6700\u5feb\u7684 10 \u4e2a\u3002\u7559\u7a7a\u5373\u53ef\u91cd\u65b0\u4f7f\u7528\u516c\u5f00\u5217\u8868.");
+        table.put("Each message's time includes seconds, like 9:41:27 PM, so messages sent close together are easy to tell apart.",
+                "\u6bcf\u6761\u6d88\u606f\u7684\u65f6\u95f4\u90fd\u5e26\u4e0a\u79d2\u6570\uff0c\u4f8b\u5982 21:41:27\uff0c\u65b9\u4fbf\u533a\u5206\u65f6\u95f4\u76f8\u8fd1\u7684\u6d88\u606f.");
+        table.put("Each new forward starts with Hide sender's name turned on, so copies arrive without the original author, even when you pick several chats at once. You can still turn it off in the forward preview, or by holding the send button in the Share sheet. Forwards to Saved Messages keep the sender.",
+                "\u6bcf\u6b21\u65b0\u7684\u8f6c\u53d1\u90fd\u4f1a\u9ed8\u8ba4\u5f00\u542f\u201c\u9690\u85cf\u53d1\u9001\u8005\u540d\u79f0\u201d\uff0c\u8fd9\u6837\u526f\u672c\u4e0d\u4f1a\u663e\u793a\u539f\u4f5c\u8005\uff0c\u5373\u4f7f\u4f60\u4e00\u6b21\u9009\u62e9\u591a\u4e2a\u804a\u5929\u4e5f\u662f\u5982\u6b64\u3002\u4f60\u4ecd\u53ef\u5728\u8f6c\u53d1\u9884\u89c8\u4e2d\u5173\u95ed\u5b83\uff0c\u6216\u5728\u5206\u4eab\u9762\u677f\u4e2d\u957f\u6309\u53d1\u9001\u6309\u94ae\u6765\u5173\u95ed\u3002\u8f6c\u53d1\u5230\u201c\u6211\u7684\u6536\u85cf\u201d\u65f6\u4f1a\u4fdd\u7559\u53d1\u9001\u8005.");
+    }
+
+    private static void fillZh_Hans6(Map<String, String> table) {
+        table.put("Edited: %1$s",
+                "\u7f16\u8f91\u65f6\u95f4\uff1a%1$s");
+        table.put("Emoji next to the chat list title",
+                "\u804a\u5929\u5217\u8868\u6807\u9898\u65c1\u7684\u8868\u60c5");
+        table.put("Emoji or a few letters",
+                "\u8868\u60c5\u6216\u51e0\u4e2a\u5b57");
+        table.put("Emoji status on this phone",
+                "\u672c\u673a\u8868\u60c5\u7b26\u53f7\u72b6\u6001");
+        table.put("Empty private chats stop suggesting a sticker to say hello. Their other text and notices, and the sticker picker, stay.",
+                "\u7a7a\u7684\u79c1\u804a\u4e0d\u518d\u5efa\u8bae\u53d1\u9001\u8d34\u7eb8\u6253\u62db\u547c\u3002\u5176\u4ed6\u6587\u5b57\u548c\u63d0\u793a\uff0c\u4ee5\u53ca\u8d34\u7eb8\u9009\u62e9\u5668\u90fd\u4f1a\u4fdd\u7559.");
+        table.put("Every 6 hours, downloads a public list of proxies and adds the 10 fastest to Telegram's proxy list, and Telegram connects through them unless you use a proxy of your own. Whoever runs a proxy can see your IP address. Turning this off leaves them in the list.",
+                "\u6bcf 6 \u5c0f\u65f6\u4e0b\u8f7d\u4e00\u4efd\u516c\u5f00\u4ee3\u7406\u5217\u8868\uff0c\u5e76\u5c06\u6700\u5feb\u7684 10 \u4e2a\u6dfb\u52a0\u5230 Telegram \u7684\u4ee3\u7406\u5217\u8868\u4e2d\uff1b\u9664\u975e\u4f60\u4f7f\u7528\u81ea\u5df1\u7684\u4ee3\u7406\uff0c\u5426\u5219 Telegram \u4f1a\u901a\u8fc7\u5b83\u4eec\u8fde\u63a5\u3002\u4ee3\u7406\u7684\u8fd0\u8425\u8005\u53ef\u4ee5\u770b\u5230\u4f60\u7684 IP \u5730\u5740\u3002\u5173\u95ed\u6b64\u5f00\u5173\u540e\uff0c\u5b83\u4eec\u4ecd\u4fdd\u7559\u5728\u5217\u8868\u4e2d.");
+        table.put("Every call",
+                "\u6240\u6709\u901a\u8bdd");
+        table.put("Every kind",
+                "\u6240\u6709\u7c7b\u578b");
+        table.put("Every kind of file.",
+                "\u6240\u6709\u7c7b\u578b\u7684\u6587\u4ef6.");
+        table.put("Every message",
+                "\u6240\u6709\u6d88\u606f");
+        table.put("Every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.",
+                "\u9664\u201c\u8c03\u8bd5\u65e5\u5fd7\u201d\u5916\uff0c\u6240\u6709\u5f00\u5173\u90fd\u6309\u5173\u95ed\u5904\u7406\u3002\u4f60\u7684\u9009\u62e9\u4ecd\u4f1a\u4fdd\u5b58\u3002\u6253\u8865\u4e01\u65f6\u505a\u51fa\u7684\u4fee\u6539\u4ecd\u4f1a\u4fdd\u7559.");
+        table.put("Every switch here applies to all the accounts in this Telegram app, not only the one you have open.",
+                "\u8fd9\u91cc\u7684\u6bcf\u4e2a\u5f00\u5173\u90fd\u4f5c\u7528\u4e8e\u6b64 Telegram \u5e94\u7528\u4e2d\u7684\u6240\u6709\u8d26\u53f7\uff0c\u800c\u4e0d\u53ea\u662f\u4f60\u5f53\u524d\u6253\u5f00\u7684\u8d26\u53f7.");
+        table.put("Every switch is the way it started.",
+                "\u6240\u6709\u5f00\u5173\u90fd\u4fdd\u6301\u521d\u59cb\u72b6\u6001.");
+        table.put("Everything here is already selected",
+                "\u8fd9\u91cc\u7684\u6240\u6709\u5185\u5bb9\u90fd\u5df2\u9009\u4e2d");
+        table.put("Exact numbers",
+                "\u663e\u793a\u7cbe\u786e\u6570\u5b57");
+        table.put("Exception chats",
+                "\u4f8b\u5916\u804a\u5929");
+        table.put("Expand all quotes",
+                "\u5c55\u5f00\u6240\u6709\u5f15\u7528");
+        table.put("Export diagnostic report",
+                "\u5bfc\u51fa\u8bca\u65ad\u62a5\u544a");
+        table.put("Export settings",
+                "\u5bfc\u51fa\u8bbe\u7f6e");
+        table.put("Fake typing",
+                "\u5047\u88c5\u6b63\u5728\u8f93\u5165");
+        table.put("Fast forward",
+                "\u6781\u901f\u8f6c\u53d1");
+        table.put("Faster downloads",
+                "\u52a0\u901f\u4e0b\u8f7d");
+        table.put("Faster uploads",
+                "\u52a0\u901f\u4e0a\u4f20");
+        table.put("File data center: %1$s",
+                "\u6587\u4ef6\u6570\u636e\u4e2d\u5fc3\uff1a%1$s");
+        table.put("File name: %1$s",
+                "\u6587\u4ef6\u540d\uff1a%1$s");
+        table.put("File size: %1$s",
+                "\u6587\u4ef6\u5927\u5c0f\uff1a%1$s");
+        table.put("Files about half the size, ending in .ogg. Some older players can't open them.",
+                "\u6587\u4ef6\u5927\u5c0f\u7ea6\u4e3a\u4e00\u534a\uff0c\u6269\u5c55\u540d\u4e3a .ogg\u3002\u4e00\u4e9b\u8f83\u65e7\u7684\u64ad\u653e\u5668\u65e0\u6cd5\u6253\u5f00.");
+        table.put("Files download in 512 KB pieces, 8 at a time, instead of 128 KB pieces 4 at a time. If a big piece fails, Telegram goes back to small ones. The next download picks this up.",
+                "\u6587\u4ef6\u4ee5 512 KB \u7684\u5206\u5757\u3001\u6bcf\u6b21 8 \u5757\u7684\u65b9\u5f0f\u4e0b\u8f7d\uff0c\u800c\u4e0d\u662f 128 KB \u7684\u5206\u5757\u3001\u6bcf\u6b21 4 \u5757\u3002\u5982\u679c\u5927\u5206\u5757\u4e0b\u8f7d\u5931\u8d25\uff0cTelegram \u4f1a\u6539\u56de\u5c0f\u5206\u5757\u3002\u4e0b\u4e00\u6b21\u4e0b\u8f7d\u65f6\u751f\u6548.");
+        table.put("Files download one at a time, in the order you asked for them. Adds a Downloads row to the side menu, which needs Side menu on too.",
+                "\u6587\u4ef6\u6309\u4f60\u8bf7\u6c42\u7684\u987a\u5e8f\u9010\u4e2a\u4e0b\u8f7d\u3002\u5728\u4fa7\u8fb9\u83dc\u5355\u4e2d\u6dfb\u52a0\u201c\u4e0b\u8f7d\u201d\u884c\uff0c\u8fd9\u8fd8\u9700\u8981\u5f00\u542f\u201c\u4fa7\u8fb9\u83dc\u5355\u201d.");
+        table.put("Filled",
+                "\u586b\u5145");
+        table.put("Filters for channels",
+                "\u9891\u9053\u8fc7\u6ee4\u6761\u4ef6");
+        table.put("Filters for groups",
+                "\u7fa4\u7ec4\u8fc7\u6ee4\u6761\u4ef6");
+        table.put("Filters saved.",
+                "\u5df2\u4fdd\u5b58\u8fc7\u6ee4\u6761\u4ef6.");
+        table.put("Find free proxies now",
+                "\u7acb\u5373\u67e5\u627e\u514d\u8d39\u4ee3\u7406");
+        table.put("Find names in styled letters",
+                "\u67e5\u627e\u82b1\u5f0f\u5b57\u6bcd\u540d\u79f0");
+        table.put("Finished",
+                "\u5df2\u5b8c\u6210");
+        table.put("Firebase certificate header",
+                "Firebase \u8bc1\u4e66\u6807\u5934");
+        table.put("First strong isolate",
+                "\u9996\u4e2a\u5f3a\u5b57\u7b26\u9694\u79bb");
+        table.put("Fit all folder tabs",
+                "\u6587\u4ef6\u5939\u6807\u7b7e\u9875\u5168\u90e8\u663e\u793a");
+        table.put("Folder icons",
+                "\u6587\u4ef6\u5939\u56fe\u6807");
+        table.put("Folder icons on tabs",
+                "\u6807\u7b7e\u9875\u4e0a\u7684\u6587\u4ef6\u5939\u56fe\u6807");
+        table.put("Folder in internal storage",
+                "\u5185\u90e8\u5b58\u50a8\u4e2d\u7684\u6587\u4ef6\u5939");
+        table.put("Folder limit reached. Remove a folder and try again.",
+                "\u5df2\u8fbe\u5230\u6587\u4ef6\u5939\u6570\u91cf\u4e0a\u9650\u3002\u8bf7\u5220\u9664\u4e00\u4e2a\u6587\u4ef6\u5939\u540e\u91cd\u8bd5.");
+        table.put("Folder name",
+                "\u6587\u4ef6\u5939\u540d\u79f0");
+        table.put("Folder tab counts and the app badge still count their unread messages.",
+                "\u6587\u4ef6\u5939\u6807\u7b7e\u9875\u7684\u8ba1\u6570\u548c\u5e94\u7528\u56fe\u6807\u89d2\u6807\u4ecd\u4f1a\u8ba1\u5165\u5b83\u4eec\u7684\u672a\u8bfb\u6d88\u606f.");
+        table.put("Folder tab counts leave them out, but the app badge still counts their unread messages.",
+                "\u6587\u4ef6\u5939\u6807\u7b7e\u9875\u7684\u8ba1\u6570\u4e0d\u5305\u542b\u5b83\u4eec\uff0c\u4f46\u5e94\u7528\u56fe\u6807\u89d2\u6807\u4ecd\u4f1a\u8ba1\u5165\u5b83\u4eec\u7684\u672a\u8bfb\u6d88\u606f.");
+        table.put("Folder tabs above the chat list show just their names, without unread counts. Chats stay unread and the app icon badge doesn't change.",
+                "\u804a\u5929\u5217\u8868\u4e0a\u65b9\u7684\u6587\u4ef6\u5939\u6807\u7b7e\u9875\u53ea\u663e\u793a\u540d\u79f0\uff0c\u4e0d\u663e\u793a\u672a\u8bfb\u6570\u3002\u804a\u5929\u4ecd\u4fdd\u6301\u672a\u8bfb\uff0c\u5e94\u7528\u56fe\u6807\u89d2\u6807\u4e5f\u4e0d\u53d8.");
+        table.put("Folder to open",
+                "\u8981\u6253\u5f00\u7684\u6587\u4ef6\u5939");
+        table.put("Folders by chat type",
+                "\u6309\u804a\u5929\u7c7b\u578b\u5206\u6587\u4ef6\u5939");
+        table.put("For phones where Firebase notifications don't arrive. Telegram signs up an address from a UnifiedPush app like ntfy, and Telegram's servers call it to wake Telegram when something arrives. The messages still come from Telegram itself. It also turns on Telegram's own Keep-Alive Service and Background Connection, unless you've set either one yourself. Turned off, Telegram goes back to Firebase the next time it starts.",
+                "\u9002\u7528\u4e8e\u6536\u4e0d\u5230 Firebase \u901a\u77e5\u7684\u624b\u673a\u3002Telegram \u4f1a\u4ece ntfy \u7b49 UnifiedPush \u5e94\u7528\u6ce8\u518c\u4e00\u4e2a\u5730\u5740\uff0c\u6709\u65b0\u5185\u5bb9\u65f6\uff0cTelegram \u7684\u670d\u52a1\u5668\u4f1a\u8c03\u7528\u8fd9\u4e2a\u5730\u5740\u6765\u5524\u9192 Telegram\u3002\u6d88\u606f\u672c\u8eab\u4ecd\u6765\u81ea Telegram\u3002\u5b83\u8fd8\u4f1a\u5f00\u542f Telegram \u81ea\u5df1\u7684\u201c\u540e\u53f0\u670d\u52a1\u5e38\u9a7b\u201d\u548c\u201c\u540e\u53f0\u7f51\u7edc\u8fde\u63a5\u201d\uff0c\u9664\u975e\u4f60\u5df2\u81ea\u884c\u8bbe\u7f6e\u8fc7\u5176\u4e2d\u4e00\u9879\u3002\u5173\u95ed\u540e\uff0cTelegram \u4f1a\u5728\u4e0b\u6b21\u542f\u52a8\u65f6\u6539\u56de Firebase.");
+        table.put("Forgets the earlier text this phone kept for edited messages, in every account.",
+                "\u6e05\u9664\u8fd9\u90e8\u624b\u673a\u4e3a\u5df2\u7f16\u8f91\u6d88\u606f\u4fdd\u7559\u7684\u539f\u5148\u6587\u5b57\uff0c\u5305\u62ec\u6240\u6709\u8d26\u53f7.");
+        table.put("Forward as copy",
+                "\u4f5c\u4e3a\u526f\u672c\u8f6c\u53d1");
+        table.put("Forward as is",
+                "\u539f\u6837\u8f6c\u53d1");
+        table.put("Forward as plain text",
+                "\u4f5c\u4e3a\u7eaf\u6587\u672c\u8f6c\u53d1");
+        table.put("Forward new messages from",
+                "\u8f6c\u53d1\u65b0\u6d88\u606f\u7684\u6765\u6e90");
+        table.put("Forward them to",
+                "\u8f6c\u53d1\u5230");
+        table.put("Forward to",
+                "\u8f6c\u53d1\u5230");
+        table.put("Forward to Saved Messages",
+                "\u8f6c\u53d1\u5230\u6211\u7684\u6536\u85cf");
+        table.put("Forwarded from: %1$s",
+                "\u8f6c\u53d1\u81ea\uff1a%1$s");
+        table.put("Forwarding rules",
+                "\u8f6c\u53d1\u89c4\u5219");
+    }
+
+    private static void fillZh_Hans7(Map<String, String> table) {
+        table.put("Forwarding to %1$s",
+                "\u6b63\u5728\u8f6c\u53d1\u5230 %1$s");
+        table.put("Free proxies",
+                "\u514d\u8d39\u4ee3\u7406");
+        table.put("Full report saved to %1$s",
+                "\u5b8c\u6574\u62a5\u544a\u5df2\u4fdd\u5b58\u5230 %1$s");
+        table.put("Full screen videos turn either way",
+                "\u5168\u5c4f\u89c6\u9891\u53ef\u53cc\u5411\u6a2a\u5c4f");
+        table.put("Gallery camera",
+                "\u56fe\u5e93\u4e2d\u7684\u76f8\u673a");
+        table.put("Gallery folder",
+                "\u76f8\u518c\u6587\u4ef6\u5939");
+        table.put("Ghost mode",
+                "\u5e7d\u7075\u6a21\u5f0f");
+        table.put("Ghost mode button",
+                "\u5e7d\u7075\u6a21\u5f0f\u6309\u94ae");
+        table.put("Ghost mode exception",
+                "\u5e7d\u7075\u6a21\u5f0f\u4f8b\u5916");
+        table.put("Ghost mode exceptions",
+                "\u5e7d\u7075\u6a21\u5f0f\u4f8b\u5916");
+        table.put("Ghost mode is off in these chats.",
+                "\u201c\u5e7d\u7075\u6a21\u5f0f\u201d\u5728\u8fd9\u4e9b\u804a\u5929\u4e2d\u5df2\u5173\u95ed.");
+        table.put("Ghost mode is on in these chats.",
+                "\u201c\u5e7d\u7075\u6a21\u5f0f\u201d\u5728\u8fd9\u4e9b\u804a\u5929\u4e2d\u5df2\u5f00\u542f.");
+        table.put("Ghost mode off",
+                "\u5e7d\u7075\u6a21\u5f0f\u5df2\u5173\u95ed");
+        table.put("Ghost mode on",
+                "\u5e7d\u7075\u6a21\u5f0f\u5df2\u5f00\u542f");
+        table.put("GitHub is blocking checks from this network for now. Try again later.",
+                "GitHub \u6682\u65f6\u963b\u6b62\u4e86\u6765\u81ea\u6b64\u7f51\u7edc\u7684\u68c0\u67e5\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("GitHub sent a reply HushTelegram couldn't read. Try again later.",
+                "GitHub \u8fd4\u56de\u4e86 HushTelegram \u65e0\u6cd5\u8bfb\u53d6\u7684\u54cd\u5e94\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Go straight to one group of settings. Back returns to where you were.",
+                "\u76f4\u63a5\u524d\u5f80\u67d0\u4e00\u7ec4\u8bbe\u7f6e\u3002\u6309\u8fd4\u56de\u53ef\u56de\u5230\u539f\u6765\u7684\u4f4d\u7f6e.");
+        table.put("Google sign-in failed. Type your email above.",
+                "Google \u767b\u5f55\u5931\u8d25\u3002\u8bf7\u5728\u4e0a\u65b9\u8f93\u5165\u4f60\u7684\u90ae\u7bb1.");
+        table.put("Google's web translate. Tap to use an AI service with your own key.",
+                "Google \u7f51\u9875\u7ffb\u8bd1\u3002\u70b9\u6309\u53ef\u6539\u7528\u4f60\u81ea\u5df1\u5bc6\u94a5\u7684 AI \u670d\u52a1.");
+        table.put("Gram transfer Send Gram item",
+                "Gram \u8f6c\u8d26\u4e2d\u7684\u201c\u53d1\u9001 Gram\u201d\u9879");
+        table.put("Groups",
+                "\u7fa4\u7ec4");
+        table.put("Hidden from your chat list.",
+                "\u5df2\u4ece\u4f60\u7684\u804a\u5929\u5217\u8868\u4e2d\u9690\u85cf.");
+        table.put("Hidden messages",
+                "\u9690\u85cf\u7684\u6d88\u606f");
+        table.put("Hidden on this phone.",
+                "\u5df2\u5728\u8fd9\u90e8\u624b\u673a\u4e0a\u9690\u85cf.");
+        table.put("Hide All Chats",
+                "\u9690\u85cf\u201c\u6240\u6709\u804a\u5929\u201d");
+        table.put("Hide Contacts tab",
+                "\u9690\u85cf\u201c\u8054\u7cfb\u4eba\u201d\u6807\u7b7e\u9875");
+        table.put("Hide Premium, gifts and Stars",
+                "\u9690\u85cf Premium\u3001\u793c\u7269\u548c\u661f\u661f");
+        table.put("Hide Send as button",
+                "\u9690\u85cf\u201c\u53d1\u9001\u8eab\u4efd\u201d\u6309\u94ae");
+        table.put("Hide Stories",
+                "\u9690\u85cf\u52a8\u6001");
+        table.put("Hide Telegram Features and Invite Friends",
+                "\u9690\u85cf\u201cTelegram \u529f\u80fd\u201d\u548c\u201c\u9080\u8bf7\u670b\u53cb\u201d");
+        table.put("Hide accounts",
+                "\u9690\u85cf\u8d26\u53f7");
+        table.put("Hide ads",
+                "\u9690\u85cf\u5e7f\u544a");
+        table.put("Hide blocked users in groups",
+                "\u5728\u7fa4\u7ec4\u4e2d\u9690\u85cf\u5df2\u5c4f\u853d\u7684\u7528\u6237");
+        table.put("Hide channel Mute button",
+                "\u9690\u85cf\u9891\u9053\u7684\u201c\u9759\u97f3\u201d\u6309\u94ae");
+        table.put("Hide channel bar buttons",
+                "\u9690\u85cf\u9891\u9053\u5e95\u680f\u6309\u94ae");
+        table.put("Hide channel share button",
+                "\u9690\u85cf\u9891\u9053\u5206\u4eab\u6309\u94ae");
+        table.put("Hide contacts on Telegram",
+                "\u9690\u85cf Telegram \u4e0a\u7684\u8054\u7cfb\u4eba");
+        table.put("Hide emoji statuses",
+                "\u9690\u85cf\u8868\u60c5\u7b26\u53f7\u72b6\u6001");
+        table.put("Hide folder tab counters",
+                "\u9690\u85cf\u6587\u4ef6\u5939\u6807\u7b7e\u9875\u8ba1\u6570");
+        table.put("Hide for me",
+                "\u4ec5\u4e3a\u6211\u9690\u85cf");
+        table.put("Hide from chat list",
+                "\u4ece\u804a\u5929\u5217\u8868\u4e2d\u9690\u85cf");
+        table.put("Hide gallery camera tile",
+                "\u9690\u85cf\u56fe\u5e93\u4e2d\u7684\u76f8\u673a\u56fe\u5757");
+        table.put("Hide greeting stickers",
+                "\u9690\u85cf\u6253\u62db\u547c\u8d34\u7eb8");
+        table.put("Hide keyboard on scroll",
+                "\u6eda\u52a8\u65f6\u9690\u85cf\u952e\u76d8");
+        table.put("Hide messages by keyword",
+                "\u6309\u5173\u952e\u8bcd\u9690\u85cf\u6d88\u606f");
+        table.put("Hide new message button",
+                "\u9690\u85cf\u65b0\u5efa\u5bf9\u8bdd\u6309\u94ae");
+        table.put("Hide online status",
+                "\u9690\u85cf\u5728\u7ebf\u72b6\u6001");
+        table.put("Hide phone number",
+                "\u9690\u85cf\u624b\u673a\u53f7\u7801");
+        table.put("Hide picked chats",
+                "\u9690\u85cf\u9009\u5b9a\u7684\u804a\u5929");
+        table.put("Hide pinned message bar",
+                "\u9690\u85cf\u7f6e\u9876\u6d88\u606f\u680f");
+        table.put("Hide popular apps",
+                "\u9690\u85cf\u70ed\u95e8\u5e94\u7528");
+        table.put("Hide promotional banners",
+                "\u9690\u85cf\u63a8\u5e7f\u6a2a\u5e45");
+        table.put("Hide reactions under messages",
+                "\u9690\u85cf\u6d88\u606f\u4e0b\u65b9\u7684\u8868\u60c5\u56de\u5e94");
+        table.put("Hide recommendations",
+                "\u9690\u85cf\u63a8\u8350");
+        table.put("Hide sender names when forwarding",
+                "\u8f6c\u53d1\u65f6\u9690\u85cf\u53d1\u9001\u8005\u540d\u79f0");
+        table.put("Hide sponsored proxy channel",
+                "\u9690\u85cf\u4ee3\u7406\u8d5e\u52a9\u9891\u9053");
+        table.put("Hide the emoji pack line",
+                "\u9690\u85cf\u8868\u60c5\u5305\u8bf4\u660e\u884c");
+        table.put("Hide the reaction picker",
+                "\u9690\u85cf\u8868\u60c5\u56de\u5e94\u9009\u62e9\u5668");
+        table.put("Hide time on stickers",
+                "\u9690\u85cf\u8d34\u7eb8\u4e0a\u7684\u65f6\u95f4");
+        table.put("Hide translate bar",
+                "\u9690\u85cf\u7ffb\u8bd1\u680f");
+    }
+
+    private static void fillZh_Hans8(Map<String, String> table) {
+        table.put("Hide trending packs",
+                "\u9690\u85cf\u70ed\u95e8\u8d34\u7eb8\u548c\u8868\u60c5\u5305");
+        table.put("Hide typing",
+                "\u9690\u85cf\u6b63\u5728\u8f93\u5165");
+        table.put("Hides ads, suggestions, stories, promotions and nags.",
+                "\u9690\u85cf\u5e7f\u544a\u3001\u63a8\u8350\u3001\u52a8\u6001\u3001\u63a8\u5e7f\u548c\u70e6\u4eba\u7684\u63d0\u793a.");
+        table.put("Hides suggested similar channels and bots, including ones already saved, and stops asking Telegram for new ones.",
+                "\u9690\u85cf\u63a8\u8350\u7684\u76f8\u4f3c\u9891\u9053\u548c\u673a\u5668\u4eba\uff08\u5305\u62ec\u5df2\u4fdd\u5b58\u7684\u63a8\u8350\uff09\uff0c\u5e76\u4e14\u4e0d\u518d\u5411 Telegram \u8bf7\u6c42\u65b0\u7684\u63a8\u8350.");
+        table.put("Hides the Popular apps list on the Apps tab of search, and doesn't ask Telegram for it. Apps you've opened and other results stay.",
+                "\u9690\u85cf\u641c\u7d22\u201c\u5e94\u7528\u201d\u6807\u7b7e\u9875\u4e2d\u7684\u70ed\u95e8\u5e94\u7528\u5217\u8868\uff0c\u4e5f\u4e0d\u518d\u5411 Telegram \u8bf7\u6c42\u8be5\u5217\u8868\u3002\u4f60\u6253\u5f00\u8fc7\u7684\u5e94\u7528\u548c\u5176\u4ed6\u7ed3\u679c\u4fdd\u7559.");
+        table.put("Hides the Premium, birthday and low Stars balance banners above your chat list. Account security notices and other suggestions still show.",
+                "\u9690\u85cf\u804a\u5929\u5217\u8868\u4e0a\u65b9\u7684 Premium\u3001\u751f\u65e5\u548c\u661f\u661f\u4f59\u989d\u4e0d\u8db3\u6a2a\u5e45\u3002\u8d26\u53f7\u5b89\u5168\u63d0\u9192\u548c\u5176\u4ed6\u5efa\u8bae\u4ecd\u4f1a\u663e\u793a.");
+        table.put("Hides the sponsored channel a proxy adds to your chat list and folders. Your proxy settings aren't touched.",
+                "\u9690\u85cf\u4ee3\u7406\u6dfb\u52a0\u5230\u804a\u5929\u5217\u8868\u548c\u6587\u4ef6\u5939\u4e2d\u7684\u8d5e\u52a9\u9891\u9053\u3002\u4f60\u7684\u4ee3\u7406\u8bbe\u7f6e\u4e0d\u53d7\u5f71\u54cd.");
+        table.put("History cleared",
+                "\u5df2\u6e05\u7a7a\u5386\u53f2\u8bb0\u5f55");
+        table.put("Hold automatic downloads on Data Saver",
+                "\u5f00\u542f\u6d41\u91cf\u8282\u7701\u7a0b\u5e8f\u65f6\u6682\u505c\u81ea\u52a8\u4e0b\u8f7d");
+        table.put("Hold the Telegram title at the top of your chats.",
+                "\u6309\u4f4f\u804a\u5929\u5217\u8868\u9876\u90e8\u7684 Telegram \u6807\u9898.");
+        table.put("Home screen shortcut",
+                "\u4e3b\u5c4f\u5e55\u5feb\u6377\u65b9\u5f0f");
+        table.put("How to translate (optional)",
+                "\u7ffb\u8bd1\u65b9\u5f0f\uff08\u53ef\u9009\uff09");
+        table.put("HushTelegram %1$s is made for Telegram %2$s.",
+                "HushTelegram %1$s \u662f\u4e3a Telegram %2$s \u5236\u4f5c\u7684.");
+        table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
+                "HushTelegram %1$s \u5df2\u53d1\u5e03\u3002\u8bf7\u5728 Morphe Manager \u4e2d\u66f4\u65b0.");
+        table.put("HushTelegram %1$s on Telegram %2$s",
+                "HushTelegram %1$s\uff0c\u8fd0\u884c\u4e8e Telegram %2$s");
+        table.put("HushTelegram is on",
+                "HushTelegram \u5df2\u5f00\u542f");
+        table.put("HushTelegram is paused",
+                "HushTelegram \u5df2\u6682\u505c");
+        table.put("HushTelegram is paused, so your folders stay as they are.",
+                "HushTelegram \u5df2\u6682\u505c\uff0c\u6240\u4ee5\u4f60\u7684\u6587\u4ef6\u5939\u4fdd\u6301\u4e0d\u53d8.");
+        table.put("HushTelegram pauses when Telegram restarts.",
+                "Telegram \u91cd\u542f\u65f6 HushTelegram \u5c06\u6682\u505c.");
+        table.put("HushTelegram settings",
+                "HushTelegram \u8bbe\u7f6e");
+        table.put("HushTelegram settings couldn't open",
+                "\u65e0\u6cd5\u6253\u5f00 HushTelegram \u8bbe\u7f6e");
+        table.put("HushTelegram turns back on when Telegram restarts.",
+                "Telegram \u91cd\u542f\u65f6 HushTelegram \u5c06\u91cd\u65b0\u5f00\u542f.");
+        table.put("I haven't seen that person.",
+                "\u8fd9\u4e2a\u5e94\u7528\u8fd8\u6ca1\u89c1\u8fc7\u8fd9\u4e2a\u4eba.");
+        table.put("ID",
+                "ID");
+        table.put("ID copied",
+                "\u5df2\u590d\u5236 ID");
+        table.put("Ignore mentions in muted chats",
+                "\u5ffd\u7565\u5df2\u9759\u97f3\u804a\u5929\u4e2d\u7684\u63d0\u53ca");
+        table.put("Import",
+                "\u5bfc\u5165");
+        table.put("Import settings",
+                "\u5bfc\u5165\u8bbe\u7f6e");
+        table.put("Importing settings",
+                "\u6b63\u5728\u5bfc\u5165\u8bbe\u7f6e");
+        table.put("In a chat",
+                "\u804a\u5929\u4e2d");
+        table.put("In use",
+                "\u4f7f\u7528\u4e2d");
+        table.put("Install a UnifiedPush app like ntfy first.",
+                "\u8bf7\u5148\u5b89\u88c5 ntfy \u7b49 UnifiedPush \u5e94\u7528.");
+        table.put("Install a UnifiedPush app like ntfy, then come back here.",
+                "\u8bf7\u5b89\u88c5 ntfy \u7b49 UnifiedPush \u5e94\u7528\uff0c\u7136\u540e\u56de\u5230\u8fd9\u91cc.");
+        table.put("Instant lock",
+                "\u7acb\u5373\u9501\u5b9a");
+        table.put("Internal storage",
+                "\u5185\u90e8\u5b58\u50a8");
+        table.put("Internal storage/%1$s",
+                "\u5185\u90e8\u5b58\u50a8/%1$s");
+        table.put("It's made for Telegram %1$s.",
+                "\u5b83\u662f\u4e3a Telegram %1$s \u5236\u4f5c\u7684.");
+        table.put("Jump to a section",
+                "\u8df3\u8f6c\u5230\u5206\u533a");
+        table.put("Keep Telegram's files in internal storage",
+                "\u5c06 Telegram \u7684\u6587\u4ef6\u4fdd\u5b58\u5728\u5185\u90e8\u5b58\u50a8\u4e2d");
+        table.put("Keep at least one account showing.",
+                "\u8bf7\u81f3\u5c11\u4fdd\u7559\u4e00\u4e2a\u8d26\u53f7\u663e\u793a.");
+        table.put("Keep captions with their photos",
+                "\u8bf4\u660e\u6587\u5b57\u8ddf\u968f\u7167\u7247");
+        table.put("Keep deleted messages",
+                "\u4fdd\u7559\u5df2\u5220\u9664\u6d88\u606f");
+        table.put("Keep drafts on this phone",
+                "\u8349\u7a3f\u53ea\u4fdd\u5b58\u5728\u672c\u673a");
+        table.put("Keep edit history",
+                "\u4fdd\u7559\u7f16\u8f91\u5386\u53f2");
+        table.put("Keep my messages too",
+                "\u4e5f\u4fdd\u7559\u6211\u7684\u6d88\u606f");
+        table.put("Keep one way into HushTelegram settings",
+                "\u81f3\u5c11\u4fdd\u7559\u4e00\u79cd\u8fdb\u5165 HushTelegram \u8bbe\u7f6e\u7684\u65b9\u5f0f");
+        table.put("Keep recordings",
+                "\u5f55\u97f3\u4fdd\u7559\u65f6\u95f4");
+        table.put("Keep searches on this phone",
+                "\u641c\u7d22\u53ea\u5728\u672c\u673a\u8fdb\u884c");
+        table.put("Keep self-destructing secret chat messages",
+                "\u4fdd\u7559\u79c1\u5bc6\u804a\u5929\u4e2d\u7684\u9605\u540e\u5373\u711a\u6d88\u606f");
+        table.put("Keep the Keep-Alive Service running",
+                "\u8ba9\u201c\u540e\u53f0\u670d\u52a1\u5e38\u9a7b\u201d\u4fdd\u6301\u8fd0\u884c");
+        table.put("Keep videos muted on volume keys",
+                "\u97f3\u91cf\u952e\u4e0d\u53d6\u6d88\u89c6\u9891\u9759\u97f3");
+        table.put("Keep view-once and timed media",
+                "\u4fdd\u7559\u4ec5\u67e5\u770b\u4e00\u6b21\u548c\u9605\u540e\u5373\u711a\u7684\u5a92\u4f53");
+        table.put("Keep voice messages quiet while locked",
+                "\u9501\u5c4f\u65f6\u4e0d\u64ad\u653e\u8bed\u97f3\u6d88\u606f");
+        table.put("Keep your location from Mini Apps",
+                "\u4e0d\u8ba9\u5c0f\u7a0b\u5e8f\u83b7\u53d6\u4f60\u7684\u4f4d\u7f6e");
+        table.put("Keep-Alive Service",
+                "\u540e\u53f0\u670d\u52a1\u5e38\u9a7b");
+        table.put("Keep-Alive Service and Background Connection on: %1$s",
+                "\u201c\u540e\u53f0\u670d\u52a1\u5e38\u9a7b\u201d\u548c\u201c\u540e\u53f0\u7f51\u7edc\u8fde\u63a5\u201d\u5df2\u5f00\u542f\uff1a%1$s");
+        table.put("Keep-Alive Service start",
+                "\u201c\u540e\u53f0\u670d\u52a1\u5e38\u9a7b\u201d\u7684\u542f\u52a8");
+        table.put("Keeping Telegram connected",
+                "\u6b63\u5728\u4fdd\u6301 Telegram \u8fde\u63a5");
+        table.put("Keeps the text a message had before someone else edited it, on this phone only. Message details in the message's menu shows it.",
+                "\u5728\u8fd9\u90e8\u624b\u673a\u4e0a\u4fdd\u7559\u6d88\u606f\u88ab\u5176\u4ed6\u4eba\u7f16\u8f91\u524d\u7684\u6587\u5b57\u3002\u53ef\u5728\u6d88\u606f\u83dc\u5355\u7684\u201c\u6d88\u606f\u8be6\u60c5\u201d\u4e2d\u67e5\u770b.");
+        table.put("Language for outside translations: %1$s. Tap to pick another.",
+                "\u5916\u90e8\u7ffb\u8bd1\u4f7f\u7528\u7684\u8bed\u8a00\uff1a%1$s\u3002\u70b9\u6309\u4ee5\u9009\u62e9\u5176\u4ed6\u8bed\u8a00.");
+    }
+
+    private static void fillZh_Hans9(Map<String, String> table) {
+        table.put("Last seen a long time ago",
+                "\u5f88\u4e45\u4ee5\u524d\u4e0a\u8fc7\u7ebf");
+        table.put("Last seen recently",
+                "\u6700\u8fd1\u66fe\u4e0a\u7ebf");
+        table.put("Last seen within a month",
+                "\u6700\u8fd1\u4e00\u4e2a\u6708\u5185\u66fe\u4e0a\u7ebf");
+        table.put("Last seen within a week",
+                "\u6700\u8fd1\u4e00\u5468\u5185\u66fe\u4e0a\u7ebf");
+        table.put("Left out of the file: %1$s.",
+                "\u6587\u4ef6\u4e2d\u4e0d\u5305\u542b\uff1a%1$s.");
+        table.put("Left to right",
+                "\u4ece\u5de6\u5230\u53f3");
+        table.put("Left-to-right isolate",
+                "\u5de6\u81f3\u53f3\u9694\u79bb");
+        table.put("Left-to-right mark",
+                "\u5de6\u81f3\u53f3\u6807\u8bb0");
+        table.put("Less clutter",
+                "\u7cbe\u7b80\u754c\u9762");
+        table.put("Lets you drag All Chats to another place among your folder tabs, as Premium does. The place is saved on this phone for this account, and your other devices keep All Chats first. Has no effect while Hide All Chats is on.",
+                "\u8ba9\u4f60\u50cf Premium \u7528\u6237\u4e00\u6837\uff0c\u628a\u201c\u6240\u6709\u804a\u5929\u201d\u62d6\u5230\u6587\u4ef6\u5939\u6807\u7b7e\u9875\u4e2d\u7684\u5176\u4ed6\u4f4d\u7f6e\u3002\u8fd9\u4e2a\u4f4d\u7f6e\u53ea\u4e3a\u5f53\u524d\u8d26\u53f7\u4fdd\u5b58\u5728\u8fd9\u90e8\u624b\u673a\u4e0a\uff0c\u4f60\u7684\u5176\u4ed6\u8bbe\u5907\u4e0a\u201c\u6240\u6709\u804a\u5929\u201d\u4ecd\u5728\u7b2c\u4e00\u4f4d\u3002\u5728\u201c\u9690\u85cf\u2018\u6240\u6709\u804a\u5929\u2019\u201d\u5f00\u542f\u65f6\u65e0\u6548.");
+        table.put("Licenses",
+                "\u8bb8\u53ef\u8bc1");
+        table.put("Line %1$d is longer than %2$d characters.",
+                "\u7b2c %1$d \u884c\u8d85\u8fc7 %2$d \u4e2a\u5b57\u7b26.");
+        table.put("Line %1$d isn't a valid regex. Fix it or take off the slashes.",
+                "\u7b2c %1$d \u884c\u4e0d\u662f\u6709\u6548\u7684\u6b63\u5219\u8868\u8fbe\u5f0f\u3002\u8bf7\u4fee\u6539\uff0c\u6216\u53bb\u6389\u4e24\u4fa7\u7684\u659c\u6760.");
+        table.put("Line %1$d may be slow on long messages. Try a simpler pattern.",
+                "\u7b2c %1$d \u884c\u5728\u957f\u6d88\u606f\u4e0a\u53ef\u80fd\u8f83\u6162\u3002\u8bd5\u8bd5\u66f4\u7b80\u5355\u7684\u6a21\u5f0f.");
+        table.put("Line %1$d would hide this message: %2$s",
+                "\u7b2c %1$d \u884c\u4f1a\u9690\u85cf\u8fd9\u6761\u6d88\u606f\uff1a%2$s");
+        table.put("Links",
+                "\u94fe\u63a5");
+        table.put("Lists added: %1$s. Free proxies reads these instead of the public ones.",
+                "\u5df2\u6dfb\u52a0\u7684\u5217\u8868\uff1a%1$s\u3002\u201c\u514d\u8d39\u4ee3\u7406\u201d\u4f1a\u8bfb\u53d6\u8fd9\u4e9b\u5217\u8868\uff0c\u800c\u4e0d\u662f\u516c\u5f00\u5217\u8868.");
+        table.put("Loads your switches, filter lists and sticker size from a saved file. You see what will change before anything is applied. It applies to all accounts.",
+                "\u4ece\u4fdd\u5b58\u7684\u6587\u4ef6\u4e2d\u8f7d\u5165\u4f60\u7684\u5f00\u5173\u3001\u8fc7\u6ee4\u5217\u8868\u548c\u8d34\u7eb8\u5927\u5c0f\u3002\u5e94\u7528\u4e4b\u524d\u4f60\u4f1a\u5148\u770b\u5230\u54ea\u4e9b\u5185\u5bb9\u5c06\u4f1a\u66f4\u6539\u3002\u5b83\u4f5c\u7528\u4e8e\u6240\u6709\u8d26\u53f7.");
+        table.put("Lock HushTelegram settings",
+                "\u9501\u5b9a HushTelegram \u8bbe\u7f6e");
+        table.put("Locked just now. Tap within %1$d min to unlock right away. After that, unlocking takes 24 hours.",
+                "\u521a\u521a\u5df2\u9501\u5b9a\u3002\u5728 %1$d \u5206\u949f\u5185\u70b9\u6309\u53ef\u7acb\u5373\u89e3\u9501\u3002\u4e4b\u540e\u89e3\u9501\u9700\u8981 24 \u5c0f\u65f6.");
+        table.put("Locked with your Telegram passcode.",
+                "\u5df2\u7528\u4f60\u7684 Telegram \u9501\u5b9a\u7801\u9501\u5b9a.");
+        table.put("Long press on the chat list title",
+                "\u957f\u6309\u804a\u5929\u5217\u8868\u6807\u9898");
+        table.put("Look and feel",
+                "\u5916\u89c2");
+        table.put("Looking for free proxies now.",
+                "\u6b63\u5728\u67e5\u627e\u514d\u8d39\u4ee3\u7406.");
+        table.put("Looking for the lyrics.",
+                "\u6b63\u5728\u67e5\u627e\u6b4c\u8bcd.");
+        table.put("Lots to translate at once. The rest will follow.",
+                "\u4e00\u6b21\u8981\u7ffb\u8bd1\u7684\u5185\u5bb9\u592a\u591a\u3002\u5176\u4f59\u5185\u5bb9\u7a0d\u540e\u4f1a\u7ffb\u8bd1.");
+        table.put("Lyrics",
+                "\u6b4c\u8bcd");
+        table.put("Lyrics from lrclib.net",
+                "\u6b4c\u8bcd\u6765\u81ea lrclib.net");
+        table.put("Lyrics in the music player",
+                "\u97f3\u4e50\u64ad\u653e\u5668\u4e2d\u7684\u6b4c\u8bcd");
+        table.put("MIME type: %1$s",
+                "MIME \u7c7b\u578b\uff1a%1$s");
+        table.put("Made Private, Groups, Channels and Bots folders.",
+                "\u5df2\u521b\u5efa\u201c\u79c1\u804a\u201d\u3001\u201c\u7fa4\u7ec4\u201d\u3001\u201c\u9891\u9053\u201d\u548c\u201c\u673a\u5668\u4eba\u201d\u6587\u4ef6\u5939.");
+        table.put("Made some folders. Telegram turned the rest down.",
+                "\u5df2\u521b\u5efa\u90e8\u5206\u6587\u4ef6\u5939\u3002Telegram \u62d2\u7edd\u4e86\u5176\u4f59\u7684.");
+        table.put("Made some folders. The folder limit left no room for the rest.",
+                "\u5df2\u521b\u5efa\u90e8\u5206\u6587\u4ef6\u5939\u3002\u6587\u4ef6\u5939\u6570\u91cf\u5df2\u8fbe\u4e0a\u9650\uff0c\u65e0\u6cd5\u521b\u5efa\u5176\u4f59\u7684.");
+        table.put("Made the folders. Telegram didn't save their order.",
+                "\u5df2\u521b\u5efa\u6587\u4ef6\u5939\u3002Telegram \u6ca1\u6709\u4fdd\u5b58\u5b83\u4eec\u7684\u987a\u5e8f.");
+        table.put("Makes every setting here read-only. A tap within %1$d min unlocks them again. After that, unlocking takes 24 hours.",
+                "\u8ba9\u8fd9\u91cc\u7684\u6240\u6709\u8bbe\u7f6e\u53d8\u4e3a\u53ea\u8bfb\u3002\u5728 %1$d \u5206\u949f\u5185\u70b9\u6309\u53ef\u518d\u6b21\u89e3\u9501\u3002\u4e4b\u540e\u89e3\u9501\u9700\u8981 24 \u5c0f\u65f6.");
+        table.put("May have blocked you. A guess: their photo and last seen went away together.",
+                "\u53ef\u80fd\u5c4f\u853d\u4e86\u4f60\u3002\u8fd9\u662f\u63a8\u6d4b\uff1a\u5bf9\u65b9\u7684\u5934\u50cf\u548c\u6700\u8fd1\u4e0a\u7ebf\u65f6\u95f4\u540c\u65f6\u6d88\u5931\u4e86.");
+        table.put("May have unblocked you. A guess: their photo or last seen came back.",
+                "\u53ef\u80fd\u89e3\u9664\u4e86\u5bf9\u4f60\u7684\u5c4f\u853d\u3002\u8fd9\u662f\u63a8\u6d4b\uff1a\u5bf9\u65b9\u7684\u5934\u50cf\u6216\u6700\u8fd1\u4e0a\u7ebf\u65f6\u95f4\u53c8\u51fa\u73b0\u4e86.");
+        table.put("Member, subscriber, view, reply and reaction counts show in full, like 12,345 instead of 12.3K.",
+                "\u6210\u5458\u3001\u8ba2\u9605\u8005\u3001\u6d4f\u89c8\u3001\u56de\u590d\u548c\u8868\u60c5\u56de\u5e94\u7684\u6570\u91cf\u90fd\u5b8c\u6574\u663e\u793a\uff0c\u4f8b\u5982\u663e\u793a 12,345 \u800c\u4e0d\u662f 12.3K.");
+        table.put("Mention by ID",
+                "\u901a\u8fc7 ID \u63d0\u53ca");
+        table.put("Mentions and replies in groups or channels you've muted no longer notify you. Chats you haven't muted notify as before.",
+                "\u4f60\u5df2\u9759\u97f3\u7684\u7fa4\u7ec4\u6216\u9891\u9053\u4e2d\u7684\u63d0\u53ca\u548c\u56de\u590d\u4e0d\u518d\u901a\u77e5\u4f60\u3002\u672a\u9759\u97f3\u7684\u804a\u5929\u7167\u5e38\u901a\u77e5.");
+        table.put("Message ID: %1$s",
+                "\u6d88\u606f ID\uff1a%1$s");
+        table.put("Message details",
+                "\u6d88\u606f\u8be6\u60c5");
+        table.put("Message details copied",
+                "\u5df2\u590d\u5236\u6d88\u606f\u8be6\u60c5");
+        table.put("Message menu",
+                "\u6d88\u606f\u83dc\u5355");
+        table.put("Message times with seconds",
+                "\u6d88\u606f\u65f6\u95f4\u663e\u793a\u79d2\u6570");
+        table.put("Messages and stickers",
+                "\u6d88\u606f\u548c\u8d34\u7eb8");
+        table.put("Messages from people you've blocked are left out of groups and supergroups you open, and don't notify you. Nothing is deleted. Private chats and channel posts stay as they are.",
+                "\u5728\u4f60\u6253\u5f00\u7684\u7fa4\u7ec4\u548c\u8d85\u7ea7\u7fa4\u7ec4\u4e2d\uff0c\u4e0d\u663e\u793a\u4f60\u5df2\u5c4f\u853d\u7684\u4eba\u53d1\u7684\u6d88\u606f\uff0c\u4e5f\u4e0d\u4f1a\u56e0\u6b64\u901a\u77e5\u4f60\u3002\u4e0d\u4f1a\u5220\u9664\u4efb\u4f55\u5185\u5bb9\u3002\u79c1\u804a\u548c\u9891\u9053\u5e16\u5b50\u4fdd\u6301\u4e0d\u53d8.");
+        table.put("Messages in groups and channels that match one of your filters are left out when you open the chat. Private chats and your own messages stay as they are. Nothing is deleted, and your filters stay on this phone.",
+                "\u6253\u5f00\u804a\u5929\u65f6\uff0c\u7fa4\u7ec4\u548c\u9891\u9053\u4e2d\u4e0e\u4f60\u7684\u4efb\u4e00\u8fc7\u6ee4\u6761\u4ef6\u5339\u914d\u7684\u6d88\u606f\u4e0d\u4f1a\u663e\u793a\u3002\u79c1\u804a\u548c\u4f60\u81ea\u5df1\u7684\u6d88\u606f\u4fdd\u6301\u4e0d\u53d8\u3002\u4e0d\u4f1a\u5220\u9664\u4efb\u4f55\u5185\u5bb9\uff0c\u8fc7\u6ee4\u6761\u4ef6\u53ea\u4fdd\u5b58\u5728\u8fd9\u90e8\u624b\u673a\u4e0a.");
+        table.put("Messages others delete stay in your chat on this phone, marked deleted next to the time. Your own deletes and disappearing messages work as usual.",
+                "\u5176\u4ed6\u4eba\u5220\u9664\u7684\u6d88\u606f\u4f1a\u7559\u5728\u8fd9\u90e8\u624b\u673a\u4e0a\u7684\u804a\u5929\u4e2d\uff0c\u5e76\u5728\u65f6\u95f4\u65c1\u6807\u6ce8\u201c\u5df2\u5220\u9664\u201d\u3002\u4f60\u81ea\u5df1\u5220\u9664\u7684\u6d88\u606f\u548c\u81ea\u52a8\u5220\u9664\u7684\u6d88\u606f\u7167\u5e38\u5904\u7406.");
+        table.put("Messages you read stay unread for the people who sent them, in private chats, groups and secret chats, and voice messages you play stay unplayed. Works with Ghost mode on.",
+                "\u4f60\u8bfb\u8fc7\u7684\u6d88\u606f\u5bf9\u53d1\u9001\u8005\u6765\u8bf4\u4ecd\u662f\u672a\u8bfb\uff0c\u79c1\u804a\u3001\u7fa4\u7ec4\u548c\u79c1\u5bc6\u804a\u5929\u90fd\u662f\u5982\u6b64\uff1b\u4f60\u64ad\u653e\u8fc7\u7684\u8bed\u97f3\u6d88\u606f\u4e5f\u4ecd\u663e\u793a\u4e3a\u672a\u64ad\u653e\u3002\u5728\u201c\u5e7d\u7075\u6a21\u5f0f\u201d\u5f00\u542f\u65f6\u751f\u6548.");
+        table.put("Messages, photos and videos in secret chats stay on this phone when their self-destruct timer runs out. The other person's copy still disappears on their own timer, and they aren't told.",
+                "\u79c1\u5bc6\u804a\u5929\u4e2d\u7684\u6d88\u606f\u3001\u7167\u7247\u548c\u89c6\u9891\u5728\u9605\u540e\u5373\u711a\u8ba1\u65f6\u7ed3\u675f\u540e\u4ecd\u4f1a\u7559\u5728\u8fd9\u90e8\u624b\u673a\u4e0a\u3002\u5bf9\u65b9\u7684\u526f\u672c\u4ecd\u4f1a\u6309\u5bf9\u65b9\u7684\u8ba1\u65f6\u6d88\u5931\uff0c\u800c\u4e14\u5bf9\u65b9\u4e0d\u4f1a\u6536\u5230\u901a\u77e5.");
+        table.put("Mini App and web page location",
+                "\u5c0f\u7a0b\u5e8f\u548c\u7f51\u9875\u7684\u4f4d\u7f6e\u83b7\u53d6");
+        table.put("Mini Apps are told your phone's location isn't available, and web pages opened in Telegram are refused it. A page that already had it keeps it until you close it. Sites can still guess a rough area from your connection. Sending your location in a chat works as before.",
+                "\u5c0f\u7a0b\u5e8f\u4f1a\u88ab\u544a\u77e5\u4f60\u624b\u673a\u7684\u4f4d\u7f6e\u4e0d\u53ef\u7528\uff0c\u5728 Telegram \u4e2d\u6253\u5f00\u7684\u7f51\u9875\u4e5f\u65e0\u6cd5\u83b7\u53d6\u4f4d\u7f6e\u3002\u5df2\u7ecf\u83b7\u53d6\u5230\u4f4d\u7f6e\u7684\u9875\u9762\u5728\u4f60\u5173\u95ed\u524d\u4ecd\u53ef\u4f7f\u7528\u3002\u7f51\u7ad9\u4ecd\u53ef\u80fd\u6839\u636e\u4f60\u7684\u7f51\u7edc\u8fde\u63a5\u63a8\u6d4b\u5927\u81f4\u533a\u57df\u3002\u5728\u804a\u5929\u4e2d\u53d1\u9001\u4f4d\u7f6e\u7167\u5e38\u5de5\u4f5c.");
+        table.put("Model",
+                "\u6a21\u578b");
+        table.put("Move All Chats",
+                "\u79fb\u52a8\u201c\u6240\u6709\u804a\u5929\u201d");
+        table.put("Move down",
+                "\u4e0b\u79fb");
+        table.put("Move up",
+                "\u4e0a\u79fb");
+        table.put("Music",
+                "\u97f3\u4e50");
+        table.put("Mute button on the channel bar",
+                "\u9891\u9053\u5e95\u680f\u4e0a\u7684\u201c\u9759\u97f3\u201d\u6309\u94ae");
+        table.put("My messages",
+                "\u6211\u7684\u6d88\u606f");
+    }
+
+    private static void fillZh_Hans10(Map<String, String> table) {
+        table.put("Never send an uncropped photo",
+                "\u7edd\u4e0d\u53d1\u9001\u672a\u88c1\u526a\u7684\u7167\u7247");
+        table.put("New Year look all year",
+                "\u5168\u5e74\u65b0\u5e74\u88c5\u626e");
+        table.put("New chats are blocked in HushTelegram settings.",
+                "\u65b0\u804a\u5929\u5df2\u5728 HushTelegram \u8bbe\u7f6e\u4e2d\u88ab\u963b\u6b62.");
+        table.put("New messages in a chat are forwarded to another chat by the rules below. Your own forwards are never forwarded again, and at most 20 go out a minute.",
+                "\u804a\u5929\u4e2d\u7684\u65b0\u6d88\u606f\u4f1a\u6309\u4e0b\u65b9\u89c4\u5219\u8f6c\u53d1\u5230\u53e6\u4e00\u4e2a\u804a\u5929\u3002\u4f60\u81ea\u5df1\u8f6c\u53d1\u7684\u6d88\u606f\u4e0d\u4f1a\u88ab\u518d\u6b21\u8f6c\u53d1\uff0c\u6bcf\u5206\u949f\u6700\u591a\u8f6c\u53d1 20 \u6761.");
+        table.put("New photos, videos and files Telegram downloads go to the folder below in Internal storage, where file managers and other apps can open them, instead of Android/data. Files downloaded before stay where they are, and Telegram still opens them from there. Needs All files access and a restart.",
+                "Telegram \u65b0\u4e0b\u8f7d\u7684\u7167\u7247\u3001\u89c6\u9891\u548c\u6587\u4ef6\u4f1a\u5b58\u5230\u4e0b\u65b9\u201c\u5185\u90e8\u5b58\u50a8\u201d\u4e2d\u7684\u6587\u4ef6\u5939\uff0c\u800c\u4e0d\u662f Android/data\uff0c\u6587\u4ef6\u7ba1\u7406\u5668\u548c\u5176\u4ed6\u5e94\u7528\u90fd\u80fd\u6253\u5f00\u3002\u4e4b\u524d\u4e0b\u8f7d\u7684\u6587\u4ef6\u7559\u5728\u539f\u5904\uff0cTelegram \u4ecd\u4f1a\u4ece\u90a3\u91cc\u6253\u5f00\u3002\u9700\u8981\u201c\u6240\u6709\u6587\u4ef6\u8bbf\u95ee\u6743\u9650\u201d\u5e76\u91cd\u542f.");
+        table.put("Next and previous on headphones, in a car, in the notification, on the lock screen and in the full player move between a chat's voice messages, as they do for songs.",
+                "\u8033\u673a\u3001\u8f66\u8f7d\u8bbe\u5907\u3001\u901a\u77e5\u3001\u9501\u5c4f\u548c\u5b8c\u6574\u64ad\u653e\u5668\u4e0a\u7684\u201c\u4e0b\u4e00\u9996\u201d\u548c\u201c\u4e0a\u4e00\u9996\u201d\u4f1a\u5728\u804a\u5929\u7684\u8bed\u97f3\u6d88\u606f\u4e4b\u95f4\u5207\u6362\uff0c\u5c31\u50cf\u5207\u6362\u6b4c\u66f2\u4e00\u6837.");
+        table.put("Night and Dark themes use pure black screens. Message bubbles and menus keep their colors. Restart Telegram to see the change.",
+                "\u201c\u591c\u95f4\u201d\u548c\u201c\u6df1\u8272\u201d\u4e3b\u9898\u4f7f\u7528\u7eaf\u9ed1\u5c4f\u5e55\u3002\u6d88\u606f\u6c14\u6ce1\u548c\u83dc\u5355\u4fdd\u7559\u539f\u6765\u7684\u989c\u8272\u3002\u91cd\u542f Telegram \u540e\u751f\u6548.");
+        table.put("No",
+                "\u5426");
+        table.put("No HushTelegram release is out yet.",
+                "HushTelegram \u5c1a\u672a\u53d1\u5e03\u4efb\u4f55\u7248\u672c.");
+        table.put("No accounts hidden yet.",
+                "\u8fd8\u6ca1\u6709\u9690\u85cf\u4efb\u4f55\u8d26\u53f7.");
+        table.put("No album art to save",
+                "\u6ca1\u6709\u53ef\u4fdd\u5b58\u7684\u4e13\u8f91\u5c01\u9762");
+        table.put("No automatic sign-in on Telegram's sites",
+                "\u4e0d\u5728 Telegram \u7f51\u7ad9\u4e0a\u81ea\u52a8\u767b\u5f55");
+        table.put("No browser could open %1$s.",
+                "\u6ca1\u6709\u6d4f\u89c8\u5668\u80fd\u6253\u5f00 %1$s.");
+        table.put("No changed switches",
+                "\u6ca1\u6709\u5df2\u66f4\u6539\u7684\u5f00\u5173");
+        table.put("No chat to forward to",
+                "\u6ca1\u6709\u53ef\u8f6c\u53d1\u7684\u804a\u5929");
+        table.put("No chats hidden yet.",
+                "\u8fd8\u6ca1\u6709\u9690\u85cf\u4efb\u4f55\u804a\u5929.");
+        table.put("No chats picked yet.",
+                "\u8fd8\u6ca1\u6709\u9009\u62e9\u4efb\u4f55\u804a\u5929.");
+        table.put("No collapsed quotes in the loaded messages.",
+                "\u5df2\u52a0\u8f7d\u7684\u6d88\u606f\u4e2d\u6ca1\u6709\u6298\u53e0\u7684\u5f15\u7528.");
+        table.put("No cover to save",
+                "\u6ca1\u6709\u53ef\u4fdd\u5b58\u7684\u5c01\u9762");
+        table.put("No downloads yet",
+                "\u8fd8\u6ca1\u6709\u4e0b\u8f7d");
+        table.put("No filter here would hide this message.",
+                "\u8fd9\u91cc\u6ca1\u6709\u4efb\u4f55\u8fc7\u6ee4\u6761\u4ef6\u4f1a\u9690\u85cf\u8fd9\u6761\u6d88\u606f.");
+        table.put("No filters yet.",
+                "\u8fd8\u6ca1\u6709\u8fc7\u6ee4\u6761\u4ef6.");
+        table.put("No hidden spoilers in the loaded messages.",
+                "\u5df2\u52a0\u8f7d\u7684\u6d88\u606f\u4e2d\u6ca1\u6709\u9690\u85cf\u7684\u906e\u7f69\u5185\u5bb9.");
+        table.put("No history yet",
+                "\u8fd8\u6ca1\u6709\u5386\u53f2\u8bb0\u5f55");
+        table.put("No lyrics found for this song.",
+                "\u627e\u4e0d\u5230\u8fd9\u9996\u6b4c\u7684\u6b4c\u8bcd.");
+        table.put("No matching settings",
+                "\u6ca1\u6709\u5339\u914d\u7684\u8bbe\u7f6e");
+        table.put("No messages are hidden.",
+                "\u6ca1\u6709\u9690\u85cf\u7684\u6d88\u606f.");
+        table.put("No previews before sending",
+                "\u53d1\u9001\u524d\u4e0d\u751f\u6210\u9884\u89c8");
+        table.put("No read receipts",
+                "\u4e0d\u53d1\u9001\u5df2\u8bfb\u56de\u6267");
+        table.put("No read receipts waiting",
+                "\u6ca1\u6709\u5f85\u53d1\u9001\u7684\u5df2\u8bfb\u56de\u6267");
+        table.put("No reply since Telegram started",
+                "\u81ea Telegram \u542f\u52a8\u4ee5\u6765\u6ca1\u6709\u56de\u590d");
+        table.put("No rules yet.",
+                "\u8fd8\u6ca1\u6709\u89c4\u5219.");
+        table.put("No swipe actions on chats",
+                "\u5173\u95ed\u804a\u5929\u6ed1\u52a8\u64cd\u4f5c");
+        table.put("Nobody tracked yet",
+                "\u8fd8\u6ca1\u6709\u8ffd\u8e2a\u4efb\u4f55\u4eba");
+        table.put("Nobody yet. Track someone from their profile's menu.",
+                "\u8fd8\u6ca1\u6709\u3002\u53ef\u4ece\u5bf9\u65b9\u4e2a\u4eba\u8d44\u6599\u7684\u83dc\u5355\u4e2d\u8ffd\u8e2a.");
+        table.put("None",
+                "\u65e0");
+        table.put("None of Telegram's web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
+                "\u6b64\u5e94\u7528\u6ca1\u6709\u9009\u4e2d\u4efb\u4f55 Telegram \u7f51\u5740\uff0c\u56e0\u6b64\u8fd9\u4e9b\u94fe\u63a5\u4f1a\u5728\u5176\u4ed6\u5730\u65b9\u6253\u5f00\u3002\u70b9\u6309\u4ee5\u5728 Android \u8bbe\u7f6e\u4e2d\u9009\u62e9.");
+        table.put("None of the listed proxies answered last time. Try again later.",
+                "\u4e0a\u6b21\u5217\u51fa\u7684\u4ee3\u7406\u90fd\u6ca1\u6709\u54cd\u5e94\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Not in secret chats",
+                "\u79c1\u5bc6\u804a\u5929\u4e2d\u4e0d\u53ef\u7528");
+        table.put("Nothing changed. %1$d switch couldn't change now.",
+                "\u6ca1\u6709\u505a\u4efb\u4f55\u66f4\u6539\u3002\u6709 %1$d \u4e2a\u5f00\u5173\u6682\u65f6\u65e0\u6cd5\u66f4\u6539.");
+        table.put("Nothing changed. %1$d switches couldn't change now.",
+                "\u6ca1\u6709\u505a\u4efb\u4f55\u66f4\u6539\u3002\u6709 %1$d \u4e2a\u5f00\u5173\u6682\u65f6\u65e0\u6cd5\u66f4\u6539.");
+        table.put("Nothing in between to select",
+                "\u4e2d\u95f4\u6ca1\u6709\u53ef\u9009\u62e9\u7684\u6d88\u606f");
+        table.put("Nothing to clear",
+                "\u6ca1\u6709\u53ef\u6e05\u9664\u7684\u5185\u5bb9");
+        table.put("Notification ID saved on this phone: %1$s",
+                "\u672c\u673a\u4fdd\u5b58\u7684\u901a\u77e5 ID\uff1a%1$s");
+        table.put("Notification permission: %1$s",
+                "\u901a\u77e5\u6743\u9650\uff1a%1$s");
+        table.put("Notification status on this phone",
+                "\u8fd9\u90e8\u624b\u673a\u4e0a\u7684\u901a\u77e5\u72b6\u6001");
+        table.put("Notifications",
+                "\u901a\u77e5");
+        table.put("Notify when a call is saved",
+                "\u901a\u8bdd\u4fdd\u5b58\u540e\u901a\u77e5");
+        table.put("OK",
+                "\u786e\u5b9a");
+        table.put("Oldest chats first",
+                "\u6700\u65e9\u7684\u804a\u5929\u5728\u524d");
+        table.put("On this phone",
+                "\u8fd9\u90e8\u624b\u673a");
+        table.put("Once a day, when Telegram starts, checks GitHub for a newer HushTelegram and shows it at the top of these settings. Nothing is downloaded.",
+                "\u6bcf\u5929\u4e00\u6b21\uff0c\u5728 Telegram \u542f\u52a8\u65f6\u5230 GitHub \u68c0\u67e5\u6709\u6ca1\u6709\u66f4\u65b0\u7684 HushTelegram\uff0c\u5e76\u663e\u793a\u5728\u8fd9\u4e9b\u8bbe\u7f6e\u7684\u9876\u90e8\u3002\u4e0d\u4f1a\u4e0b\u8f7d\u4efb\u4f55\u5185\u5bb9.");
+        table.put("One filter a line",
+                "\u6bcf\u884c\u4e00\u4e2a\u8fc7\u6ee4\u6761\u4ef6");
+        table.put("One https address a line",
+                "\u6bcf\u884c\u4e00\u4e2a https \u5730\u5740");
+        table.put("One way always stays on, so you can always get back here.",
+                "\u81f3\u5c11\u4f1a\u4fdd\u7559\u4e00\u79cd\u65b9\u5f0f\uff0c\u786e\u4fdd\u4f60\u968f\u65f6\u90fd\u80fd\u56de\u5230\u8fd9\u91cc.");
+        table.put("Only %1$s. The rest stay in Telegram.",
+                "\u4ec5\u9650%1$s\u3002\u5176\u4f59\u7684\u7559\u5728 Telegram \u4e2d.");
+        table.put("Only calls in the chats you pick below",
+                "\u4ec5\u9650\u4f60\u5728\u4e0b\u65b9\u9009\u62e9\u7684\u804a\u5929\u4e2d\u7684\u901a\u8bdd");
+        table.put("Only chats and contacts on this phone were searched.",
+                "\u53ea\u641c\u7d22\u4e86\u8fd9\u90e8\u624b\u673a\u4e0a\u7684\u804a\u5929\u548c\u8054\u7cfb\u4eba.");
+        table.put("Only messages with media",
+                "\u4ec5\u542b\u5a92\u4f53\u7684\u6d88\u606f");
+        table.put("Only some of Telegram's web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.",
+                "\u6b64\u5e94\u7528\u53ea\u9009\u4e2d\u4e86\u90e8\u5206 Telegram \u7f51\u5740\uff0c\u5176\u4f59\u7f51\u5740\u7684\u94fe\u63a5\u4f1a\u5728\u5176\u4ed6\u5730\u65b9\u6253\u5f00\u3002\u70b9\u6309\u4ee5\u5728 Android \u8bbe\u7f6e\u4e2d\u9009\u62e9.");
+    }
+
+    private static void fillZh_Hans11(Map<String, String> table) {
+        table.put("Only switches go back. Anything a switch already cleared, like chats' translate choices, stays cleared.",
+                "\u53ea\u6709\u5f00\u5173\u4f1a\u6539\u56de\u3002\u5f00\u5173\u5df2\u7ecf\u6e05\u9664\u7684\u5185\u5bb9\uff0c\u4f8b\u5982\u804a\u5929\u7684\u7ffb\u8bd1\u9009\u62e9\uff0c\u4ecd\u4fdd\u6301\u6e05\u9664.");
+        table.put("Open",
+                "\u6253\u5f00");
+        table.put("Open a chat by ID",
+                "\u901a\u8fc7 ID \u6253\u5f00\u804a\u5929");
+        table.put("Open a folder at launch",
+                "\u542f\u52a8\u65f6\u6253\u5f00\u6587\u4ef6\u5939");
+        table.put("Open app info",
+                "\u6253\u5f00\u5e94\u7528\u4fe1\u606f");
+        table.put("Open battery optimization",
+                "\u6253\u5f00\u7535\u6c60\u4f18\u5316");
+        table.put("Open chat",
+                "\u6253\u5f00\u804a\u5929");
+        table.put("Open it first to download it",
+                "\u8bf7\u5148\u6253\u5f00\u4ee5\u4e0b\u8f7d");
+        table.put("Open links externally",
+                "\u5728\u5916\u90e8\u6253\u5f00\u94fe\u63a5");
+        table.put("Open notification settings",
+                "\u6253\u5f00\u901a\u77e5\u8bbe\u7f6e");
+        table.put("Open on the web",
+                "\u5728\u7f51\u9875\u4e0a\u6253\u5f00");
+        table.put("Open quotes on search hits",
+                "\u641c\u7d22\u547d\u4e2d\u65f6\u5c55\u5f00\u5f15\u7528");
+        table.put("Open restricted channels",
+                "\u6253\u5f00\u53d7\u9650\u9891\u9053");
+        table.put("Open the guide",
+                "\u6253\u5f00\u6307\u5357");
+        table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
+                "Android \u8bbe\u7f6e\u4e2d\u5df2\u4e3a\u6b64\u5e94\u7528\u5173\u95ed\u201c\u6253\u5f00\u652f\u6301\u7684\u94fe\u63a5\u201d\u3002\u70b9\u6309\u4ee5\u5f00\u542f.");
+        table.put("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it.",
+                "\u6253\u5f00\u9644\u4ef6\u56fe\u5e93\u65f6\u4e0d\u4f1a\u542f\u52a8\u76f8\u673a\uff0c\u4e5f\u4e0d\u4f1a\u8bf7\u6c42\u76f8\u673a\u6743\u9650\u3002\u70b9\u6309\u76f8\u673a\u56fe\u5757\u624d\u4f1a\u542f\u52a8.");
+        table.put("Opening the list of hidden accounts, and turning off Hide accounts or this switch, asks for your Telegram passcode first. It uses the passcode you already set in Telegram, and it only guards this settings page.",
+                "\u6253\u5f00\u9690\u85cf\u8d26\u53f7\u5217\u8868\uff0c\u6216\u5173\u95ed\u201c\u9690\u85cf\u8d26\u53f7\u201d\u6216\u6b64\u5f00\u5173\u65f6\uff0c\u9700\u8981\u5148\u8f93\u5165\u4f60\u7684 Telegram \u9501\u5b9a\u7801\u3002\u5b83\u4f7f\u7528\u4f60\u5728 Telegram \u4e2d\u5df2\u8bbe\u7f6e\u7684\u9501\u5b9a\u7801\uff0c\u5e76\u4e14\u53ea\u4fdd\u62a4\u8fd9\u4e2a\u8bbe\u7f6e\u9875\u9762.");
+        table.put("Opening the list of hidden chats, and turning off Hide picked chats or this switch, asks for your Telegram passcode first. It uses the passcode you already set in Telegram, and it only guards this settings page. Anyone who can open Telegram can still find the hidden chats through search.",
+                "\u6253\u5f00\u9690\u85cf\u804a\u5929\u5217\u8868\uff0c\u6216\u5173\u95ed\u201c\u9690\u85cf\u9009\u5b9a\u7684\u804a\u5929\u201d\u6216\u6b64\u5f00\u5173\u65f6\uff0c\u9700\u8981\u5148\u8f93\u5165\u4f60\u7684 Telegram \u9501\u5b9a\u7801\u3002\u5b83\u4f7f\u7528\u4f60\u5728 Telegram \u4e2d\u5df2\u8bbe\u7f6e\u7684\u9501\u5b9a\u7801\uff0c\u5e76\u4e14\u53ea\u4fdd\u62a4\u8fd9\u4e2a\u8bbe\u7f6e\u9875\u9762\u3002\u4efb\u4f55\u80fd\u6253\u5f00 Telegram \u7684\u4eba\u4ecd\u53ef\u901a\u8fc7\u641c\u7d22\u627e\u5230\u9690\u85cf\u7684\u804a\u5929.");
+        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
+                "\u6253\u5f00\u4e00\u4efd\u5df2\u586b\u597d\u7248\u672c\u548c\u8bbe\u7f6e\u4fe1\u606f\u7684 GitHub \u62a5\u544a\u3002\u8bf7\u8865\u5145\u53d1\u751f\u4e86\u4ec0\u4e48.");
+        table.put("Opens normal web links in your browser. Telegram links, sign-in and payment pages keep working the way they did.",
+                "\u666e\u901a\u7f51\u9875\u94fe\u63a5\u5728\u4f60\u7684\u6d4f\u89c8\u5668\u4e2d\u6253\u5f00\u3002Telegram \u94fe\u63a5\u3001\u767b\u5f55\u9875\u9762\u548c\u4ed8\u6b3e\u9875\u9762\u7167\u5e38\u5de5\u4f5c.");
+        table.put("Orders your unpinned chats by the date of their last message. Pinned chats and the archive row keep their places. It only changes how this phone shows the list, and nothing is sent to Telegram.",
+                "\u6309\u6700\u540e\u4e00\u6761\u6d88\u606f\u7684\u65e5\u671f\u6392\u5217\u672a\u7f6e\u9876\u7684\u804a\u5929\u3002\u7f6e\u9876\u804a\u5929\u548c\u5f52\u6863\u884c\u4fdd\u6301\u539f\u4f4d\u3002\u8fd9\u53ea\u6539\u53d8\u8fd9\u90e8\u624b\u673a\u4e0a\u5217\u8868\u7684\u663e\u793a\u65b9\u5f0f\uff0c\u4e0d\u4f1a\u5411 Telegram \u53d1\u9001\u4efb\u4f55\u5185\u5bb9.");
+        table.put("Original sender ID: %1$s",
+                "\u539f\u59cb\u53d1\u9001\u8005 ID\uff1a%1$s");
+        table.put("Originally sent: %1$s",
+                "\u539f\u59cb\u53d1\u9001\u65f6\u95f4\uff1a%1$s");
+        table.put("Other people don't see that you're typing, recording or sending a file. Works with Ghost mode on.",
+                "\u5176\u4ed6\u4eba\u770b\u4e0d\u5230\u4f60\u6b63\u5728\u8f93\u5165\u3001\u5f55\u97f3\u6216\u53d1\u9001\u6587\u4ef6\u3002\u5728\u201c\u5e7d\u7075\u6a21\u5f0f\u201d\u5f00\u542f\u65f6\u751f\u6548.");
+        table.put("Passcode for hidden accounts",
+                "\u9690\u85cf\u8d26\u53f7\u7684\u9501\u5b9a\u7801");
+        table.put("Passcode for hidden chats",
+                "\u9690\u85cf\u804a\u5929\u7684\u9501\u5b9a\u7801");
+        table.put("Passcode needed",
+                "\u9700\u8981\u9501\u5b9a\u7801");
+        table.put("Paste or type a message",
+                "\u7c98\u8d34\u6216\u8f93\u5165\u4e00\u6761\u6d88\u606f");
+        table.put("Paste the token @BotFather gave your bot. It goes only to Telegram, which keeps it with the account like any sign-in.",
+                "\u7c98\u8d34 @BotFather \u7ed9\u4f60\u7684\u673a\u5668\u4eba\u7684\u4ee4\u724c\u3002\u5b83\u53ea\u4f1a\u53d1\u9001\u7ed9 Telegram\uff0cTelegram \u4f1a\u50cf\u5176\u4ed6\u767b\u5f55\u4e00\u6837\u5c06\u5b83\u4e0e\u8d26\u53f7\u4e00\u8d77\u4fdd\u5b58.");
+        table.put("Pastes text exactly as you copied it, without Telegram adding formatting, tables or code styling. Spaces and links stay as they were.",
+                "\u6309\u590d\u5236\u65f6\u7684\u539f\u6837\u7c98\u8d34\u6587\u5b57\uff0cTelegram \u4e0d\u4f1a\u6dfb\u52a0\u683c\u5f0f\u3001\u8868\u683c\u6216\u4ee3\u7801\u6837\u5f0f\u3002\u7a7a\u683c\u548c\u94fe\u63a5\u4fdd\u6301\u539f\u6837.");
+        table.put("Pause",
+                "\u6682\u505c");
+        table.put("Pause HushTelegram",
+                "\u6682\u505c HushTelegram");
+        table.put("Pause recording",
+                "\u6682\u505c\u5f55\u97f3");
+        table.put("Photo copied",
+                "\u5df2\u590d\u5236\u7167\u7247");
+        table.put("Photos",
+                "\u7167\u7247");
+        table.put("Photos and videos you save to the gallery go to %1$s. Camera photos and automatic saving keep Telegram's folders.",
+                "\u4f60\u4fdd\u5b58\u5230\u76f8\u518c\u7684\u7167\u7247\u548c\u89c6\u9891\u4f1a\u5b58\u5230 %1$s\u3002\u76f8\u673a\u62cd\u6444\u7684\u7167\u7247\u548c\u81ea\u52a8\u4fdd\u5b58\u4ecd\u4f7f\u7528 Telegram \u7684\u6587\u4ef6\u5939.");
+        table.put("Photos go out in HD and videos at their own size and quality, without touching the quality button first. You can still lower one before sending. Only sending as a file keeps a photo exactly as it is.",
+                "\u7167\u7247\u4ee5 HD \u53d1\u9001\uff0c\u89c6\u9891\u4fdd\u6301\u539f\u6709\u5c3a\u5bf8\u548c\u753b\u8d28\uff0c\u65e0\u9700\u5148\u70b9\u6309\u753b\u8d28\u6309\u94ae\u3002\u53d1\u9001\u524d\u4f60\u4ecd\u53ef\u4ee5\u964d\u4f4e\u753b\u8d28\u3002\u53ea\u6709\u4f5c\u4e3a\u6587\u4ef6\u53d1\u9001\u624d\u80fd\u8ba9\u7167\u7247\u5b8c\u5168\u4fdd\u6301\u539f\u6837.");
+        table.put("Pictures/Telegram and Movies/Telegram (Telegram's own)",
+                "Pictures/Telegram \u548c Movies/Telegram\uff08Telegram \u9ed8\u8ba4\uff09");
+        table.put("Pin",
+                "\u7f6e\u9876");
+        table.put("Pinned",
+                "\u5df2\u7f6e\u9876");
+        table.put("Pinned on top.",
+                "\u5df2\u7f6e\u9876.");
+        table.put("Pinned, in use",
+                "\u5df2\u7f6e\u9876\uff0c\u4f7f\u7528\u4e2d");
+        table.put("Plain rows. Tap for cards.",
+                "\u666e\u901a\u5217\u8868\u3002\u70b9\u6309\u5207\u6362\u4e3a\u5361\u7247.");
+        table.put("Play voice messages one at a time",
+                "\u9010\u6761\u64ad\u653e\u8bed\u97f3\u6d88\u606f");
+        table.put("Playback",
+                "\u64ad\u653e");
+        table.put("Pop directional formatting",
+                "\u5f39\u51fa\u65b9\u5411\u683c\u5f0f");
+        table.put("Pop directional isolate",
+                "\u5f39\u51fa\u65b9\u5411\u9694\u79bb");
+        table.put("Post Story button",
+                "\u201c\u53d1\u5e03\u52a8\u6001\u201d\u6309\u94ae");
+        table.put("Power off accounts",
+                "\u505c\u7528\u8d26\u53f7");
+        table.put("Powered off",
+                "\u5df2\u505c\u7528");
+        table.put("Premium emoji packs in the emoji keyboard",
+                "\u8868\u60c5\u952e\u76d8\u4e2d\u7684 Premium \u8868\u60c5\u5305");
+        table.put("Premium icons in the App Icon list",
+                "\u201c\u5e94\u7528\u56fe\u6807\u201d\u5217\u8868\u4e2d\u7684 Premium \u56fe\u6807");
+        table.put("Premium promo accepts",
+                "Premium \u63a8\u5e7f\u63a5\u53d7");
+        table.put("Premium promo failures",
+                "Premium \u63a8\u5e7f\u5931\u8d25");
+        table.put("Premium promo taps",
+                "Premium \u63a8\u5e7f\u70b9\u51fb");
+        table.put("Premium promo views",
+                "Premium \u63a8\u5e7f\u6d4f\u89c8");
+        table.put("Premium sticker effects",
+                "Premium \u8d34\u7eb8\u7279\u6548");
+        table.put("Premium stickers in the keyboard and packs",
+                "\u952e\u76d8\u548c\u8d34\u7eb8\u5305\u4e2d\u7684 Premium \u8d34\u7eb8");
+        table.put("Premium, Turbo and Nox in Telegram's App Icon list work without Premium, with no lock and no Premium sheet. Only the icon on your home screen changes.",
+                "Telegram\u201c\u5e94\u7528\u56fe\u6807\u201d\u5217\u8868\u4e2d\u7684\u201c\u9ad8\u7ea7\u7248\u201d\u3001\u201c\u6781\u901f\u201d\u548c\u201c\u591c\u7a7a\u201d\u65e0\u9700 Premium \u5373\u53ef\u4f7f\u7528\uff0c\u4e0d\u663e\u793a\u9501\uff0c\u4e5f\u4e0d\u4f1a\u5f39\u51fa Premium \u63a8\u9500\u9875\u9762\u3002\u53ea\u6709\u4e3b\u5c4f\u5e55\u4e0a\u7684\u56fe\u6807\u4f1a\u6539\u53d8.");
+        table.put("Preparing the diagnostic report",
+                "\u6b63\u5728\u51c6\u5907\u8bca\u65ad\u62a5\u544a");
+    }
+
+    private static void fillZh_Hans12(Map<String, String> table) {
+        table.put("Pressing and holding a chat adds Open chat and Close preview to the menu under its preview.",
+                "\u957f\u6309\u804a\u5929\u65f6\uff0c\u5176\u9884\u89c8\u4e0b\u65b9\u7684\u83dc\u5355\u4e2d\u4f1a\u6dfb\u52a0\u201c\u6253\u5f00\u804a\u5929\u201d\u548c\u201c\u5173\u95ed\u9884\u89c8\u201d.");
+        table.put("Preview the report",
+                "\u9884\u89c8\u62a5\u544a");
+        table.put("Privacy",
+                "\u9690\u79c1");
+        table.put("Private",
+                "\u79c1\u804a");
+        table.put("Private calls only",
+                "\u4ec5\u79c1\u4eba\u901a\u8bdd");
+        table.put("Private messages from people not in your contacts still show a notification, but without sound or vibration. Bots, reminders and login codes keep their sound.",
+                "\u4e0d\u5728\u4f60\u8054\u7cfb\u4eba\u4e2d\u7684\u4eba\u53d1\u6765\u7684\u79c1\u804a\u6d88\u606f\u4ecd\u4f1a\u663e\u793a\u901a\u77e5\uff0c\u4f46\u6ca1\u6709\u58f0\u97f3\u6216\u632f\u52a8\u3002\u673a\u5668\u4eba\u3001\u63d0\u9192\u548c\u767b\u5f55\u9a8c\u8bc1\u7801\u4fdd\u7559\u58f0\u97f3.");
+        table.put("Profiles",
+                "\u4e2a\u4eba\u8d44\u6599");
+        table.put("Proxies added last time: %1$s of %2$s read. They're in Telegram's proxy list.",
+                "\u4e0a\u6b21\u6dfb\u52a0\u7684\u4ee3\u7406\uff1a%1$s\uff0c\u5171\u8bfb\u53d6 %2$s \u4e2a\u3002\u5b83\u4eec\u5728 Telegram \u7684\u4ee3\u7406\u5217\u8868\u4e2d.");
+        table.put("Proxies added last time: %1$s. They're in Telegram's proxy list.",
+                "\u4e0a\u6b21\u6dfb\u52a0\u7684\u4ee3\u7406\uff1a%1$s\u3002\u5b83\u4eec\u5728 Telegram \u7684\u4ee3\u7406\u5217\u8868\u4e2d.");
+        table.put("Proxy",
+                "\u4ee3\u7406");
+        table.put("Proxy button when signing in",
+                "\u767b\u5f55\u65f6\u7684\u4ee3\u7406\u6309\u94ae");
+        table.put("Proxy in the chat list menu",
+                "\u804a\u5929\u5217\u8868\u83dc\u5355\u4e2d\u7684\u4ee3\u7406");
+        table.put("Proxy order",
+                "\u4ee3\u7406\u987a\u5e8f");
+        table.put("Pulling down the chat list no longer opens the archive. Use Archived chats in the list's menu instead. Restart Telegram to see the change.",
+                "\u4e0b\u62c9\u804a\u5929\u5217\u8868\u4e0d\u518d\u6253\u5f00\u5f52\u6863\u3002\u8bf7\u6539\u7528\u5217\u8868\u83dc\u5355\u4e2d\u7684\u201c\u5df2\u5f52\u6863\u7684\u804a\u5929\u201d\u3002\u91cd\u542f Telegram \u540e\u751f\u6548.");
+        table.put("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.",
+                "\u5728\u9891\u9053\u5e95\u90e8\u4e0a\u62c9\u53ea\u4f1a\u6eda\u52a8\u3002\u8bf7\u4ece\u804a\u5929\u5217\u8868\u6253\u5f00\u4e0b\u4e00\u4e2a\u9891\u9053.");
+        table.put("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list.",
+                "\u5728\u8bba\u575b\u8bdd\u9898\u5e95\u90e8\u4e0a\u62c9\u53ea\u4f1a\u6eda\u52a8\u3002\u8bf7\u4ece\u8bdd\u9898\u5217\u8868\u6253\u5f00\u4e0b\u4e00\u4e2a\u8bdd\u9898.");
+        table.put("Push app",
+                "\u63a8\u9001\u5e94\u7528");
+        table.put("Push service",
+                "\u63a8\u9001\u670d\u52a1");
+        table.put("Put back %1$d switch",
+                "\u5df2\u6539\u56de %1$d \u4e2a\u5f00\u5173");
+        table.put("Put back %1$d switches",
+                "\u5df2\u6539\u56de %1$d \u4e2a\u5f00\u5173");
+        table.put("Puts Copy back in the menu of a message in a chat that doesn't allow saving, and lets you copy selected text there. Secret chats stay as they are.",
+                "\u5728\u4e0d\u5141\u8bb8\u4fdd\u5b58\u7684\u804a\u5929\u4e2d\uff0c\u8ba9\u6d88\u606f\u83dc\u5355\u91cd\u65b0\u51fa\u73b0\u201c\u590d\u5236\u201d\uff0c\u5e76\u5141\u8bb8\u4f60\u590d\u5236\u9009\u4e2d\u7684\u6587\u5b57\u3002\u79c1\u5bc6\u804a\u5929\u4fdd\u6301\u4e0d\u53d8.");
+        table.put("Puts Copy back in the menu of a message in a chat that doesn't allow saving. Secret chats stay as they are.",
+                "\u5728\u4e0d\u5141\u8bb8\u4fdd\u5b58\u7684\u804a\u5929\u4e2d\uff0c\u8ba9\u6d88\u606f\u83dc\u5355\u91cd\u65b0\u51fa\u73b0\u201c\u590d\u5236\u201d\u3002\u79c1\u5bc6\u804a\u5929\u4fdd\u6301\u4e0d\u53d8.");
+        table.put("Puts Save to Gallery in a story's three-dot menu without Premium, stories that don't allow saving included. It saves only the ones you pick.",
+                "\u65e0\u9700 Premium \u5373\u53ef\u5728\u52a8\u6001\u7684\u4e09\u70b9\u83dc\u5355\u4e2d\u4f7f\u7528\u201c\u4fdd\u5b58\u5230\u76f8\u518c\u201d\uff0c\u4e0d\u5141\u8bb8\u4fdd\u5b58\u7684\u52a8\u6001\u4e5f\u5305\u62ec\u5728\u5185\u3002\u53ea\u4fdd\u5b58\u4f60\u9009\u62e9\u7684\u52a8\u6001.");
+        table.put("Puts a small icon in front of each folder tab's name: a chat bubble for All Chats, and a person, group, channel or bot for a folder of that kind of chat. Other folders get a folder icon. With a pack picked under Folder icons, the tabs use that pack instead.",
+                "\u5728\u6bcf\u4e2a\u6587\u4ef6\u5939\u6807\u7b7e\u9875\u540d\u79f0\u524d\u52a0\u4e00\u4e2a\u5c0f\u56fe\u6807\uff1a\u201c\u6240\u6709\u804a\u5929\u201d\u662f\u804a\u5929\u6c14\u6ce1\uff0c\u53ea\u542b\u67d0\u7c7b\u804a\u5929\u7684\u6587\u4ef6\u5939\u662f\u4eba\u3001\u7fa4\u7ec4\u3001\u9891\u9053\u6216\u673a\u5668\u4eba\u56fe\u6807\u3002\u5176\u4ed6\u6587\u4ef6\u5939\u4f7f\u7528\u6587\u4ef6\u5939\u56fe\u6807\u3002\u5982\u679c\u5728\u201c\u6587\u4ef6\u5939\u56fe\u6807\u201d\u4e2d\u9009\u62e9\u4e86\u56fe\u6807\u5305\uff0c\u6807\u7b7e\u9875\u4f1a\u6539\u7528\u8be5\u56fe\u6807\u5305.");
+        table.put("Puts every feature switch back the way it started.",
+                "\u5c06\u6240\u6709\u529f\u80fd\u5f00\u5173\u6062\u590d\u4e3a\u521d\u59cb\u72b6\u6001.");
+        table.put("Quick forward",
+                "\u5feb\u901f\u8f6c\u53d1");
+        table.put("Quick setups",
+                "\u4e00\u952e\u8bbe\u7f6e");
+        table.put("Quiet",
+                "\u6e05\u51c0");
+        table.put("Quiet contacts prompts",
+                "\u4e0d\u518d\u63d0\u793a\u8054\u7cfb\u4eba\u6743\u9650");
+        table.put("Reaction notifications without push",
+                "\u65e0\u63a8\u9001\u65f6\u7684\u8868\u60c5\u56de\u5e94\u901a\u77e5");
+        table.put("Read after you reply",
+                "\u56de\u590d\u540e\u6807\u4e3a\u5df2\u8bfb");
+        table.put("Read chats and watch stories without anyone being told. Sending a message in a chat still marks it read, and your other devices keep showing it unread.",
+                "\u9605\u8bfb\u804a\u5929\u548c\u89c2\u770b\u52a8\u6001\u65f6\u4e0d\u4f1a\u8ba9\u4efb\u4f55\u4eba\u77e5\u9053\u3002\u5728\u804a\u5929\u4e2d\u53d1\u9001\u6d88\u606f\u4ecd\u4f1a\u628a\u5b83\u6807\u4e3a\u5df2\u8bfb\uff0c\u4f60\u7684\u5176\u4ed6\u8bbe\u5907\u4e5f\u4f1a\u7ee7\u7eed\u663e\u793a\u4e3a\u672a\u8bfb.");
+        table.put("Read receipt sent.",
+                "\u5df2\u53d1\u9001\u5df2\u8bfb\u56de\u6267.");
+        table.put("Read receipts button",
+                "\u5df2\u8bfb\u56de\u6267\u6309\u94ae");
+        table.put("Read receipts sent",
+                "\u5df2\u53d1\u9001\u5df2\u8bfb\u56de\u6267");
+        table.put("Reading the settings file",
+                "\u6b63\u5728\u8bfb\u53d6\u8bbe\u7f6e\u6587\u4ef6");
+        table.put("Receive only",
+                "\u4ec5\u63a5\u6536");
+        table.put("Receive only mode",
+                "\u4ec5\u63a5\u6536\u6a21\u5f0f");
+        table.put("Receive only mode is on.",
+                "\u4ec5\u63a5\u6536\u6a21\u5f0f\u5df2\u5f00\u542f.");
+        table.put("Record button on calls",
+                "\u901a\u8bdd\u4e2d\u7684\u5f55\u97f3\u6309\u94ae");
+        table.put("Record call",
+                "\u5f55\u5236\u901a\u8bdd");
+        table.put("Record calls",
+                "\u901a\u8bdd\u5f55\u97f3");
+        table.put("Record calls here",
+                "\u5728\u6b64\u5f55\u5236\u901a\u8bdd");
+        table.put("Recording paused",
+                "\u5f55\u97f3\u5df2\u6682\u505c");
+        table.put("Recording resumed",
+                "\u5f55\u97f3\u5df2\u6062\u590d");
+        table.put("Recording stopped",
+                "\u5df2\u505c\u6b62\u5f55\u97f3");
+        table.put("Recording this call",
+                "\u6b63\u5728\u5f55\u5236\u6b64\u901a\u8bdd");
+        table.put("Recordings folder",
+                "\u5f55\u97f3\u6587\u4ef6\u5939");
+        table.put("Recordings go to %1$s. The usual folder is %2$s.",
+                "\u5f55\u97f3\u4fdd\u5b58\u5230 %1$s\u3002\u9ed8\u8ba4\u6587\u4ef6\u5939\u662f %2$s.");
+        table.put("Recordings older than %1$d day are deleted when the next one is saved.",
+                "\u4fdd\u5b58\u4e0b\u4e00\u6761\u5f55\u97f3\u65f6\uff0c\u4f1a\u5220\u9664\u8d85\u8fc7 %1$d \u5929\u7684\u5f55\u97f3.");
+        table.put("Recordings older than %1$d days are deleted when the next one is saved.",
+                "\u4fdd\u5b58\u4e0b\u4e00\u6761\u5f55\u97f3\u65f6\uff0c\u4f1a\u5220\u9664\u8d85\u8fc7 %1$d \u5929\u7684\u5f55\u97f3.");
+        table.put("Recordings stay until you delete them.",
+                "\u5f55\u97f3\u4f1a\u4e00\u76f4\u4fdd\u7559\uff0c\u76f4\u5230\u4f60\u5220\u9664.");
+        table.put("Records what HushTelegram does and shows error messages, to help with a bug report. Leave it off for everyday use.",
+                "\u8bb0\u5f55 HushTelegram \u7684\u64cd\u4f5c\u5e76\u663e\u793a\u9519\u8bef\u4fe1\u606f\uff0c\u4fbf\u4e8e\u63d0\u4ea4\u9519\u8bef\u62a5\u544a\u3002\u65e5\u5e38\u4f7f\u7528\u65f6\u8bf7\u4fdd\u6301\u5173\u95ed.");
+        table.put("Refused",
+                "\u5df2\u62d2\u7edd");
+        table.put("Refused (%1$s)",
+                "\u5df2\u62d2\u7edd\uff08%1$s\uff09");
+        table.put("Regular",
+                "\u5e38\u89c4");
+        table.put("Remember where playback stopped",
+                "\u8bb0\u4f4f\u64ad\u653e\u4f4d\u7f6e");
+        table.put("Remove link tracking tags",
+                "\u79fb\u9664\u94fe\u63a5\u8ddf\u8e2a\u53c2\u6570");
+        table.put("Removed %1$d kept message.",
+                "\u5df2\u79fb\u9664 %1$d \u6761\u4fdd\u7559\u7684\u6d88\u606f.");
+        table.put("Removed %1$d kept messages.",
+                "\u5df2\u79fb\u9664 %1$d \u6761\u4fdd\u7559\u7684\u6d88\u606f.");
+    }
+
+    private static void fillZh_Hans13(Map<String, String> table) {
+        table.put("Removed the folders HushTelegram made. Changed ones stay.",
+                "\u5df2\u79fb\u9664 HushTelegram \u521b\u5efa\u7684\u6587\u4ef6\u5939\u3002\u6539\u52a8\u8fc7\u7684\u4fdd\u7559.");
+        table.put("Removed their profile photo",
+                "\u79fb\u9664\u4e86\u5934\u50cf");
+        table.put("Removed you from their contacts",
+                "\u5c06\u4f60\u4ece\u8054\u7cfb\u4eba\u4e2d\u79fb\u9664");
+        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram from the chat, profile and link menus, Gifts tabs on profiles, the Gift button in channels, and Premium stickers, their effects and Premium emoji packs if you don't have Premium.",
+                "\u4ece\u201c\u8bbe\u7f6e\u201d\u4e2d\u79fb\u9664 Premium\u3001\u661f\u661f\u3001\u6211\u7684 Gram\u3001\u94b1\u5305\u3001\u4f01\u4e1a\u7248\u548c\u201c\u53d1\u9001\u793c\u7269\u201d\uff0c\u4ece\u804a\u5929\u3001\u4e2a\u4eba\u8d44\u6599\u548c\u94fe\u63a5\u83dc\u5355\u4e2d\u79fb\u9664\u201c\u94b1\u5305\u201d\u548c\u201c\u53d1\u9001 Gram\u201d\uff0c\u5e76\u79fb\u9664\u4e2a\u4eba\u8d44\u6599\u4e2d\u7684\u201c\u793c\u7269\u201d\u6807\u7b7e\u9875\u548c\u9891\u9053\u4e2d\u7684\u201c\u793c\u7269\u201d\u6309\u94ae\u3002\u5982\u679c\u4f60\u6ca1\u6709 Premium\uff0c\u8fd8\u4f1a\u79fb\u9664 Premium \u8d34\u7eb8\u53ca\u5176\u7279\u6548\u548c Premium \u8868\u60c5\u5305.");
+        table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
+                "\u79fb\u9664\u9891\u9053\u4e2d\u7684\u8d5e\u52a9\u6d88\u606f\u3001\u641c\u7d22\u4e2d\u7684\u8d5e\u52a9\u8d26\u53f7\u548c\u89c6\u9891\u4e2d\u7684\u5e7f\u544a\u3002\u5b83\u4eec\u6839\u672c\u4e0d\u4f1a\u52a0\u8f7d\uff0c\u56e0\u6b64\u90fd\u4e0d\u4f1a\u8ba1\u4e3a\u5df2\u6d4f\u89c8.");
+        table.put("Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.",
+                "\u4ece\u201c\u8bbe\u7f6e\u201d\u4e2d\u79fb\u9664\u201cTelegram \u529f\u80fd\u201d\u4e00\u9879\uff0c\u4ece\u201c\u8054\u7cfb\u4eba\u201d\u4e2d\u79fb\u9664\u201c\u9080\u8bf7\u670b\u53cb\u201d\u3002\u5982\u679c\u8fd8\u6ca1\u6709\u8054\u7cfb\u4eba\uff0c\u9080\u8bf7\u5217\u8868\u4e5f\u4f1a\u4e00\u8d77\u79fb\u9664.");
+        table.put("Removes the round pencil button from the chat list. Start a chat from the menu or search. Restart Telegram to see the change.",
+                "\u4ece\u804a\u5929\u5217\u8868\u4e2d\u79fb\u9664\u5706\u5f62\u94c5\u7b14\u6309\u94ae\u3002\u53ef\u4ee5\u4ece\u83dc\u5355\u6216\u641c\u7d22\u5f00\u59cb\u804a\u5929\u3002\u91cd\u542f Telegram \u540e\u751f\u6548.");
+        table.put("Removes the story bar above your chats, the rings around profile pictures and the Post Story button. Profile stories and archives stay.",
+                "\u79fb\u9664\u804a\u5929\u5217\u8868\u4e0a\u65b9\u7684\u52a8\u6001\u680f\u3001\u5934\u50cf\u5916\u5708\u7684\u52a8\u6001\u5706\u73af\u548c\u201c\u53d1\u5e03\u52a8\u6001\u201d\u6309\u94ae\u3002\u4e2a\u4eba\u8d44\u6599\u4e2d\u7684\u52a8\u6001\u548c\u52a8\u6001\u5b58\u6863\u4e0d\u53d7\u5f71\u54cd.");
+        table.put("Removes tracking tags like utm_source, gclid and fbclid from links you open or share. A link with any other tag is left unchanged.",
+                "\u4ece\u4f60\u6253\u5f00\u6216\u5206\u4eab\u7684\u94fe\u63a5\u4e2d\u79fb\u9664 utm_source\u3001gclid\u3001fbclid \u7b49\u8ddf\u8e2a\u53c2\u6570\u3002\u5e26\u6709\u5176\u4ed6\u53c2\u6570\u7684\u94fe\u63a5\u4fdd\u6301\u4e0d\u53d8.");
+        table.put("Removing %1$d kept message.",
+                "\u6b63\u5728\u79fb\u9664 %1$d \u6761\u4fdd\u7559\u7684\u6d88\u606f.");
+        table.put("Removing %1$d kept messages.",
+                "\u6b63\u5728\u79fb\u9664 %1$d \u6761\u4fdd\u7559\u7684\u6d88\u606f.");
+        table.put("Repair Firebase push registration",
+                "\u4fee\u590d Firebase \u63a8\u9001\u6ce8\u518c");
+        table.put("Repeat",
+                "\u91cd\u590d\u53d1\u9001");
+        table.put("Report a problem",
+                "\u62a5\u544a\u95ee\u9898");
+        table.put("Report saved to %1$s",
+                "\u62a5\u544a\u5df2\u4fdd\u5b58\u5230 %1$s");
+        table.put("Resolution: %1$s",
+                "\u5206\u8fa8\u7387\uff1a%1$s");
+        table.put("Restart Telegram to apply %1$d changes",
+                "\u91cd\u542f Telegram \u4ee5\u5e94\u7528 %1$d \u9879\u66f4\u6539");
+        table.put("Restart Telegram to apply this change",
+                "\u91cd\u542f Telegram \u4ee5\u5e94\u7528\u6b64\u66f4\u6539");
+        table.put("Restricted",
+                "\u53d7\u9650");
+        table.put("Resume",
+                "\u6062\u590d");
+        table.put("Resume recording",
+                "\u6062\u590d\u5f55\u97f3");
+        table.put("Retry",
+                "\u91cd\u8bd5");
+        table.put("Reveal spoilers",
+                "\u76f4\u63a5\u663e\u793a\u906e\u7f69\u5185\u5bb9");
+        table.put("Right to left",
+                "\u4ece\u53f3\u5230\u5de6");
+        table.put("Right-to-left isolate",
+                "\u53f3\u81f3\u5de6\u9694\u79bb");
+        table.put("Right-to-left mark",
+                "\u53f3\u81f3\u5de6\u6807\u8bb0");
+        table.put("Row in Telegram's Settings",
+                "Telegram\u201c\u8bbe\u7f6e\u201d\u4e2d\u7684\u4e00\u884c");
+        table.put("Row in the side menu",
+                "\u4fa7\u8fb9\u83dc\u5355\u4e2d\u7684\u4e00\u884c");
+        table.put("Rule removed",
+                "\u5df2\u79fb\u9664\u89c4\u5219");
+        table.put("Rule saved",
+                "\u5df2\u4fdd\u5b58\u89c4\u5219");
+        table.put("Save",
+                "\u4fdd\u5b58");
+        table.put("Save album art",
+                "\u4fdd\u5b58\u4e13\u8f91\u5c01\u9762");
+        table.put("Save downloaded files",
+                "\u4fdd\u5b58\u4e0b\u8f7d\u7684\u6587\u4ef6");
+        table.put("Save full report",
+                "\u4fdd\u5b58\u5b8c\u6574\u62a5\u544a");
+        table.put("Save recordings as Opus",
+                "\u4ee5 Opus \u683c\u5f0f\u4fdd\u5b58\u5f55\u97f3");
+        table.put("Save the full report to a file. The saved location is shown afterward.",
+                "\u5c06\u5b8c\u6574\u62a5\u544a\u4fdd\u5b58\u5230\u6587\u4ef6\u3002\u4fdd\u5b58\u540e\u4f1a\u663e\u793a\u4fdd\u5b58\u4f4d\u7f6e.");
+        table.put("Save to Downloads",
+                "\u4fdd\u5b58\u5230\u4e0b\u8f7d\u6587\u4ef6\u5939");
+        table.put("Save to Gallery in stories",
+                "\u52a8\u6001\u4e2d\u7684\u201c\u4fdd\u5b58\u5230\u76f8\u518c\u201d");
+        table.put("Save video cover",
+                "\u4fdd\u5b58\u89c6\u9891\u5c01\u9762");
+        table.put("Saved Messages",
+                "\u6211\u7684\u6536\u85cf");
+        table.put("Saved to Downloads",
+                "\u5df2\u4fdd\u5b58\u5230\u4e0b\u8f7d\u6587\u4ef6\u5939");
+        table.put("Saved, but the file doesn't match. Save it again as a new file.",
+                "\u5df2\u4fdd\u5b58\uff0c\u4f46\u6587\u4ef6\u5185\u5bb9\u4e0d\u4e00\u81f4\u3002\u8bf7\u53e6\u5b58\u4e3a\u4e00\u4e2a\u65b0\u6587\u4ef6.");
+        table.put("Saved.",
+                "\u5df2\u4fdd\u5b58.");
+        table.put("Saved. Restart Telegram to apply this change.",
+                "\u5df2\u4fdd\u5b58\u3002\u91cd\u542f Telegram \u4ee5\u5e94\u7528\u6b64\u66f4\u6539.");
+        table.put("Saves both sides of each call to %1$s on this phone. The other person isn't told.",
+                "\u5c06\u6bcf\u6b21\u901a\u8bdd\u7684\u53cc\u65b9\u58f0\u97f3\u4fdd\u5b58\u5230\u8fd9\u90e8\u624b\u673a\u4e0a\u7684 %1$s\u3002\u5bf9\u65b9\u4e0d\u4f1a\u6536\u5230\u901a\u77e5.");
+        table.put("Saves your switches, filter lists, sticker size and chat list emoji to a file, for all the accounts in this Telegram app. Your chats, drafts and kept messages aren't in it.",
+                "\u5c06\u4f60\u7684\u5f00\u5173\u3001\u8fc7\u6ee4\u5217\u8868\u3001\u8d34\u7eb8\u5927\u5c0f\u548c\u804a\u5929\u5217\u8868\u6807\u9898\u65c1\u7684\u8868\u60c5\u4fdd\u5b58\u5230\u6587\u4ef6\uff0c\u9002\u7528\u4e8e\u6b64 Telegram \u5e94\u7528\u4e2d\u7684\u6240\u6709\u8d26\u53f7\u3002\u4f60\u7684\u804a\u5929\u3001\u8349\u7a3f\u548c\u4fdd\u7559\u7684\u6d88\u606f\u4e0d\u5305\u542b\u5728\u5185.");
+        table.put("Saving the settings file",
+                "\u6b63\u5728\u4fdd\u5b58\u8bbe\u7f6e\u6587\u4ef6");
+        table.put("Screenshot",
+                "\u622a\u56fe");
+        table.put("Screenshot saved to Pictures",
+                "\u622a\u56fe\u5df2\u4fdd\u5b58\u5230 Pictures");
+        table.put("Screenshot selected messages",
+                "\u622a\u56fe\u9009\u4e2d\u7684\u6d88\u606f");
+        table.put("Screenshots and screen recording work in those chats, their photos, profiles and stories. Telegram doesn't tell anyone. Secret chats need Also allow screenshots in secret chats. View-once media and the passcode screen stay blocked.",
+                "\u622a\u5c4f\u548c\u5f55\u5c4f\u53ef\u5728\u8fd9\u4e9b\u804a\u5929\u53ca\u5176\u7167\u7247\u3001\u4e2a\u4eba\u8d44\u6599\u548c\u52a8\u6001\u4e2d\u4f7f\u7528\u3002Telegram \u4e0d\u4f1a\u901a\u77e5\u4efb\u4f55\u4eba\u3002\u79c1\u5bc6\u804a\u5929\u8fd8\u9700\u8981\u5f00\u542f\u201c\u4e5f\u5141\u8bb8\u5728\u79c1\u5bc6\u804a\u5929\u4e2d\u622a\u5c4f\u201d\u3002\u4ec5\u67e5\u770b\u4e00\u6b21\u7684\u5a92\u4f53\u548c\u9501\u5b9a\u7801\u754c\u9762\u4ecd\u7981\u6b62\u622a\u5c4f.");
+        table.put("Scroll so they're all on screen",
+                "\u8bf7\u6eda\u52a8\u5c4f\u5e55\uff0c\u8ba9\u5b83\u4eec\u5168\u90e8\u663e\u793a");
+        table.put("Search",
+                "\u641c\u7d22");
+        table.put("Search finds your chats, contacts and messages from chats you're in, and nothing public. The Channels, Apps and Posts tabs go away, and a hashtag's public posts don't load.",
+                "\u641c\u7d22\u53ea\u67e5\u627e\u4f60\u7684\u804a\u5929\u3001\u8054\u7cfb\u4eba\u4ee5\u53ca\u4f60\u6240\u5728\u804a\u5929\u4e2d\u7684\u6d88\u606f\uff0c\u4e0d\u67e5\u627e\u4efb\u4f55\u516c\u5f00\u5185\u5bb9\u3002\u201c\u9891\u9053\u201d\u3001\u201c\u5e94\u7528\u201d\u548c\u201c\u5e16\u5b50\u201d\u6807\u7b7e\u9875\u4f1a\u6d88\u5931\uff0c\u6807\u7b7e\u7684\u516c\u5f00\u5e16\u5b50\u4e5f\u4e0d\u4f1a\u52a0\u8f7d.");
+        table.put("Search languages",
+                "\u641c\u7d22\u8bed\u8a00");
+        table.put("Search only my chats",
+                "\u53ea\u641c\u7d22\u6211\u7684\u804a\u5929");
+        table.put("Search settings",
+                "\u641c\u7d22\u8bbe\u7f6e");
+        table.put("Search, Direct messages and Info leave the bar at the bottom of a channel. Mute and Join stay, and tapping the channel's name at the top still opens its info. A channel picks this up the next time you open it.",
+                "\u201c\u641c\u7d22\u201d\u3001\u201c\u79c1\u4fe1\u201d\u548c\u201c\u4fe1\u606f\u201d\u4f1a\u4ece\u9891\u9053\u5e95\u90e8\u7684\u680f\u4e2d\u79fb\u9664\u3002\u201c\u9759\u97f3\u201d\u548c\u201c\u52a0\u5165\u201d\u4fdd\u7559\uff0c\u70b9\u6309\u9876\u90e8\u7684\u9891\u9053\u540d\u79f0\u4ecd\u4f1a\u6253\u5f00\u9891\u9053\u4fe1\u606f\u3002\u4e0b\u6b21\u6253\u5f00\u9891\u9053\u65f6\u751f\u6548.");
+        table.put("Searching your chats and contacts also finds names written in letters like \ud835\udc01\ud835\udc28\ud835\udc25\ud835\udc1d, \ud835\ude10\ud835\ude35\ud835\ude22\ud835\ude2d\ud835\ude2a\ud835\ude24 or \uff37\uff49\uff44\uff45 when you type plain ones. Names still show as they're written and numbers aren't changed. A name found this way isn't highlighted.",
+                "\u641c\u7d22\u4f60\u7684\u804a\u5929\u548c\u8054\u7cfb\u4eba\u65f6\uff0c\u8f93\u5165\u666e\u901a\u5b57\u6bcd\u4e5f\u80fd\u627e\u5230\u7528 \ud835\udc01\ud835\udc28\ud835\udc25\ud835\udc1d\u3001\ud835\ude10\ud835\ude35\ud835\ude22\ud835\ude2d\ud835\ude2a\ud835\ude24 \u6216 \uff37\uff49\uff44\uff45 \u8fd9\u7c7b\u5b57\u6bcd\u5199\u7684\u540d\u79f0\u3002\u540d\u79f0\u4ecd\u6309\u539f\u6837\u663e\u793a\uff0c\u6570\u5b57\u4e0d\u4f1a\u6539\u53d8\u3002\u7528\u8fd9\u79cd\u65b9\u5f0f\u627e\u5230\u7684\u540d\u79f0\u4e0d\u4f1a\u9ad8\u4eae\u663e\u793a.");
+        table.put("Secret chats can't show typing.",
+                "\u79c1\u5bc6\u804a\u5929\u65e0\u6cd5\u663e\u793a\u6b63\u5728\u8f93\u5165.");
+    }
+
+    private static void fillZh_Hans14(Map<String, String> table) {
+        table.put("See the report first and leave out any part you'd rather not share, then copy or save it.",
+                "\u5148\u67e5\u770b\u62a5\u544a\uff0c\u53bb\u6389\u4efb\u4f55\u4f60\u4e0d\u60f3\u5206\u4eab\u7684\u90e8\u5206\uff0c\u7136\u540e\u518d\u590d\u5236\u6216\u4fdd\u5b58.");
+        table.put("Select all",
+                "\u5168\u9009");
+        table.put("Select between",
+                "\u9009\u62e9\u533a\u95f4");
+        table.put("Select two messages first",
+                "\u8bf7\u5148\u9009\u62e9\u4e24\u6761\u6d88\u606f");
+        table.put("Selecting links by hand",
+                "\u624b\u52a8\u9009\u62e9\u94fe\u63a5");
+        table.put("Send",
+                "\u53d1\u9001");
+        table.put("Send GIF",
+                "\u53d1\u9001 GIF");
+        table.put("Send photos and videos in the best quality",
+                "\u4ee5\u6700\u4f73\u753b\u8d28\u53d1\u9001\u7167\u7247\u548c\u89c6\u9891");
+        table.put("Send read receipt",
+                "\u53d1\u9001\u5df2\u8bfb\u56de\u6267");
+        table.put("Send read receipts",
+                "\u53d1\u9001\u5df2\u8bfb\u56de\u6267");
+        table.put("Send sticker",
+                "\u53d1\u9001\u8d34\u7eb8");
+        table.put("Send this GIF to this chat?",
+                "\u8981\u5c06\u8fd9\u4e2a GIF \u53d1\u9001\u5230\u6b64\u804a\u5929\u5417?");
+        table.put("Send this sticker to this chat?",
+                "\u8981\u5c06\u8fd9\u4e2a\u8d34\u7eb8\u53d1\u9001\u5230\u6b64\u804a\u5929\u5417?");
+        table.put("Send this video message to this chat?",
+                "\u8981\u5c06\u8fd9\u6761\u89c6\u9891\u6d88\u606f\u53d1\u9001\u5230\u6b64\u804a\u5929\u5417?");
+        table.put("Send this voice message to this chat?",
+                "\u8981\u5c06\u8fd9\u6761\u8bed\u97f3\u6d88\u606f\u53d1\u9001\u5230\u6b64\u804a\u5929\u5417?");
+        table.put("Send video message",
+                "\u53d1\u9001\u89c6\u9891\u6d88\u606f");
+        table.put("Send voice message",
+                "\u53d1\u9001\u8bed\u97f3\u6d88\u606f");
+        table.put("Sender ID: %1$s",
+                "\u53d1\u9001\u8005 ID\uff1a%1$s");
+        table.put("Sending",
+                "\u53d1\u9001");
+        table.put("Sent: %1$s",
+                "\u53d1\u9001\u65f6\u95f4\uff1a%1$s");
+        table.put("Service address",
+                "\u670d\u52a1\u5730\u5740");
+        table.put("Set a Telegram passcode first.",
+                "\u8bf7\u5148\u8bbe\u7f6e Telegram \u9501\u5b9a\u7801.");
+        table.put("Settings > Devices on your other phones and computers shows this phone with these. Leave a box empty for what Telegram sends, and restart Telegram after a change.",
+                "\u4f60\u7684\u5176\u4ed6\u624b\u673a\u548c\u7535\u8111\u4e0a\u7684\u201c\u8bbe\u7f6e > \u8bbe\u5907\u201d\u4f1a\u7528\u8fd9\u4e9b\u4fe1\u606f\u663e\u793a\u8fd9\u90e8\u624b\u673a\u3002\u7559\u7a7a\u7684\u8f93\u5165\u6846\u4f1a\u53d1\u9001 Telegram \u539f\u672c\u53d1\u9001\u7684\u5185\u5bb9\uff0c\u66f4\u6539\u540e\u8bf7\u91cd\u542f Telegram.");
+        table.put("Settings are locked. Tap Start unlock, then wait 24 hours.",
+                "\u8bbe\u7f6e\u5df2\u9501\u5b9a\u3002\u8bf7\u70b9\u6309\u201c\u5f00\u59cb\u89e3\u9501\u201d\uff0c\u7136\u540e\u7b49\u5f85 24 \u5c0f\u65f6.");
+        table.put("Settings are locked. Tap Unlock now within %1$d min.",
+                "\u8bbe\u7f6e\u5df2\u9501\u5b9a\u3002\u8bf7\u5728 %1$d \u5206\u949f\u5185\u70b9\u6309\u201c\u7acb\u5373\u89e3\u9501\u201d.");
+        table.put("Settings are locked. They unlock in %1$d h %2$d min.",
+                "\u8bbe\u7f6e\u5df2\u9501\u5b9a\uff0c\u5c06\u5728 %1$d \u5c0f\u65f6 %2$d \u5206\u949f\u540e\u89e3\u9501.");
+        table.put("Settings backup",
+                "\u8bbe\u7f6e\u5907\u4efd");
+        table.put("Settings couldn't open",
+                "\u65e0\u6cd5\u6253\u5f00\u8bbe\u7f6e");
+        table.put("Settings couldn't refresh. Reopen settings and try again.",
+                "\u8bbe\u7f6e\u65e0\u6cd5\u5237\u65b0\u3002\u8bf7\u91cd\u65b0\u6253\u5f00\u8bbe\u7f6e\u540e\u518d\u8bd5.");
+        table.put("Settings exported but not checked. Open the file to make sure.",
+                "\u8bbe\u7f6e\u5df2\u5bfc\u51fa\uff0c\u4f46\u672a\u7ecf\u6838\u5bf9\u3002\u8bf7\u6253\u5f00\u6587\u4ef6\u786e\u8ba4\u4e00\u4e0b.");
+        table.put("Settings exported.",
+                "\u8bbe\u7f6e\u5df2\u5bfc\u51fa.");
+        table.put("Settings imported.",
+                "\u8bbe\u7f6e\u5df2\u5bfc\u5165.");
+        table.put("Settings imported. %1$d switch changed.",
+                "\u8bbe\u7f6e\u5df2\u5bfc\u5165\u3002\u5df2\u66f4\u6539 %1$d \u4e2a\u5f00\u5173.");
+        table.put("Settings imported. %1$d switches changed.",
+                "\u8bbe\u7f6e\u5df2\u5bfc\u5165\u3002\u5df2\u66f4\u6539 %1$d \u4e2a\u5f00\u5173.");
+        table.put("Settings locked. Changed your mind? Tap again within %1$d min.",
+                "\u8bbe\u7f6e\u5df2\u9501\u5b9a\u3002\u6539\u53d8\u4e3b\u610f\u4e86\uff1f\u8bf7\u5728 %1$d \u5206\u949f\u5185\u518d\u6b21\u70b9\u6309.");
+        table.put("Settings look",
+                "\u8bbe\u7f6e\u9875\u5916\u89c2");
+        table.put("Settings sales rows",
+                "\u201c\u8bbe\u7f6e\u201d\u4e2d\u7684\u63a8\u9500\u9879");
+        table.put("Settings unlock in %1$d h %2$d min. Tap to cancel and keep them locked.",
+                "\u8bbe\u7f6e\u5c06\u5728 %1$d \u5c0f\u65f6 %2$d \u5206\u949f\u540e\u89e3\u9501\u3002\u70b9\u6309\u53ef\u53d6\u6d88\u5e76\u4fdd\u6301\u9501\u5b9a.");
+        table.put("Settings unlocked. They change as usual again.",
+                "\u8bbe\u7f6e\u5df2\u89e3\u9501\uff0c\u53c8\u53ef\u4ee5\u7167\u5e38\u66f4\u6539\u4e86.");
+        table.put("Share",
+                "\u5206\u4eab");
+        table.put("Show all chats",
+                "\u663e\u793a\u6240\u6709\u804a\u5929");
+        table.put("Show all spoilers",
+                "\u663e\u793a\u6240\u6709\u906e\u7f69\u5185\u5bb9");
+        table.put("Show all spoilers and quotes",
+                "\u663e\u793a\u6240\u6709\u906e\u7f69\u5185\u5bb9\u548c\u5f15\u7528");
+        table.put("Show deleted in red",
+                "\u7528\u7ea2\u8272\u663e\u793a\u201c\u5df2\u5220\u9664\u201d");
+        table.put("Show hidden messages",
+                "\u663e\u793a\u9690\u85cf\u7684\u6d88\u606f");
+        table.put("Show original",
+                "\u663e\u793a\u539f\u6587");
+        table.put("Show user and chat IDs",
+                "\u663e\u793a\u7528\u6237\u548c\u804a\u5929 ID");
+        table.put("Show where a profile photo is stored",
+                "\u663e\u793a\u5934\u50cf\u7684\u5b58\u50a8\u4f4d\u7f6e");
+        table.put("Showing all chats.",
+                "\u6b63\u5728\u663e\u793a\u6240\u6709\u804a\u5929.");
+        table.put("Showing chats you manage.",
+                "\u6b63\u5728\u663e\u793a\u4f60\u7ba1\u7406\u7684\u804a\u5929.");
+        table.put("Showing the first %1$s of %2$s characters. Save keeps all of it, and Copy keeps what fits, leaving out the oldest events first.",
+                "\u663e\u793a\u524d %1$s \u4e2a\u5b57\u7b26\uff0c\u5171 %2$s \u4e2a\u3002\u201c\u4fdd\u5b58\u201d\u4f1a\u4fdd\u7559\u5168\u90e8\u5185\u5bb9\uff0c\u201c\u590d\u5236\u201d\u4f1a\u4fdd\u7559\u80fd\u653e\u4e0b\u7684\u90e8\u5206\uff0c\u5e76\u4f18\u5148\u53bb\u6389\u6700\u65e9\u7684\u4e8b\u4ef6.");
+        table.put("Shown after Telegram's name at the top of the chat list. It stays on this phone, so nothing goes to Telegram and your Premium emoji status is left alone. Leave it empty to show nothing, and restart Telegram to see a change.",
+                "\u663e\u793a\u5728\u804a\u5929\u5217\u8868\u9876\u90e8\u7684 Telegram \u540d\u79f0\u540e\u3002\u5b83\u53ea\u4fdd\u5b58\u5728\u8fd9\u90e8\u624b\u673a\u4e0a\uff0c\u4e0d\u4f1a\u53d1\u9001\u7ed9 Telegram\uff0c\u4e5f\u4e0d\u5f71\u54cd\u4f60\u7684 Premium \u8868\u60c5\u7b26\u53f7\u72b6\u6001\u3002\u7559\u7a7a\u5219\u4e0d\u663e\u793a\uff0c\u66f4\u6539\u540e\u9700\u91cd\u542f Telegram \u624d\u80fd\u770b\u5230.");
+        table.put("Shown in place of Telegram's name at the top of the chat list while Your own chat list title is on, in the title's own font and color. It stays on this phone, so nothing goes to Telegram. Leave it empty to keep Telegram's name, and restart Telegram to see a change.",
+                "\u201c\u81ea\u5b9a\u4e49\u804a\u5929\u5217\u8868\u6807\u9898\u201d\u5f00\u542f\u65f6\uff0c\u5b83\u663e\u793a\u5728\u804a\u5929\u5217\u8868\u9876\u90e8\uff0c\u4ee3\u66ff Telegram \u7684\u540d\u79f0\uff0c\u6cbf\u7528\u6807\u9898\u672c\u8eab\u7684\u5b57\u4f53\u548c\u989c\u8272\u3002\u5b83\u53ea\u4fdd\u5b58\u5728\u8fd9\u90e8\u624b\u673a\u4e0a\uff0c\u4e0d\u4f1a\u53d1\u9001\u7ed9 Telegram\u3002\u7559\u7a7a\u5219\u4fdd\u7559 Telegram \u7684\u540d\u79f0\uff0c\u66f4\u6539\u540e\u91cd\u542f Telegram \u624d\u80fd\u770b\u5230.");
+        table.put("Shows Telegram's Santa hat and New Year snow all year, not only around New Year. Snow falls on the chat list's top bar and on chat backgrounds once Wallpaper rotation is on under Power Saving, in Effects in Chats.",
+                "\u5168\u5e74\u663e\u793a Telegram \u7684\u5723\u8bde\u5e3d\u548c\u65b0\u5e74\u96ea\u82b1\uff0c\u800c\u4e0d\u53ea\u5728\u65b0\u5e74\u524d\u540e\u3002\u5728\u201c\u7701\u7535\u201d\u7684\u201c\u804a\u5929\u4e2d\u7684\u7279\u6548\u201d\u4e2d\u5f00\u542f\u201c\u58c1\u7eb8\u65cb\u8f6c\u201d\u540e\uff0c\u804a\u5929\u5217\u8868\u9876\u680f\u548c\u804a\u5929\u80cc\u666f\u4e0a\u4f1a\u98d8\u96ea.");
+        table.put("Shows a notification when someone reacts to your message while Telegram is connected, even when no push arrives. A reaction that also comes by push shows once.",
+                "Telegram \u4fdd\u6301\u8fde\u63a5\u65f6\uff0c\u6709\u4eba\u5bf9\u4f60\u7684\u6d88\u606f\u505a\u51fa\u8868\u60c5\u56de\u5e94\u5c31\u4f1a\u663e\u793a\u901a\u77e5\uff0c\u5373\u4f7f\u6ca1\u6709\u6536\u5230\u63a8\u9001\u3002\u540c\u65f6\u901a\u8fc7\u63a8\u9001\u6536\u5230\u7684\u8868\u60c5\u56de\u5e94\u53ea\u663e\u793a\u4e00\u6b21.");
+        table.put("Shows text of your choice in place of Telegram's name at the top of the chat list, in the title's own font and color. It stays on this phone. Restart Telegram to see the change.",
+                "\u5728\u804a\u5929\u5217\u8868\u9876\u90e8\u7528\u4f60\u9009\u62e9\u7684\u6587\u5b57\u4ee3\u66ff Telegram \u7684\u540d\u79f0\uff0c\u6cbf\u7528\u6807\u9898\u672c\u8eab\u7684\u5b57\u4f53\u548c\u989c\u8272\u3002\u5b83\u53ea\u4fdd\u5b58\u5728\u8fd9\u90e8\u624b\u673a\u4e0a\u3002\u91cd\u542f Telegram \u540e\u751f\u6548.");
+        table.put("Shrinks the folder tabs above the chat list until all of them fit on the screen, so you never scroll sideways to find one. With only a few folders nothing changes.",
+                "\u7f29\u5c0f\u804a\u5929\u5217\u8868\u4e0a\u65b9\u7684\u6587\u4ef6\u5939\u6807\u7b7e\u9875\uff0c\u76f4\u5230\u5b83\u4eec\u5168\u90e8\u80fd\u5728\u5c4f\u5e55\u4e0a\u663e\u793a\uff0c\u8fd9\u6837\u4f60\u5c31\u4e0d\u7528\u5de6\u53f3\u6eda\u52a8\u53bb\u627e\u3002\u6587\u4ef6\u5939\u4e0d\u591a\u65f6\u6ca1\u6709\u53d8\u5316.");
+        table.put("Side menu",
+                "\u4fa7\u8fb9\u83dc\u5355");
+        table.put("Sign in",
+                "\u767b\u5f55");
+        table.put("Sign in to Telegram first.",
+                "\u8bf7\u5148\u767b\u5f55 Telegram.");
+    }
+
+    private static void fillZh_Hans15(Map<String, String> table) {
+        table.put("Sign in to a second account first.",
+                "\u8bf7\u5148\u767b\u5f55\u7b2c\u4e8c\u4e2a\u8d26\u53f7.");
+        table.put("Sign in with a bot token",
+                "\u4f7f\u7528\u673a\u5668\u4eba\u4ee4\u724c\u767b\u5f55");
+        table.put("Signed-in accounts: %1$s",
+                "\u5df2\u767b\u5f55\u7684\u8d26\u53f7\uff1a%1$s");
+        table.put("Signing in or adding an account shows Telegram's Test Backend box on the phone number screen. Tick it to sign that account in on Telegram's test servers, kept apart from your other accounts.",
+                "\u767b\u5f55\u6216\u6dfb\u52a0\u8d26\u53f7\u65f6\uff0c\u624b\u673a\u53f7\u7801\u9875\u9762\u4f1a\u663e\u793a Telegram \u7684\u201c\u6d4b\u8bd5\u540e\u53f0\u201d\u9009\u9879\u3002\u52fe\u9009\u540e\uff0c\u8be5\u8d26\u53f7\u4f1a\u767b\u5f55\u5230 Telegram \u7684\u6d4b\u8bd5\u670d\u52a1\u5668\uff0c\u4e0e\u4f60\u7684\u5176\u4ed6\u8d26\u53f7\u5206\u5f00.");
+        table.put("Signing in or adding an account shows a Sign in with a bot token button on the phone number screen. Paste the token from @BotFather to use that account as your bot. A chat shows up once someone messages the bot, without older history, and a bot has no contacts, stickers or folders. A bot with a webhook set, or one another program is reading, may not get its messages here. Turning this off only hides the button.",
+                "\u767b\u5f55\u6216\u6dfb\u52a0\u8d26\u53f7\u65f6\uff0c\u624b\u673a\u53f7\u7801\u9875\u9762\u4f1a\u663e\u793a\u201c\u4f7f\u7528\u673a\u5668\u4eba\u4ee4\u724c\u767b\u5f55\u201d\u6309\u94ae\u3002\u7c98\u8d34 @BotFather \u63d0\u4f9b\u7684\u4ee4\u724c\uff0c\u5373\u53ef\u628a\u8be5\u8d26\u53f7\u4f5c\u4e3a\u4f60\u7684\u673a\u5668\u4eba\u4f7f\u7528\u3002\u6709\u4eba\u7ed9\u673a\u5668\u4eba\u53d1\u6d88\u606f\u540e\u624d\u4f1a\u51fa\u73b0\u804a\u5929\uff0c\u4e14\u6ca1\u6709\u66f4\u65e9\u7684\u5386\u53f2\u8bb0\u5f55\uff1b\u673a\u5668\u4eba\u4e5f\u6ca1\u6709\u8054\u7cfb\u4eba\u3001\u8d34\u7eb8\u6216\u6587\u4ef6\u5939\u3002\u8bbe\u7f6e\u4e86 webhook \u7684\u673a\u5668\u4eba\uff0c\u6216\u6b63\u88ab\u5176\u4ed6\u7a0b\u5e8f\u8bfb\u53d6\u7684\u673a\u5668\u4eba\uff0c\u53ef\u80fd\u65e0\u6cd5\u5728\u8fd9\u91cc\u6536\u5230\u6d88\u606f\u3002\u5173\u95ed\u6b64\u5f00\u5173\u53ea\u4f1a\u9690\u85cf\u8be5\u6309\u94ae.");
+        table.put("Signing up with %1$s\u2026",
+                "\u6b63\u5728\u901a\u8fc7 %1$s \u6ce8\u518c\u2026");
+        table.put("Silence people outside your contacts",
+                "\u5c06\u975e\u8054\u7cfb\u4eba\u7684\u6d88\u606f\u9759\u97f3");
+        table.put("Skip between voice messages",
+                "\u5728\u8bed\u97f3\u6d88\u606f\u4e4b\u95f4\u5207\u6362");
+        table.put("So messages arrive on time. Tap to hide this notification.",
+                "\u4ee5\u4fbf\u6309\u65f6\u6536\u5230\u6d88\u606f\u3002\u70b9\u6309\u53ef\u9690\u85cf\u6b64\u901a\u77e5.");
+        table.put("Songs you add to your profile from now on show the day you added them, after the artist. The days are kept on this phone only.",
+                "\u4ece\u73b0\u5728\u8d77\uff0c\u4f60\u6dfb\u52a0\u5230\u4e2a\u4eba\u8d44\u6599\u7684\u6b4c\u66f2\u4f1a\u5728\u6b4c\u624b\u540d\u540e\u663e\u793a\u6dfb\u52a0\u65e5\u671f\u3002\u8fd9\u4e9b\u65e5\u671f\u53ea\u4fdd\u5b58\u5728\u8fd9\u90e8\u624b\u673a\u4e0a.");
+        table.put("Sort by speed",
+                "\u6309\u901f\u5ea6\u6392\u5e8f");
+        table.put("Sort chats by date",
+                "\u6309\u65e5\u671f\u6392\u5e8f\u804a\u5929");
+        table.put("Sound for reaction notifications",
+                "\u8868\u60c5\u56de\u5e94\u901a\u77e5\u7684\u58f0\u97f3");
+        table.put("Source code and issues",
+                "\u6e90\u4ee3\u7801\u548c\u95ee\u9898\u53cd\u9988");
+        table.put("Special contacts",
+                "\u7279\u522b\u5173\u6ce8");
+        table.put("Spoiler text, photos and videos show right away without a tap. View-once media, sensitive content and login codes stay covered.",
+                "\u906e\u7f69\u7684\u6587\u5b57\u3001\u7167\u7247\u548c\u89c6\u9891\u65e0\u9700\u70b9\u6309\u5373\u53ef\u76f4\u63a5\u663e\u793a\u3002\u4e00\u6b21\u6027\u5a92\u4f53\u3001\u654f\u611f\u5185\u5bb9\u548c\u767b\u5f55\u9a8c\u8bc1\u7801\u4ecd\u4f1a\u906e\u76d6.");
+        table.put("Start a call",
+                "\u53d1\u8d77\u901a\u8bdd");
+        table.put("Start a video call?",
+                "\u8981\u53d1\u8d77\u89c6\u9891\u901a\u8bdd\u5417?");
+        table.put("Start a voice call?",
+                "\u8981\u53d1\u8d77\u8bed\u97f3\u901a\u8bdd\u5417?");
+        table.put("Start of left-to-right embedding",
+                "\u5de6\u81f3\u53f3\u5d4c\u5165\u5f00\u59cb");
+        table.put("Start of left-to-right override",
+                "\u5de6\u81f3\u53f3\u8986\u76d6\u5f00\u59cb");
+        table.put("Start of right-to-left embedding",
+                "\u53f3\u81f3\u5de6\u5d4c\u5165\u5f00\u59cb");
+        table.put("Start of right-to-left override",
+                "\u53f3\u81f3\u5de6\u8986\u76d6\u5f00\u59cb");
+        table.put("Start the camera on the rear lens",
+                "\u76f8\u673a\u59cb\u7ec8\u4f7f\u7528\u540e\u7f6e\u955c\u5934");
+        table.put("Start unlock",
+                "\u5f00\u59cb\u89e3\u9501");
+        table.put("Start videos without sound",
+                "\u89c6\u9891\u9759\u97f3\u5f00\u59cb\u64ad\u653e");
+        table.put("Started tracking",
+                "\u5f00\u59cb\u8ffd\u8e2a");
+        table.put("Stays in while paused",
+                "\u6682\u505c\u65f6\u4ecd\u7136\u751f\u6548");
+        table.put("Sticker size",
+                "\u8d34\u7eb8\u5927\u5c0f");
+        table.put("Stickers and big animated emoji no longer show the time and read checks in their corner. Other messages keep their time.",
+                "\u8d34\u7eb8\u548c\u5927\u53f7\u52a8\u6001\u8868\u60c5\u7b26\u53f7\u4e0d\u518d\u5728\u89d2\u843d\u663e\u793a\u65f6\u95f4\u548c\u5df2\u8bfb\u6807\u8bb0\u3002\u5176\u4ed6\u6d88\u606f\u4ecd\u663e\u793a\u65f6\u95f4.");
+        table.put("Stickers in chats show at the size you pick below. Animated emoji and dice keep Telegram's size. A chat picks this up the next time you open it.",
+                "\u804a\u5929\u4e2d\u7684\u8d34\u7eb8\u4ee5\u4f60\u5728\u4e0b\u65b9\u9009\u62e9\u7684\u5927\u5c0f\u663e\u793a\u3002\u52a8\u6001\u8868\u60c5\u7b26\u53f7\u548c\u9ab0\u5b50\u4fdd\u6301 Telegram \u7684\u5927\u5c0f\u3002\u4e0b\u6b21\u6253\u5f00\u804a\u5929\u65f6\u751f\u6548.");
+        table.put("Stop call diagnostics",
+                "\u505c\u6b62\u901a\u8bdd\u8bca\u65ad");
+        table.put("Stop pull to next channel",
+                "\u5173\u95ed\u4e0a\u62c9\u8fdb\u5165\u4e0b\u4e00\u4e2a\u9891\u9053");
+        table.put("Stop pull to next topic",
+                "\u5173\u95ed\u4e0a\u62c9\u8fdb\u5165\u4e0b\u4e00\u4e2a\u8bdd\u9898");
+        table.put("Stop tracking",
+                "\u505c\u6b62\u8ffd\u8e2a");
+        table.put("Stop translating this chat",
+                "\u505c\u6b62\u7ffb\u8bd1\u6b64\u804a\u5929");
+        table.put("Stop usage reports",
+                "\u505c\u6b62\u4f7f\u7528\u60c5\u51b5\u62a5\u544a");
+        table.put("Stop vibrations on taps",
+                "\u70b9\u6309\u65f6\u4e0d\u632f\u52a8");
+        table.put("Stopped at 100 messages",
+                "\u5df2\u5728 100 \u6761\u6d88\u606f\u5904\u505c\u6b62");
+        table.put("Stopped tracking",
+                "\u5df2\u505c\u6b62\u8ffd\u8e2a");
+        table.put("Stopped typing in these chats.",
+                "\u5df2\u505c\u6b62\u5728\u8fd9\u4e9b\u804a\u5929\u4e2d\u663e\u793a\u6b63\u5728\u8f93\u5165.");
+        table.put("Stops joining channels and groups, from search, a link or a shared folder, and opening ones you aren't in. Chats you're already in stay. To keep this on, also turn on Lock HushTelegram settings.",
+                "\u963b\u6b62\u901a\u8fc7\u641c\u7d22\u3001\u94fe\u63a5\u6216\u5206\u4eab\u7684\u6587\u4ef6\u5939\u52a0\u5165\u9891\u9053\u548c\u7fa4\u7ec4\uff0c\u4e5f\u963b\u6b62\u6253\u5f00\u4f60\u6ca1\u6709\u52a0\u5165\u7684\u9891\u9053\u548c\u7fa4\u7ec4\u3002\u4f60\u5df2\u52a0\u5165\u7684\u804a\u5929\u4fdd\u7559\u3002\u8981\u8ba9\u6b64\u5f00\u5173\u4fdd\u6301\u5f00\u542f\uff0c\u8bf7\u540c\u65f6\u5f00\u542f\u201c\u9501\u5b9a HushTelegram \u8bbe\u7f6e\u201d.");
+        table.put("Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.",
+                "\u505c\u6b62\u5411 Telegram \u53d1\u9001\u4f7f\u7528\u60c5\u51b5\u62a5\u544a\uff0c\u4f8b\u5982\u4f60\u9605\u8bfb\u6bcf\u6761\u9891\u9053\u5e16\u5b50\u7684\u65f6\u957f\uff0c\u4ee5\u53ca\u4f60\u5728 Premium \u9875\u9762\u4e0a\u70b9\u4e86\u4ec0\u4e48\u3002\u6d88\u606f\u548c\u901a\u8bdd\u7167\u5e38\u5de5\u4f5c.");
+        table.put("Stops usage reports, strips tracking from links and covers your own phone number on screen.",
+                "\u505c\u6b62\u4f7f\u7528\u60c5\u51b5\u62a5\u544a\uff0c\u53bb\u9664\u94fe\u63a5\u4e2d\u7684\u8ddf\u8e2a\u53c2\u6570\uff0c\u5e76\u5728\u5c4f\u5e55\u4e0a\u906e\u4f4f\u4f60\u81ea\u5df1\u7684\u624b\u673a\u53f7\u7801.");
+        table.put("Stops your phone from automatically sending call problem reports and log files when Telegram's server asks for them.",
+                "Telegram \u670d\u52a1\u5668\u7d22\u8981\u901a\u8bdd\u95ee\u9898\u62a5\u544a\u548c\u65e5\u5fd7\u6587\u4ef6\u65f6\uff0c\u4f60\u7684\u624b\u673a\u4e0d\u518d\u81ea\u52a8\u53d1\u9001.");
+        table.put("Stories you watch don't add you to their viewer list. Works with Ghost mode on.",
+                "\u4f60\u89c2\u770b\u7684\u52a8\u6001\u4e0d\u4f1a\u628a\u4f60\u52a0\u5165\u6d4f\u89c8\u8005\u5217\u8868\u3002\u5728\u201c\u5e7d\u7075\u6a21\u5f0f\u201d\u5f00\u542f\u65f6\u751f\u6548.");
+        table.put("Support HushTelegram",
+                "\u652f\u6301 HushTelegram");
+        table.put("Supported links",
+                "\u652f\u6301\u7684\u94fe\u63a5");
+        table.put("Suppress screenshot notification",
+                "\u9690\u85cf\u622a\u5c4f\u901a\u77e5");
+        table.put("Swipe back on profiles",
+                "\u5728\u4e2a\u4eba\u8d44\u6599\u4e2d\u6ed1\u52a8\u8fd4\u56de");
+        table.put("Swipe right on your first chat folder and a menu slides in, like the one older Telegram had. It has your profile, new message, contacts, calls, saved messages and settings, plus a way to switch accounts. Back or a tap beside it closes it.",
+                "\u5728\u7b2c\u4e00\u4e2a\u804a\u5929\u6587\u4ef6\u5939\u4e0a\u5411\u53f3\u6ed1\u52a8\uff0c\u5c31\u4f1a\u6ed1\u51fa\u4e00\u4e2a\u83dc\u5355\uff0c\u548c\u65e7\u7248 Telegram \u7684\u4e00\u6837\u3002\u5176\u4e2d\u6709\u4f60\u7684\u4e2a\u4eba\u8d44\u6599\u3001\u65b0\u5efa\u5bf9\u8bdd\u3001\u8054\u7cfb\u4eba\u3001\u901a\u8bdd\u3001\u6211\u7684\u6536\u85cf\u548c\u8bbe\u7f6e\uff0c\u8fd8\u53ef\u4ee5\u5207\u6362\u8d26\u53f7\u3002\u6309\u8fd4\u56de\u6216\u70b9\u6309\u83dc\u5355\u65c1\u8fb9\u5373\u53ef\u5173\u95ed.");
+        table.put("Swiping a chat in your list no longer archives, mutes, pins, deletes or marks it read. Press and hold still offers every action.",
+                "\u5728\u5217\u8868\u4e2d\u6ed1\u52a8\u804a\u5929\u4e0d\u518d\u4f1a\u5f52\u6863\u3001\u9759\u97f3\u3001\u7f6e\u9876\u3001\u5220\u9664\u6216\u6807\u4e3a\u5df2\u8bfb\u3002\u957f\u6309\u804a\u5929\u4ecd\u53ef\u4f7f\u7528\u6240\u6709\u64cd\u4f5c.");
+        table.put("Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, instead of showing the previous photo or tab.",
+                "\u5728\u4e2a\u4eba\u8d44\u6599\u7684\u7167\u7247\u6216\u5a92\u4f53\u6807\u7b7e\u9875\u4e0a\u5411\u53f3\u6ed1\u52a8\u4f1a\u8fd4\u56de\u4e0a\u4e00\u9875\uff08\u548c\u4e2a\u4eba\u8d44\u6599\u7684\u5176\u4ed6\u90e8\u5206\u4e00\u6837\uff09\uff0c\u800c\u4e0d\u662f\u663e\u793a\u4e0a\u4e00\u5f20\u7167\u7247\u6216\u4e0a\u4e00\u4e2a\u6807\u7b7e\u9875.");
+        table.put("Switch account",
+                "\u5207\u6362\u8d26\u53f7");
+        table.put("System version",
+                "\u7cfb\u7edf\u7248\u672c");
+        table.put("TON link Send Gram item",
+                "TON \u94fe\u63a5\u4e2d\u7684\u201c\u53d1\u9001 Gram\u201d\u9879");
+        table.put("Take the spaces out of the address, model and key.",
+                "\u8bf7\u53bb\u6389\u5730\u5740\u3001\u6a21\u578b\u548c\u5bc6\u94a5\u4e2d\u7684\u7a7a\u683c.");
+        table.put("Tap a rule to remove it",
+                "\u70b9\u6309\u89c4\u5219\u5373\u53ef\u79fb\u9664");
+        table.put("Tap for details and Android settings.",
+                "\u70b9\u6309\u67e5\u770b\u8be6\u60c5\u548c Android \u8bbe\u7f6e.");
+        table.put("Tap the star next to Telegram at the top of the chat list and pick any emoji status, animated ones too, without Premium. It shows there on this phone only. Nobody else sees it, and nothing is sent to Telegram.",
+                "\u70b9\u6309\u804a\u5929\u5217\u8868\u9876\u90e8 Telegram \u65c1\u8fb9\u7684\u661f\u6807\uff0c\u5373\u53ef\u9009\u62e9\u4efb\u610f\u8868\u60c5\u7b26\u53f7\u72b6\u6001\uff08\u5305\u62ec\u52a8\u753b\u72b6\u6001\uff09\uff0c\u65e0\u9700 Premium\u3002\u5b83\u53ea\u5728\u8fd9\u90e8\u624b\u673a\u4e0a\u663e\u793a\u3002\u5176\u4ed6\u4eba\u770b\u4e0d\u5230\uff0c\u4e5f\u4e0d\u4f1a\u5411 Telegram \u53d1\u9001\u4efb\u4f55\u5185\u5bb9.");
+    }
+
+    private static void fillZh_Hans16(Map<String, String> table) {
+        table.put("Tap to pick which UnifiedPush app to use.",
+                "\u70b9\u6309\u4ee5\u9009\u62e9\u8981\u4f7f\u7528\u7684 UnifiedPush \u5e94\u7528.");
+        table.put("Tap to turn it back on.",
+                "\u70b9\u6309\u4ee5\u91cd\u65b0\u5f00\u542f.");
+        table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
+                "\u70b9\u6309\u3001\u957f\u6309\u3001\u6ed1\u52a8\u548c\u8f93\u5165\u9519\u8bef\u65f6\u624b\u673a\u4e0d\u518d\u632f\u52a8\u3002\u6765\u7535\u4ecd\u4f1a\u632f\u52a8\uff0c\u901a\u77e5\u5219\u9075\u5faa\u4f60\u81ea\u5df1\u7684\u8bbe\u7f6e.");
+        table.put("Telegram accounts",
+                "Telegram \u8d26\u53f7");
+        table.put("Telegram adds a sign-in token for your account to links to some of its own websites. With this on, those links open without it, and you can sign in there yourself.",
+                "Telegram \u4f1a\u5728\u6307\u5411\u5b83\u81ea\u5df1\u67d0\u4e9b\u7f51\u7ad9\u7684\u94fe\u63a5\u4e2d\u52a0\u5165\u4f60\u8d26\u53f7\u7684\u767b\u5f55\u4ee4\u724c\u3002\u5f00\u542f\u540e\uff0c\u8fd9\u4e9b\u94fe\u63a5\u6253\u5f00\u65f6\u4e0d\u5e26\u4ee4\u724c\uff0c\u4f60\u53ef\u4ee5\u81ea\u5df1\u5728\u7f51\u7ad9\u4e0a\u767b\u5f55.");
+        table.put("Telegram closes and reopens on this page.",
+                "Telegram \u5c06\u5173\u95ed\u5e76\u91cd\u65b0\u6253\u5f00\u5230\u6b64\u9875\u9762.");
+        table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
+                "Telegram \u8fde\u7eed\u4e09\u6b21\u5728\u542f\u52a8\u540e\u4e00\u5206\u949f\u5185\u5d29\u6e83\u6216\u5361\u6b7b\uff0c\u56e0\u6b64 HushTelegram \u5df2\u81ea\u52a8\u6682\u505c.");
+        table.put("Telegram deletes %1$s with all its messages and contacts. This can't be undone.",
+                "Telegram \u4f1a\u5220\u9664 %1$s \u53ca\u5176\u6240\u6709\u6d88\u606f\u548c\u8054\u7cfb\u4eba\u3002\u6b64\u64cd\u4f5c\u65e0\u6cd5\u64a4\u9500.");
+        table.put("Telegram deletes the account in %1$d day.",
+                "Telegram \u5c06\u5728 %1$d \u5929\u540e\u5220\u9664\u8be5\u8d26\u53f7.");
+        table.put("Telegram deletes the account in %1$d days.",
+                "Telegram \u5c06\u5728 %1$d \u5929\u540e\u5220\u9664\u8be5\u8d26\u53f7.");
+        table.put("Telegram didn't accept the API ID and hash this app was patched with, so no login code was sent. Copy both again from my.telegram.org/apps and patch once more.",
+                "Telegram \u4e0d\u63a5\u53d7\u8fd9\u4e2a\u5e94\u7528\u6253\u8865\u4e01\u65f6\u4f7f\u7528\u7684 API ID \u548c\u54c8\u5e0c\u503c\uff0c\u6240\u4ee5\u6ca1\u6709\u53d1\u9001\u767b\u5f55\u9a8c\u8bc1\u7801\u3002\u8bf7\u4ece my.telegram.org/apps \u91cd\u65b0\u590d\u5236\u8fd9\u4e24\u9879\uff0c\u518d\u6253\u4e00\u6b21\u8865\u4e01.");
+        table.put("Telegram didn't delete the account.",
+                "Telegram \u6ca1\u6709\u5220\u9664\u8be5\u8d26\u53f7.");
+        table.put("Telegram didn't remove the folders. Try again in a moment.",
+                "Telegram \u6ca1\u6709\u79fb\u9664\u8fd9\u4e9b\u6587\u4ef6\u5939\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Telegram didn't sign the bot in.",
+                "Telegram \u6ca1\u6709\u8ba9\u673a\u5668\u4eba\u767b\u5f55.");
+        table.put("Telegram didn't take the proxies last time.",
+                "\u4e0a\u6b21 Telegram \u6ca1\u6709\u63a5\u53d7\u8fd9\u4e9b\u4ee3\u7406.");
+        table.put("Telegram doesn't look up link previews for messages you haven't sent yet, including shares, polls, story links and bots. Sent messages still get one.",
+                "\u5bf9\u4e8e\u5c1a\u672a\u53d1\u9001\u7684\u6d88\u606f\uff08\u5305\u62ec\u5206\u4eab\u3001\u6295\u7968\u3001\u52a8\u6001\u94fe\u63a5\u548c\u673a\u5668\u4eba\uff09\uff0cTelegram \u4e0d\u518d\u67e5\u8be2\u94fe\u63a5\u9884\u89c8\u3002\u5df2\u53d1\u9001\u7684\u6d88\u606f\u4ecd\u4f1a\u6709\u9884\u89c8.");
+        table.put("Telegram is still answering. Try again in a moment.",
+                "Telegram \u4ecd\u5728\u54cd\u5e94\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Telegram is still loading your folders. Try again in a moment.",
+                "Telegram \u4ecd\u5728\u52a0\u8f7d\u4f60\u7684\u6587\u4ef6\u5939\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Telegram isn't told that you're online while you use it. Going offline still goes out. Works with Ghost mode on.",
+                "\u4f60\u4f7f\u7528 Telegram \u65f6\uff0cTelegram \u4e0d\u4f1a\u5f97\u77e5\u4f60\u5728\u7ebf\u3002\u79bb\u7ebf\u72b6\u6001\u4ecd\u4f1a\u7167\u5e38\u53d1\u9001\u3002\u5728\u201c\u5e7d\u7075\u6a21\u5f0f\u201d\u5f00\u542f\u65f6\u751f\u6548.");
+        table.put("Telegram kept some folders. Turn this off again to retry.",
+                "Telegram \u4fdd\u7559\u4e86\u90e8\u5206\u6587\u4ef6\u5939\u3002\u518d\u6b21\u5173\u95ed\u5373\u53ef\u91cd\u8bd5.");
+        table.put("Telegram no longer tells the other person in a secret chat when you take a screenshot.",
+                "\u4f60\u5728\u79c1\u5bc6\u804a\u5929\u4e2d\u622a\u5c4f\u65f6\uff0cTelegram \u4e0d\u518d\u901a\u77e5\u5bf9\u65b9.");
+        table.put("Telegram on this phone treats your account as Premium, so the parts the app itself locks open up. Telegram's servers still know your real plan, so their limits stay the same.",
+                "\u8fd9\u90e8\u624b\u673a\u4e0a\u7684 Telegram \u4f1a\u628a\u4f60\u7684\u8d26\u53f7\u5f53\u4f5c Premium\uff0c\u56e0\u6b64\u5e94\u7528\u81ea\u8eab\u9501\u5b9a\u7684\u90e8\u5206\u4f1a\u5f00\u653e\u3002Telegram \u7684\u670d\u52a1\u5668\u4ecd\u77e5\u9053\u4f60\u7684\u771f\u5b9e\u5957\u9910\uff0c\u6240\u4ee5\u670d\u52a1\u5668\u7aef\u7684\u9650\u5236\u4e0d\u53d8.");
+        table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
+                "Telegram \u53ea\u5728\u6027\u80fd\u597d\u7684\u624b\u673a\u4e0a\u6a21\u7cca\u804a\u5929\u9876\u680f\u548c\u9762\u677f\u3002\u5f00\u542f\u540e\uff0c\u53ea\u8981\u5728\u201c\u7701\u7535\u201d\u4e2d\u5f00\u542f\u4e86\u201c\u5728\u804a\u5929\u4e2d\u6a21\u7cca\u201d\uff0c\u4efb\u4f55\u624b\u673a\u90fd\u80fd\u4f7f\u7528.");
+        table.put("Telegram passcode",
+                "Telegram \u9501\u5b9a\u7801");
+        table.put("Telegram refused it: %1$s",
+                "Telegram \u62d2\u7edd\u4e86\uff1a%1$s");
+        table.put("Telegram refused this app's ID",
+                "Telegram \u62d2\u7edd\u4e86\u8fd9\u4e2a\u5e94\u7528\u7684 ID");
+        table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
+                "Telegram \u4e0d\u518d\u63d0\u4f9b\u6765\u81ea telegram.org \u7684\u66f4\u65b0\u3002\u8fd9\u4e9b\u66f4\u65b0\u65e0\u6cd5\u8986\u76d6\u5b89\u88c5\u5230\u8fd9\u4e2a\u5df2\u6253\u8865\u4e01\u7684\u7248\u672c\u4e0a\uff0c\u56e0\u6b64\u8bf7\u6539\u4e3a\u5728 Morphe Manager \u4e2d\u4e3a\u6bcf\u4e2a\u65b0\u7248\u672c\u6253\u8865\u4e01.");
+        table.put("Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.",
+                "Telegram \u62d2\u7edd\u4e86\u8fd9\u4e2a\u5e94\u7528\u767b\u5f55\u6240\u7528\u7684 API ID\uff0c\u6240\u4ee5\u6ca1\u6709\u53d1\u9001\u767b\u5f55\u9a8c\u8bc1\u7801\u3002\u8bf7\u4f7f\u7528\u201cUse registered Telegram API credentials\u201d\u548c\u4f60\u5728 my.telegram.org/apps \u83b7\u53d6\u7684 ID \u91cd\u65b0\u4e3a HushTelegram \u6253\u8865\u4e01\u3002\u6307\u5357\u4f1a\u4e00\u6b65\u6b65\u5e26\u4f60\u5b8c\u6210.");
+        table.put("Telegram turned the folders down. Try again later.",
+                "Telegram \u62d2\u7edd\u521b\u5efa\u8fd9\u4e9b\u6587\u4ef6\u5939\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("Telegram's files go in this folder in Internal storage, and it's made if it isn't there. Leave it empty for Telegram, and restart Telegram after a change.",
+                "Telegram \u7684\u6587\u4ef6\u4f1a\u5b58\u5230\u201c\u5185\u90e8\u5b58\u50a8\u201d\u4e2d\u7684\u8fd9\u4e2a\u6587\u4ef6\u5939\uff0c\u6587\u4ef6\u5939\u4e0d\u5b58\u5728\u65f6\u4f1a\u81ea\u52a8\u521b\u5efa\u3002\u7559\u7a7a\u5219\u4f7f\u7528 Telegram\uff0c\u66f4\u6539\u540e\u8bf7\u91cd\u542f Telegram.");
+        table.put("Telegram's language",
+                "Telegram \u7684\u8bed\u8a00");
+        table.put("Telegram's own files in internal storage",
+                "\u5185\u90e8\u5b58\u50a8\u4e2d\u7684 Telegram \u81ea\u6709\u6587\u4ef6");
+        table.put("Telegram's proxy list is empty. Add a proxy in Telegram's proxy settings, or find free proxies, then come back here.",
+                "Telegram \u7684\u4ee3\u7406\u5217\u8868\u662f\u7a7a\u7684\u3002\u8bf7\u5728 Telegram \u7684\u4ee3\u7406\u8bbe\u7f6e\u4e2d\u6dfb\u52a0\u4ee3\u7406\uff0c\u6216\u67e5\u627e\u514d\u8d39\u4ee3\u7406\uff0c\u7136\u540e\u56de\u5230\u8fd9\u91cc.");
+        table.put("Telegram's proxy list is in your order, with %1$d proxies pinned on top.",
+                "Telegram \u7684\u4ee3\u7406\u5217\u8868\u5df2\u6309\u4f60\u7684\u987a\u5e8f\u6392\u5217\uff0c\u6709 %1$d \u4e2a\u4ee3\u7406\u7f6e\u9876.");
+        table.put("Telegram's proxy list is in your order, with %1$d proxy pinned on top.",
+                "Telegram \u7684\u4ee3\u7406\u5217\u8868\u5df2\u6309\u4f60\u7684\u987a\u5e8f\u6392\u5217\uff0c\u6709 %1$d \u4e2a\u4ee3\u7406\u7f6e\u9876.");
+        table.put("Telegram's proxy list is in your order. Tap to change it.",
+                "Telegram \u7684\u4ee3\u7406\u5217\u8868\u5df2\u6309\u4f60\u7684\u987a\u5e8f\u6392\u5217\u3002\u70b9\u6309\u5373\u53ef\u66f4\u6539.");
+        table.put("Telegram's reaction notifications make no sound. Turned on, they play the sound and vibration set in Telegram's Notifications and Sounds > Reactions.",
+                "Telegram \u7684\u8868\u60c5\u56de\u5e94\u901a\u77e5\u6ca1\u6709\u58f0\u97f3\u3002\u5f00\u542f\u540e\uff0c\u4f1a\u64ad\u653e\u5728 Telegram \u7684\u201c\u901a\u77e5\u548c\u58f0\u97f3 > \u56de\u5e94\u201d\u4e2d\u8bbe\u7f6e\u7684\u58f0\u97f3\u548c\u632f\u52a8.");
+        table.put("Telegram's reply to account %1$s on %2$s: %3$s, %4$s",
+                "Telegram \u5728 %2$s \u4e0a\u5bf9\u8d26\u53f7 %1$s \u7684\u56de\u590d\uff1a%3$s\uff0c%4$s");
+        table.put("Telegram's reply to notification sign-up: %1$s",
+                "Telegram \u5bf9\u901a\u77e5\u6ce8\u518c\u7684\u56de\u590d\uff1a%1$s");
+        table.put("Telegram's two emulator checks always say this phone isn't an emulator.",
+                "Telegram \u7684\u4e24\u9879\u6a21\u62df\u5668\u68c0\u67e5\u59cb\u7ec8\u4f1a\u62a5\u544a\u8fd9\u90e8\u624b\u673a\u4e0d\u662f\u6a21\u62df\u5668.");
+        table.put("Telegram's wake-ups come through %1$s.",
+                "Telegram \u901a\u8fc7 %1$s \u5524\u9192.");
+        table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
+                "Android \u8bbe\u7f6e\u4e2d\u5df2\u4e3a\u6b64\u5e94\u7528\u9009\u4e2d Telegram \u7684\u7f51\u5740\uff0c\u56e0\u6b64\u8fd9\u4e9b\u94fe\u63a5\u4f1a\u5728\u8fd9\u91cc\u6253\u5f00.");
+        table.put("Test server sign-in",
+                "\u6d4b\u8bd5\u670d\u52a1\u5668\u767b\u5f55");
+        table.put("Text copied",
+                "\u5df2\u590d\u5236\u6587\u5b57");
+        table.put("Text direction",
+                "\u6587\u5b57\u65b9\u5411");
+        table.put("Text for the chat list title",
+                "\u804a\u5929\u5217\u8868\u6807\u9898\u7684\u6587\u5b57");
+        table.put("Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.",
+                "\u4e00\u884c\u4e2d\u7684\u6587\u5b57\u53ea\u8981\u51fa\u73b0\u5728\u6d88\u606f\u4e2d\u7684\u4efb\u4f55\u4f4d\u7f6e\u5c31\u7b97\u5339\u914d\u3002\u653e\u5728\u659c\u6760\u4e2d\u7684\u884c\uff0c\u4f8b\u5982 /crypto|airdrop/\uff0c\u662f\u6b63\u5219\u8868\u8fbe\u5f0f\u3002\u4e0d\u533a\u5206\u5927\u5c0f\u5199.");
+        table.put("That app is slow to answer. Nothing was changed. Try again.",
+                "\u8be5\u5e94\u7528\u54cd\u5e94\u592a\u6162\u3002\u6ca1\u6709\u505a\u4efb\u4f55\u66f4\u6539\u3002\u8bf7\u91cd\u8bd5.");
+        table.put("That app is slow. It may still save the file, so check it.",
+                "\u8be5\u5e94\u7528\u54cd\u5e94\u5f88\u6162\u3002\u5b83\u53ef\u80fd\u4ecd\u4f1a\u4fdd\u5b58\u6587\u4ef6\uff0c\u8bf7\u68c0\u67e5\u4e00\u4e0b.");
+        table.put("That bot token isn't valid.",
+                "\u8fd9\u4e2a\u673a\u5668\u4eba\u4ee4\u724c\u65e0\u6548.");
+        table.put("That bot token was revoked.",
+                "\u8fd9\u4e2a\u673a\u5668\u4eba\u4ee4\u724c\u5df2\u88ab\u64a4\u9500.");
+        table.put("That file is damaged. Download it again. Nothing was changed.",
+                "\u8be5\u6587\u4ef6\u5df2\u635f\u574f\u3002\u8bf7\u91cd\u65b0\u4e0b\u8f7d\u3002\u6ca1\u6709\u505a\u4efb\u4f55\u66f4\u6539.");
+        table.put("That file is too big for a settings file. Nothing was changed.",
+                "\u8be5\u6587\u4ef6\u592a\u5927\uff0c\u4e0d\u53ef\u80fd\u662f\u8bbe\u7f6e\u6587\u4ef6\u3002\u6ca1\u6709\u505a\u4efb\u4f55\u66f4\u6539.");
+        table.put("That file isn't readable text. Nothing was changed.",
+                "\u8be5\u6587\u4ef6\u4e0d\u662f\u53ef\u8bfb\u7684\u6587\u672c\u3002\u6ca1\u6709\u505a\u4efb\u4f55\u66f4\u6539.");
+        table.put("That file lists a setting twice. Nothing was changed.",
+                "\u8be5\u6587\u4ef6\u4e2d\u6709\u4e00\u9879\u8bbe\u7f6e\u51fa\u73b0\u4e86\u4e24\u6b21\u3002\u6ca1\u6709\u505a\u4efb\u4f55\u66f4\u6539.");
+        table.put("That file's app still hasn't answered. Try again later.",
+                "\u63d0\u4f9b\u8be5\u6587\u4ef6\u7684\u5e94\u7528\u4ecd\u672a\u54cd\u5e94\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("That isn't a HushTelegram settings file. Nothing was changed.",
+                "\u8fd9\u4e0d\u662f HushTelegram \u8bbe\u7f6e\u6587\u4ef6\u3002\u6ca1\u6709\u505a\u4efb\u4f55\u66f4\u6539.");
+        table.put("That isn't a bot token.",
+                "\u8fd9\u4e0d\u662f\u673a\u5668\u4eba\u4ee4\u724c.");
+        table.put("That name won't work. Try letters and numbers.",
+                "\u8fd9\u4e2a\u540d\u79f0\u4e0d\u80fd\u7528\u3002\u8bf7\u4f7f\u7528\u5b57\u6bcd\u548c\u6570\u5b57.");
+        table.put("That's not your passcode.",
+                "\u9501\u5b9a\u7801\u4e0d\u6b63\u786e.");
+    }
+
+    private static void fillZh_Hans17(Map<String, String> table) {
+        table.put("That's too long. Try a shorter name.",
+                "\u592a\u957f\u4e86\u3002\u8bd5\u8bd5\u77ed\u4e00\u70b9\u7684\u540d\u79f0.");
+        table.put("That's too long. Try an emoji or two, or a short word.",
+                "\u592a\u957f\u4e86\u3002\u8bd5\u8bd5\u4e00\u4e24\u4e2a\u8868\u60c5\uff0c\u6216\u4e00\u4e2a\u7b80\u77ed\u7684\u8bcd.");
+        table.put("The Contacts tab leaves the bar at the bottom of the main screen, and swiping doesn't open its page either. The Calls or Settings tab stays as Telegram has it, and the chat list's new message button still opens your contacts. Restart Telegram to see the change.",
+                "\u201c\u8054\u7cfb\u4eba\u201d\u6807\u7b7e\u9875\u4f1a\u4ece\u4e3b\u5c4f\u5e55\u5e95\u90e8\u7684\u680f\u4e2d\u79fb\u9664\uff0c\u6ed1\u52a8\u4e5f\u4e0d\u4f1a\u6253\u5f00\u8be5\u9875\u9762\u3002\u201c\u901a\u8bdd\u201d\u6216\u201c\u8bbe\u7f6e\u201d\u6807\u7b7e\u9875\u4fdd\u6301 Telegram \u539f\u6837\uff0c\u804a\u5929\u5217\u8868\u7684\u65b0\u5efa\u5bf9\u8bdd\u6309\u94ae\u4ecd\u4f1a\u6253\u5f00\u4f60\u7684\u8054\u7cfb\u4eba\u3002\u91cd\u542f Telegram \u540e\u751f\u6548.");
+        table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
+                "GPL-3.0 \u8bb8\u53ef\u8bc1\uff0c\u4ee5\u53ca HushTelegram \u6240\u57fa\u4e8e\u7684\u5404\u4e2a\u9879\u76ee\u7684\u81f4\u8c22");
+        table.put("The accounts you pick below can read but not write. Messages, reactions, drafts and typing stay on this phone and show an error. Reading, files and read receipts work. Works with this switch on.",
+                "\u4f60\u5728\u4e0b\u65b9\u9009\u62e9\u7684\u8d26\u53f7\u53ea\u80fd\u9605\u8bfb\uff0c\u4e0d\u80fd\u53d1\u9001\u3002\u6d88\u606f\u3001\u8868\u60c5\u56de\u5e94\u3001\u8349\u7a3f\u548c\u6b63\u5728\u8f93\u5165\u72b6\u6001\u4f1a\u7559\u5728\u8fd9\u90e8\u624b\u673a\u4e0a\u5e76\u663e\u793a\u9519\u8bef\u3002\u9605\u8bfb\u3001\u6587\u4ef6\u548c\u5df2\u8bfb\u56de\u6267\u7167\u5e38\u5de5\u4f5c\u3002\u5728\u6b64\u5f00\u5173\u5f00\u542f\u65f6\u751f\u6548.");
+        table.put("The accounts you pick below leave Telegram's account lists, but only there. Each one stays signed in, keeps syncing, and its notifications follow Telegram's own settings. Nothing is signed out or deleted, and the account you're using always shows.",
+                "\u4f60\u5728\u4e0b\u65b9\u9009\u62e9\u7684\u8d26\u53f7\u4f1a\u4ece Telegram \u7684\u8d26\u53f7\u5217\u8868\u4e2d\u6d88\u5931\uff0c\u4f46\u4ec5\u9650\u4e8e\u6b64\u3002\u6bcf\u4e2a\u8d26\u53f7\u4ecd\u4fdd\u6301\u767b\u5f55\u3001\u7ee7\u7eed\u540c\u6b65\uff0c\u901a\u77e5\u4e5f\u9075\u5faa Telegram \u81ea\u5df1\u7684\u8bbe\u7f6e\u3002\u4e0d\u4f1a\u9000\u51fa\u6216\u5220\u9664\u4efb\u4f55\u8d26\u53f7\uff0c\u4f60\u6b63\u5728\u4f7f\u7528\u7684\u8d26\u53f7\u59cb\u7ec8\u663e\u793a.");
+        table.put("The accounts you pick below send nothing. Telegram's connection can still stay open in the background, so it may still receive messages and notifications. Works with this switch on.",
+                "\u4f60\u5728\u4e0b\u65b9\u9009\u62e9\u7684\u8d26\u53f7\u4e0d\u4f1a\u53d1\u9001\u4efb\u4f55\u5185\u5bb9\u3002Telegram \u7684\u8fde\u63a5\u4ecd\u53ef\u80fd\u5728\u540e\u53f0\u4fdd\u6301\u6253\u5f00\uff0c\u6240\u4ee5\u4ecd\u53ef\u80fd\u6536\u5230\u6d88\u606f\u548c\u901a\u77e5\u3002\u5728\u6b64\u5f00\u5173\u5f00\u542f\u65f6\u751f\u6548.");
+        table.put("The address has to start with https://.",
+                "\u5730\u5740\u5fc5\u987b\u4ee5 https:// \u5f00\u5934.");
+        table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
+                "\u9644\u4ef6\u83dc\u5355\u7684\u7167\u7247\u7f51\u683c\u76f4\u63a5\u4ece\u4f60\u7684\u7167\u7247\u5f00\u59cb\uff0c\u4e0d\u518d\u663e\u793a\u5b9e\u65f6\u76f8\u673a\u56fe\u5757\u3002\u4e0b\u6b21\u6253\u5f00\u804a\u5929\u65f6\u751f\u6548.");
+        table.put("The bar at the bottom of a channel you've joined goes away, along with its Mute button and the Search and Info buttons beside it. Channels you haven't joined still show Join. To mute a channel, open its info. A channel picks this up the next time you open it.",
+                "\u4f60\u5df2\u52a0\u5165\u7684\u9891\u9053\u5e95\u90e8\u7684\u680f\u4f1a\u6d88\u5931\uff0c\u8fde\u540c\u5176\u4e2d\u7684\u201c\u9759\u97f3\u201d\u6309\u94ae\u4ee5\u53ca\u65c1\u8fb9\u7684\u201c\u641c\u7d22\u201d\u548c\u201c\u4fe1\u606f\u201d\u6309\u94ae\u3002\u672a\u52a0\u5165\u7684\u9891\u9053\u4ecd\u663e\u793a\u201c\u52a0\u5165\u201d\u3002\u8981\u5c06\u9891\u9053\u9759\u97f3\uff0c\u8bf7\u6253\u5f00\u9891\u9053\u4fe1\u606f\u3002\u4e0b\u6b21\u6253\u5f00\u9891\u9053\u65f6\u751f\u6548.");
+        table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
+                "\u4e3b\u5c4f\u5e55\u5e95\u90e8\u7684\u680f\u4f1a\u53d8\u77ee\uff0c\u5bbd\u5ea6\u4e5f\u53ea\u591f\u5bb9\u7eb3\u5176\u6807\u7b7e\u9875\u3002\u6807\u7b7e\u9875\u4fdd\u6301\u5b8c\u6574\u9ad8\u5ea6\uff0c\u540c\u6837\u5bb9\u6613\u70b9\u6309\u3002\u91cd\u542f Telegram \u540e\u751f\u6548.");
+        table.put("The bar under a chat's top bar that shows pinned messages is gone, along with its counter and list button. Messages stay pinned and nothing is marked as read.",
+                "\u804a\u5929\u9876\u90e8\u680f\u4e0b\u65b9\u663e\u793a\u7f6e\u9876\u6d88\u606f\u7684\u680f\u4f1a\u88ab\u9690\u85cf\uff0c\u8fde\u540c\u5176\u8ba1\u6570\u548c\u5217\u8868\u6309\u94ae\u3002\u6d88\u606f\u4ecd\u4fdd\u6301\u7f6e\u9876\uff0c\u4e5f\u4e0d\u4f1a\u88ab\u6807\u8bb0\u4e3a\u5df2\u8bfb.");
+        table.put("The camera in the attachment menu always opens on the rear lens, not the lens you used last. You can still flip it.",
+                "\u9644\u4ef6\u83dc\u5355\u4e2d\u7684\u76f8\u673a\u59cb\u7ec8\u4ee5\u540e\u7f6e\u955c\u5934\u6253\u5f00\uff0c\u800c\u4e0d\u662f\u4f60\u4e0a\u6b21\u4f7f\u7528\u7684\u955c\u5934\u3002\u4f60\u4ecd\u7136\u53ef\u4ee5\u5207\u6362.");
+        table.put("The chat list opens on the folder you pick below instead of All Chats. Each account keeps its own pick, and the folder order doesn't change. If that folder is gone, renamed or locked, All Chats opens as usual.",
+                "\u804a\u5929\u5217\u8868\u4f1a\u6253\u5f00\u4f60\u5728\u4e0b\u65b9\u9009\u62e9\u7684\u6587\u4ef6\u5939\uff0c\u800c\u4e0d\u662f\u201c\u6240\u6709\u804a\u5929\u201d\u3002\u6bcf\u4e2a\u8d26\u53f7\u5206\u522b\u4fdd\u5b58\u81ea\u5df1\u7684\u9009\u62e9\uff0c\u6587\u4ef6\u5939\u987a\u5e8f\u4e0d\u53d8\u3002\u5982\u679c\u8be5\u6587\u4ef6\u5939\u5df2\u5220\u9664\u3001\u91cd\u547d\u540d\u6216\u88ab\u9501\u5b9a\uff0c\u5219\u7167\u5e38\u6253\u5f00\u201c\u6240\u6709\u804a\u5929\u201d.");
+        table.put("The chats you pick below leave All Chats, your folders, archived chats and the forward and share lists. They keep their messages and notifications, search still finds them, and nothing changes on your other devices. Each account keeps its own list.",
+                "\u4f60\u5728\u4e0b\u65b9\u9009\u62e9\u7684\u804a\u5929\u4f1a\u4ece\u201c\u6240\u6709\u804a\u5929\u201d\u3001\u4f60\u7684\u6587\u4ef6\u5939\u3001\u5df2\u5f52\u6863\u7684\u804a\u5929\u4ee5\u53ca\u8f6c\u53d1\u548c\u5206\u4eab\u5217\u8868\u4e2d\u6d88\u5931\u3002\u5b83\u4eec\u7684\u6d88\u606f\u548c\u901a\u77e5\u4fdd\u7559\uff0c\u641c\u7d22\u4ecd\u80fd\u627e\u5230\u5b83\u4eec\uff0c\u4f60\u7684\u5176\u4ed6\u8bbe\u5907\u4e0a\u4e5f\u4e0d\u4f1a\u6709\u53d8\u5316\u3002\u6bcf\u4e2a\u8d26\u53f7\u5206\u522b\u4fdd\u5b58\u81ea\u5df1\u7684\u5217\u8868.");
+        table.put("The chats you pick work the other way around. While Ghost mode is on they act as usual, and while it's off the Ghost mode switches above apply there. Long press chats in the chat list and use the three dots to add them. Online status follows Ghost mode everywhere.",
+                "\u4f60\u9009\u62e9\u7684\u804a\u5929\u4f1a\u53cd\u8fc7\u6765\u5904\u7406\u3002\u201c\u5e7d\u7075\u6a21\u5f0f\u201d\u5f00\u542f\u65f6\uff0c\u5b83\u4eec\u7167\u5e38\u5de5\u4f5c\uff1b\u201c\u5e7d\u7075\u6a21\u5f0f\u201d\u5173\u95ed\u65f6\uff0c\u4e0a\u65b9\u7684\u5e7d\u7075\u6a21\u5f0f\u5f00\u5173\u4f1a\u5728\u8fd9\u4e9b\u804a\u5929\u4e2d\u751f\u6548\u3002\u5728\u804a\u5929\u5217\u8868\u4e2d\u957f\u6309\u804a\u5929\uff0c\u7136\u540e\u7528\u4e09\u70b9\u83dc\u5355\u6dfb\u52a0\u3002\u5728\u7ebf\u72b6\u6001\u5728\u6240\u6709\u5730\u65b9\u90fd\u8ddf\u968f\u201c\u5e7d\u7075\u6a21\u5f0f\u201d.");
+        table.put("The deleted label next to a kept message's time turns red, so it stands out in the chat. Works with Keep deleted messages on.",
+                "\u4fdd\u7559\u6d88\u606f\u65f6\u95f4\u65c1\u7684\u201c\u5df2\u5220\u9664\u201d\u6807\u7b7e\u53d8\u4e3a\u7ea2\u8272\uff0c\u5728\u804a\u5929\u4e2d\u66f4\u9192\u76ee\u3002\u5728\u201c\u4fdd\u7559\u5df2\u5220\u9664\u6d88\u606f\u201d\u5f00\u542f\u65f6\u751f\u6548.");
+        table.put("The diagnostic report couldn't be saved. Try again.",
+                "\u65e0\u6cd5\u4fdd\u5b58\u8bca\u65ad\u62a5\u544a\u3002\u8bf7\u91cd\u8bd5.");
+        table.put("The emoji a Premium account puts next to its name goes away in chats, the chat list and profiles, and the Premium star shows instead. Your own status hides too but stays set for everyone else. A chat picks this up the next time you open it.",
+                "Premium \u8d26\u53f7\u653e\u5728\u540d\u5b57\u65c1\u8fb9\u7684\u8868\u60c5\u4f1a\u5728\u804a\u5929\u3001\u804a\u5929\u5217\u8868\u548c\u4e2a\u4eba\u8d44\u6599\u4e2d\u6d88\u5931\uff0c\u6539\u4e3a\u663e\u793a Premium \u661f\u6807\u3002\u4f60\u81ea\u5df1\u7684\u72b6\u6001\u4e5f\u4f1a\u9690\u85cf\uff0c\u4f46\u5176\u4ed6\u4eba\u4ecd\u80fd\u770b\u5230\u3002\u4e0b\u6b21\u6253\u5f00\u804a\u5929\u65f6\u751f\u6548.");
+        table.put("The emoji next to the chat list title will change.",
+                "\u804a\u5929\u5217\u8868\u6807\u9898\u65c1\u7684\u8868\u60c5\u5c06\u4f1a\u66f4\u6539.");
+        table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.",
+                "\u65e0\u6cd5\u5220\u9664\u6587\u4ef6 %1$s\u3002\u8bf7\u4ece %2$s \u4e2d\u5220\u9664\u5b83\uff0c\u4ee5\u91cd\u65b0\u5f00\u542f HushTelegram.");
+        table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
+                "\u65e0\u6cd5\u5220\u9664\u6587\u4ef6 %1$s\u3002\u8bf7\u4ece %2$s \u4e2d\u5220\u9664\u5b83\uff0c\u7136\u540e\u518d\u6b21\u70b9\u6309\u201c\u6062\u590d\u201d.");
+        table.put("The folder for Telegram's files will change.",
+                "Telegram \u6587\u4ef6\u6240\u5728\u7684\u6587\u4ef6\u5939\u5c06\u4f1a\u66f4\u6539.");
+        table.put("The folder tabs leave out All Chats, so the chat list opens on the folder picked above or your first one. Archived Chats moves to the chat list's menu, and to the side menu when that's on. Tabs can't be dragged into a new order while this is on. Restart Telegram to see the change.",
+                "\u6587\u4ef6\u5939\u6807\u7b7e\u9875\u4e0d\u518d\u5305\u542b\u201c\u6240\u6709\u804a\u5929\u201d\uff0c\u56e0\u6b64\u804a\u5929\u5217\u8868\u4f1a\u6253\u5f00\u4e0a\u65b9\u9009\u62e9\u7684\u6587\u4ef6\u5939\u6216\u4f60\u7684\u7b2c\u4e00\u4e2a\u6587\u4ef6\u5939\u3002\u201c\u5df2\u5f52\u6863\u7684\u804a\u5929\u201d\u4f1a\u79fb\u5230\u804a\u5929\u5217\u8868\u7684\u83dc\u5355\u4e2d\uff0c\u4fa7\u8fb9\u83dc\u5355\u5f00\u542f\u65f6\u4e5f\u4f1a\u51fa\u73b0\u5728\u4fa7\u8fb9\u83dc\u5355\u4e2d\u3002\u5f00\u542f\u671f\u95f4\u65e0\u6cd5\u62d6\u52a8\u6807\u7b7e\u9875\u8c03\u6574\u987a\u5e8f\u3002\u91cd\u542f Telegram \u540e\u751f\u6548.");
+        table.put("The gallery folder will change.",
+                "\u76f8\u518c\u6587\u4ef6\u5939\u5c06\u4f1a\u66f4\u6539.");
+        table.put("The keyboard closes when you start scrolling a chat. The emoji and sticker panel stays open.",
+                "\u5f00\u59cb\u6eda\u52a8\u804a\u5929\u65f6\u952e\u76d8\u4f1a\u6536\u8d77\u3002\u8868\u60c5\u548c\u8d34\u7eb8\u9762\u677f\u4fdd\u6301\u6253\u5f00.");
+        table.put("The line at the bottom of the long-press menu that names a message's emoji pack is gone. The rest of the menu works as before.",
+                "\u957f\u6309\u83dc\u5355\u5e95\u90e8\u6ce8\u660e\u6d88\u606f\u6240\u7528\u8868\u60c5\u5305\u7684\u90a3\u4e00\u884c\u4f1a\u6d88\u5931\u3002\u83dc\u5355\u7684\u5176\u4f59\u90e8\u5206\u7167\u5e38\u5de5\u4f5c.");
+        table.put("The menu at the top of the chat list always has Proxy, so your proxies are one tap away even where Telegram isn't blocked.",
+                "\u804a\u5929\u5217\u8868\u9876\u90e8\u7684\u83dc\u5355\u4e2d\u59cb\u7ec8\u6709\u201c\u4ee3\u7406\u201d\uff0c\u5373\u4f7f\u5728 Telegram \u672a\u88ab\u5c01\u9501\u7684\u5730\u65b9\uff0c\u70b9\u6309\u4e00\u4e0b\u4e5f\u80fd\u627e\u5230\u4f60\u7684\u4ee3\u7406.");
+        table.put("The message box's text menu gets Right to left and Left to right for the lines you selected, and Control character for invisible marks like RLM or ZWJ.",
+                "\u8f93\u5165\u6846\u7684\u6587\u5b57\u83dc\u5355\u4f1a\u4e3a\u4f60\u9009\u4e2d\u7684\u884c\u6dfb\u52a0\u201c\u4ece\u53f3\u5230\u5de6\u201d\u548c\u201c\u4ece\u5de6\u5230\u53f3\u201d\uff0c\u5e76\u4e3a RLM \u6216 ZWJ \u7b49\u4e0d\u53ef\u89c1\u6807\u8bb0\u6dfb\u52a0\u201c\u63a7\u5236\u5b57\u7b26\u201d.");
+        table.put("The music player's menu gets Lyrics. They come from lrclib.net, and timed ones follow along with the song.",
+                "\u97f3\u4e50\u64ad\u653e\u5668\u7684\u83dc\u5355\u4e2d\u4f1a\u51fa\u73b0\u201c\u6b4c\u8bcd\u201d\u3002\u6b4c\u8bcd\u6765\u81ea lrclib.net\uff0c\u5e26\u65f6\u95f4\u8f74\u7684\u6b4c\u8bcd\u4f1a\u8ddf\u968f\u6b4c\u66f2\u6eda\u52a8.");
+        table.put("The newest HushTelegram release is %1$s.",
+                "HushTelegram \u7684\u6700\u65b0\u7248\u672c\u662f %1$s.");
+        table.put("The number from a profile's ID row, or a chat ID the way bots write it.",
+                "\u4e2a\u4eba\u8d44\u6599\u4e2d ID \u884c\u7684\u6570\u5b57\uff0c\u6216\u673a\u5668\u4eba\u6240\u5199\u683c\u5f0f\u7684\u804a\u5929 ID.");
+        table.put("The phone number screen always has the proxy button, so you can add a proxy before you sign in.",
+                "\u624b\u673a\u53f7\u7801\u9875\u9762\u59cb\u7ec8\u663e\u793a\u4ee3\u7406\u6309\u94ae\uff0c\u65b9\u4fbf\u4f60\u5728\u767b\u5f55\u524d\u6dfb\u52a0\u4ee3\u7406.");
+        table.put("The report couldn't be saved yet. Try again in a moment.",
+                "\u62a5\u544a\u6682\u65f6\u65e0\u6cd5\u4fdd\u5b58\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
+        table.put("The round share button beside channel posts goes away, in the channel and wherever a post is forwarded. A post's own menu still forwards it. Bots and Saved Messages keep theirs. A chat picks this up the next time you open it.",
+                "\u9891\u9053\u5e16\u5b50\u65c1\u7684\u5706\u5f62\u5206\u4eab\u6309\u94ae\u4f1a\u6d88\u5931\uff0c\u5728\u9891\u9053\u5185\u548c\u5e16\u5b50\u88ab\u8f6c\u53d1\u5230\u7684\u4efb\u4f55\u5730\u65b9\u90fd\u662f\u5982\u6b64\u3002\u5e16\u5b50\u81ea\u5df1\u7684\u83dc\u5355\u4ecd\u53ef\u8f6c\u53d1\u3002\u673a\u5668\u4eba\u548c\u201c\u6211\u7684\u6536\u85cf\u201d\u4fdd\u7559\u8be5\u6309\u94ae\u3002\u4e0b\u6b21\u6253\u5f00\u804a\u5929\u65f6\u751f\u6548.");
+        table.put("The row of reactions at the top of the long-press menu, the panel it opens and the reaction bubble over a selected message are gone. The rest of the menu works as before.",
+                "\u957f\u6309\u83dc\u5355\u9876\u90e8\u7684\u8868\u60c5\u56de\u5e94\u680f\u3001\u5b83\u6253\u5f00\u7684\u9762\u677f\uff0c\u4ee5\u53ca\u9009\u4e2d\u6d88\u606f\u4e0a\u65b9\u7684\u8868\u60c5\u56de\u5e94\u6c14\u6ce1\u90fd\u4f1a\u6d88\u5931\u3002\u83dc\u5355\u7684\u5176\u4f59\u90e8\u5206\u7167\u5e38\u5de5\u4f5c.");
+        table.put("The row of reactions under each message isn't drawn. Nothing is removed, so turn it off and they're back. Tags in Saved Messages stay.",
+                "\u4e0d\u518d\u7ed8\u5236\u6bcf\u6761\u6d88\u606f\u4e0b\u65b9\u7684\u8868\u60c5\u56de\u5e94\u3002\u4e0d\u4f1a\u79fb\u9664\u4efb\u4f55\u5185\u5bb9\uff0c\u5173\u95ed\u540e\u5b83\u4eec\u5c31\u4f1a\u56de\u6765\u3002\u201c\u6211\u7684\u6536\u85cf\u201d\u4e2d\u7684\u6807\u7b7e\u4fdd\u7559.");
+        table.put("The server behind %1$s is down for now. Wake-ups come back once it's up.",
+                "%1$s \u80cc\u540e\u7684\u670d\u52a1\u5668\u6682\u65f6\u4e0d\u53ef\u7528\u3002\u670d\u52a1\u5668\u6062\u590d\u540e\uff0c\u5524\u9192\u4e5f\u4f1a\u6062\u590d.");
+        table.put("The sticker keyboard's Trending tab and row and the emoji keyboard's trending packs go away, so both list only packs you've added. Search and the Stickers and Emoji screen still show them. A chat picks this up the next time you open it.",
+                "\u8d34\u7eb8\u952e\u76d8\u4e2d\u7684\u201c\u70ed\u95e8\u201d\u6807\u7b7e\u9875\u548c\u70ed\u95e8\u4e00\u680f\uff0c\u4ee5\u53ca\u8868\u60c5\u952e\u76d8\u4e2d\u7684\u70ed\u95e8\u5305\u90fd\u4f1a\u6d88\u5931\uff0c\u4e24\u8005\u90fd\u53ea\u5217\u51fa\u4f60\u5df2\u6dfb\u52a0\u7684\u5305\u3002\u641c\u7d22\u548c\u201c\u8d34\u7eb8\u4e0e\u8868\u60c5\u201d\u9875\u9762\u4ecd\u4f1a\u663e\u793a\u5b83\u4eec\u3002\u4e0b\u6b21\u6253\u5f00\u804a\u5929\u65f6\u751f\u6548.");
+        table.put("The sticker size will change.",
+                "\u8d34\u7eb8\u5927\u5c0f\u5c06\u4f1a\u66f4\u6539.");
+        table.put("The translation language will change.",
+                "\u7ffb\u8bd1\u8bed\u8a00\u5c06\u4f1a\u66f4\u6539.");
+        table.put("Theme",
+                "\u4e3b\u9898");
+        table.put("There are no filters to try yet.",
+                "\u8fd8\u6ca1\u6709\u53ef\u6d4b\u8bd5\u7684\u8fc7\u6ee4\u6761\u4ef6.");
+        table.put("There are no kept messages to clear.",
+                "\u6ca1\u6709\u53ef\u6e05\u9664\u7684\u4fdd\u7559\u6d88\u606f.");
+        table.put("There were no folders from HushTelegram to remove.",
+                "\u6ca1\u6709 HushTelegram \u521b\u5efa\u7684\u6587\u4ef6\u5939\u53ef\u79fb\u9664.");
+        table.put("There's no diagnostic data to clear.",
+                "\u6ca1\u6709\u53ef\u6e05\u9664\u7684\u8bca\u65ad\u6570\u636e.");
+        table.put("There's no diagnostic data to put back.",
+                "\u6ca1\u6709\u53ef\u6062\u590d\u7684\u8bca\u65ad\u6570\u636e.");
+        table.put("There's no edit history to clear.",
+                "\u6ca1\u6709\u53ef\u6e05\u9664\u7684\u7f16\u8f91\u5386\u53f2.");
+        table.put("These chats follow Ghost mode again.",
+                "\u8fd9\u4e9b\u804a\u5929\u91cd\u65b0\u8ddf\u968f\u201c\u5e7d\u7075\u6a21\u5f0f\u201d.");
+        table.put("This account is powered off.",
+                "\u6b64\u8d26\u53f7\u5df2\u505c\u7528.");
+        table.put("This app hasn't seen that ID yet",
+                "\u8fd9\u4e2a\u5e94\u7528\u8fd8\u6ca1\u89c1\u8fc7\u8fd9\u4e2a ID");
+        table.put("This chat doesn't allow saving",
+                "\u6b64\u804a\u5929\u4e0d\u5141\u8bb8\u4fdd\u5b58");
+        table.put("This chat shows the original messages",
+                "\u6b64\u804a\u5929\u663e\u793a\u539f\u59cb\u6d88\u606f");
+        table.put("This chat will be translated",
+                "\u5c06\u7ffb\u8bd1\u6b64\u804a\u5929");
+        table.put("This covers every account in this Telegram app.",
+                "\u8fd9\u9002\u7528\u4e8e\u6b64 Telegram \u5e94\u7528\u4e2d\u7684\u6240\u6709\u8d26\u53f7.");
+        table.put("This field is too long. Use %1$d characters or fewer.",
+                "\u6b64\u5b57\u6bb5\u592a\u957f\u3002\u8bf7\u4f7f\u7528\u4e0d\u8d85\u8fc7 %1$d \u4e2a\u5b57\u7b26.");
+        table.put("This list is too long for a settings file. Remove a few lines.",
+                "\u8fd9\u4e2a\u5217\u8868\u592a\u957f\uff0c\u65e0\u6cd5\u653e\u8fdb\u8bbe\u7f6e\u6587\u4ef6\u3002\u8bf7\u5220\u9664\u51e0\u884c.");
+        table.put("This network is metered.",
+                "\u6b64\u7f51\u7edc\u6309\u6d41\u91cf\u8ba1\u8d39.");
+        table.put("This network isn't metered.",
+                "\u6b64\u7f51\u7edc\u4e0d\u6309\u6d41\u91cf\u8ba1\u8d39.");
+        table.put("This only shows what's saved on this phone. It doesn't prove notifications will arrive.",
+                "\u8fd9\u91cc\u53ea\u663e\u793a\u672c\u673a\u4fdd\u5b58\u7684\u4fe1\u606f\uff0c\u4e0d\u80fd\u8bc1\u660e\u4e00\u5b9a\u4f1a\u6536\u5230\u901a\u77e5.");
+    }
+
+    private static void fillZh_Hans18(Map<String, String> table) {
+        table.put("This patched app changes %1$s but not %2$s.",
+                "\u8fd9\u4e2a\u5df2\u6253\u8865\u4e01\u7684\u5e94\u7528\u4f1a\u66f4\u6539%1$s\uff0c\u4f46\u4e0d\u4f1a\u66f4\u6539%2$s.");
+        table.put("This patched app doesn't change %1$s.",
+                "\u8fd9\u4e2a\u5df2\u6253\u8865\u4e01\u7684\u5e94\u7528\u4e0d\u4f1a\u66f4\u6539%1$s.");
+        table.put("This phone has no file picker, so you can't choose a file here.",
+                "\u8fd9\u90e8\u624b\u673a\u6ca1\u6709\u6587\u4ef6\u9009\u62e9\u5668\uff0c\u56e0\u6b64\u65e0\u6cd5\u5728\u8fd9\u91cc\u9009\u62e9\u6587\u4ef6.");
+        table.put("This phone has no folder picker.",
+                "\u8fd9\u90e8\u624b\u673a\u6ca1\u6709\u6587\u4ef6\u5939\u9009\u62e9\u5668.");
+        table.put("This song is instrumental.",
+                "\u8fd9\u662f\u4e00\u9996\u7eaf\u97f3\u4e50.");
+        table.put("Those chats already have a rule.",
+                "\u8fd9\u4e24\u4e2a\u804a\u5929\u5df2\u7ecf\u6709\u89c4\u5219\u4e86.");
+        table.put("Those messages aren't all loaded",
+                "\u8fd9\u4e9b\u6d88\u606f\u5c1a\u672a\u5168\u90e8\u52a0\u8f7d");
+        table.put("Tick at least one kind of file.",
+                "\u8bf7\u81f3\u5c11\u52fe\u9009\u4e00\u79cd\u6587\u4ef6\u7c7b\u578b.");
+        table.put("Too many tries. Wait %1$s seconds and try again.",
+                "\u5c1d\u8bd5\u6b21\u6570\u8fc7\u591a\u3002\u8bf7\u7b49\u5f85 %1$s \u79d2\u540e\u91cd\u8bd5.");
+        table.put("Touch and keyboard",
+                "\u89e6\u63a7\u548c\u952e\u76d8");
+        table.put("Track this user",
+                "\u8ffd\u8e2a\u6b64\u7528\u6237");
+        table.put("Tracked people",
+                "\u8ffd\u8e2a\u7684\u4eba");
+        table.put("Tracking this user",
+                "\u6b63\u5728\u8ffd\u8e2a\u6b64\u7528\u6237");
+        table.put("Translate here",
+                "\u5728\u6b64\u7ffb\u8bd1");
+        table.put("Translate into",
+                "\u7ffb\u8bd1\u4e3a");
+        table.put("Translate this chat",
+                "\u7ffb\u8bd1\u6b64\u804a\u5929");
+        table.put("Translate with an outside service",
+                "\u4f7f\u7528\u5916\u90e8\u670d\u52a1\u7ffb\u8bd1");
+        table.put("Translation",
+                "\u7ffb\u8bd1");
+        table.put("Translation isn't available right now",
+                "\u6682\u65f6\u65e0\u6cd5\u7ffb\u8bd1");
+        table.put("Translation service",
+                "\u7ffb\u8bd1\u670d\u52a1");
+        table.put("Translation service saved.",
+                "\u5df2\u4fdd\u5b58\u7ffb\u8bd1\u670d\u52a1.");
+        table.put("Tries to help this patched Telegram sign up for push notifications with Firebase, Google's notification service, using Telegram's original certificate. Notification permission and battery settings still apply.",
+                "\u5c1d\u8bd5\u7528 Telegram \u7684\u539f\u59cb\u8bc1\u4e66\uff0c\u5e2e\u52a9\u8fd9\u4e2a\u5df2\u6253\u8865\u4e01\u7684 Telegram \u5728 Firebase\uff08Google \u7684\u901a\u77e5\u670d\u52a1\uff09\u6ce8\u518c\u63a8\u9001\u901a\u77e5\u3002\u901a\u77e5\u6743\u9650\u548c\u7535\u6c60\u8bbe\u7f6e\u4ecd\u7136\u6709\u6548.");
+        table.put("Try",
+                "\u8bd5\u8bd5");
+        table.put("Try a different word or clear the search.",
+                "\u6362\u4e2a\u8bcd\u8bd5\u8bd5\uff0c\u6216\u6e05\u9664\u641c\u7d22\u5185\u5bb9.");
+        table.put("Try a message",
+                "\u8bd5\u4e00\u6761\u6d88\u606f");
+        table.put("Try a message below to see which line would hide it. It isn't saved anywhere.",
+                "\u5728\u4e0b\u65b9\u8bd5\u4e00\u6761\u6d88\u606f\uff0c\u770b\u770b\u54ea\u4e00\u884c\u4f1a\u628a\u5b83\u9690\u85cf\u3002\u5b83\u4e0d\u4f1a\u4fdd\u5b58\u5728\u4efb\u4f55\u5730\u65b9.");
+        table.put("Try again, or go back to Telegram.",
+                "\u8bf7\u91cd\u8bd5\uff0c\u6216\u8fd4\u56de Telegram.");
+        table.put("Turn chat translation on again. It's now set per account.",
+                "\u8bf7\u91cd\u65b0\u5f00\u542f\u804a\u5929\u7ffb\u8bd1\u3002\u73b0\u5728\u5b83\u6309\u8d26\u53f7\u5206\u522b\u8bbe\u7f6e.");
+        table.put("Turn off Hide All Chats to drag tabs",
+                "\u5173\u95ed\u201c\u9690\u85cf\u2018\u6240\u6709\u804a\u5929\u2019\u201d\u624d\u80fd\u62d6\u52a8\u6807\u7b7e\u9875");
+        table.put("Turn off Telegram's update checks",
+                "\u5173\u95ed Telegram \u7684\u66f4\u65b0\u68c0\u67e5");
+        table.put("Turn off reaction effects",
+                "\u5173\u95ed\u8868\u60c5\u56de\u5e94\u7279\u6548");
+        table.put("Turn on a set of switches in one tap, or put every switch back the way it started.",
+                "\u4e00\u952e\u5f00\u542f\u4e00\u7ec4\u5f00\u5173\uff0c\u6216\u5c06\u6240\u6709\u5f00\u5173\u6062\u590d\u4e3a\u521d\u59cb\u72b6\u6001.");
+        table.put("Turn videos only from the full screen button",
+                "\u4ec5\u901a\u8fc7\u5168\u5c4f\u6309\u94ae\u65cb\u8f6c\u89c6\u9891");
+        table.put("Turned off: %1$s.",
+                "\u5df2\u5173\u95ed\uff1a%1$s.");
+        table.put("Turned on: %1$s.",
+                "\u5df2\u5f00\u542f\uff1a%1$s.");
+        table.put("Turning this on makes Private, Groups, Channels and Bots folders, as tabs above the chat list and on your other devices. Turning it off removes the ones it made, unless you renamed or changed them.",
+                "\u5f00\u542f\u540e\u4f1a\u521b\u5efa\u201c\u79c1\u804a\u201d\u3001\u201c\u7fa4\u7ec4\u201d\u3001\u201c\u9891\u9053\u201d\u548c\u201c\u673a\u5668\u4eba\u201d\u6587\u4ef6\u5939\uff0c\u663e\u793a\u4e3a\u804a\u5929\u5217\u8868\u4e0a\u65b9\u7684\u6807\u7b7e\u9875\uff0c\u4f60\u7684\u5176\u4ed6\u8bbe\u5907\u4e0a\u4e5f\u4f1a\u6709\u3002\u5173\u95ed\u540e\u4f1a\u79fb\u9664\u5b83\u521b\u5efa\u7684\u6587\u4ef6\u5939\uff0c\u9664\u975e\u4f60\u91cd\u547d\u540d\u6216\u4fee\u6539\u8fc7\u5b83\u4eec.");
+        table.put("Type a message to try the filters on.",
+                "\u8f93\u5165\u4e00\u6761\u6d88\u606f\u6765\u6d4b\u8bd5\u8fc7\u6ee4\u6761\u4ef6.");
+        table.put("Type a model name.",
+                "\u8bf7\u8f93\u5165\u6a21\u578b\u540d\u79f0.");
+        table.put("Type a user, group or channel ID to open that chat. It works for anyone this app has already seen, such as someone who wrote in a group you opened.",
+                "\u8f93\u5165\u7528\u6237\u3001\u7fa4\u7ec4\u6216\u9891\u9053 ID \u5373\u53ef\u6253\u5f00\u8be5\u804a\u5929\u3002\u53ea\u5bf9\u8fd9\u4e2a\u5e94\u7528\u5df2\u7ecf\u89c1\u8fc7\u7684\u5bf9\u8c61\u6709\u6548\uff0c\u4f8b\u5982\u5728\u4f60\u6253\u5f00\u8fc7\u7684\u7fa4\u7ec4\u4e2d\u53d1\u8fc7\u8a00\u7684\u4eba.");
+        table.put("Type the ID in numbers",
+                "\u8bf7\u7528\u6570\u5b57\u8f93\u5165 ID");
+        table.put("Type the passcode you use to unlock Telegram.",
+                "\u8bf7\u8f93\u5165\u4f60\u7528\u6765\u89e3\u9501 Telegram \u7684\u9501\u5b9a\u7801.");
+        table.put("Type what shows in place of Telegram's name while Your own chat list title is on. Empty keeps Telegram's name.",
+                "\u8f93\u5165\u201c\u81ea\u5b9a\u4e49\u804a\u5929\u5217\u8868\u6807\u9898\u201d\u5f00\u542f\u65f6\u4ee3\u66ff Telegram \u540d\u79f0\u663e\u793a\u7684\u6587\u5b57\u3002\u7559\u7a7a\u5219\u4fdd\u7559 Telegram \u7684\u540d\u79f0.");
+        table.put("Type your API key, or tap Use Google.",
+                "\u8bf7\u8f93\u5165\u4f60\u7684 API \u5bc6\u94a5\uff0c\u6216\u70b9\u6309\u201c\u4f7f\u7528 Google\u201d.");
+        table.put("Typing",
+                "\u6b63\u5728\u8f93\u5165");
+        table.put("Typing @ and a user ID, or tg://user?id= and the ID, turns into a real mention. It only works for people this app has already seen, such as in a chat or group. Anyone else is sent as typed.",
+                "\u8f93\u5165 @ \u52a0\u7528\u6237 ID\uff0c\u6216 tg://user?id= \u52a0 ID\uff0c\u4f1a\u53d8\u6210\u771f\u6b63\u7684\u63d0\u53ca\u3002\u53ea\u5bf9\u8fd9\u4e2a\u5e94\u7528\u5df2\u7ecf\u89c1\u8fc7\u7684\u4eba\u6709\u6548\uff0c\u4f8b\u5982\u5728\u67d0\u4e2a\u804a\u5929\u6216\u7fa4\u7ec4\u4e2d\u89c1\u8fc7\u7684\u4eba\u3002\u5176\u4ed6\u4eba\u5219\u6309\u8f93\u5165\u539f\u6837\u53d1\u9001.");
+        table.put("Typing in %1$s",
+                "\u6b63\u5728 %1$s \u4e2d\u8f93\u5165");
+        table.put("Typing in these chats for 10 minutes.",
+                "\u5728\u8fd9\u4e9b\u804a\u5929\u4e2d\u663e\u793a\u6b63\u5728\u8f93\u5165\uff0c\u6301\u7eed 10 \u5206\u949f.");
+        table.put("Undo",
+                "\u64a4\u9500");
+        table.put("Undo the last setup",
+                "\u64a4\u9500\u4e0a\u6b21\u8bbe\u7f6e");
+        table.put("UnifiedPush notifications",
+                "UnifiedPush \u901a\u77e5");
+        table.put("UnifiedPush: %1$s",
+                "UnifiedPush\uff1a%1$s");
+        table.put("Unknown",
+                "\u672a\u77e5");
+        table.put("Unlock",
+                "\u89e3\u9501");
+        table.put("Unlock Premium app icons",
+                "\u89e3\u9501 Premium \u5e94\u7528\u56fe\u6807");
+        table.put("Unlock Premium features",
+                "\u89e3\u9501 Premium \u529f\u80fd");
+        table.put("Unlock canceled. Settings stay locked.",
+                "\u5df2\u53d6\u6d88\u89e3\u9501\u3002\u8bbe\u7f6e\u4fdd\u6301\u9501\u5b9a.");
+        table.put("Unlock now",
+                "\u7acb\u5373\u89e3\u9501");
+        table.put("Unlock started. Settings open in 24 hours unless you cancel.",
+                "\u5df2\u5f00\u59cb\u89e3\u9501\u3002\u9664\u975e\u4f60\u53d6\u6d88\uff0c\u8bbe\u7f6e\u5c06\u5728 24 \u5c0f\u65f6\u540e\u5f00\u653e.");
+        table.put("Unlock your phone to play voice and video messages.",
+                "\u89e3\u9501\u624b\u673a\u540e\u624d\u80fd\u64ad\u653e\u8bed\u97f3\u548c\u89c6\u9891\u6d88\u606f.");
+        table.put("Unpin",
+                "\u53d6\u6d88\u7f6e\u9876");
+    }
+
+    private static void fillZh_Hans19(Map<String, String> table) {
+        table.put("Unpinned proxies sort by speed again.",
+                "\u672a\u7f6e\u9876\u7684\u4ee3\u7406\u91cd\u65b0\u6309\u901f\u5ea6\u6392\u5e8f.");
+        table.put("Unpinned.",
+                "\u5df2\u53d6\u6d88\u7f6e\u9876.");
+        table.put("Untick a part to leave it out. Copy and Save use only what's ticked.",
+                "\u53d6\u6d88\u52fe\u9009\u67d0\u90e8\u5206\u5373\u53ef\u5c06\u5176\u6392\u9664\u3002\u201c\u590d\u5236\u201d\u548c\u201c\u4fdd\u5b58\u201d\u53ea\u4f7f\u7528\u5df2\u52fe\u9009\u7684\u5185\u5bb9.");
+        table.put("Until you delete them",
+                "\u76f4\u5230\u4f60\u5220\u9664");
+        table.put("Until you resume, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.",
+                "\u5728\u4f60\u6062\u590d\u4e4b\u524d\uff0c\u9664\u201c\u8c03\u8bd5\u65e5\u5fd7\u201d\u5916\uff0c\u6240\u6709\u5f00\u5173\u90fd\u6309\u5173\u95ed\u5904\u7406\u3002\u4f60\u7684\u9009\u62e9\u4ecd\u4f1a\u4fdd\u5b58\u3002\u6253\u8865\u4e01\u65f6\u505a\u51fa\u7684\u4fee\u6539\u4ecd\u4f1a\u4fdd\u7559.");
+        table.put("Up to %1$s lists",
+                "\u6700\u591a %1$s \u4e2a\u5217\u8868");
+        table.put("Update HushTelegram to read that file. Nothing was changed.",
+                "\u8bf7\u5148\u66f4\u65b0 HushTelegram \u518d\u8bfb\u53d6\u8be5\u6587\u4ef6\u3002\u6ca1\u6709\u505a\u4efb\u4f55\u66f4\u6539.");
+        table.put("Updates",
+                "\u66f4\u65b0");
+        table.put("Uploads keep four times as many pieces on their way at once. Telegram's servers still decide how fast an account can send. The next upload picks this up.",
+                "\u4e0a\u4f20\u65f6\u540c\u65f6\u53d1\u9001\u7684\u5206\u5757\u6570\u91cf\u53d8\u4e3a\u539f\u6765\u7684\u56db\u500d\u3002\u8d26\u53f7\u7684\u53d1\u9001\u901f\u5ea6\u4ecd\u7531 Telegram \u7684\u670d\u52a1\u5668\u51b3\u5b9a\u3002\u4e0b\u4e00\u6b21\u4e0a\u4f20\u65f6\u751f\u6548.");
+        table.put("Usage reports",
+                "\u4f7f\u7528\u60c5\u51b5\u62a5\u544a");
+        table.put("Usage reports and call diagnostics",
+                "\u4f7f\u7528\u60c5\u51b5\u62a5\u544a\u548c\u901a\u8bdd\u8bca\u65ad");
+        table.put("Use Google",
+                "\u4f7f\u7528 Google");
+        table.put("Use normal paste",
+                "\u4f7f\u7528\u666e\u901a\u7c98\u8d34");
+        table.put("Use system font",
+                "\u4f7f\u7528\u7cfb\u7edf\u5b57\u4f53");
+        table.put("Use the usual folder",
+                "\u4f7f\u7528\u9ed8\u8ba4\u6587\u4ef6\u5939");
+        table.put("User ID %1$s",
+                "\u7528\u6237 ID %1$s");
+        table.put("User or chat ID",
+                "\u7528\u6237\u6216\u804a\u5929 ID");
+        table.put("Version",
+                "\u7248\u672c");
+        table.put("Videos",
+                "\u89c6\u9891");
+        table.put("Videos, voice messages and music pick up where you left off, even short ones. Telegram only does that for long ones.",
+                "\u89c6\u9891\u3001\u8bed\u97f3\u6d88\u606f\u548c\u97f3\u4e50\u90fd\u4f1a\u4ece\u4f60\u4e0a\u6b21\u505c\u4e0b\u7684\u5730\u65b9\u7ee7\u7eed\u64ad\u653e\uff0c\u5373\u4f7f\u5f88\u77ed\u4e5f\u662f\u5982\u6b64\u3002Telegram \u672c\u8eab\u53ea\u5bf9\u8f83\u957f\u7684\u5185\u5bb9\u8fd9\u6837\u505a.");
+        table.put("View stories anonymously",
+                "\u533f\u540d\u67e5\u770b\u52a8\u6001");
+        table.put("View-once and timed photos, videos and voice messages someone sends you stay in the chat after you open them, with no timer. The sender doesn't see them opened. Secret chats work as usual.",
+                "\u522b\u4eba\u53d1\u7ed9\u4f60\u7684\u4ec5\u67e5\u770b\u4e00\u6b21\u548c\u9605\u540e\u5373\u711a\u7684\u7167\u7247\u3001\u89c6\u9891\u548c\u8bed\u97f3\u6d88\u606f\uff0c\u5728\u4f60\u6253\u5f00\u540e\u4f1a\u7559\u5728\u804a\u5929\u4e2d\uff0c\u4e0d\u518d\u8ba1\u65f6\u3002\u53d1\u9001\u8005\u770b\u4e0d\u5230\u4f60\u5df2\u6253\u5f00\u3002\u79c1\u5bc6\u804a\u5929\u7167\u5e38\u5904\u7406.");
+        table.put("Voice chats and live streams only",
+                "\u4ec5\u8bed\u97f3\u804a\u5929\u548c\u76f4\u64ad");
+        table.put("Voice messages",
+                "\u8bed\u97f3\u6d88\u606f");
+        table.put("Voice messages in the music player",
+                "\u5728\u97f3\u4e50\u64ad\u653e\u5668\u4e2d\u64ad\u653e\u8bed\u97f3\u6d88\u606f");
+        table.put("Volume keys only change the volume. They no longer start the video or round video on screen with sound. Tap a video to hear it.",
+                "\u97f3\u91cf\u952e\u53ea\u8c03\u8282\u97f3\u91cf\uff0c\u4e0d\u518d\u8ba9\u5c4f\u5e55\u4e0a\u7684\u89c6\u9891\u6216\u5706\u5f62\u89c6\u9891\u5e26\u58f0\u97f3\u5f00\u59cb\u64ad\u653e\u3002\u70b9\u6309\u89c6\u9891\u5373\u53ef\u542c\u5230\u58f0\u97f3.");
+        table.put("Wait %1$s seconds, then try again.",
+                "\u8bf7\u7b49\u5f85 %1$s \u79d2\u540e\u518d\u8bd5.");
+        table.put("Wait for the settings import to finish, then save again.",
+                "\u8bf7\u7b49\u8bbe\u7f6e\u5bfc\u5165\u5b8c\u6210\u540e\u518d\u4fdd\u5b58.");
+        table.put("Waiting",
+                "\u7b49\u5f85\u4e2d");
+        table.put("Waiting for Telegram.",
+                "\u6b63\u5728\u7b49\u5f85 Telegram.");
+        table.put("Ways in",
+                "\u5165\u53e3");
+        table.put("Ways to open these settings",
+                "\u6253\u5f00\u8fd9\u4e9b\u8bbe\u7f6e\u7684\u65b9\u5f0f");
+        table.put("Went offline",
+                "\u4e0b\u7ebf");
+        table.put("Went offline, last seen %1$s",
+                "\u4e0b\u7ebf\uff0c\u6700\u8fd1\u4e0a\u7ebf\uff1a%1$s");
+        table.put("What to copy",
+                "\u590d\u5236\u54ea\u4e9b\u6587\u4ef6");
+        table.put("What to forward",
+                "\u8f6c\u53d1\u54ea\u4e9b\u6d88\u606f");
+        table.put("What you type in the main search isn't sent to Telegram, except in the Posts tab. The Chats tab finds your chats and contacts on this phone, plus recent searches, but not messages or public accounts. Channels, Apps, the media tabs and chat or date filters don't search for typed text. Search inside a chat still goes to Telegram.",
+                "\u4f60\u5728\u4e3b\u641c\u7d22\u4e2d\u8f93\u5165\u7684\u5185\u5bb9\u4e0d\u4f1a\u53d1\u9001\u7ed9 Telegram\uff0c\u201c\u5e16\u5b50\u201d\u6807\u7b7e\u9875\u9664\u5916\u3002\u201c\u804a\u5929\u201d\u6807\u7b7e\u9875\u4f1a\u67e5\u627e\u8fd9\u90e8\u624b\u673a\u4e0a\u7684\u804a\u5929\u548c\u8054\u7cfb\u4eba\u4ee5\u53ca\u6700\u8fd1\u7684\u641c\u7d22\uff0c\u4f46\u4e0d\u4f1a\u67e5\u627e\u6d88\u606f\u6216\u516c\u5f00\u8d26\u53f7\u3002\u201c\u9891\u9053\u201d\u3001\u201c\u5e94\u7528\u201d\u3001\u5404\u4e2a\u5a92\u4f53\u6807\u7b7e\u9875\u4ee5\u53ca\u804a\u5929\u6216\u65e5\u671f\u7b5b\u9009\u4e0d\u4f1a\u641c\u7d22\u4f60\u8f93\u5165\u7684\u6587\u5b57\u3002\u5728\u804a\u5929\u5185\u641c\u7d22\u4ecd\u4f1a\u53d1\u9001\u7ed9 Telegram.");
+        table.put("When Telegram can't finish a crop, the editor stays open and asks you to try again, so the part you cropped out never gets sent. Covers photos and profile pictures. Videos crop as usual.",
+                "Telegram \u65e0\u6cd5\u5b8c\u6210\u88c1\u526a\u65f6\uff0c\u7f16\u8f91\u5668\u4f1a\u4fdd\u6301\u6253\u5f00\u5e76\u8bf7\u4f60\u91cd\u8bd5\uff0c\u8fd9\u6837\u4f60\u88c1\u6389\u7684\u90e8\u5206\u7edd\u4e0d\u4f1a\u88ab\u53d1\u9001\u51fa\u53bb\u3002\u9002\u7528\u4e8e\u7167\u7247\u548c\u5934\u50cf\u3002\u89c6\u9891\u7167\u5e38\u88c1\u526a.");
+        table.put("When a chat search lands on a match inside a collapsed quote, the quote opens so the highlighted match stays in view.",
+                "\u804a\u5929\u641c\u7d22\u7684\u5339\u914d\u9879\u4f4d\u4e8e\u6298\u53e0\u7684\u5f15\u7528\u4e2d\u65f6\uff0c\u8be5\u5f15\u7528\u4f1a\u5c55\u5f00\uff0c\u8ba9\u9ad8\u4eae\u7684\u5339\u914d\u5185\u5bb9\u4fdd\u6301\u53ef\u89c1.");
+        table.put("When a voice or video message ends, the next one doesn't start by itself.",
+                "\u8bed\u97f3\u6216\u89c6\u9891\u6d88\u606f\u64ad\u653e\u7ed3\u675f\u540e\uff0c\u4e0b\u4e00\u6761\u4e0d\u4f1a\u81ea\u52a8\u5f00\u59cb\u64ad\u653e.");
+        table.put("When someone asks for a secret chat, this phone ignores it. Nothing is saved or shown, and nothing is sent back, so they just see it waiting. Secret chats you already have keep working.",
+                "\u6709\u4eba\u8bf7\u6c42\u79c1\u5bc6\u804a\u5929\u65f6\uff0c\u8fd9\u90e8\u624b\u673a\u4f1a\u5ffd\u7565\u5b83\u3002\u4e0d\u4f1a\u4fdd\u5b58\u6216\u663e\u793a\u4efb\u4f55\u5185\u5bb9\uff0c\u4e5f\u4e0d\u4f1a\u56de\u590d\uff0c\u6240\u4ee5\u5bf9\u65b9\u53ea\u4f1a\u770b\u5230\u8bf7\u6c42\u4e00\u76f4\u5728\u7b49\u5f85\u3002\u4f60\u5df2\u6709\u7684\u79c1\u5bc6\u804a\u5929\u7167\u5e38\u5de5\u4f5c.");
+        table.put("When someone deletes a whole chat for both of you, your own messages stay here along with theirs. So do messages you delete on another of your devices. Works with Keep deleted messages on.",
+                "\u6709\u4eba\u4e3a\u4f60\u4eec\u53cc\u65b9\u5220\u9664\u6574\u4e2a\u804a\u5929\u65f6\uff0c\u4f60\u81ea\u5df1\u7684\u6d88\u606f\u4f1a\u548c\u5bf9\u65b9\u7684\u6d88\u606f\u4e00\u8d77\u7559\u5728\u8fd9\u91cc\u3002\u4f60\u5728\u5176\u4ed6\u8bbe\u5907\u4e0a\u5220\u9664\u7684\u6d88\u606f\u4e5f\u662f\u5982\u6b64\u3002\u5728\u201c\u4fdd\u7559\u5df2\u5220\u9664\u6d88\u606f\u201d\u5f00\u542f\u65f6\u751f\u6548.");
+        table.put("When someone reacts to a message, the emoji doesn't fly across the screen and burst. The reaction still shows on the message.",
+                "\u6709\u4eba\u5bf9\u6d88\u606f\u505a\u51fa\u8868\u60c5\u56de\u5e94\u65f6\uff0c\u8868\u60c5\u4e0d\u4f1a\u98de\u8fc7\u5c4f\u5e55\u5e76\u7206\u5f00\u3002\u8868\u60c5\u56de\u5e94\u4ecd\u4f1a\u663e\u793a\u5728\u6d88\u606f\u4e0a.");
+        table.put("When you add someone as a contact from their chat, Telegram ticks the box that shares your phone number with them. With this on, the box starts clear and your number goes only if you tick it.",
+                "\u4ece\u5bf9\u65b9\u7684\u804a\u5929\u4e2d\u6dfb\u52a0\u8054\u7cfb\u4eba\u65f6\uff0cTelegram \u4f1a\u52fe\u9009\u4e0e\u5bf9\u65b9\u5206\u4eab\u4f60\u624b\u673a\u53f7\u7801\u7684\u9009\u9879\u3002\u5f00\u542f\u540e\uff0c\u8be5\u9009\u9879\u9ed8\u8ba4\u4e0d\u52fe\u9009\uff0c\u53ea\u6709\u4f60\u52fe\u9009\u65f6\u624d\u4f1a\u5206\u4eab\u53f7\u7801.");
+        table.put("When you delete messages in a chat with a person, Telegram's Also delete for box starts checked, so they're deleted for both of you. Uncheck it to delete them just for you.",
+                "\u5728\u4e0e\u67d0\u4e2a\u4eba\u7684\u804a\u5929\u4e2d\u5220\u9664\u6d88\u606f\u65f6\uff0cTelegram \u7684\u201c\u540c\u65f6\u4e3a\u2026\u5220\u9664\u201d\u590d\u9009\u6846\u4f1a\u9884\u5148\u52fe\u9009\uff0c\u6d88\u606f\u4f1a\u4e3a\u4f60\u4eec\u53cc\u65b9\u5220\u9664\u3002\u53d6\u6d88\u52fe\u9009\u5373\u53ef\u53ea\u4e3a\u4f60\u81ea\u5df1\u5220\u9664.");
+        table.put("When you remove or reorder photos that each have a caption, every caption stays with its own photo.",
+                "\u79fb\u9664\u6216\u91cd\u65b0\u6392\u5217\u5404\u81ea\u5e26\u6709\u8bf4\u660e\u7684\u7167\u7247\u65f6\uff0c\u6bcf\u6761\u8bf4\u660e\u90fd\u4f1a\u8ddf\u7740\u81ea\u5df1\u7684\u7167\u7247.");
+        table.put("When you send a message in a chat, the read receipt Ghost mode held back there goes out too, so your other devices stop showing it unread. Works with Ghost mode and No read receipts on.",
+                "\u5728\u804a\u5929\u4e2d\u53d1\u9001\u6d88\u606f\u65f6\uff0c\u201c\u5e7d\u7075\u6a21\u5f0f\u201d\u5728\u8be5\u804a\u5929\u4e2d\u6682\u7f13\u53d1\u9001\u7684\u5df2\u8bfb\u56de\u6267\u4e5f\u4f1a\u4e00\u8d77\u53d1\u51fa\uff0c\u8fd9\u6837\u4f60\u7684\u5176\u4ed6\u8bbe\u5907\u5c31\u4e0d\u518d\u663e\u793a\u4e3a\u672a\u8bfb\u3002\u5728\u201c\u5e7d\u7075\u6a21\u5f0f\u201d\u548c\u201c\u4e0d\u53d1\u9001\u5df2\u8bfb\u56de\u6267\u201d\u5f00\u542f\u65f6\u751f\u6548.");
+        table.put("When you sign up a phone number that's new to Telegram, people who have it saved aren't told you joined. Accounts that already exist aren't affected.",
+                "\u7528 Telegram \u4e0a\u7684\u65b0\u53f7\u7801\u6ce8\u518c\u65f6\uff0c\u4fdd\u5b58\u4e86\u8fd9\u4e2a\u53f7\u7801\u7684\u4eba\u4e0d\u4f1a\u6536\u5230\u4f60\u52a0\u5165\u7684\u901a\u77e5\u3002\u5df2\u6709\u8d26\u53f7\u4e0d\u53d7\u5f71\u54cd.");
+        table.put("When your chat list is short, Telegram lists your contacts below it. This hides that list and its heading. Chats, folders and search stay.",
+                "\u804a\u5929\u5217\u8868\u8f83\u77ed\u65f6\uff0cTelegram \u4f1a\u5728\u4e0b\u65b9\u5217\u51fa\u4f60\u7684\u8054\u7cfb\u4eba\u3002\u6b64\u5f00\u5173\u4f1a\u9690\u85cf\u8be5\u5217\u8868\u53ca\u5176\u6807\u9898\u3002\u804a\u5929\u3001\u6587\u4ef6\u5939\u548c\u641c\u7d22\u4e0d\u53d7\u5f71\u54cd.");
+        table.put("While Android's Data Saver is on and the network is metered, Telegram doesn't start photos, videos, files, voice messages, music or stories downloading on its own, and stops the ones in its download queue. What you tap still downloads.",
+                "\u5f53 Android \u7684\u6d41\u91cf\u8282\u7701\u7a0b\u5e8f\u5f00\u542f\u4e14\u7f51\u7edc\u6309\u6d41\u91cf\u8ba1\u8d39\u65f6\uff0cTelegram \u4e0d\u4f1a\u81ea\u884c\u5f00\u59cb\u4e0b\u8f7d\u7167\u7247\u3001\u89c6\u9891\u3001\u6587\u4ef6\u3001\u8bed\u97f3\u6d88\u606f\u3001\u97f3\u4e50\u6216\u52a8\u6001\uff0c\u5e76\u4f1a\u505c\u6b62\u4e0b\u8f7d\u961f\u5217\u4e2d\u7684\u9879\u76ee\u3002\u4f60\u70b9\u6309\u7684\u5185\u5bb9\u4ecd\u4f1a\u4e0b\u8f7d.");
+        table.put("While a voice message plays, tapping the bar above the chat opens the full music player, where you can drag to skip around, instead of jumping to the message.",
+                "\u64ad\u653e\u8bed\u97f3\u6d88\u606f\u65f6\uff0c\u70b9\u6309\u804a\u5929\u4e0a\u65b9\u7684\u64ad\u653e\u680f\u4f1a\u6253\u5f00\u5b8c\u6574\u7684\u97f3\u4e50\u64ad\u653e\u5668\uff0c\u4f60\u53ef\u4ee5\u5728\u5176\u4e2d\u62d6\u52a8\u8fdb\u5ea6\uff0c\u800c\u4e0d\u662f\u8df3\u8f6c\u5230\u8be5\u6d88\u606f.");
+        table.put("While your phone is locked, voice and round video messages don't start, resume or skip to the next one, whether from headphones, a car, the notification or the lock screen. One that's already playing finishes. Music and other videos play as usual.",
+                "\u624b\u673a\u9501\u5b9a\u65f6\uff0c\u65e0\u8bba\u662f\u901a\u8fc7\u8033\u673a\u3001\u8f66\u8f7d\u8bbe\u5907\u3001\u901a\u77e5\u8fd8\u662f\u9501\u5c4f\uff0c\u8bed\u97f3\u6d88\u606f\u548c\u5706\u5f62\u89c6\u9891\u90fd\u4e0d\u4f1a\u5f00\u59cb\u64ad\u653e\u3001\u7ee7\u7eed\u64ad\u653e\u6216\u8df3\u5230\u4e0b\u4e00\u6761\u3002\u6b63\u5728\u64ad\u653e\u7684\u4f1a\u64ad\u5b8c\u3002\u97f3\u4e50\u548c\u5176\u4ed6\u89c6\u9891\u7167\u5e38\u64ad\u653e.");
+        table.put("With Save downloaded files on, files from chats whose owner turned off saving get copied too. Only use it where the owner is fine with you keeping a copy, since it goes past their setting. Secret chats need Also save from secret chats too.",
+                "\u5728\u201c\u4fdd\u5b58\u4e0b\u8f7d\u7684\u6587\u4ef6\u201d\u5f00\u542f\u65f6\uff0c\u6240\u6709\u8005\u5df2\u5173\u95ed\u4fdd\u5b58\u7684\u804a\u5929\u4e2d\u7684\u6587\u4ef6\u4e5f\u4f1a\u88ab\u590d\u5236\u3002\u8fd9\u4f1a\u7ed5\u8fc7\u6240\u6709\u8005\u7684\u8bbe\u7f6e\uff0c\u6240\u4ee5\u53ea\u5728\u6240\u6709\u8005\u540c\u610f\u4f60\u4fdd\u7559\u526f\u672c\u65f6\u4f7f\u7528\u3002\u79c1\u5bc6\u804a\u5929\u8fd8\u9700\u8981\u5f00\u542f\u201c\u4e5f\u4fdd\u5b58\u79c1\u5bc6\u804a\u5929\u4e2d\u7684\u6587\u4ef6\u201d.");
+        table.put("With Save downloaded files on, view-once and self-destructing photos, videos, voice and video messages get copied to Download/Telegram when they download. The sender meant them to disappear, so only use it where they're fine with you keeping a copy. Secret chats need Also save from secret chats too.",
+                "\u5728\u201c\u4fdd\u5b58\u4e0b\u8f7d\u7684\u6587\u4ef6\u201d\u5f00\u542f\u65f6\uff0c\u4ec5\u67e5\u770b\u4e00\u6b21\u548c\u9605\u540e\u5373\u711a\u7684\u7167\u7247\u3001\u89c6\u9891\u3001\u8bed\u97f3\u6d88\u606f\u548c\u89c6\u9891\u6d88\u606f\u4e0b\u8f7d\u540e\u4f1a\u590d\u5236\u5230 Download/Telegram\u3002\u53d1\u9001\u8005\u672c\u60f3\u8ba9\u5b83\u4eec\u6d88\u5931\uff0c\u6240\u4ee5\u53ea\u5728\u5bf9\u65b9\u540c\u610f\u4f60\u4fdd\u7559\u526f\u672c\u65f6\u4f7f\u7528\u3002\u79c1\u5bc6\u804a\u5929\u8fd8\u9700\u8981\u5f00\u542f\u201c\u4e5f\u4fdd\u5b58\u79c1\u5bc6\u804a\u5929\u4e2d\u7684\u6587\u4ef6\u201d.");
+        table.put("With Sort chats by date on, the chat with the oldest last message comes first instead of the newest.",
+                "\u5728\u201c\u6309\u65e5\u671f\u6392\u5e8f\u804a\u5929\u201d\u5f00\u542f\u65f6\uff0c\u6700\u540e\u4e00\u6761\u6d88\u606f\u6700\u65e9\u7684\u804a\u5929\u6392\u5728\u6700\u524d\u9762\uff0c\u800c\u4e0d\u662f\u6700\u65b0\u7684.");
+        table.put("With a Telegram passcode set, Telegram locks a second or two after you leave it instead of waiting for Auto-lock. Turning this off brings your Auto-lock time back.",
+                "\u8bbe\u7f6e\u4e86 Telegram \u9501\u5b9a\u7801\u540e\uff0c\u79bb\u5f00 Telegram \u4e00\u4e24\u79d2\u5c31\u4f1a\u9501\u5b9a\uff0c\u800c\u4e0d\u662f\u7b49\u5230\u201c\u81ea\u52a8\u9501\u5b9a\u201d\u65f6\u95f4\u3002\u5173\u95ed\u540e\u4f1a\u6062\u590d\u4f60\u7684\u201c\u81ea\u52a8\u9501\u5b9a\u201d\u65f6\u95f4.");
+        table.put("With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.",
+                "\u8bbe\u7f6e\u5bc6\u94a5\u540e\uff0c\u4f60\u7ffb\u8bd1\u7684\u6587\u5b57\u4f1a\u53d1\u9001\u5230\u8fd9\u4e2a AI \u670d\u52a1\uff0c\u800c\u4e0d\u662f Google\u3002\u4efb\u4f55\u63a5\u53d7 OpenAI \u804a\u5929\u683c\u5f0f\u7684\u670d\u52a1\u90fd\u53ef\u4ee5\uff0c\u4f8b\u5982 OpenAI\u3001OpenRouter\u3001DeepSeek \u6216 Groq\u3002\u5bc6\u94a5\u53ea\u4fdd\u5b58\u5728\u8fd9\u90e8\u624b\u673a\u4e0a\uff0c\u7edd\u4e0d\u4f1a\u5199\u5165\u8bbe\u7f6e\u6587\u4ef6.");
+        table.put("Without caption",
+                "\u4e0d\u5e26\u8bf4\u660e");
+        table.put("Without push, turn both on to get messages on time. They're in Telegram's own Settings > Notifications, under Other.",
+                "\u6ca1\u6709\u63a8\u9001\u65f6\uff0c\u8bf7\u540c\u65f6\u5f00\u542f\u8fd9\u4e24\u9879\uff0c\u4ee5\u4fbf\u6309\u65f6\u6536\u5230\u6d88\u606f\u3002\u5b83\u4eec\u5728 Telegram \u81ea\u5df1\u7684\u201c\u8bbe\u7f6e > \u901a\u77e5\u201d\u4e2d\u7684\u201c\u5176\u5b83\u201d\u4e0b.");
+        table.put("Without sender name",
+                "\u4e0d\u5e26\u53d1\u9001\u8005\u540d\u79f0");
+    }
+
+    private static void fillZh_Hans20(Map<String, String> table) {
+        table.put("Without sender name or caption",
+                "\u4e0d\u5e26\u53d1\u9001\u8005\u540d\u79f0\u548c\u8bf4\u660e");
+        table.put("Works with Allow screenshots in chats that don't allow saving on. Secret chats, their photos and profiles can be captured too. Telegram tells the other person when you take one, unless Suppress screenshot notification is on. Their view-once media stays blocked.",
+                "\u5728\u201c\u5728\u4e0d\u5141\u8bb8\u4fdd\u5b58\u7684\u804a\u5929\u4e2d\u5141\u8bb8\u622a\u5c4f\u201d\u5f00\u542f\u65f6\u751f\u6548\u3002\u79c1\u5bc6\u804a\u5929\u53ca\u5176\u7167\u7247\u548c\u4e2a\u4eba\u8d44\u6599\u4e5f\u53ef\u4ee5\u622a\u5c4f\u3002\u4f60\u622a\u5c4f\u65f6 Telegram \u4f1a\u901a\u77e5\u5bf9\u65b9\uff0c\u9664\u975e\u5f00\u542f\u4e86\u201c\u9690\u85cf\u622a\u5c4f\u901a\u77e5\u201d\u3002\u5bf9\u65b9\u7684\u4ec5\u67e5\u770b\u4e00\u6b21\u7684\u5a92\u4f53\u4ecd\u7981\u6b62\u622a\u5c4f.");
+        table.put("Works with Also save from chats that don't allow saving on. Files, photos and videos from secret chats get copied too, and the message menu's Save to Downloads shows up there. Their view-once and timed media also need Also save view-once and timed media. A secret chat is meant to stay on your two phones, so only use it where the other person is fine with that.",
+                "\u5728\u201c\u4e5f\u4fdd\u5b58\u4e0d\u5141\u8bb8\u4fdd\u5b58\u7684\u804a\u5929\u4e2d\u7684\u6587\u4ef6\u201d\u5f00\u542f\u65f6\u751f\u6548\u3002\u79c1\u5bc6\u804a\u5929\u4e2d\u7684\u6587\u4ef6\u3001\u7167\u7247\u548c\u89c6\u9891\u4e5f\u4f1a\u88ab\u590d\u5236\uff0c\u6d88\u606f\u83dc\u5355\u4e2d\u7684\u201c\u4fdd\u5b58\u5230\u4e0b\u8f7d\u6587\u4ef6\u5939\u201d\u4e5f\u4f1a\u5728\u79c1\u5bc6\u804a\u5929\u4e2d\u51fa\u73b0\u3002\u5176\u4e2d\u4ec5\u67e5\u770b\u4e00\u6b21\u548c\u9605\u540e\u5373\u711a\u7684\u5a92\u4f53\u8fd8\u9700\u8981\u5f00\u542f\u201c\u4e5f\u4fdd\u5b58\u4ec5\u67e5\u770b\u4e00\u6b21\u548c\u9605\u540e\u5373\u711a\u7684\u5a92\u4f53\u201d\u3002\u79c1\u5bc6\u804a\u5929\u672c\u5e94\u53ea\u7559\u5728\u4f60\u4eec\u4e24\u4eba\u7684\u624b\u673a\u4e0a\uff0c\u6240\u4ee5\u53ea\u5728\u5bf9\u65b9\u540c\u610f\u65f6\u4f7f\u7528.");
+        table.put("Yes",
+                "\u662f");
+        table.put("You already have a folder for each chat type.",
+                "\u6bcf\u79cd\u804a\u5929\u7c7b\u578b\u90fd\u5df2\u7ecf\u6709\u6587\u4ef6\u5939\u4e86.");
+        table.put("You can track up to 50 people",
+                "\u6700\u591a\u53ef\u4ee5\u8ffd\u8e2a 50 \u4eba");
+        table.put("You don't have any chats yet.",
+                "\u4f60\u8fd8\u6ca1\u6709\u4efb\u4f55\u804a\u5929.");
+        table.put("You don't have any folders yet.",
+                "\u4f60\u8fd8\u6ca1\u6709\u4efb\u4f55\u6587\u4ef6\u5939.");
+        table.put("You have the newest HushTelegram release.",
+                "\u4f60\u4f7f\u7528\u7684\u5df2\u662f\u6700\u65b0\u7248 HushTelegram.");
+        table.put("You paused HushTelegram.",
+                "\u4f60\u5df2\u6682\u505c HushTelegram.");
+        table.put("You removed them from your contacts",
+                "\u4f60\u5c06\u5bf9\u65b9\u4ece\u8054\u7cfb\u4eba\u4e2d\u79fb\u9664");
+        table.put("You saved them to your contacts",
+                "\u4f60\u5c06\u5bf9\u65b9\u4fdd\u5b58\u4e3a\u8054\u7cfb\u4eba");
+        table.put("Your AI service at %1$s, model %2$s.",
+                "\u4f60\u5728 %1$s \u7684 AI \u670d\u52a1\uff0c\u6a21\u578b %2$s.");
+        table.put("Your AI service didn't accept the key",
+                "\u4f60\u7684 AI \u670d\u52a1\u4e0d\u63a5\u53d7\u8fd9\u4e2a\u5bc6\u94a5");
+        table.put("Your choices are saved. Tap Resume, then restart Telegram.",
+                "\u4f60\u7684\u9009\u62e9\u5df2\u4fdd\u5b58\u3002\u8bf7\u70b9\u6309\u201c\u6062\u590d\u201d\uff0c\u7136\u540e\u91cd\u542f Telegram.");
+        table.put("Your other sessions see %1$s, %2$s.",
+                "\u4f60\u7684\u5176\u4ed6\u4f1a\u8bdd\u770b\u5230\u7684\u662f %1$s\uff0c%2$s.");
+        table.put("Your own chat list title",
+                "\u81ea\u5b9a\u4e49\u804a\u5929\u5217\u8868\u6807\u9898");
+        table.put("Your own phone number shows as dots in Settings and your profile, which helps with screenshots. Others' numbers stay visible.",
+                "\u4f60\u81ea\u5df1\u7684\u624b\u673a\u53f7\u7801\u5728\u201c\u8bbe\u7f6e\u201d\u548c\u4e2a\u4eba\u8d44\u6599\u4e2d\u663e\u793a\u4e3a\u5706\u70b9\uff0c\u65b9\u4fbf\u622a\u56fe\u3002\u5176\u4ed6\u4eba\u7684\u53f7\u7801\u4ecd\u7136\u53ef\u89c1.");
+        table.put("Your picture next to the message box goes away in groups and channels where you could post as a channel, while you're posting as yourself. Once you pick a channel it shows again, so you can always see who you're posting as. To pick one, turn this off first. A chat picks this up the next time you open it.",
+                "\u5728\u4f60\u53ef\u4ee5\u4ee5\u9891\u9053\u8eab\u4efd\u53d1\u8a00\u7684\u7fa4\u7ec4\u548c\u9891\u9053\u4e2d\uff0c\u5f53\u4f60\u4ee5\u81ea\u5df1\u8eab\u4efd\u53d1\u8a00\u65f6\uff0c\u8f93\u5165\u6846\u65c1\u7684\u5934\u50cf\u4f1a\u6d88\u5931\u3002\u9009\u62e9\u9891\u9053\u540e\u5b83\u4f1a\u91cd\u65b0\u51fa\u73b0\uff0c\u6240\u4ee5\u4f60\u603b\u80fd\u770b\u5230\u81ea\u5df1\u4ee5\u4ec0\u4e48\u8eab\u4efd\u53d1\u8a00\u3002\u8981\u9009\u62e9\u9891\u9053\uff0c\u8bf7\u5148\u5173\u95ed\u6b64\u5f00\u5173\u3002\u4e0b\u6b21\u6253\u5f00\u804a\u5929\u65f6\u751f\u6548.");
+        table.put("Your proxy lists",
+                "\u4f60\u7684\u4ee3\u7406\u5217\u8868");
+        table.put("Your settings are locked. Tap to start the 24-hour wait. You can cancel it while it runs.",
+                "\u4f60\u7684\u8bbe\u7f6e\u5df2\u9501\u5b9a\u3002\u70b9\u6309\u5f00\u59cb 24 \u5c0f\u65f6\u7b49\u5f85\u3002\u7b49\u5f85\u671f\u95f4\u53ef\u4ee5\u53d6\u6d88.");
+        table.put("Your switches already match that file, so nothing will change.",
+                "\u4f60\u7684\u5f00\u5173\u5df2\u4e0e\u8be5\u6587\u4ef6\u4e00\u81f4\uff0c\u56e0\u6b64\u4e0d\u4f1a\u6709\u4efb\u4f55\u66f4\u6539.");
+        table.put("Your switches are working.",
+                "\u4f60\u7684\u5f00\u5173\u6b63\u5728\u751f\u6548.");
+        table.put("Zero width joiner",
+                "\u96f6\u5bbd\u8fde\u63a5\u7b26");
+        table.put("Zero width non-joiner",
+                "\u96f6\u5bbd\u975e\u8fde\u63a5\u7b26");
+        table.put("Zero width space",
+                "\u96f6\u5bbd\u7a7a\u683c");
+        table.put("account deletion",
+                "\u8d26\u53f7\u5220\u9664");
+        table.put("attach menu Wallet button",
+                "\u9644\u4ef6\u83dc\u5355\u4e2d\u7684\u201c\u94b1\u5305\u201d\u6309\u94ae");
+        table.put("automatic downloads on Data Saver",
+                "\u6d41\u91cf\u8282\u7701\u7a0b\u5e8f\u5f00\u542f\u65f6\u7684\u81ea\u52a8\u4e0b\u8f7d");
+        table.put("avatar story rings",
+                "\u5934\u50cf\u4e0a\u7684\u52a8\u6001\u5706\u73af");
+        table.put("avatar story taps",
+                "\u70b9\u6309\u5934\u50cf\u6253\u5f00\u52a8\u6001");
+        table.put("banned channels on the web",
+                "\u901a\u8fc7\u7f51\u9875\u6253\u5f00\u5c01\u7981\u4f60\u7684\u9891\u9053");
+        table.put("birthday gift banner",
+                "\u751f\u65e5\u793c\u7269\u6a2a\u5e45");
+        table.put("bot shares",
+                "\u673a\u5668\u4eba\u5206\u4eab");
+        table.put("bottom bar size",
+                "\u5e95\u680f\u5927\u5c0f");
+        table.put("cached proxy channel",
+                "\u5df2\u7f13\u5b58\u7684\u4ee3\u7406\u9891\u9053");
+        table.put("cached proxy folder entries",
+                "\u5df2\u7f13\u5b58\u7684\u4ee3\u7406\u6587\u4ef6\u5939\u6761\u76ee");
+        table.put("cached recommendations",
+                "\u5df2\u7f13\u5b58\u7684\u63a8\u8350");
+        table.put("call debug reports",
+                "\u901a\u8bdd\u8c03\u8bd5\u62a5\u544a");
+        table.put("call log file uploads",
+                "\u901a\u8bdd\u65e5\u5fd7\u6587\u4ef6\u4e0a\u4f20");
+        table.put("call log reports",
+                "\u901a\u8bdd\u65e5\u5fd7\u62a5\u544a");
+        table.put("call record button",
+                "\u901a\u8bdd\u5f55\u97f3\u6309\u94ae");
+        table.put("call recording",
+                "\u901a\u8bdd\u5f55\u97f3");
+        table.put("caption text paste",
+                "\u8bf4\u660e\u6587\u5b57\u7684\u7c98\u8d34");
+        table.put("channel Gift button",
+                "\u9891\u9053\u4e2d\u7684\u201c\u793c\u7269\u201d\u6309\u94ae");
+        table.put("channel ads",
+                "\u9891\u9053\u5e7f\u544a");
+        table.put("channel read metrics",
+                "\u9891\u9053\u9605\u8bfb\u91cf\u7edf\u8ba1");
+        table.put("channels restricted for copyright or local law",
+                "\u56e0\u7248\u6743\u6216\u5f53\u5730\u6cd5\u5f8b\u53d7\u9650\u7684\u9891\u9053");
+        table.put("chat double-tap reactions",
+                "\u804a\u5929\u4e2d\u7684\u53cc\u51fb\u8868\u60c5\u56de\u5e94");
+        table.put("chat drafts",
+                "\u804a\u5929\u8349\u7a3f");
+        table.put("chat list menu Wallet item",
+                "\u804a\u5929\u5217\u8868\u83dc\u5355\u4e2d\u7684\u201c\u94b1\u5305\u201d\u9879");
+        table.put("chat list ordered by date",
+                "\u6309\u65e5\u671f\u6392\u5e8f\u7684\u804a\u5929\u5217\u8868");
+        table.put("chat-list story bar",
+                "\u804a\u5929\u5217\u8868\u7684\u52a8\u6001\u680f");
+        table.put("chats hidden from the chat list",
+                "\u4ece\u804a\u5929\u5217\u8868\u4e2d\u9690\u85cf\u7684\u804a\u5929");
+        table.put("checking Also delete for by default",
+                "\u9ed8\u8ba4\u52fe\u9009\u201c\u540c\u65f6\u4e3a\u2026\u5220\u9664\u201d");
+        table.put("compose text paste",
+                "\u8f93\u5165\u6846\u4e2d\u7684\u6587\u5b57\u7c98\u8d34");
+        table.put("copied links",
+                "\u590d\u5236\u7684\u94fe\u63a5");
+        table.put("dates on your profile songs",
+                "\u4e2a\u4eba\u8d44\u6599\u6b4c\u66f2\u7684\u6dfb\u52a0\u65e5\u671f");
+        table.put("deleted",
+                "\u5df2\u5220\u9664");
+        table.put("download manager",
+                "\u4e0b\u8f7d\u7ba1\u7406\u5668");
+    }
+
+    private static void fillZh_Hans21(Map<String, String> table) {
+        table.put("draft syncing",
+                "\u8349\u7a3f\u540c\u6b65");
+        table.put("dual camera reports",
+                "\u53cc\u6444\u50cf\u5934\u62a5\u544a");
+        table.put("earlier text of edited messages",
+                "\u5df2\u7f16\u8f91\u6d88\u606f\u7684\u539f\u5148\u6587\u5b57");
+        table.put("emoji next to the chat list title",
+                "\u804a\u5929\u5217\u8868\u6807\u9898\u65c1\u7684\u8868\u60c5");
+        table.put("emoji statuses next to names",
+                "\u540d\u5b57\u65c1\u8fb9\u7684\u8868\u60c5\u7b26\u53f7\u72b6\u6001");
+        table.put("external browser routing",
+                "\u5916\u90e8\u6d4f\u89c8\u5668\u8df3\u8f6c");
+        table.put("full screen video turning either way",
+                "\u5168\u5c4f\u89c6\u9891\u53cc\u5411\u6a2a\u5c4f");
+        table.put("gallery folder for saved photos and videos",
+                "\u4fdd\u5b58\u7167\u7247\u548c\u89c6\u9891\u7684\u76f8\u518c\u6587\u4ef6\u5939");
+        table.put("hidden chats in the unread counts",
+                "\u672a\u8bfb\u8ba1\u6570\u4e2d\u7684\u9690\u85cf\u804a\u5929");
+        table.put("hiding messages for you",
+                "\u4e3a\u4f60\u9690\u85cf\u6d88\u606f");
+        table.put("instant lock",
+                "\u7acb\u5373\u9501\u5b9a");
+        table.put("joining new channels and groups",
+                "\u52a0\u5165\u65b0\u7684\u9891\u9053\u548c\u7fa4\u7ec4");
+        table.put("keeping a video upright until full screen",
+                "\u5728\u70b9\u6309\u5168\u5c4f\u524d\u4fdd\u6301\u89c6\u9891\u7ad6\u5c4f");
+        table.put("less than a minute ago",
+                "\u4e0d\u5230\u4e00\u5206\u949f\u524d");
+        table.put("local notification status",
+                "\u672c\u673a\u901a\u77e5\u72b6\u6001");
+        table.put("mentions by ID",
+                "\u901a\u8fc7 ID \u63d0\u53ca");
+        table.put("new message button",
+                "\u65b0\u5efa\u5bf9\u8bdd\u6309\u94ae");
+        table.put("none",
+                "\u65e0");
+        table.put("number sharing on new contacts",
+                "\u6dfb\u52a0\u65b0\u8054\u7cfb\u4eba\u65f6\u7684\u53f7\u7801\u5206\u4eab");
+        table.put("opened link tracking",
+                "\u5df2\u6253\u5f00\u94fe\u63a5\u7684\u8ddf\u8e2a\u53c2\u6570");
+        table.put("pasted links",
+                "\u7c98\u8d34\u7684\u94fe\u63a5");
+        table.put("photos and videos in their best quality",
+                "\u6700\u4f73\u753b\u8d28\u7684\u7167\u7247\u548c\u89c6\u9891");
+        table.put("pinned message bar in chats",
+                "\u804a\u5929\u4e2d\u7684\u7f6e\u9876\u6d88\u606f\u680f");
+        table.put("poll links",
+                "\u6295\u7968\u94fe\u63a5");
+        table.put("powering off accounts",
+                "\u505c\u7528\u8d26\u53f7");
+        table.put("preview double-tap reactions",
+                "\u9884\u89c8\u4e2d\u7684\u53cc\u51fb\u8868\u60c5\u56de\u5e94");
+        table.put("profile Gifts tabs",
+                "\u4e2a\u4eba\u8d44\u6599\u4e2d\u7684\u201c\u793c\u7269\u201d\u6807\u7b7e\u9875");
+        table.put("profile local IDs",
+                "\u4e2a\u4eba\u8d44\u6599\u4e2d\u7684\u672c\u5730 ID");
+        table.put("profile menu Send Gram item",
+                "\u4e2a\u4eba\u8d44\u6599\u83dc\u5355\u4e2d\u7684\u201c\u53d1\u9001 Gram\u201d\u9879");
+        table.put("profile menu Send a Gift item",
+                "\u4e2a\u4eba\u8d44\u6599\u83dc\u5355\u4e2d\u7684\u201c\u53d1\u9001\u793c\u7269\u201d\u9879");
+        table.put("promotional suggestions",
+                "\u63a8\u5e7f\u5efa\u8bae");
+        table.put("proxy order",
+                "\u4ee3\u7406\u987a\u5e8f");
+        table.put("public search lookups",
+                "\u516c\u5f00\u641c\u7d22\u67e5\u8be2");
+        table.put("quiet sign-up",
+                "\u9759\u9ed8\u6ce8\u518c");
+        table.put("quotes opened on search hits",
+                "\u641c\u7d22\u547d\u4e2d\u65f6\u5c55\u5f00\u7684\u5f15\u7528");
+        table.put("reaction notifications without push",
+                "\u65e0\u63a8\u9001\u65f6\u7684\u8868\u60c5\u56de\u5e94\u901a\u77e5");
+        table.put("reaction rows under messages",
+                "\u6d88\u606f\u4e0b\u65b9\u7684\u8868\u60c5\u56de\u5e94\u680f");
+        table.put("read receipts and story views",
+                "\u5df2\u8bfb\u56de\u6267\u548c\u52a8\u6001\u6d4f\u89c8\u8bb0\u5f55");
+        table.put("receive only mode",
+                "\u4ec5\u63a5\u6536\u6a21\u5f0f");
+        table.put("red deleted label",
+                "\u7ea2\u8272\u7684\u201c\u5df2\u5220\u9664\u201d\u6807\u7b7e");
+        table.put("remembering where playback stopped",
+                "\u8bb0\u4f4f\u64ad\u653e\u4f4d\u7f6e");
+        table.put("screenshots in chats that don't allow saving",
+                "\u5728\u4e0d\u5141\u8bb8\u4fdd\u5b58\u7684\u804a\u5929\u4e2d\u622a\u5c4f");
+        table.put("screenshots of selected messages",
+                "\u9009\u4e2d\u6d88\u606f\u7684\u622a\u56fe");
+        table.put("search ads",
+                "\u641c\u7d22\u5e7f\u544a");
+        table.put("search lookups",
+                "\u641c\u7d22\u67e5\u8be2");
+        table.put("secret chat requests",
+                "\u79c1\u5bc6\u804a\u5929\u8bf7\u6c42");
+        table.put("selecting every loaded message in a chat",
+                "\u9009\u4e2d\u804a\u5929\u4e2d\u6240\u6709\u5df2\u52a0\u8f7d\u7684\u6d88\u606f");
+        table.put("selecting everything between two messages",
+                "\u9009\u62e9\u4e24\u6761\u6d88\u606f\u4e4b\u95f4\u7684\u6240\u6709\u6d88\u606f");
+        table.put("selecting everything in shared media",
+                "\u9009\u4e2d\u5206\u4eab\u7684\u5a92\u4f53\u4e2d\u7684\u6240\u6709\u5185\u5bb9");
+        table.put("self-destructing secret chat messages",
+                "\u79c1\u5bc6\u804a\u5929\u4e2d\u7684\u9605\u540e\u5373\u711a\u6d88\u606f");
+        table.put("share button beside channel posts",
+                "\u9891\u9053\u5e16\u5b50\u65c1\u7684\u5206\u4eab\u6309\u94ae");
+        table.put("share sheet comments",
+                "\u5206\u4eab\u9762\u677f\u4e2d\u7684\u8bc4\u8bba");
+        table.put("shared link tracking",
+                "\u5df2\u5206\u4eab\u94fe\u63a5\u7684\u8ddf\u8e2a\u53c2\u6570");
+        table.put("side menu",
+                "\u4fa7\u8fb9\u83dc\u5355");
+        table.put("similar channels and bots",
+                "\u76f8\u4f3c\u9891\u9053\u548c\u673a\u5668\u4eba");
+        table.put("skipping between voice messages",
+                "\u5728\u8bed\u97f3\u6d88\u606f\u4e4b\u95f4\u5207\u6362");
+        table.put("sound for reaction notifications",
+                "\u8868\u60c5\u56de\u5e94\u901a\u77e5\u7684\u58f0\u97f3");
+        table.put("special contacts",
+                "\u7279\u522b\u5173\u6ce8");
+        table.put("spoiler and quote items in the chat menu",
+                "\u804a\u5929\u83dc\u5355\u4e2d\u7684\u906e\u7f69\u548c\u5f15\u7528\u9009\u9879");
+        table.put("story links",
+                "\u52a8\u6001\u94fe\u63a5");
+    }
+
+    private static void fillZh_Hans22(Map<String, String> table) {
+        table.put("story list requests",
+                "\u52a8\u6001\u5217\u8868\u8bf7\u6c42");
+        table.put("styled names in search",
+                "\u641c\u7d22\u4e2d\u7684\u82b1\u5f0f\u5b57\u6bcd\u540d\u79f0");
+        table.put("text selection in chats that don't allow saving",
+                "\u4e0d\u5141\u8bb8\u4fdd\u5b58\u7684\u804a\u5929\u4e2d\u7684\u6587\u5b57\u9009\u62e9");
+        table.put("the Administrators filter",
+                "\u201c\u7ba1\u7406\u5458\u201d\u7b5b\u9009");
+        table.put("the All Chats tab",
+                "\u201c\u6240\u6709\u804a\u5929\u201d\u6807\u7b7e\u9875");
+        table.put("the app passcode for hidden chats",
+                "\u9690\u85cf\u804a\u5929\u7684\u5e94\u7528\u9501\u5b9a\u7801");
+        table.put("the device in Active sessions",
+                "\u6d3b\u8dc3\u4f1a\u8bdd\u4e2d\u7684\u8bbe\u5907");
+        table.put("the emoji pack line in the message menu",
+                "\u6d88\u606f\u83dc\u5355\u4e2d\u7684\u8868\u60c5\u5305\u8bf4\u660e\u884c");
+        table.put("the fitted folder tabs",
+                "\u9002\u5e94\u5c4f\u5e55\u7684\u6587\u4ef6\u5939\u6807\u7b7e\u9875");
+        table.put("the folder tab icons",
+                "\u6587\u4ef6\u5939\u6807\u7b7e\u9875\u56fe\u6807");
+        table.put("the hidden accounts",
+                "\u9690\u85cf\u7684\u8d26\u53f7");
+        table.put("the reaction bubble on selected messages",
+                "\u9009\u4e2d\u6d88\u606f\u4e0a\u7684\u8868\u60c5\u56de\u5e94\u6c14\u6ce1");
+        table.put("the reaction picker in the message menu",
+                "\u6d88\u606f\u83dc\u5355\u4e2d\u7684\u8868\u60c5\u56de\u5e94\u9009\u62e9\u5668");
+        table.put("the translation service, its key and the chats you turned translation on for",
+                "\u7ffb\u8bd1\u670d\u52a1\u3001\u5176\u5bc6\u94a5\u4ee5\u53ca\u4f60\u5f00\u542f\u4e86\u7ffb\u8bd1\u7684\u804a\u5929");
+        table.put("trending packs in the sticker and emoji keyboards",
+                "\u8d34\u7eb8\u548c\u8868\u60c5\u952e\u76d8\u4e2d\u7684\u70ed\u95e8\u5305");
+        table.put("uploads",
+                "\u4e0a\u4f20");
+        table.put("video ads",
+                "\u89c6\u9891\u5e7f\u544a");
+        table.put("videos starting without sound",
+                "\u9759\u97f3\u5f00\u59cb\u64ad\u653e\u7684\u89c6\u9891");
+        table.put("view-once and timed media",
+                "\u4ec5\u67e5\u770b\u4e00\u6b21\u548c\u9605\u540e\u5373\u711a\u7684\u5a92\u4f53");
+        table.put("voice playback while locked",
+                "\u9501\u5c4f\u65f6\u7684\u8bed\u97f3\u64ad\u653e");
+        table.put("website sign-in tokens",
+                "\u7f51\u7ad9\u767b\u5f55\u4ee4\u724c");
+        table.put("where All Chats sits",
+                "\u201c\u6240\u6709\u804a\u5929\u201d\u7684\u4f4d\u7f6e");
+        table.put("which folder the chat list opens on",
+                "\u804a\u5929\u5217\u8868\u6253\u5f00\u7684\u6587\u4ef6\u5939");
+        table.put("your emoji status on this phone",
+                "\u4f60\u5728\u8fd9\u90e8\u624b\u673a\u4e0a\u7684\u8868\u60c5\u7b26\u53f7\u72b6\u6001");
+        table.put("your own chat list title",
+                "\u81ea\u5b9a\u4e49\u804a\u5929\u5217\u8868\u6807\u9898");
     }
 }
