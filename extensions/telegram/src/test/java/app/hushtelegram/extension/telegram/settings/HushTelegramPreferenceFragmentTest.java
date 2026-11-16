@@ -2595,6 +2595,87 @@ public class HushTelegramPreferenceFragmentTest {
         }
     }
 
+    /**
+     * The device in Active sessions (#79): a row under Don't notify contacts says what the other
+     * sessions see, and its editor saves a device name and a system version together, cleaned to
+     * one line, owing a restart. Emptied again, Telegram's own go out and nothing waits.
+     */
+    @Test
+    public void theSessionDeviceRowSavesBothAndOwesARestart() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
+        String model = app.hushtelegram.extension.telegram.misc.SessionDevice.stockModel();
+        String stock = "Your other sessions see " + model + ", SDK 30.";
+        ShadowToast.reset();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            List<Preference> rows = new ArrayList<>();
+            collect(pageOf(controller).getPreferenceScreen(), rows);
+            Preference row = rows.get(indexOfKey(rows, Settings.QUIET_SIGN_UP.key) + 1);
+            assertEquals(SessionDeviceEditor.KEY, row.getKey());
+            assertEquals("Device in Active sessions", String.valueOf(row.getTitle()));
+            assertEquals(stock, String.valueOf(row.getSummary()).replaceAll("[^\\p{ASCII}]", ""));
+            assertFalse("it stores nothing itself", row.isPersistent());
+
+            assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+            ShadowLooper.idleMainLooper();
+            AlertDialog editor = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            assertTrue(editor.isShowing());
+            assertEquals("Device in Active sessions", String.valueOf(shadowOf(editor).getTitle()));
+            EditText name = editor.findViewById(SessionDeviceEditor.NAME_FIELD);
+            EditText system = editor.findViewById(SessionDeviceEditor.SYSTEM_FIELD);
+            assertEquals("", name.getText().toString());
+            assertEquals("an empty box sends what the hint says", model, String.valueOf(name.getHint()));
+            assertEquals("SDK 30", String.valueOf(system.getHint()));
+
+            name.setText("  Office\n\tPC ");
+            system.setText("Windows 11");
+            try (FailingStore ignored = FailingStore.install(FailingStore.Fault.COMMIT_FALSE)) {
+                editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+                settle();
+            }
+            assertTrue("a save that fails keeps the dialog", editor.isShowing());
+            assertEquals("Couldn't save the device. Try again in a moment.", ShadowToast.getTextOfLatestToast());
+            assertEquals("", Settings.SESSION_DEVICE_NAME.savedValue());
+            assertEquals("", Settings.SESSION_SYSTEM_VERSION.savedValue());
+
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            // The write is on the worker, and the dialog closes once its answer is back.
+            settle();
+            assertFalse(editor.isShowing());
+            assertEquals("saved cleaned", "Office PC", Settings.SESSION_DEVICE_NAME.savedValue());
+            assertEquals("Windows 11", Settings.SESSION_SYSTEM_VERSION.savedValue());
+            assertTrue("each account sends it after a restart",
+                    app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending
+                            .contains(Settings.SESSION_DEVICE_NAME.key));
+            assertEquals("Your other sessions see Office PC, Windows 11.",
+                    String.valueOf(row.getSummary()).replaceAll("[^\\p{ASCII}]", ""));
+
+            assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+            ShadowLooper.idleMainLooper();
+            editor = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            name = editor.findViewById(SessionDeviceEditor.NAME_FIELD);
+            system = editor.findViewById(SessionDeviceEditor.SYSTEM_FIELD);
+            assertEquals("Office PC", name.getText().toString());
+            name.setText("");
+            system.setText(" ");
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertFalse(editor.isShowing());
+            assertEquals("", Settings.SESSION_DEVICE_NAME.savedValue());
+            assertEquals("", Settings.SESSION_SYSTEM_VERSION.savedValue());
+            assertEquals("Saved.", ShadowToast.getTextOfLatestToast());
+            assertFalse(app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending
+                    .contains(Settings.SESSION_DEVICE_NAME.key));
+            assertEquals(stock, String.valueOf(row.getSummary()).replaceAll("[^\\p{ASCII}]", ""));
+        } finally {
+            Settings.SESSION_DEVICE_NAME.resetToDefault();
+            Settings.SESSION_SYSTEM_VERSION.resetToDefault();
+            app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending
+                    .remove(Settings.SESSION_DEVICE_NAME.key);
+            app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending
+                    .remove(Settings.SESSION_SYSTEM_VERSION.key);
+        }
+    }
+
     @Test
     public void aListThatIsTooLongOrHasALongLineIsSaid() {
         StringBuilder many = new StringBuilder();

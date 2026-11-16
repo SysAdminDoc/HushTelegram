@@ -210,7 +210,10 @@ public class SettingsBackupTest {
                     && setting != Settings.RECEIVE_ONLY_ACCOUNTS && setting != Settings.POWERED_OFF_ACCOUNTS
                     && setting != Settings.AUTO_FORWARDING_RULES
                     // The recordings folder is a permission this phone holds, which another phone can't use.
-                    && setting != Settings.RECORD_CALLS_FOLDER) notSwitches.add(setting.key);
+                    && setting != Settings.RECORD_CALLS_FOLDER
+                    // The device in Active sessions names this phone, so another phone doesn't take it.
+                    && setting != Settings.SESSION_DEVICE_NAME && setting != Settings.SESSION_SYSTEM_VERSION)
+                notSwitches.add(setting.key);
         }
         assertEquals("a setting in Settings isn't a switch, and a settings file has no format for it",
                 Collections.emptyList(), notSwitches);

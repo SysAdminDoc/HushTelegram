@@ -30,6 +30,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** With **Open restricted channels** on, the alert Telegram shows when a public channel has banned you gets an **Open on the web** button. It opens the channel's page at t.me/s/ in your browser, where its posts still show to anyone. The button shows only when HushTelegram knows the channel's public name, from the channel itself or from the link that brought you to it. (#71)
 * **Telegram:** **Message details** lists more about a file. You get its name and MIME type, the resolution of a photo or video, and the length and average bitrate of a song, voice message or video. Telegram doesn't send a bitrate, so it's worked out from the file's size and length. A line with nothing to show is left out. (#87)
 * **Telegram:** **Check Also delete for by default** is a new switch under **Add Repeat to the message menu**, off by default. With it on, the Also delete for box in Telegram's delete dialog starts checked, so messages you delete in a chat with a person go for both of you. Groups, channels, secret chats and Saved Messages don't change, since Telegram doesn't offer the box there. Uncheck it in the dialog to delete just for you. (#83)
+* **Telegram:** **Device in Active sessions**, on the Privacy page under **Don't notify contacts**, sets the device name and system version your other phones and computers see for this one in Settings > Devices. Leave a box empty and Telegram's own goes out. A change shows after you restart Telegram. (#79)
 
 ### Fixed
 

@@ -1543,6 +1543,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             L10n.t("When you sign up a phone number that's new to Telegram, people who have it saved aren't "
                                     + "told you joined. Accounts that already exist aren't affected.")));
                 }
+                if (PatchFamily.Capability.SESSION_DEVICE.installed()) privacy.addPreference(sessionDeviceRow(context));
                 if (PatchFamily.Capability.DELETE_ACCOUNT.installed()) privacy.addPreference(deleteAccountRow(context));
             }
             if (build.contains(PatchFamily.DISABLE_CALL_DEBUG)) {
@@ -2345,6 +2346,33 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             return true;
         });
         return row;
+    }
+
+    /** The device the other sessions see: the row says what goes out, and a tap opens its editor (#79). */
+    private Preference sessionDeviceRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(SessionDeviceEditor.KEY);
+        row.setTitle(L10n.t("Device in Active sessions"));
+        row.setPersistent(false);
+        row.setSummary(SessionDeviceEditor.summary(Settings.SESSION_DEVICE_NAME.savedValue(),
+                Settings.SESSION_SYSTEM_VERSION.savedValue()));
+        row.setOnPreferenceClickListener(p -> {
+            Activity activity = getActivity();
+            if (SettingsLock.refuses()) return true;
+            if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
+                own(SessionDeviceEditor.open(activity, p, (name, system) -> sessionDeviceSaved(activity, name, system)));
+            }
+            return true;
+        });
+        return row;
+    }
+
+    /** Each account sends its device once per launch, so a change waits for a restart unless it's the one running. */
+    private void sessionDeviceSaved(Context context, String nameBefore, String systemBefore) {
+        boolean name = noteRestartPending(Settings.SESSION_DEVICE_NAME, nameBefore);
+        boolean system = noteRestartPending(Settings.SESSION_SYSTEM_VERSION, systemBefore);
+        if (name || system) showRestartDialog(context);
+        else Utils.showToastShort(L10n.t("Saved."));
     }
 
     /** Telegram reads its folder once, so a new name waits for a restart unless it's the one running. */

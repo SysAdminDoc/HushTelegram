@@ -1945,3 +1945,17 @@ Skip between voice messages	Pular entre mensagens de voz
 Next and previous on headphones, in a car, in the notification, on the lock screen and in the full player move between a chat's voice messages, as they do for songs.	Próxima e anterior nos fones, no carro, na notificação, na tela de bloqueio e no player de música completo passam entre as mensagens de voz de uma conversa, como fazem com as músicas.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Skip between voice messages switch.
 skipping between voice messages	pular entre mensagens de voz
+# context: Row title on the Privacy page (#79), under Don't notify contacts, and the title of its dialog. Active sessions is the list under Settings > Devices in Telegram, so use Telegram's own word for it in your language
+Device in Active sessions	Aparelho em Sessões ativas
+# context: Summary under that row. %1$s is the device name and %2$s the system version your other phones and computers show for this one, for example samsungSM-S901U and SDK 36
+Your other sessions see %1$s, %2$s.	Suas outras sessões veem %1$s, %2$s.
+# context: Instructions at the top of that dialog. Settings and Devices are Telegram's own menu names, so use Telegram's words in your language. Each box left empty sends what Telegram would send anyway
+Settings > Devices on your other phones and computers shows this phone with these. Leave a box empty for what Telegram sends, and restart Telegram after a change.	Configurações > Dispositivos nos seus outros celulares e computadores mostra este celular com estes dados. Deixe um campo vazio para usar o que o Telegram envia e reinicie o Telegram depois de uma mudança.
+# context: Label over the first box in that dialog, the name your other sessions show for this phone
+Device name	Nome do aparelho
+# context: Label over the second box in that dialog, shown beside the device name, for example SDK 36
+System version	Versão do sistema
+# context: Shown when saving the device name and system version didn't work
+Couldn't save the device. Try again in a moment.	Não foi possível salvar o aparelho. Tente de novo em instantes.
+# context: Lowercase noun phrase naming the Device in Active sessions row (#79) in the patch status list
+the device in Active sessions	o aparelho em Sessões ativas

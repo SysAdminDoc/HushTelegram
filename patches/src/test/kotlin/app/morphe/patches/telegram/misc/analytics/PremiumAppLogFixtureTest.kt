@@ -415,7 +415,7 @@ class PremiumAppLogFixtureTest {
     private fun assertFlags(context: BytecodePatchContext, covered: Set<AppLogEvent>, oldTargets: Boolean = true, family: Boolean = true) {
         val expected = AppLogEvent.entries.associate { it.capability to (it in covered) } +
             mapOf("readMetrics" to oldTargets, "disableAnalytics" to family, "ghostMode" to family, "instantLock" to family,
-                "quietSignUp" to family, "deleteAccount" to family)
+                "quietSignUp" to family, "sessionDevice" to family, "deleteAccount" to family)
         for ((flag, enabled) in expected) {
             val body = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == flag }.instructions()
             assertEquals(flag, if (enabled) 1 else 0, (body[0] as NarrowLiteralInstruction).narrowLiteral)

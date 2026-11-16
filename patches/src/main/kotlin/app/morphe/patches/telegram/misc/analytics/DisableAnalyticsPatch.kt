@@ -152,6 +152,7 @@ val disableAnalyticsPatch = bytecodePatch(
         requireStatusMethod("instantLock")
         controlHook(INSTANT_LOCK, "autoLockIn", listOf("I"), "I")
         requireStatusMethod("quietSignUp")
+        requireStatusMethod("sessionDevice")
         controlHook(QUIET_SIGN_UP, "noJoinedNotifications", listOf("I"), "Z")
         controlHook(GHOST_MODE, "drop", listOf("Ljava/lang/Object;", "Ljava/lang/Object;"), "Z")
         controlHook(GHOST_MODE, "sendRequest", listOf("I", "Ljava/lang/Object;", "Ljava/lang/Object;"), "Z")
@@ -241,6 +242,18 @@ val disableAnalyticsPatch = bytecodePatch(
         if (quiet != null) {
             quiet.apply()
             enableCapability("quietSignUp")
+        }
+
+        // The device in Active sessions too, which only touches ConnectionsManager.init.
+        val device = try {
+            resolveSessionDevice()
+        } catch (unfit: PatchException) {
+            patchLog.warning("$PATCH: ${unfit.message}. The patch goes on without the device in Active sessions.")
+            null
+        }
+        if (device != null) {
+            device.apply()
+            enableCapability("sessionDevice")
         }
 
         // And Delete account, which needs only the request and the send.

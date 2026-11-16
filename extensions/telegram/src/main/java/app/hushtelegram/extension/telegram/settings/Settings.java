@@ -993,6 +993,18 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting QUIET_SIGN_UP =
             new BooleanSetting("hushtelegram_quiet_sign_up", FALSE);
 
+    /**
+     * The device name every account tells Telegram when it connects, which Settings > Devices on
+     * the other sessions shows (#79). Empty sends Telegram's own. Sent once per launch, so it
+     * needs a restart.
+     */
+    public static final StringSetting SESSION_DEVICE_NAME =
+            new StringSetting("hushtelegram_session_device_name", "", true);
+
+    /** The system version sent beside {@link #SESSION_DEVICE_NAME}. Empty sends Telegram's own. */
+    public static final StringSetting SESSION_SYSTEM_VERSION =
+            new StringSetting("hushtelegram_session_system_version", "", true);
+
     /** Automatic call diagnostics only; the call itself and its cleanup stay stock. */
     public static final BooleanSetting DISABLE_CALL_DEBUG =
             new BooleanSetting("hushtelegram_disable_call_debug", TRUE);

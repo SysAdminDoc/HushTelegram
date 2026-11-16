@@ -1944,3 +1944,17 @@ Skip between voice messages	Превключване между гласови �
 Next and previous on headphones, in a car, in the notification, on the lock screen and in the full player move between a chat's voice messages, as they do for songs.	Напред и назад от слушалките, в колата, в известието, на заключения екран и в пълния музикален плейър превключват между гласовите съобщения в чата, както при песните.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Skip between voice messages switch.
 skipping between voice messages	превключването между гласови съобщения
+# context: Row title on the Privacy page (#79), under Don't notify contacts, and the title of its dialog. Active sessions is the list under Settings > Devices in Telegram, so use Telegram's own word for it in your language
+Device in Active sessions	Устройство в активните сесии
+# context: Summary under that row. %1$s is the device name and %2$s the system version your other phones and computers show for this one, for example samsungSM-S901U and SDK 36
+Your other sessions see %1$s, %2$s.	Другите ви сесии виждат %1$s, %2$s.
+# context: Instructions at the top of that dialog. Settings and Devices are Telegram's own menu names, so use Telegram's words in your language. Each box left empty sends what Telegram would send anyway
+Settings > Devices on your other phones and computers shows this phone with these. Leave a box empty for what Telegram sends, and restart Telegram after a change.	Настройки > Устройства на другите ви телефони и компютри показва този телефон с тези данни. Оставете поле празно, за да се изпраща това, което Telegram изпраща, и рестартирайте Telegram след промяна.
+# context: Label over the first box in that dialog, the name your other sessions show for this phone
+Device name	Име на устройството
+# context: Label over the second box in that dialog, shown beside the device name, for example SDK 36
+System version	Версия на системата
+# context: Shown when saving the device name and system version didn't work
+Couldn't save the device. Try again in a moment.	Устройството не се запази. Опитайте отново след малко.
+# context: Lowercase noun phrase naming the Device in Active sessions row (#79) in the patch status list
+the device in Active sessions	устройството в активните сесии
