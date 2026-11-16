@@ -130,6 +130,7 @@ public final class SettingsBackup {
             Settings.HIDE_EMOJI_PACK_NOTE,
             Settings.QUIET_CONTACTS_NAG,
             Settings.HOLIDAY_LOOK,
+            Settings.CHAT_LIST_TITLE,
             Settings.USE_SYSTEM_FONT,
             Settings.AMOLED_BLACK,
             Settings.HIDE_TRANSLATE_BAR,
@@ -302,12 +303,12 @@ public final class SettingsBackup {
     /**
      * The short texts a file carries as they're saved: the emoji beside the chat list's title, the
      * gallery folder choice, the translation language, the folder icon pack, the name of Telegram's
-     * own folder, the kinds What to copy leaves out and which calls Record calls saves. A build from
-     * before them counts the name as unknown and leaves it out.
+     * own folder, the kinds What to copy leaves out, which calls Record calls saves and the text shown
+     * in place of Telegram's name. A build from before them counts the name as unknown and leaves it out.
      */
     static final List<StringSetting> TEXTS = Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER,
             Settings.TRANSLATE_TARGET, Settings.FOLDER_ICON_PACK, Settings.STORAGE_FOLDER_NAME, Settings.SAVE_KINDS_LEFT_OUT,
-            Settings.RECORD_CALLS_WHICH);
+            Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT);
 
     /**
      * Bounds for the parser, well past anything this class writes, so a file built to be
@@ -741,6 +742,7 @@ public final class SettingsBackup {
         if (setting == Settings.FOLDER_ICON_PACK) return FolderIcons.allowed(value);
         if (setting == Settings.SAVE_KINDS_LEFT_OUT) return SaveDownloads.allowedLeftOut(value);
         if (setting == Settings.RECORD_CALLS_WHICH) return HushTelegramPreferenceFragment.recordScopes().contains(value);
+        if (setting == Settings.CHAT_LIST_TITLE_TEXT) return TitleEmoji.titleAllowed(value);
         return setting == Settings.TITLE_EMOJI && TitleEmoji.allowed(value);
     }
 

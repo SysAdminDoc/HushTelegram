@@ -220,11 +220,11 @@ public class SettingsBackupTest {
         assertEquals(Arrays.asList(Settings.MESSAGE_FILTERS_GROUPS, Settings.MESSAGE_FILTERS_CHANNELS), SettingsBackup.FILTER_LISTS);
         assertEquals(Arrays.asList(Settings.STICKER_SIZE, Settings.RECORD_CALLS_KEEP_DAYS), SettingsBackup.NUMBERS);
         assertEquals(Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET, Settings.FOLDER_ICON_PACK, Settings.STORAGE_FOLDER_NAME,
-                Settings.SAVE_KINDS_LEFT_OUT, Settings.RECORD_CALLS_WHICH), SettingsBackup.TEXTS);
+                Settings.SAVE_KINDS_LEFT_OUT, Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT), SettingsBackup.TEXTS);
         assertEquals(Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_STORIES, Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_KEYBOARD_FEATURED, Settings.HIDE_COMMERCE, Settings.HIDE_EMOJI_STATUS, Settings.UNLOCK_PREMIUM_ICONS, Settings.LOCAL_EMOJI_STATUS,
                         Settings.HIDE_PROMOTIONAL_BANNERS, Settings.HIDE_SPONSORED_PROXY, Settings.HIDE_POPULAR_APPS, Settings.SEARCH_ONLY_MY_CHATS, Settings.SEARCH_STYLED_NAMES, Settings.BLOCK_NEW_CHATS, Settings.DISABLE_SECRET_CHATS, Settings.HIDE_CONTACTS_BLOCK,
                         Settings.HIDE_GREETING_STICKERS, Settings.DISABLE_CHAT_SWIPE, Settings.CHAT_PREVIEW_BUTTONS, Settings.DISABLE_CHANNEL_PULL, Settings.DISABLE_TOPIC_PULL, Settings.NORMAL_PASTE, Settings.MENTION_BY_ID, Settings.SHOW_LOCAL_IDS, Settings.PROFILE_DATA_CENTER,
-                        Settings.SPECIAL_CONTACTS, Settings.DISABLE_DOUBLE_TAP_REACTIONS, Settings.HIDE_REACTION_ROWS, Settings.HIDE_REACTION_PICKER, Settings.HIDE_EMOJI_PACK_NOTE, Settings.QUIET_CONTACTS_NAG, Settings.HOLIDAY_LOOK, Settings.USE_SYSTEM_FONT, Settings.AMOLED_BLACK,
+                        Settings.SPECIAL_CONTACTS, Settings.DISABLE_DOUBLE_TAP_REACTIONS, Settings.HIDE_REACTION_ROWS, Settings.HIDE_REACTION_PICKER, Settings.HIDE_EMOJI_PACK_NOTE, Settings.QUIET_CONTACTS_NAG, Settings.HOLIDAY_LOOK, Settings.CHAT_LIST_TITLE, Settings.USE_SYSTEM_FONT, Settings.AMOLED_BLACK,
                         Settings.HIDE_TRANSLATE_BAR, Settings.HIDE_PINNED_BAR, Settings.EXACT_NUMBERS, Settings.REVEAL_SPOILERS, Settings.REVEAL_MENU, Settings.SEARCH_OPENS_QUOTES, Settings.HIDE_KEYBOARD_ON_SCROLL, Settings.KEEP_VIDEOS_MUTED, Settings.VIDEO_EITHER_LANDSCAPE, Settings.VIDEO_ONLY_FROM_BUTTON, Settings.VIDEO_STARTS_SILENT, Settings.SWIPE_BACK_ON_PROFILES,
                         Settings.HIDE_PHONE_NUMBER, Settings.SHARE_NUMBER_UNTICKED, Settings.MESSAGE_SECONDS, Settings.ALLOW_CHAT_BLUR, Settings.VOICE_ONE_AT_A_TIME, Settings.LOCKED_VOICE_GUARD, Settings.NO_HAPTICS, Settings.REACTION_EFFECTS_OFF,
                         Settings.HIDE_FOLDER_COUNTERS, Settings.LAUNCH_FOLDER, Settings.HIDE_ALL_CHATS, Settings.MOVE_ALL_CHATS, Settings.HIDDEN_CHATS, Settings.SORT_BY_DATE, Settings.SORT_OLDEST_FIRST, Settings.HIDDEN_CHATS_PASSCODE,
@@ -740,7 +740,7 @@ public class SettingsBackupTest {
         Bundle state = snapshot.toBundle();
         state.getBundle("texts").putString(Settings.TITLE_EMOJI.key, tooLong.toString());
         Set<StringSetting> others = new java.util.HashSet<>(Arrays.asList(Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET, Settings.STORAGE_FOLDER_NAME, Settings.FOLDER_ICON_PACK,
-                Settings.SAVE_KINDS_LEFT_OUT, Settings.RECORD_CALLS_WHICH));
+                Settings.SAVE_KINDS_LEFT_OUT, Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT));
         assertEquals(others, SettingsBackup.Snapshot.fromBundle(state).texts.keySet());
         state.getBundle("texts").putInt(Settings.TITLE_EMOJI.key, 1);
         assertEquals(others, SettingsBackup.Snapshot.fromBundle(state).texts.keySet());
@@ -1246,6 +1246,61 @@ public class SettingsBackupTest {
             // import used to leave it off the restart row.
             assertEquals(Collections.singleton(Settings.TITLE_EMOJI.key), new TreeSet<>(AbstractPreferenceFragment.restartPending));
             assertEquals("Restart Telegram to apply this change", restartRow(page));
+        }
+    }
+
+    /** The text in place of Telegram's name comes back only as a title the editor would have saved (#86). */
+    @Test
+    public void theChatListTitleTextRoundTripsOnlyAsATitleTheEditorWouldSave() throws Exception {
+        Settings.CHAT_LIST_TITLE.save(true);
+        Settings.CHAT_LIST_TITLE_TEXT.save("My chats");
+        String file = SettingsBackup.create();
+        JSONObject written = new JSONObject(file).getJSONObject("settings");
+        assertEquals(true, written.get(Settings.CHAT_LIST_TITLE.key));
+        assertEquals("My chats", written.get(Settings.CHAT_LIST_TITLE_TEXT.key));
+
+        StringBuilder tooLong = new StringBuilder();
+        for (int i = 0; i <= app.hushtelegram.extension.telegram.misc.TitleEmoji.MAX_TITLE_CODE_POINTS; i++) tooLong.append('a');
+        String turned = new String(Character.toChars(0x202E)) + "My chats";
+        for (Object bad : new Object[]{tooLong.toString(), " My chats", "My\nchats", turned, 1, true, JSONObject.NULL}) {
+            JSONObject wrong = new JSONObject(file);
+            wrong.getJSONObject("settings").put(Settings.CHAT_LIST_TITLE_TEXT.key, bad);
+            assertEquals(String.valueOf(bad), SettingsBackup.Reason.VALUE, reasonFor(wrong.toString()));
+        }
+        // Longer than the emoji may be, and still a title.
+        JSONObject longer = new JSONObject(file);
+        longer.getJSONObject("settings").put(Settings.CHAT_LIST_TITLE_TEXT.key, "Seventeen letters");
+        assertEquals("Seventeen letters", SettingsBackup.parse(longer.toString()).texts.get(Settings.CHAT_LIST_TITLE_TEXT));
+
+        Settings.CHAT_LIST_TITLE_TEXT.resetToDefault();
+        Settings.CHAT_LIST_TITLE.resetToDefault();
+        SettingsBackup.Snapshot snapshot = SettingsBackup.parse(file);
+        assertEquals(1, snapshot.switchChanges());
+        assertEquals(2, SettingsBackup.apply(SettingsBackup.Snapshot.fromBundle(snapshot.toBundle())));
+        assertTrue(Settings.CHAT_LIST_TITLE.savedValue());
+        assertEquals("My chats", Settings.CHAT_LIST_TITLE_TEXT.savedValue());
+    }
+
+    @Test
+    public void aFileThatChangesOnlyTheChatListTitleTextShowsItAndImportsIt() throws Exception {
+        Settings.CHAT_LIST_TITLE_TEXT.save("My chats");
+        String file = SettingsBackup.create();
+        Settings.CHAT_LIST_TITLE_TEXT.resetToDefault();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
+            deliver(activity, tap(activity, page, IMPORT_ROW), file);
+            AlertDialog preview = shownPreview();
+            assertEquals("Text for the chat list title: none to " + app.hushtelegram.extension.shared.L10n.isolate("My chats"),
+                    String.valueOf(shadowOf(preview).getMessage()));
+            preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertEquals("Settings imported.", ShadowToast.getTextOfLatestToast());
+            assertEquals("My chats", Settings.CHAT_LIST_TITLE_TEXT.savedValue());
+            assertTrue("the row shows the imported text",
+                    String.valueOf(page.findPreference(TitleEmojiEditor.TITLE_KEY).getSummary()).contains("My chats"));
+            // The chat list builds its title once, so the new text waits for a restart.
+            assertEquals(Collections.singleton(Settings.CHAT_LIST_TITLE_TEXT.key), new TreeSet<>(AbstractPreferenceFragment.restartPending));
         }
     }
 

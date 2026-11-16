@@ -357,6 +357,26 @@ Saved.	Tersimpan.
 The emoji next to the chat list title will change.	Emoji di samping judul daftar obrolan akan berubah.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Holiday look all year that draws the emoji after the chat list title.
 emoji next to the chat list title	emoji di samping judul daftar obrolan
+# context: Look and feel page switch title, below Emoji next to the chat list title. When on, the person's own text takes the place of Telegram's name (its logo) at the top of the chat list.
+Your own chat list title	Judul daftar obrolan sendiri
+# context: Summary under the Your own chat list title switch. The text is drawn in the title's own bold font and theme color.
+Shows text of your choice in place of Telegram's name at the top of the chat list, in the title's own font and color. It stays on this phone. Restart Telegram to see the change.	Menampilkan teks pilihan Anda sebagai pengganti nama Telegram di bagian atas daftar obrolan, dengan huruf dan warna judul itu sendiri. Ini hanya ada di ponsel ini. Mulai ulang Telegram untuk melihat perubahannya.
+# context: Look and feel page row title below the Your own chat list title switch, the title of its editor dialog, and a label in the settings import preview line "%1$s: %2$s to %3$s".
+Text for the chat list title	Teks untuk judul daftar obrolan
+# context: Summary under the Text for the chat list title row while nothing is saved. Your own chat list title is the switch above it.
+Type what shows in place of Telegram's name while Your own chat list title is on. Empty keeps Telegram's name.	Ketik apa yang tampil sebagai pengganti nama Telegram selama Judul daftar obrolan sendiri aktif. Jika kosong, nama Telegram tetap tampil.
+# context: Summary under the Text for the chat list title row once something is saved. %1$s is the text the person saved. Your own chat list title is the switch above it.
+%1$s shows in place of Telegram's name while Your own chat list title is on. Tap to change it.	%1$s tampil sebagai pengganti nama Telegram selama Judul daftar obrolan sendiri aktif. Ketuk untuk mengubahnya.
+# context: Label and hint of the one text field in the Text for the chat list title editor dialog.
+A short name	Nama pendek
+# context: Instructions at the top of the Text for the chat list title editor dialog. Your own chat list title is the switch on the same page.
+Shown in place of Telegram's name at the top of the chat list while Your own chat list title is on, in the title's own font and color. It stays on this phone, so nothing goes to Telegram. Leave it empty to keep Telegram's name, and restart Telegram to see a change.	Tampil sebagai pengganti nama Telegram di bagian atas daftar obrolan selama Judul daftar obrolan sendiri aktif, dengan huruf dan warna judul itu sendiri. Ini tetap di ponsel ini, jadi tidak ada yang dikirim ke Telegram. Kosongkan untuk mempertahankan nama Telegram, lalu mulai ulang Telegram untuk melihat perubahannya.
+# context: Error under the field and toast when the chat list title text is too long to save. Must fit two short toast lines.
+That's too long. Try a shorter name.	Terlalu panjang. Coba nama yang lebih pendek.
+# context: Error under the field and toast when saving the chat list title text failed. Must fit two short toast lines.
+Couldn't save the title. Try again in a moment.	Judul tidak tersimpan. Coba lagi sebentar lagi.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of New Year look all year that puts the person's own text in place of Telegram's name at the top of the chat list.
+your own chat list title	judul daftar obrolan sendiri
 Use system font	Gunakan font sistem
 Bold, italic and code text use your phone's font instead of Telegram's built-in one. Restart Telegram to see the change.	Teks tebal, miring, dan kode memakai font ponsel Anda, bukan font bawaan Telegram. Mulai ulang Telegram untuk melihat perubahannya.
 AMOLED black	Hitam AMOLED

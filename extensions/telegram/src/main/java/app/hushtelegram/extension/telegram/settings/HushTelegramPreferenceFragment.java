@@ -350,6 +350,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (size != null) size.setSummary(stickerSizeSummary());
         Preference emoji = findPreference(TitleEmojiEditor.KEY);
         if (emoji != null) emoji.setSummary(TitleEmojiEditor.summary(Settings.TITLE_EMOJI.savedValue()));
+        Preference ownTitle = findPreference(TitleEmojiEditor.TITLE_KEY);
+        if (ownTitle != null) ownTitle.setSummary(TitleEmojiEditor.titleSummary(Settings.CHAT_LIST_TITLE_TEXT.savedValue()));
         Preference proxyOrder = findPreference(ProxyOrderEditor.KEY);
         if (proxyOrder != null) proxyOrder.setSummary(ProxyOrder.summary());
         Preference gallery = findPreference(GALLERY_FOLDER_ROW);
@@ -1386,6 +1388,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             + " Snow falls on the chat list's top bar and on chat backgrounds once Wallpaper rotation is on under Power Saving, in Effects in Chats."))));
             if (PatchFamily.Capability.TITLE_EMOJI.installed()) {
                 on(pages, PatchFamily.HOLIDAY_LOOK).addPreference(titleEmojiRow(context));
+            }
+            if (PatchFamily.Capability.CHAT_LIST_TITLE.installed()) {
+                on(pages, PatchFamily.HOLIDAY_LOOK).addPreference(toggle(context, Settings.CHAT_LIST_TITLE, L10n.t("Your own chat list title"),
+                        L10n.t("Shows text of your choice in place of Telegram's name at the top of the chat list, in the title's own "
+                                + "font and color. It stays on this phone. Restart Telegram to see the change.")));
+                on(pages, PatchFamily.HOLIDAY_LOOK).addPreference(chatListTitleRow(context));
             }
         }
         if (build.contains(PatchFamily.USE_SYSTEM_FONT)) {
@@ -3530,6 +3538,30 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     /** The chat list builds its title once, so a new text waits for a restart unless it's the one running. */
     private void titleEmojiSaved(Context context, String before) {
         if (noteRestartPending(Settings.TITLE_EMOJI, before)) showRestartDialog(context);
+        else Utils.showToastShort(L10n.t("Saved."));
+    }
+
+    /** The text shown in place of Telegram's name: the row shows it, and a tap opens its editor. */
+    private Preference chatListTitleRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(TitleEmojiEditor.TITLE_KEY);
+        row.setTitle(L10n.t("Text for the chat list title"));
+        row.setPersistent(false);
+        row.setSummary(TitleEmojiEditor.titleSummary(Settings.CHAT_LIST_TITLE_TEXT.savedValue()));
+        row.setOnPreferenceClickListener(p -> {
+            Activity activity = getActivity();
+            if (SettingsLock.refuses()) return true;
+            if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
+                own(TitleEmojiEditor.openTitle(activity, p, before -> chatListTitleSaved(activity, before)));
+            }
+            return true;
+        });
+        return row;
+    }
+
+    /** Like the emoji, the title text waits for a restart unless it's the one running. */
+    private void chatListTitleSaved(Context context, String before) {
+        if (noteRestartPending(Settings.CHAT_LIST_TITLE_TEXT, before)) showRestartDialog(context);
         else Utils.showToastShort(L10n.t("Saved."));
     }
 

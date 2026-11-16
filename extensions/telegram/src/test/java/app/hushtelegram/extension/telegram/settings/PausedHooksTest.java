@@ -123,6 +123,7 @@ public class PausedHooksTest {
     public void restore() {
         PauseForTests.resume();
         for (BooleanSetting setting : settingsSwitches()) setting.resetToDefault();
+        Settings.CHAT_LIST_TITLE_TEXT.resetToDefault();
         ReleaseCheckForTests.forget();
     }
 
@@ -254,9 +255,16 @@ public class PausedHooksTest {
         probes.put(PatchFamily.QUIET_CONTACTS_NAG, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.ContactsNag.skipAsk(declinedContactsPrompt()),
                 () -> app.hushtelegram.extension.telegram.misc.ContactsNag.hideBadge(declinedContactsPrompt())));
-        // Telegram's holiday check skips its date test and shows the New Year look.
-        probes.put(PatchFamily.HOLIDAY_LOOK, Collections.singletonList(
-                () -> app.hushtelegram.extension.telegram.misc.HolidayLook.mode() == app.hushtelegram.extension.telegram.misc.HolidayLook.SHOW));
+        // Telegram's holiday check skips its date test and shows the New Year look, and the chat
+        // list's title shows the person's own text in place of Telegram's name.
+        Settings.CHAT_LIST_TITLE_TEXT.save("Mine");
+        probes.put(PatchFamily.HOLIDAY_LOOK, Arrays.asList(
+                () -> app.hushtelegram.extension.telegram.misc.HolidayLook.mode() == app.hushtelegram.extension.telegram.misc.HolidayLook.SHOW,
+                () -> {
+                    android.text.SpannableStringBuilder title = new android.text.SpannableStringBuilder("Telegram");
+                    app.hushtelegram.extension.telegram.misc.TitleEmoji.decorate(title);
+                    return !"Telegram".contentEquals(title);
+                }));
         // Telegram's medium font file is answered with the phone's own face, and so is the variable
         // monospace face Wallet builds itself.
         probes.put(PatchFamily.USE_SYSTEM_FONT, Arrays.asList(

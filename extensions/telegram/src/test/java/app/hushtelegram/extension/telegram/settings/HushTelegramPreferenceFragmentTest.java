@@ -593,6 +593,13 @@ public class HushTelegramPreferenceFragmentTest {
             // Telegram keeps its own holiday dates until someone turns the switch on.
             assertFalse(Settings.HOLIDAY_LOOK.key,
                     ((SwitchPreference) page.findPreference(Settings.HOLIDAY_LOOK.key)).isChecked());
+            assertEquals("Your own chat list title", String.valueOf(page.findPreference(Settings.CHAT_LIST_TITLE.key).getTitle()));
+            assertEquals("Shows text of your choice in place of Telegram's name at the top of the chat list, in the title's "
+                    + "own font and color. It stays on this phone. Restart Telegram to see the change.",
+                    String.valueOf(page.findPreference(Settings.CHAT_LIST_TITLE.key).getSummary()));
+            // Telegram's own title stays until someone turns the switch on.
+            assertFalse(Settings.CHAT_LIST_TITLE.key,
+                    ((SwitchPreference) page.findPreference(Settings.CHAT_LIST_TITLE.key)).isChecked());
             assertEquals("Use system font", String.valueOf(page.findPreference(Settings.USE_SYSTEM_FONT.key).getTitle()));
             assertEquals("Bold, italic and code text use your phone's font instead of Telegram's built-in one. Restart"
                     + " Telegram to see the change.",
@@ -2680,6 +2687,86 @@ public class HushTelegramPreferenceFragmentTest {
                     .remove(Settings.SESSION_DEVICE_NAME.key);
             app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending
                     .remove(Settings.SESSION_SYSTEM_VERSION.key);
+        }
+    }
+
+    /**
+     * The own title's switch and its text row sit under the emoji's row (#86). The editor saves a
+     * cleaned title, refuses one that's too long, and a restart is owed only while the saved text
+     * isn't the one running.
+     */
+    @Test
+    public void theChatListTitleRowsSaveACleanTitleAndSayWhenARestartIsOwed() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HOLIDAY_LOOK);
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.TITLE_EMOJI);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            assertNull("a build without the title target has no switch", page.findPreference(Settings.CHAT_LIST_TITLE.key));
+            assertNull("or text row", page.findPreference(TitleEmojiEditor.TITLE_KEY));
+        }
+        PatchFamily.capabilitiesForTests = null;
+        String invitation = "Type what shows in place of Telegram's name while Your own chat list title is on. Empty keeps "
+                + "Telegram's name.";
+        ShadowToast.reset();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            List<Preference> rows = new ArrayList<>();
+            collect(pageOf(controller).getPreferenceScreen(), rows);
+            int emoji = indexOfKey(rows, TitleEmojiEditor.KEY);
+            assertEquals(Settings.CHAT_LIST_TITLE.key, rows.get(emoji + 1).getKey());
+            Preference row = rows.get(emoji + 2);
+            assertEquals(TitleEmojiEditor.TITLE_KEY, row.getKey());
+            assertEquals("Text for the chat list title", String.valueOf(row.getTitle()));
+            assertEquals(invitation, String.valueOf(row.getSummary()));
+            assertFalse("it stores nothing itself", row.isPersistent());
+
+            assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+            ShadowLooper.idleMainLooper();
+            AlertDialog editor = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            assertTrue(editor.isShowing());
+            assertEquals("Text for the chat list title", String.valueOf(shadowOf(editor).getTitle()));
+            EditText field = editor.findViewById(android.R.id.edit);
+            assertEquals("", field.getText().toString());
+            assertEquals("A short name", String.valueOf(field.getHint()));
+            StringBuilder tooLong = new StringBuilder();
+            for (int i = 0; i <= app.hushtelegram.extension.telegram.misc.TitleEmoji.MAX_TITLE_CODE_POINTS; i++) tooLong.append('a');
+            field.setText(tooLong);
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertTrue("too long keeps the dialog", editor.isShowing());
+            assertEquals("That's too long. Try a shorter name.", ShadowToast.getTextOfLatestToast());
+            assertEquals("", Settings.CHAT_LIST_TITLE_TEXT.savedValue());
+
+            field.setText("  My   chats\n");
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertFalse(editor.isShowing());
+            assertEquals("saved cleaned", "My chats", Settings.CHAT_LIST_TITLE_TEXT.savedValue());
+            assertEquals("the emoji is a separate text", "", Settings.TITLE_EMOJI.savedValue());
+            assertTrue("the chat list shows it after a restart",
+                    app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending
+                            .contains(Settings.CHAT_LIST_TITLE_TEXT.key));
+            assertEquals(app.hushtelegram.extension.shared.L10n.isolate("My chats") + " shows in place of Telegram's name "
+                    + "while Your own chat list title is on. Tap to change it.", String.valueOf(row.getSummary()));
+
+            // Cleared again, it's what Telegram runs with, so nothing waits for a restart.
+            assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+            ShadowLooper.idleMainLooper();
+            editor = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            field = editor.findViewById(android.R.id.edit);
+            assertEquals("My chats", field.getText().toString());
+            field.setText("");
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertFalse(editor.isShowing());
+            assertEquals("", Settings.CHAT_LIST_TITLE_TEXT.savedValue());
+            assertEquals("Saved.", ShadowToast.getTextOfLatestToast());
+            assertFalse(app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending
+                    .contains(Settings.CHAT_LIST_TITLE_TEXT.key));
+            assertEquals(invitation, String.valueOf(row.getSummary()));
+        } finally {
+            Settings.CHAT_LIST_TITLE_TEXT.resetToDefault();
+            app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending
+                    .remove(Settings.CHAT_LIST_TITLE_TEXT.key);
         }
     }
 

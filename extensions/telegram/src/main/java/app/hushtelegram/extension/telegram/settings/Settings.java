@@ -200,6 +200,18 @@ public class Settings extends BaseSettings {
             new StringSetting("hushtelegram_title_emoji", "", true);
 
     /**
+     * The person's own text in place of Telegram's name at the top of the chat list, on this phone
+     * only ({@link app.hushtelegram.extension.telegram.misc.TitleEmoji}). The chat list builds its
+     * title once, so a change waits for a restart.
+     */
+    public static final BooleanSetting CHAT_LIST_TITLE =
+            new BooleanSetting("hushtelegram_chat_list_title", FALSE, true);
+
+    /** The text {@link #CHAT_LIST_TITLE} shows. Empty keeps Telegram's own title. */
+    public static final StringSetting CHAT_LIST_TITLE_TEXT =
+            new StringSetting("hushtelegram_chat_list_title_text", "", true);
+
+    /**
      * Medium, italic, extra bold, condensed and monospace text in the phone's own font instead of
      * Telegram's bundled Roboto files. Telegram keeps the faces it loaded, so a change waits for a restart.
      */

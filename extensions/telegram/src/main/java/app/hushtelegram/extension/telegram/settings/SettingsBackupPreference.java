@@ -443,6 +443,10 @@ public class SettingsBackupPreference extends Preference {
             if (change.getKey() == Settings.TITLE_EMOJI) {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Emoji next to the chat list title"),
                         TitleEmojiEditor.shown(Settings.TITLE_EMOJI.savedValue()), TitleEmojiEditor.shown((String) change.getValue())));
+            } else if (change.getKey() == Settings.CHAT_LIST_TITLE_TEXT) {
+                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Text for the chat list title"),
+                        TitleEmojiEditor.shown(Settings.CHAT_LIST_TITLE_TEXT.savedValue()),
+                        TitleEmojiEditor.shown((String) change.getValue())));
             } else if (change.getKey() == Settings.GALLERY_FOLDER) {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Gallery folder"),
                         HushTelegramPreferenceFragment.galleryFolderLabel(Settings.GALLERY_FOLDER.savedValue()),

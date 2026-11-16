@@ -64,6 +64,7 @@ val holidayLookPatch = bytecodePatch(
     execute {
         requireStatusMethod("holidayLook")
         requireStatusMethod("titleEmoji")
+        requireStatusMethod("chatListTitle")
         val sites = resolveHolidayLookSites()
         val logo = resolveHolidayLogoSites(sites)
         // Assemble and check every insertion on copies before changing any host or build fact.
@@ -71,8 +72,10 @@ val holidayLookPatch = bytecodePatch(
         logo.prepare()
         sites.apply(sites.check)
         logo.apply(this)
-        // The title emoji goes in with the logo's span registration, inside the same pinned window.
+        // The title emoji and the person's own title go in with the logo's span registration, inside
+        // the same pinned window: TitleEmoji.decorate gets the stock title builder before the action bar.
         enableCapability("titleEmoji")
+        enableCapability("chatListTitle")
         enableStatus("holidayLook")
     }
 }

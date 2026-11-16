@@ -253,6 +253,13 @@ public class SettingsPolishTest {
         }
     }
 
+    @Test public void chatListTitleKeyboardMakesRoomForTheButtons() {
+        try (ActivityController<Activity> activity = Robolectric.buildActivity(Activity.class).setup()) {
+            AlertDialog dialog = TitleEmojiEditor.openTitle(activity.get(), new Preference(activity.get()), before -> { });
+            try { assertResizesForKeyboard(dialog); } finally { dialog.dismiss(); }
+        }
+    }
+
     @Test public void storageFolderKeyboardMakesRoomForTheButtons() {
         try (ActivityController<Activity> activity = Robolectric.buildActivity(Activity.class).setup()) {
             AlertDialog dialog = StorageFolderEditor.open(activity.get(), new Preference(activity.get()), before -> { });

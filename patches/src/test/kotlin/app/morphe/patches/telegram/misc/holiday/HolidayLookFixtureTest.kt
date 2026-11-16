@@ -86,6 +86,8 @@ class HolidayLookFixtureTest {
             val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "holidayLook" }.instructions()
             assertEquals("$name: build fact", 1, (status[0] as NarrowLiteralInstruction).narrowLiteral)
             assertEquals("$name: title emoji build fact", 1, flag(context, "titleEmoji"))
+            // The person's own chat list title rides the same decorate call, so the same build carries it.
+            assertEquals("$name: chat list title build fact", 1, flag(context, "chatListTitle"))
         }
     }
 
@@ -420,6 +422,7 @@ class HolidayLookFixtureTest {
         val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "holidayLook" }.instructions()
         assertEquals("$build: $case leaves the build fact false", 0, (status[0] as NarrowLiteralInstruction).narrowLiteral)
         assertEquals("$build: $case leaves the title emoji fact false", 0, flag(context, "titleEmoji"))
+        assertEquals("$build: $case leaves the chat list title fact false", 0, flag(context, "chatListTitle"))
     }
 
     private fun flag(context: BytecodePatchContext, name: String) =

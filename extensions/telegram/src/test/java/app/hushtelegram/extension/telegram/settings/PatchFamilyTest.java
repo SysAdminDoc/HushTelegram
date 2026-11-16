@@ -372,17 +372,24 @@ public class PatchFamilyTest {
     }
 
     @Test
-    public void holidayLookCarriesTheTitleEmojiBesideItsOneSwitch() {
+    public void holidayLookCarriesTheTitleEmojiAndTheOwnTitleBesideItsSwitches() {
         PatchFamily family = PatchFamily.HOLIDAY_LOOK;
         assertEquals("Holiday look all year", family.patchName);
         assertEquals("holidayLook", family.statusMethod);
-        // The emoji is text, not a switch: Pause reaches it through its own empty paused value.
-        assertEquals(Collections.singletonList(Settings.HOLIDAY_LOOK), family.switches);
-        assertEquals(EnumSet.of(PatchFamily.Capability.TITLE_EMOJI), family.expectedCapabilities());
+        // The emoji and the title's text are text, not switches: Pause reaches them through their own
+        // empty paused values. The own title has a switch of its own, off by default.
+        assertEquals(Arrays.asList(Settings.HOLIDAY_LOOK, Settings.CHAT_LIST_TITLE), family.switches);
+        assertEquals(EnumSet.of(PatchFamily.Capability.TITLE_EMOJI, PatchFamily.Capability.CHAT_LIST_TITLE),
+                family.expectedCapabilities());
         assertEquals("titleEmoji", PatchFamily.Capability.TITLE_EMOJI.statusMethod);
+        assertEquals("chatListTitle", PatchFamily.Capability.CHAT_LIST_TITLE.statusMethod);
         assertEquals("", Settings.TITLE_EMOJI.defaultValue);
+        assertEquals(Boolean.FALSE, Settings.CHAT_LIST_TITLE.defaultValue);
+        assertEquals("", Settings.CHAT_LIST_TITLE_TEXT.defaultValue);
         // The chat list builds its title once, so new text shows after a restart.
         assertTrue(Settings.TITLE_EMOJI.rebootApp);
+        assertTrue(Settings.CHAT_LIST_TITLE.rebootApp);
+        assertTrue(Settings.CHAT_LIST_TITLE_TEXT.rebootApp);
         assertOnItsPage(family);
         assertEquals(PatchFamily.Page.LOOK, PatchFamily.Page.of(family));
     }
