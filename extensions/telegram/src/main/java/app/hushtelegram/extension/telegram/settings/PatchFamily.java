@@ -468,6 +468,7 @@ public enum PatchFamily {
         CHAT_LIST_TITLE(HOLIDAY_LOOK, "chatListTitle", "your own chat list title", true),
         CHAT_LIST_BANNER(HOLIDAY_LOOK, "chatListBanner", "the chat list banner", true),
         LIST_BACKGROUND(AMOLED_BLACK, "listBackground", "a picture behind the lists", true),
+        CUSTOM_FONT(USE_SYSTEM_FONT, "customFont", "a font file of your own", true),
         HIDE_PINNED_BAR(HIDE_TRANSLATE_BAR, "hidePinnedBar", "pinned message bar in chats", true),
         RED_DELETED_LABEL(KEEP_DELETED_MESSAGES, "redDeletedLabel", "red deleted label", true),
         EDIT_HISTORY(KEEP_DELETED_MESSAGES, "keepEditHistory", "earlier text of edited messages", true),

@@ -1244,7 +1244,11 @@ public class PatchFamilyTest {
         assertEquals(Collections.singletonList(Settings.USE_SYSTEM_FONT), family.switches);
         assertFalse(Settings.USE_SYSTEM_FONT.defaultValue);
         assertTrue(Settings.USE_SYSTEM_FONT.rebootApp);
-        assertTrue(family.expectedCapabilities().isEmpty());
+        // A font file of your own is the part a build can miss when Telegram builds its text another way (#79).
+        assertEquals(EnumSet.of(PatchFamily.Capability.CUSTOM_FONT), family.expectedCapabilities());
+        assertEquals("customFont", PatchFamily.Capability.CUSTOM_FONT.statusMethod);
+        assertEquals("", Settings.CUSTOM_FONT.defaultValue);
+        assertTrue("the font is handed out once per start", Settings.CUSTOM_FONT.rebootApp);
         assertOnItsPage(family);
     }
 

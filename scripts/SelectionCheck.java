@@ -433,6 +433,7 @@ public final class SelectionCheck {
         hook(calls, flags, "titleEmoji", "misc/TitleEmoji", "decorate");
         hook(calls, flags, "chatListBanner", "misc/ChatListBanner", "draw", "blur");
         hook(calls, flags, "useSystemFont", "misc/SystemFont", "typeface", "built");
+        hook(calls, flags, "customFont", "misc/CustomFont", "paint", "view", "regular", "bold");
         hook(calls, flags, "amoledBlack", "misc/BlackTheme", "loaded");
         hook(calls, flags, "listBackground", "misc/ListBackground", "refreshing", "laidOut");
         hook(calls, flags, "hideTranslateBar", "misc/TranslateBar", "hidden");

@@ -216,7 +216,9 @@ public class SettingsBackupTest {
                     // The device in Active sessions names this phone, so another phone doesn't take it.
                     && setting != Settings.SESSION_DEVICE_NAME && setting != Settings.SESSION_SYSTEM_VERSION
                     // Bookmarks travel as a list of their own, added to the phone's rather than in place of them.
-                    && setting != Settings.BOOKMARKS)
+                    && setting != Settings.BOOKMARKS
+                    // The font file stays on this phone, so its name doesn't travel either.
+                    && setting != Settings.CUSTOM_FONT)
                 notSwitches.add(setting.key);
         }
         assertEquals("a setting in Settings isn't a switch, and a settings file has no format for it",

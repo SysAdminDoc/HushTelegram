@@ -93,6 +93,7 @@ import app.hushtelegram.extension.telegram.misc.CallRecorder;
 import app.hushtelegram.extension.telegram.misc.ChatListAvatar;
 import app.hushtelegram.extension.telegram.misc.ChatListBanner;
 import app.hushtelegram.extension.telegram.misc.ChatTypeFolders;
+import app.hushtelegram.extension.telegram.misc.CustomFont;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.DeleteAccount;
 import app.hushtelegram.extension.telegram.misc.DoNotDisturb;
@@ -185,6 +186,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String CHAT_LIST_BANNER_ROW = "action_chat_list_banner";
     /** The gallery picker for the chat list banner's picture. */
     static final int CHAT_LIST_BANNER_REQUEST = 7315;
+    /** The Font file row's key. The file is kept by {@link CustomFont}, its name under {@link Settings#CUSTOM_FONT}. */
+    static final String FONT_FILE_ROW = "action_custom_font";
+    /** The file picker for the font file. */
+    static final int FONT_FILE_REQUEST = 7316;
     static final String HIDDEN_ACCOUNTS_ROW = "action_hidden_accounts";
     /** The Delete account row's key. Nothing is saved: a tap asks, then sends the deletion. */
     static final String DELETE_ACCOUNT_ROW = "action_delete_account";
@@ -355,6 +360,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             if (picture != null) pictureChosen(picture, SavedPicture.CHAT_LIST_BANNER);
             return;
         }
+        if (requestCode == FONT_FILE_REQUEST) {
+            Uri font = resultCode == Activity.RESULT_OK && data != null ? data.getData() : null;
+            if (font != null) fontChosen(font);
+            return;
+        }
         SettingsBackupPreference.onResult(this, requestCode, resultCode, data);
     }
 
@@ -402,6 +412,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (picture != null) picture.setSummary(listBackgroundSummary(getContext()));
         Preference banner = findPreference(CHAT_LIST_BANNER_ROW);
         if (banner != null) banner.setSummary(chatListBannerSummary(getContext()));
+        Preference font = findPreference(FONT_FILE_ROW);
+        if (font != null) font.setSummary(fontFileSummary(getContext()));
     }
 
     @Override
@@ -1527,6 +1539,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.USE_SYSTEM_FONT).addPreference(toggle(context, Settings.USE_SYSTEM_FONT, L10n.t("Use system font"),
                     PatchFamily.USE_SYSTEM_FONT.coverageSummary(L10n.t("Bold, italic and code text use your phone's font instead of Telegram's built-in "
                             + "one. Restart Telegram to see the change."))));
+            if (PatchFamily.Capability.CUSTOM_FONT.installed()) {
+                on(pages, PatchFamily.USE_SYSTEM_FONT).addPreference(fontFileRow(context));
+            }
         }
         if (build.contains(PatchFamily.AMOLED_BLACK)) {
             on(pages, PatchFamily.AMOLED_BLACK).addPreference(toggle(context, Settings.AMOLED_BLACK, L10n.t("AMOLED black"),
@@ -3623,6 +3638,111 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             Utils.showToastShort(L10n.t("Banner picture saved."));
         }
         if (getPreferenceScreen() != null) refreshSwitches();
+    }
+
+    /** A font file of your own (#79): the row names it, and a tap picks one or changes it. */
+    private Preference fontFileRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(FONT_FILE_ROW);
+        row.setTitle(L10n.t("Font file"));
+        row.setPersistent(false);
+        row.setSummary(fontFileSummary(context));
+        row.setOnPreferenceClickListener(p -> {
+            showFontFile(context);
+            return true;
+        });
+        return row;
+    }
+
+    /** The saved font's name, or what a tap does with none. A name whose file is gone counts as none. */
+    static String fontFileSummary(@Nullable Context context) {
+        String name = Settings.CUSTOM_FONT.savedValue();
+        if (name.isEmpty() || !CustomFont.present(context)) {
+            return L10n.t("No font file yet. Tap to pick a .ttf or .otf file for all of Telegram's text.");
+        }
+        return L10n.f("%1$s, used for all of Telegram's text while Use system font is on. Tap to change it.", L10n.isolate(name));
+    }
+
+    /** With no font, straight to the file picker. With one, another font or none. */
+    void showFontFile(Context context) {
+        if (SettingsLock.refuses()) return;
+        String name = Settings.CUSTOM_FONT.savedValue();
+        if (name.isEmpty() || !CustomFont.present(context)) {
+            pickFont();
+            return;
+        }
+        show(new AlertDialog.Builder(context)
+                .setTitle(L10n.isolate(name))
+                .setPositiveButton(L10n.t("Choose another font"), (dialog, which) -> pickFont())
+                .setNeutralButton(L10n.t("Remove font"), (dialog, which) -> removeFont(context))
+                .setNegativeButton(L10n.t("Cancel"), null));
+    }
+
+    /** The phone's file picker, open to any file: phones don't agree on a type for fonts, and the save checks it. */
+    void pickFont() {
+        Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("*/*").addCategory(Intent.CATEGORY_OPENABLE);
+        try {
+            startActivityForResult(picker, FONT_FILE_REQUEST);
+        } catch (ActivityNotFoundException | IllegalStateException missing) {
+            Logger.printInfo(() -> "No file picker: " + missing.getClass().getSimpleName());
+            Utils.showToastLong(L10n.t("Couldn't open the file picker. Try again."));
+        }
+    }
+
+    /** Copies [font], the picker's answer, into Telegram's own files off the main thread, then says how it went. */
+    void fontChosen(Uri font) {
+        Activity activity = getActivity();
+        Context context = activity != null ? activity.getApplicationContext() : Utils.getContext();
+        if (context == null) return;
+        boolean queued = Utils.runOnBackgroundThread(() -> {
+            CustomFont.Saved saved = CustomFont.Saved.FAILED;
+            String name = null;
+            try {
+                name = CustomFont.name(context, font);
+                saved = CustomFont.save(context, font);
+            } finally {
+                CustomFont.Saved result = saved;
+                String named = name;
+                Utils.runOnMainThread(() -> fontSaved(context, named, result));
+            }
+        });
+        if (!queued) fontSaved(context, null, CustomFont.Saved.FAILED);
+    }
+
+    /**
+     * A saved font turns Use system font on too, since it's drawn only while that's on. Telegram
+     * keeps the faces it has, so either way the font shows after a restart.
+     */
+    void fontSaved(Context context, @Nullable String name, CustomFont.Saved saved) {
+        if (saved != CustomFont.Saved.SAVED || name == null) {
+            Utils.showToastLong(saved == CustomFont.Saved.NOT_A_FONT ? L10n.t("That file isn't a font.")
+                    : saved == CustomFont.Saved.TOO_LARGE ? L10n.t("That font file is too large.")
+                    : L10n.t("Couldn't save the font. Try again."));
+            return;
+        }
+        String fontBefore = Settings.CUSTOM_FONT.savedValue();
+        boolean switchBefore = Settings.USE_SYSTEM_FONT.savedValue();
+        // The switch's own row hears this save only once the Setting already holds it, and would
+        // take the new value for the one the process runs with: note the running one first.
+        noteRestartPending(Settings.USE_SYSTEM_FONT, switchBefore);
+        Settings.CUSTOM_FONT.save(name);
+        Settings.USE_SYSTEM_FONT.save(true);
+        noteRestartPending(Settings.CUSTOM_FONT, fontBefore);
+        noteRestartPending(Settings.USE_SYSTEM_FONT, switchBefore);
+        if (getPreferenceScreen() != null) refreshSwitches();
+        Activity activity = getActivity();
+        showRestartDialog(activity != null ? activity : context);
+    }
+
+    /** Deletes the font. Text that already has it keeps it until Telegram restarts. */
+    void removeFont(Context context) {
+        if (SettingsLock.refuses()) return;
+        CustomFont.remove(context);
+        String before = Settings.CUSTOM_FONT.savedValue();
+        Settings.CUSTOM_FONT.save("");
+        refreshSwitches();
+        if (noteRestartPending(Settings.CUSTOM_FONT, before)) showRestartDialog(context);
+        else Utils.showToastShort(L10n.t("Font removed."));
     }
 
     /** The chat list banner: the row says which one shows, and a tap offers colors, a picture or none. */

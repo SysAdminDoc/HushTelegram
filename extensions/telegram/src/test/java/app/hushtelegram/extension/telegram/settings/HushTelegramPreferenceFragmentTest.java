@@ -62,6 +62,7 @@ import app.hushtelegram.extension.shared.settings.preference.ImmediateAction;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 import app.hushtelegram.extension.telegram.misc.AppPasscodeForTests;
 import app.hushtelegram.extension.telegram.misc.CallRecorder;
+import app.hushtelegram.extension.telegram.misc.CustomFont;
 import app.hushtelegram.extension.telegram.misc.HiddenAccounts;
 import app.hushtelegram.extension.telegram.misc.HiddenAccountsForTests;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
@@ -619,6 +620,9 @@ public class HushTelegramPreferenceFragmentTest {
             // Telegram's bundled fonts stay until someone turns the switch on.
             assertFalse(Settings.USE_SYSTEM_FONT.key,
                     ((SwitchPreference) page.findPreference(Settings.USE_SYSTEM_FONT.key)).isChecked());
+            assertEquals("Font file", String.valueOf(page.findPreference(HushTelegramPreferenceFragment.FONT_FILE_ROW).getTitle()));
+            assertEquals("No font file yet. Tap to pick a .ttf or .otf file for all of Telegram's text.",
+                    String.valueOf(page.findPreference(HushTelegramPreferenceFragment.FONT_FILE_ROW).getSummary()));
             assertEquals("AMOLED black", String.valueOf(page.findPreference(Settings.AMOLED_BLACK.key).getTitle()));
             assertEquals("Night and Dark themes use pure black screens. Message bubbles and menus keep their colors. "
                     + "Restart Telegram to see the change.",
@@ -2670,6 +2674,99 @@ public class HushTelegramPreferenceFragmentTest {
             SavedPicture.remove(appContext, SavedPicture.LIST_BACKGROUND);
             Settings.LIST_BACKGROUND.resetToDefault();
             Settings.LIST_BACKGROUND_DIM.resetToDefault();
+        }
+    }
+
+    /**
+     * Font file (#79): with none saved a tap opens the file picker, a file that isn't a font is
+     * turned away, and a font is copied in and turns Use system font on, both waiting for a
+     * restart. Then a tap offers another font or none, and Remove font takes it away.
+     */
+    @Test
+    @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
+    public void theFontFileRowPicksAFontTurnsTheFontOnAndRemovesIt() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.USE_SYSTEM_FONT);
+        Context appContext = RuntimeEnvironment.getApplication();
+        java.io.ByteArrayOutputStream arvo = new java.io.ByteArrayOutputStream();
+        try (java.io.InputStream in = getClass().getClassLoader().getResourceAsStream("fonts/Arvo-Regular.ttf")) {
+            assertNotNull("Arvo is on the test classpath", in);
+            byte[] buffer = new byte[8192];
+            for (int read; (read = in.read(buffer)) != -1; ) arvo.write(buffer, 0, read);
+        }
+        Uri notes = Uri.parse("content://fonts.test/document/notes.txt");
+        Uri font = Uri.parse("content://fonts.test/document/Arvo-Regular.ttf");
+        shadowOf(appContext.getContentResolver()).registerInputStream(notes,
+                new java.io.ByteArrayInputStream("not a font".getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        shadowOf(appContext.getContentResolver()).registerInputStream(font, new java.io.ByteArrayInputStream(arvo.toByteArray()));
+        String none = "No font file yet. Tap to pick a .ttf or .otf file for all of Telegram's text.";
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            Preference row = page.findPreference(HushTelegramPreferenceFragment.FONT_FILE_ROW);
+            SwitchPreference systemFont = (SwitchPreference) page.findPreference(Settings.USE_SYSTEM_FONT.key);
+            assertEquals("Font file", String.valueOf(row.getTitle()));
+            assertEquals(none, String.valueOf(row.getSummary()));
+            assertFalse("it stores nothing itself", row.isPersistent());
+
+            assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+            ShadowActivity.IntentForResult picker = shadowOf(controller.get()).getNextStartedActivityForResult();
+            assertEquals(Intent.ACTION_OPEN_DOCUMENT, picker.intent.getAction());
+            assertEquals("phones don't agree on a type for fonts", "*/*", picker.intent.getType());
+            assertTrue(picker.intent.hasCategory(Intent.CATEGORY_OPENABLE));
+            assertEquals(HushTelegramPreferenceFragment.FONT_FILE_REQUEST, picker.requestCode);
+
+            // Not a font: turned away, and nothing else changes.
+            shadowOf(controller.get()).receiveResult(picker.intent, Activity.RESULT_OK, new Intent().setData(notes));
+            settle();
+            settle();
+            assertEquals("That file isn't a font.", ShadowToast.getTextOfLatestToast());
+            assertFalse(CustomFont.present(appContext));
+            assertEquals("", Settings.CUSTOM_FONT.savedValue());
+            assertFalse(Settings.USE_SYSTEM_FONT.savedValue());
+            assertEquals(none, String.valueOf(row.getSummary()));
+
+            assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+            picker = shadowOf(controller.get()).getNextStartedActivityForResult();
+            shadowOf(controller.get()).receiveResult(picker.intent, Activity.RESULT_OK, new Intent().setData(font));
+            settle();
+            settle();
+            assertTrue(CustomFont.present(appContext));
+            assertEquals("Arvo-Regular.ttf", Settings.CUSTOM_FONT.savedValue());
+            assertTrue("the font is drawn only while Use system font is on", Settings.USE_SYSTEM_FONT.savedValue());
+            assertTrue(systemFont.isChecked());
+            assertTrue(app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending
+                    .contains(Settings.CUSTOM_FONT.key));
+            assertTrue(app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending
+                    .contains(Settings.USE_SYSTEM_FONT.key));
+            assertEquals(app.hushtelegram.extension.shared.L10n.isolate("Arvo-Regular.ttf") + ", used for all of "
+                    + "Telegram's text while Use system font is on. Tap to change it.", String.valueOf(row.getSummary()));
+
+            AlertDialog change = dialogOf(row);
+            assertEquals("Arvo-Regular.ttf", String.valueOf(shadowOf(change).getTitle()).replaceAll("[^\\p{ASCII}]", ""));
+            assertEquals("Choose another font", String.valueOf(change.getButton(AlertDialog.BUTTON_POSITIVE).getText()));
+            assertEquals("Remove font", String.valueOf(change.getButton(AlertDialog.BUTTON_NEUTRAL).getText()));
+            change.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            picker = shadowOf(controller.get()).getNextStartedActivityForResult();
+            assertEquals(Intent.ACTION_OPEN_DOCUMENT, picker.intent.getAction());
+            shadowOf(controller.get()).receiveResult(picker.intent, Activity.RESULT_CANCELED, null);
+            settle();
+            assertEquals("cancelled, the font stays", "Arvo-Regular.ttf", Settings.CUSTOM_FONT.savedValue());
+
+            change = dialogOf(row);
+            change.getButton(AlertDialog.BUTTON_NEUTRAL).performClick();
+            settle();
+            assertFalse(CustomFont.present(appContext));
+            assertEquals("", Settings.CUSTOM_FONT.savedValue());
+            // Telegram started without a font, so taking it away again owes nothing.
+            assertFalse(app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending
+                    .contains(Settings.CUSTOM_FONT.key));
+            assertEquals("Font removed.", ShadowToast.getTextOfLatestToast());
+            assertEquals(none, String.valueOf(row.getSummary()));
+            assertTrue("the switch stays as it was", Settings.USE_SYSTEM_FONT.savedValue());
+        } finally {
+            CustomFont.remove(appContext);
+            Settings.CUSTOM_FONT.resetToDefault();
+            Settings.USE_SYSTEM_FONT.resetToDefault();
         }
     }
 

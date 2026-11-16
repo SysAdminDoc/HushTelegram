@@ -173,6 +173,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/GreetingStickers.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ForumTopicPull.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/SystemFont.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/CustomFont.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/BlackTheme.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/TranslateBar.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ExactNumbers.java",

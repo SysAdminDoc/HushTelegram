@@ -2254,3 +2254,23 @@ Show when forwards were first sent	显示转发消息的原始发送时间
 A forwarded message's header also shows the date and time it was first sent, after Forwarded from. The date comes with the message, so nothing more is asked of Telegram.	转发消息的标题在“转发自”后面还会显示它最初发送的日期和时间。日期随消息一起提供，因此不会再向 Telegram 请求任何内容.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Show user and chat IDs that shows when a forwarded message was first sent
 forward dates	转发日期
+# context: Title of a row under the Use system font switch (#79). A tap picks a font file (.ttf or .otf) from the phone, or changes or removes the one picked
+Font file	字体文件
+# context: Summary under the Font file row when no font file is picked yet. Use system font is the switch above it
+No font file yet. Tap to pick a .ttf or .otf file for all of Telegram's text.	还没有字体文件。点按以选择一个 .ttf 或 .otf 文件，用于 Telegram 的所有文字.
+# context: Summary under the Font file row once a font file is picked. %1$s is the file's name, such as Inter.ttf. Use system font is the switch above it
+%1$s, used for all of Telegram's text while Use system font is on. Tap to change it.	%1$s，在“使用系统字体”开启时用于 Telegram 的所有文字。点按以更换.
+# context: Button in the dialog the Font file row opens once a font is picked. It opens the file picker again
+Choose another font	选择其他字体
+# context: Button in the dialog the Font file row opens once a font is picked. It deletes the font file so Telegram's text goes back to its usual font after a restart
+Remove font	移除字体
+# context: Short message after Remove font
+Font removed.	字体已移除.
+# context: Short message when the file picked for Font file can't be read as a font
+That file isn't a font.	该文件不是字体.
+# context: Short message when the file picked for Font file is over the size HushTelegram copies
+That font file is too large.	字体文件太大.
+# context: Short message when copying the picked font file failed
+Couldn't save the font. Try again.	无法保存字体。请重试.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Use system font that draws Telegram's text in a font file you picked
+a font file of your own	你自己的字体文件

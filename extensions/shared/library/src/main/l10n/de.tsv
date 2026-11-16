@@ -2254,3 +2254,23 @@ Show when forwards were first sent	Anzeigen, wann Weitergeleitetes zuerst gesend
 A forwarded message's header also shows the date and time it was first sent, after Forwarded from. The date comes with the message, so nothing more is asked of Telegram.	Der Kopf einer weitergeleiteten Nachricht zeigt nach „Weitergeleitet von“ auch Datum und Uhrzeit, zu der sie zuerst gesendet wurde. Das Datum kommt mit der Nachricht, also wird Telegram nach nichts weiter gefragt.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Show user and chat IDs that shows when a forwarded message was first sent
 forward dates	Daten weitergeleiteter Nachrichten
+# context: Title of a row under the Use system font switch (#79). A tap picks a font file (.ttf or .otf) from the phone, or changes or removes the one picked
+Font file	Schriftdatei
+# context: Summary under the Font file row when no font file is picked yet. Use system font is the switch above it
+No font file yet. Tap to pick a .ttf or .otf file for all of Telegram's text.	Noch keine Schriftdatei. Tippe, um eine .ttf- oder .otf-Datei für alle Texte in Telegram auszuwählen.
+# context: Summary under the Font file row once a font file is picked. %1$s is the file's name, such as Inter.ttf. Use system font is the switch above it
+%1$s, used for all of Telegram's text while Use system font is on. Tap to change it.	%1$s, für alle Texte in Telegram, solange „Systemschrift verwenden“ an ist. Tippe, um sie zu ändern.
+# context: Button in the dialog the Font file row opens once a font is picked. It opens the file picker again
+Choose another font	Andere Schrift wählen
+# context: Button in the dialog the Font file row opens once a font is picked. It deletes the font file so Telegram's text goes back to its usual font after a restart
+Remove font	Schrift entfernen
+# context: Short message after Remove font
+Font removed.	Schrift entfernt.
+# context: Short message when the file picked for Font file can't be read as a font
+That file isn't a font.	Diese Datei ist keine Schrift.
+# context: Short message when the file picked for Font file is over the size HushTelegram copies
+That font file is too large.	Die Schriftdatei ist zu groß.
+# context: Short message when copying the picked font file failed
+Couldn't save the font. Try again.	Schrift nicht gespeichert. Versuch es noch mal.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Use system font that draws Telegram's text in a font file you picked
+a font file of your own	eine eigene Schriftdatei

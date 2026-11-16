@@ -242,6 +242,15 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_use_system_font", FALSE, true);
 
     /**
+     * The name of the font file picked for all of Telegram's text (#79), or empty for none. The
+     * file itself is kept by {@link app.hushtelegram.extension.telegram.misc.CustomFont} and used
+     * only while {@link #USE_SYSTEM_FONT} is on. Telegram keeps the faces it was handed, so a change
+     * waits for a restart.
+     */
+    public static final StringSetting CUSTOM_FONT =
+            new StringSetting("hushtelegram_custom_font", "", true);
+
+    /**
      * Pure black backgrounds for Telegram's built-in Night and Dark themes. Telegram keeps the colors
      * it loaded until it applies a theme again, so a change waits for a restart.
      */
