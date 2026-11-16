@@ -184,6 +184,7 @@ public final class SettingsStatus {
     public static boolean storageFolder() { return false; }
     public static boolean fileIconsChat() { return false; }
     public static boolean fileIconsShared() { return false; }
+    public static boolean knownFiles() { return false; }
     public static boolean chatTypeFolders() { return false; }
     public static boolean adminFolder() { return false; }
     public static boolean storyRequests() { return false; }

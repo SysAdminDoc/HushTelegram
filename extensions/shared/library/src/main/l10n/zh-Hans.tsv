@@ -2150,6 +2150,12 @@ APK and EXE files get their own icon in chats and in Shared media. Once download
 file icons and thumbnails in chats	聊天中的文件图标和缩略图
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Save downloaded files that draws file icons in a chat's Shared media page
 file icons and thumbnails in Shared media	分享的媒体中的文件图标和缩略图
+# context: Playback page switch under Save downloaded files, off by default (#79). With it on, a file Telegram already has on the phone shows as downloaded instead of with a download button.
+Recognize files you already have	识别你已有的文件
+# context: Line under the Recognize files you already have switch. Keep Telegram's files in internal storage is the name of another switch on the same page, so use its translation.
+A file Telegram already downloaded, in another account for example, shows as downloaded here too when its folders hold one with the same name and size. With Keep Telegram's files in internal storage on, files from before a reinstall count too.	Telegram 已经下载过的文件（例如在另一个账号中）在其文件夹里有同名同大小的文件时，在这里也会显示为已下载。开启“将 Telegram 的文件保存在内部存储中”后，重装前的文件也算在内.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Save downloaded files that shows files already on the phone as downloaded.
+how files you already have show up	已有文件的显示方式
 # context: Switch title on the Look and feel page under AMOLED black, off by default (#88). It shows a picture from the gallery behind Telegram's list screens.
 Picture behind the lists	列表背景图片
 # context: Summary of Picture behind the lists. Settings is Telegram's own Settings screen; built-in themes are the ones Telegram ships (Day, Classic, Night, Dark), not a theme installed from a file.

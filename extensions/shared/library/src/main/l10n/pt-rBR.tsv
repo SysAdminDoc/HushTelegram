@@ -2147,6 +2147,12 @@ APK and EXE files get their own icon in chats and in Shared media. Once download
 file icons and thumbnails in chats	ícones e miniaturas de arquivos nas conversas
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Save downloaded files that draws file icons in a chat's Shared media page
 file icons and thumbnails in Shared media	ícones e miniaturas de arquivos na mídia compartilhada
+# context: Playback page switch under Save downloaded files, off by default (#79). With it on, a file Telegram already has on the phone shows as downloaded instead of with a download button.
+Recognize files you already have	Reconhecer arquivos que você já tem
+# context: Line under the Recognize files you already have switch. Keep Telegram's files in internal storage is the name of another switch on the same page, so use its translation.
+A file Telegram already downloaded, in another account for example, shows as downloaded here too when its folders hold one with the same name and size. With Keep Telegram's files in internal storage on, files from before a reinstall count too.	Um arquivo que o Telegram já baixou, em outra conta por exemplo, aparece como baixado aqui também quando as pastas dele têm um com o mesmo nome e tamanho. Com Guardar os arquivos do Telegram no armazenamento interno ativado, arquivos de antes de uma reinstalação também contam.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Save downloaded files that shows files already on the phone as downloaded.
+how files you already have show up	como aparecem os arquivos que você já tem
 # context: Switch title on the Look and feel page under AMOLED black, off by default (#88). It shows a picture from the gallery behind Telegram's list screens.
 Picture behind the lists	Imagem atrás das listas
 # context: Summary of Picture behind the lists. Settings is Telegram's own Settings screen; built-in themes are the ones Telegram ships (Day, Classic, Night, Dark), not a theme installed from a file.

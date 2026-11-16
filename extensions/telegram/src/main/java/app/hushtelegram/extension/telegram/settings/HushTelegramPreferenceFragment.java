@@ -1321,6 +1321,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + " shows its first page and a video a frame from it. Files with a thumbnail from Telegram"
                                 + " keep it.")));
             }
+            if (PatchFamily.Capability.KNOWN_FILES.installed()) {
+                on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(toggle(context, Settings.KNOWN_FILES,
+                        L10n.t("Recognize files you already have"),
+                        L10n.t("A file Telegram already downloaded, in another account for example, shows as downloaded"
+                                + " here too when its folders hold one with the same name and size. With Keep Telegram's files"
+                                + " in internal storage on, files from before a reinstall count too.")));
+            }
         }
     }
 

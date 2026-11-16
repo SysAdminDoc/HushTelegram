@@ -128,6 +128,8 @@ val saveDownloadsPatch = bytecodePatch(
         val storage = resolveStorageFolder()
         val older = resolveOlderFiles()
         val olderLoads = resolveOlderLoads()
+        requireKnownFilesRuntime()
+        val known = resolveKnownFiles(older)
         requireStatusMethod("fileIconsChat")
         requireStatusMethod("fileIconsShared")
         requireFileIconsRuntime()
@@ -140,6 +142,7 @@ val saveDownloadsPatch = bytecodePatch(
         if (storage.missing == null) storage.rehearse()
         if (storage.missing == null && older.missing == null) older.rehearse()
         if (storage.missing == null && olderLoads.missing == null) olderLoads.rehearse()
+        if (known.missing == null) known.rehearse()
         insertSaveDownloadsHook(callback.method, callback)
         insertFoundFileHook(finishing)
         if (storage.missing == null) {
@@ -158,7 +161,15 @@ val saveDownloadsPatch = bytecodePatch(
         } else {
             patchLog.warning("Save downloaded files: ${storage.missing}. The patch goes on without the storage folder.")
         }
+        // After the storage folder's hook, so it sees the path that hook settled on.
+        if (known.missing == null) {
+            known.apply()
+            enableCapability("knownFiles")
+        } else {
+            patchLog.warning("Save downloaded files: ${known.missing}. The patch goes on without recognizing files you already have.")
+        }
         writeSaveDownloadsStubs()
+        writeKnownFilesStubs()
         if (gallery.missing == null) {
             gallery.apply()
             enableCapability("galleryFolder")

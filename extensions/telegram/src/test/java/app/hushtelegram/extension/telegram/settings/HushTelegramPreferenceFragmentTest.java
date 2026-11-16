@@ -1763,6 +1763,36 @@ public class HushTelegramPreferenceFragmentTest {
     }
 
     /**
+     * Save downloaded files brings Recognize files you already have right after File icons and
+     * thumbnails when its hook went in (#79), and it starts off.
+     */
+    @Test
+    public void theKnownFilesSwitchShowsWhenItsHookWentInAndStartsOff() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SAVE_DOWNLOADS);
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.FILE_ICONS_CHAT);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            assertNotNull(page.findPreference(Settings.FILE_ICONS.key));
+            assertNull("a build without the hook has no row", page.findPreference(Settings.KNOWN_FILES.key));
+        }
+        PatchFamily.capabilitiesForTests = null;
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            SwitchPreference known = (SwitchPreference) pageOf(controller).findPreference(Settings.KNOWN_FILES.key);
+            assertNotNull(known);
+            assertEquals("Playback", String.valueOf(known.getParent().getTitle()));
+            assertEquals("Recognize files you already have", String.valueOf(known.getTitle()));
+            assertEquals("A file Telegram already downloaded, in another account for example, shows as downloaded here too"
+                    + " when its folders hold one with the same name and size. With Keep Telegram's files in internal storage"
+                    + " on, files from before a reinstall count too.", String.valueOf(known.getSummary()));
+            assertFalse("Telegram's download buttons stay until someone turns it on", known.isChecked());
+            List<Preference> rows = new ArrayList<>();
+            collect(pageOf(controller).getPreferenceScreen(), rows);
+            assertEquals("it comes after the file icons row", indexOfKey(rows, Settings.FILE_ICONS.key) + 1,
+                    indexOfKey(rows, Settings.KNOWN_FILES.key));
+        }
+    }
+
+    /**
      * Translate with an outside service brings a Translate into row under the service (#35). A tap
      * lists Telegram's language and then every language Google's web translate knows, the search
      * finds one by any of its names, and a pick saves it at once and closes the list.

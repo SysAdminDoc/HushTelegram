@@ -931,6 +931,16 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_file_icons", FALSE);
 
     /**
+     * Files you already have (#79): a named file, or a photo or video from a chat that allows
+     * saving, shows as downloaded when Telegram's folders already hold one with the same name and
+     * size, even though this account has no record of downloading it. That covers another
+     * account's downloads, and with {@link #STORAGE_FOLDER} on, files from before a reinstall.
+     * Starts off.
+     */
+    public static final BooleanSetting KNOWN_FILES =
+            new BooleanSetting("hushtelegram_known_files", FALSE);
+
+    /**
      * The folder under Internal storage that {@link #STORAGE_FOLDER} moves Telegram's files to, one
      * {@link app.hushtelegram.extension.telegram.misc.StorageFolder#allowedName} takes. Empty is
      * Internal storage/Telegram (#7). Read once with the folder, so it needs a restart too.
