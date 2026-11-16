@@ -58,6 +58,7 @@ import app.hushtelegram.extension.shared.settings.StringSetting;
 import app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 import app.hushtelegram.extension.shared.settings.preference.QuickSetups;
+import app.hushtelegram.extension.telegram.misc.ChatListAvatar;
 import app.hushtelegram.extension.telegram.misc.KeepRemoved;
 import app.hushtelegram.extension.telegram.misc.LinkPreviewRules;
 import app.hushtelegram.extension.telegram.misc.LocalPins;
@@ -499,6 +500,11 @@ public class SettingsBackupPreference extends Preference {
                 NumberFormat percent = NumberFormat.getPercentInstance(L10n.locale());
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Sticker size"),
                         percent.format(StickerSize.percent(Settings.STICKER_SIZE.savedValue()) / 100.0),
+                        percent.format(((Integer) change.getValue()) / 100.0)));
+            } else if (change.getKey() == Settings.CHAT_LIST_AVATAR_SIZE) {
+                NumberFormat percent = NumberFormat.getPercentInstance(L10n.locale());
+                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Avatar size"),
+                        percent.format(ChatListAvatar.percent(Settings.CHAT_LIST_AVATAR_SIZE.savedValue()) / 100.0),
                         percent.format(((Integer) change.getValue()) / 100.0)));
             }
         }

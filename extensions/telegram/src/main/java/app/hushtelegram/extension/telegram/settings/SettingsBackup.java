@@ -44,6 +44,7 @@ import app.hushtelegram.extension.shared.settings.IntegerSetting;
 import app.hushtelegram.extension.shared.settings.Setting;
 import app.hushtelegram.extension.shared.settings.SettingsJson;
 import app.hushtelegram.extension.shared.settings.StringSetting;
+import app.hushtelegram.extension.telegram.misc.ChatListAvatar;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.FolderIcons;
 import app.hushtelegram.extension.telegram.misc.GalleryFolder;
@@ -172,6 +173,7 @@ public final class SettingsBackup {
             Settings.HIDDEN_ACCOUNTS_LOCK,
             Settings.FIT_ALL_TABS,
             Settings.FOLDER_TAB_ICONS,
+            Settings.CHAT_LIST_AVATAR,
             Settings.FORWARD_HIDE_SENDER,
             Settings.VOICE_MUSIC_PLAYER,
             Settings.PLAYBACK_POSITION,
@@ -308,10 +310,12 @@ public final class SettingsBackup {
             Settings.MESSAGE_FILTERS_CHANNELS));
 
     /**
-     * The numbers a file carries, each one of a few choices: the sticker size and how many days
-     * call recordings stay. A build from before them counts the name as unknown and leaves it out.
+     * The numbers a file carries, each one of a few choices: the sticker size, how many days call
+     * recordings stay and the chat list's avatar size. A build from before them counts the name as
+     * unknown and leaves it out.
      */
-    static final List<IntegerSetting> NUMBERS = Arrays.asList(Settings.STICKER_SIZE, Settings.RECORD_CALLS_KEEP_DAYS);
+    static final List<IntegerSetting> NUMBERS = Arrays.asList(Settings.STICKER_SIZE, Settings.RECORD_CALLS_KEEP_DAYS,
+            Settings.CHAT_LIST_AVATAR_SIZE);
 
     /**
      * The short texts a file carries as they're saved: the emoji beside the chat list's title, the
@@ -746,6 +750,7 @@ public final class SettingsBackup {
     /** Whether a number is one of its setting's choices. */
     static boolean allowed(IntegerSetting setting, int value) {
         if (setting == Settings.RECORD_CALLS_KEEP_DAYS) return HushTelegramPreferenceFragment.RECORD_KEEP_DAYS.contains(value);
+        if (setting == Settings.CHAT_LIST_AVATAR_SIZE) return ChatListAvatar.percent(value) == value;
         return setting == Settings.STICKER_SIZE && StickerSize.percent(value) == value;
     }
 

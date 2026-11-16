@@ -125,6 +125,7 @@ public final class SettingsStatus {
     public static boolean adminChats() { return false; }
     public static boolean hiddenAccounts() { return false; }
     public static boolean hiddenUnread() { return false; }
+    public static boolean chatListAvatar() { return false; }
     public static boolean forwardHideSender() { return false; }
     public static boolean voiceMusicPlayer() { return false; }
     public static boolean playbackPosition() { return false; }

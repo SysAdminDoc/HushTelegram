@@ -2071,6 +2071,14 @@ Pin chats on this phone	Fixar conversas neste telefone
 Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under your pinned chats in All Chats, newest first. Nothing is sent to Telegram, so your other devices and Telegram's pin limit stay as they are.	Adiciona Fixar neste telefone ao menu que abre ao tocar e segurar na lista de conversas. Essas conversas ficam logo abaixo das suas conversas fixadas em Todos os Chats, as mais recentes primeiro. Nada é enviado ao Telegram, então seus outros dispositivos e o limite de fixadas do Telegram continuam como estão.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that pins chats on this phone only
 chats pinned on this phone	as conversas fixadas neste telefone
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default (#89). With it on, chat pictures (avatars) in the chat list show at the size picked under Avatar size, a percent of Telegram's own size
+Change avatar size	Mudar o tamanho dos avatares
+# context: Summary of Change avatar size. The size is picked in the Avatar size row right below it; each chat list row keeps its height and the picture shrinks or grows around its own center
+Chat pictures in the chat list show at the size you pick below. Each row keeps its height, and the picture stays centered where Telegram puts it.	As fotos das conversas na lista de conversas aparecem no tamanho que você escolher abaixo. Cada linha mantém a altura, e a foto fica centralizada onde o Telegram a coloca.
+# context: Row title and dialog title. The person picks the chat list's avatar size as a percent of Telegram's own size (70%, 80%, 90%, 110% or 120%); the row's summary reads "%1$s of Telegram's size"
+Avatar size	Tamanho dos avatares
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that changes the size of chat pictures in the chat list
+avatar size in the chat list	o tamanho dos avatares na lista de conversas
 # context: Name of the list Pin on this phone keeps, in the import preview line "%1$s: %2$s to %3$s", where the counts follow
 Chats pinned on this phone	Conversas fixadas neste telefone
 # context: Count of chats in the import preview, singular form. %1$d is the number

@@ -456,6 +456,17 @@ public class Settings extends BaseSettings {
             new StringSetting("hushtelegram_local_pinned_chats", "");
 
     /**
+     * Chat list avatars show at {@link #CHAT_LIST_AVATAR_SIZE} percent of Telegram's size
+     * ({@link app.hushtelegram.extension.telegram.misc.ChatListAvatar}).
+     */
+    public static final BooleanSetting CHAT_LIST_AVATAR =
+            new BooleanSetting("hushtelegram_chat_list_avatar", FALSE);
+
+    /** The picked chat list avatar size, a percent of Telegram's: one of ChatListAvatar.CHOICES. */
+    public static final IntegerSetting CHAT_LIST_AVATAR_SIZE =
+            new IntegerSetting("hushtelegram_chat_list_avatar_size", 80).withRange(70, 120);
+
+    /**
      * Forwards start with Telegram's Hide sender's name option turned on.
      */
     public static final BooleanSetting FORWARD_HIDE_SENDER =

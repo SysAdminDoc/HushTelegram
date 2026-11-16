@@ -218,7 +218,7 @@ public class SettingsBackupTest {
         assertEquals("a setting in Settings isn't a switch, and a settings file has no format for it",
                 Collections.emptyList(), notSwitches);
         assertEquals(Arrays.asList(Settings.MESSAGE_FILTERS_GROUPS, Settings.MESSAGE_FILTERS_CHANNELS), SettingsBackup.FILTER_LISTS);
-        assertEquals(Arrays.asList(Settings.STICKER_SIZE, Settings.RECORD_CALLS_KEEP_DAYS), SettingsBackup.NUMBERS);
+        assertEquals(Arrays.asList(Settings.STICKER_SIZE, Settings.RECORD_CALLS_KEEP_DAYS, Settings.CHAT_LIST_AVATAR_SIZE), SettingsBackup.NUMBERS);
         assertEquals(Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET, Settings.FOLDER_ICON_PACK, Settings.STORAGE_FOLDER_NAME,
                 Settings.SAVE_KINDS_LEFT_OUT, Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LOCAL_PINNED_CHATS, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS), SettingsBackup.TEXTS);
         assertEquals(Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_STORIES, Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_KEYBOARD_FEATURED, Settings.HIDE_COMMERCE, Settings.HIDE_EMOJI_STATUS, Settings.UNLOCK_PREMIUM_ICONS, Settings.LOCAL_EMOJI_STATUS,
@@ -228,7 +228,7 @@ public class SettingsBackupTest {
                         Settings.HIDE_TRANSLATE_BAR, Settings.HIDE_PINNED_BAR, Settings.EXACT_NUMBERS, Settings.REVEAL_SPOILERS, Settings.REVEAL_MENU, Settings.SEARCH_OPENS_QUOTES, Settings.HIDE_KEYBOARD_ON_SCROLL, Settings.KEEP_VIDEOS_MUTED, Settings.VIDEO_EITHER_LANDSCAPE, Settings.VIDEO_ONLY_FROM_BUTTON, Settings.VIDEO_STARTS_SILENT, Settings.SWIPE_BACK_ON_PROFILES,
                         Settings.HIDE_PHONE_NUMBER, Settings.SHARE_NUMBER_UNTICKED, Settings.MESSAGE_SECONDS, Settings.ALLOW_CHAT_BLUR, Settings.VOICE_ONE_AT_A_TIME, Settings.LOCKED_VOICE_GUARD, Settings.NO_HAPTICS, Settings.REACTION_EFFECTS_OFF,
                         Settings.HIDE_FOLDER_COUNTERS, Settings.LAUNCH_FOLDER, Settings.HIDE_ALL_CHATS, Settings.MOVE_ALL_CHATS, Settings.HIDDEN_CHATS, Settings.SORT_BY_DATE, Settings.SORT_OLDEST_FIRST, Settings.LOCAL_PINS, Settings.HIDDEN_CHATS_PASSCODE,
-                        Settings.ADMIN_CHATS, Settings.HIDE_ACCOUNTS, Settings.HIDDEN_ACCOUNTS_LOCK, Settings.FIT_ALL_TABS, Settings.FOLDER_TAB_ICONS, Settings.FORWARD_HIDE_SENDER, Settings.VOICE_MUSIC_PLAYER, Settings.PLAYBACK_POSITION, Settings.VOICE_SKIP, Settings.LYRICS, Settings.SONG_DATES, Settings.SELECT_BETWEEN, Settings.SELECTION_SCREENSHOT, Settings.SELECT_ALL,
+                        Settings.ADMIN_CHATS, Settings.HIDE_ACCOUNTS, Settings.HIDDEN_ACCOUNTS_LOCK, Settings.FIT_ALL_TABS, Settings.FOLDER_TAB_ICONS, Settings.CHAT_LIST_AVATAR, Settings.FORWARD_HIDE_SENDER, Settings.VOICE_MUSIC_PLAYER, Settings.PLAYBACK_POSITION, Settings.VOICE_SKIP, Settings.LYRICS, Settings.SONG_DATES, Settings.SELECT_BETWEEN, Settings.SELECTION_SCREENSHOT, Settings.SELECT_ALL,
                         Settings.SILENCE_NON_CONTACTS, Settings.REACTION_ALERTS, Settings.REACTION_SOUND, Settings.DISABLE_ARCHIVE_PULL, Settings.REAR_CAMERA_FIRST, Settings.HIDE_GALLERY_CAMERA_TILE, Settings.HIDE_STICKER_TIME, Settings.CHANGE_STICKER_SIZE,
                         Settings.IGNORE_MUTED_MENTIONS, Settings.HIDE_BLOCKED_IN_GROUPS, Settings.HIDE_BY_KEYWORD, Settings.HIDE_FEATURES_AND_INVITE, Settings.MESSAGE_MENU_REPEAT, Settings.KEEP_DELETED_MESSAGES, Settings.RED_DELETED_LABEL, Settings.KEEP_OWN_DELETED, Settings.KEEP_EDIT_HISTORY,
                         Settings.KEEP_TIMED_MEDIA, Settings.KEEP_SECRET_TIMED, Settings.KEEP_REMOVED_CHATS, Settings.ASK_BEFORE_STICKER, Settings.OUTSIDE_TRANSLATE, Settings.HIDE_CHANNEL_BUTTONS, Settings.HIDE_CHANNEL_MUTE, Settings.HIDE_CHANNEL_SHARE, Settings.HIDE_SEND_AS, Settings.HIDE_CONTACTS_TAB,
@@ -684,13 +684,42 @@ public class SettingsBackupTest {
             assertEquals(String.valueOf(bad), SettingsBackup.Reason.VALUE, reasonFor(wrong.toString()));
         }
 
-        // A saved state is read back as strictly: a size that isn't a choice is left out, and only the
-        // days recordings stay come back.
+        // A saved state is read back as strictly: a sticker size that isn't a choice is left out, and the
+        // days recordings stay and the avatar size come back.
         Bundle state = snapshot.toBundle();
         state.getBundle("numbers").putInt(Settings.STICKER_SIZE.key, 100);
-        assertEquals(Collections.singleton(Settings.RECORD_CALLS_KEEP_DAYS), SettingsBackup.Snapshot.fromBundle(state).numbers.keySet());
+        assertEquals(new HashSet<>(Arrays.asList(Settings.RECORD_CALLS_KEEP_DAYS, Settings.CHAT_LIST_AVATAR_SIZE)), SettingsBackup.Snapshot.fromBundle(state).numbers.keySet());
         state.getBundle("numbers").putString(Settings.STICKER_SIZE.key, "150");
-        assertEquals(Collections.singleton(Settings.RECORD_CALLS_KEEP_DAYS), SettingsBackup.Snapshot.fromBundle(state).numbers.keySet());
+        assertEquals(new HashSet<>(Arrays.asList(Settings.RECORD_CALLS_KEEP_DAYS, Settings.CHAT_LIST_AVATAR_SIZE)), SettingsBackup.Snapshot.fromBundle(state).numbers.keySet());
+    }
+
+    /** The chat list's avatar size goes out as its number, comes back only as one of its choices and shows in the preview (#89). */
+    @Test
+    public void theAvatarSizeRoundTripsAsOneOfItsChoicesAndShowsInThePreview() throws Exception {
+        Settings.CHAT_LIST_AVATAR_SIZE.save(120);
+        String file = SettingsBackup.create();
+        assertEquals(120, new JSONObject(file).getJSONObject("settings").get(Settings.CHAT_LIST_AVATAR_SIZE.key));
+        for (Object bad : new Object[]{100, 0, -80, 75, 1000, 80.5, "80", true, JSONObject.NULL}) {
+            JSONObject wrong = new JSONObject(file);
+            wrong.getJSONObject("settings").put(Settings.CHAT_LIST_AVATAR_SIZE.key, bad);
+            assertEquals(String.valueOf(bad), SettingsBackup.Reason.VALUE, reasonFor(wrong.toString()));
+        }
+
+        Settings.CHAT_LIST_AVATAR_SIZE.resetToDefault();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
+            deliver(activity, tap(activity, page, IMPORT_ROW), file);
+            AlertDialog preview = shownPreview();
+            assertEquals("Avatar size: 80% to 120%", String.valueOf(shadowOf(preview).getMessage()));
+            preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertEquals("Settings imported.", ShadowToast.getTextOfLatestToast());
+            assertEquals(120, (int) Settings.CHAT_LIST_AVATAR_SIZE.savedValue());
+            assertTrue(AbstractPreferenceFragment.restartPending.isEmpty());
+        } finally {
+            Settings.CHAT_LIST_AVATAR_SIZE.resetToDefault();
+        }
     }
 
     /**

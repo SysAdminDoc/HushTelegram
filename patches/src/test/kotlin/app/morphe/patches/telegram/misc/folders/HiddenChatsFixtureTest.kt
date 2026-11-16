@@ -388,7 +388,7 @@ class HiddenChatsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val refs = menuContext(build).also { it.requireHiddenChatsRuntime() }.resolveHideMenu().refs!!
-            val hosts = (folderCounterHosts(build) + launchFolderHosts(build) + menuHosts(build) + allChatsPlaceHosts(build) + accountListHosts(build)).distinctBy { it.type }
+            val hosts = (folderCounterHosts(build) + launchFolderHosts(build) + menuHosts(build) + allChatsPlaceHosts(build) + accountListHosts(build) + chatListAvatarHosts(build)).distinctBy { it.type }
             val context = PatchContexts.of((ExtensionDex.classes() + hosts).distinctBy { it.type })
             assertEquals(name, emptyList<String>(), PatchLogCapture.warnings { hideFolderCountersPatch.execute(context) })
             val stubs = context.tgMutableClassDefBy(HIDDEN_CHATS).methods.associateBy { it.name }
@@ -474,7 +474,7 @@ class HiddenChatsFixtureTest {
             val refs = menuContext(build).also { it.requireHiddenChatsRuntime() }.resolveHideMenu().refs!!
             // 13.2 merged every action bar's click handler into one class most screens make, so the other slices
             // bring it along; it's left out by its more-menu ids.
-            val hosts = (folderCounterHosts(build) + menuHosts(build, clicks = false) + allChatsPlaceHosts(build) + accountListHosts(build))
+            val hosts = (folderCounterHosts(build) + menuHosts(build, clicks = false) + allChatsPlaceHosts(build) + accountListHosts(build) + chatListAvatarHosts(build))
                 .distinctBy { it.type }.filterNot { cls -> cls.methods.any { m ->
                     m.returnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
                         m.body().mapNotNull { (it as? NarrowLiteralInstruction)?.narrowLiteral }.containsAll(listOf(0x6c, 0x6d, 0x6e, -1))
@@ -509,7 +509,7 @@ class HiddenChatsFixtureTest {
                 else ImmutableClassDef(cls.type, cls.accessFlags, cls.superclass, cls.interfaces, cls.sourceFile,
                     cls.annotations, cls.fields, cls.methods.filter { it.name != "selectedOf" })
             }
-            val hosts = (folderCounterHosts(build) + launchFolderHosts(build) + menuHosts(build) + allChatsPlaceHosts(build) + accountListHosts(build)).distinctBy { it.type }
+            val hosts = (folderCounterHosts(build) + launchFolderHosts(build) + menuHosts(build) + allChatsPlaceHosts(build) + accountListHosts(build) + chatListAvatarHosts(build)).distinctBy { it.type }
             val context = PatchContexts.of((extension + hosts).distinctBy { it.type })
             val warnings = PatchLogCapture.warnings { hideFolderCountersPatch.execute(context) }
             assertEquals("$name: $warnings", 1, warnings.size)
@@ -590,7 +590,7 @@ class HiddenChatsFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val hosts = (folderCounterHosts(build) + launchFolderHosts(build) + menuHosts(build)).distinctBy { it.type }
-            val context = PatchContexts.of((ExtensionDex.classes() + hosts + allChatsPlaceHosts(build) + accountListHosts(build)).distinctBy { it.type })
+            val context = PatchContexts.of((ExtensionDex.classes() + hosts + allChatsPlaceHosts(build) + accountListHosts(build) + chatListAvatarHosts(build)).distinctBy { it.type })
             val storage = context.tgMutableClassDefBy(STORAGE)
             // A reworded query: which rows the walk reads is no longer clear.
             val calc = storage.methods.single { it.origName == "calcUnreadCounters" }

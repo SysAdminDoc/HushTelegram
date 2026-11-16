@@ -2074,6 +2074,14 @@ Pin chats on this phone	在这部手机上置顶聊天
 Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under your pinned chats in All Chats, newest first. Nothing is sent to Telegram, so your other devices and Telegram's pin limit stay as they are.	在聊天列表的长按菜单中加入“在这部手机上置顶”。这些聊天会排在“所有聊天”中你的置顶聊天下方，最新的在前。不会向 Telegram 发送任何内容，所以你的其他设备和 Telegram 的置顶数量上限都保持不变.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that pins chats on this phone only
 chats pinned on this phone	在这部手机上置顶的聊天
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default (#89). With it on, chat pictures (avatars) in the chat list show at the size picked under Avatar size, a percent of Telegram's own size
+Change avatar size	更改头像大小
+# context: Summary of Change avatar size. The size is picked in the Avatar size row right below it; each chat list row keeps its height and the picture shrinks or grows around its own center
+Chat pictures in the chat list show at the size you pick below. Each row keeps its height, and the picture stays centered where Telegram puts it.	聊天列表中的聊天头像以你在下方选择的大小显示。每一行保持原有高度，头像仍居中在 Telegram 原来放置的位置.
+# context: Row title and dialog title. The person picks the chat list's avatar size as a percent of Telegram's own size (70%, 80%, 90%, 110% or 120%); the row's summary reads "%1$s of Telegram's size"
+Avatar size	头像大小
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that changes the size of chat pictures in the chat list
+avatar size in the chat list	聊天列表中的头像大小
 # context: Name of the list Pin on this phone keeps, in the import preview line "%1$s: %2$s to %3$s", where the counts follow
 Chats pinned on this phone	在这部手机上置顶的聊天
 # context: Count of chats in the import preview, singular form. %1$d is the number

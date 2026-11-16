@@ -248,6 +248,22 @@ val hideFolderCountersPatch = bytecodePatch(
         } else {
             patchLog.warning("Hide folder tab counters: $unplaced. The patch goes on with All Chats first.")
         }
+        // The avatar size touches only the chat row's layout, so it stands alone: found, assembled on a
+        // copy, its stubs built, and only then Telegram's layout changed.
+        val unsized = try {
+            val avatar = resolveChatListAvatar()
+            avatar.apply(MutableMethod(ImmutableMethod.of(avatar.method)))
+            writeChatListAvatarStubs(avatar)
+            avatar.apply()
+            null
+        } catch (failed: Exception) {
+            "the chat list's avatar size doesn't fit (${failed.javaClass.simpleName}: ${failed.message})"
+        }
+        if (unsized == null) {
+            enableCapability("chatListAvatar")
+        } else {
+            patchLog.warning("Hide folder tab counters: $unsized. The patch goes on without Change avatar size.")
+        }
     }
 }
 

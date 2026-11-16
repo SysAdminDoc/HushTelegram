@@ -89,6 +89,7 @@ import app.hushtelegram.extension.telegram.misc.AccountGuard;
 import app.hushtelegram.extension.telegram.misc.Accounts;
 import app.hushtelegram.extension.telegram.misc.AutoForwarding;
 import app.hushtelegram.extension.telegram.misc.CallRecorder;
+import app.hushtelegram.extension.telegram.misc.ChatListAvatar;
 import app.hushtelegram.extension.telegram.misc.ChatTypeFolders;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.DeleteAccount;
@@ -150,6 +151,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String CLEAR_EDITS = "action_clear_edit_history";
     /** The Sticker size row's key. The size itself is saved under {@link Settings#STICKER_SIZE}. */
     static final String STICKER_SIZE_ROW = "action_sticker_size";
+    /** The Avatar size row's key. The size itself is saved under {@link Settings#CHAT_LIST_AVATAR_SIZE}. */
+    static final String AVATAR_SIZE_ROW = "action_chat_list_avatar_size";
     /** The Gallery folder row's key. The choice itself is saved under {@link Settings#GALLERY_FOLDER}. */
     static final String GALLERY_FOLDER_ROW = "action_gallery_folder";
     /** The What to copy row's key. The kinds left out are saved under {@link Settings#SAVE_KINDS_LEFT_OUT}. */
@@ -349,6 +352,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (channels != null) channels.setSummary(FilterEditor.summary(Settings.MESSAGE_FILTERS_CHANNELS));
         Preference size = findPreference(STICKER_SIZE_ROW);
         if (size != null) size.setSummary(stickerSizeSummary());
+        Preference avatarSize = findPreference(AVATAR_SIZE_ROW);
+        if (avatarSize != null) avatarSize.setSummary(avatarSizeSummary());
         Preference emoji = findPreference(TitleEmojiEditor.KEY);
         if (emoji != null) emoji.setSummary(TitleEmojiEditor.summary(Settings.TITLE_EMOJI.savedValue()));
         Preference ownTitle = findPreference(TitleEmojiEditor.TITLE_KEY);
@@ -687,6 +692,18 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     return true;
                 });
                 folderTabs.addPreference(pins);
+            }
+            if (PatchFamily.Capability.CHAT_LIST_AVATAR.installed()) {
+                SwitchPreference avatars = toggle(context, Settings.CHAT_LIST_AVATAR, L10n.t("Change avatar size"),
+                        L10n.t("Chat pictures in the chat list show at the size you pick below. Each row keeps its height, "
+                                + "and the picture stays centered where Telegram puts it."));
+                avatars.setOnPreferenceChangeListener((row, value) -> {
+                    // Once the switch is saved, so the chat list lays its rows out again.
+                    Utils.runOnMainThreadDelayed(HiddenChats::refreshAll, 0);
+                    return true;
+                });
+                folderTabs.addPreference(avatars);
+                folderTabs.addPreference(avatarSizeRow(context));
             }
             folderTabs.addPreference(folderIconRow(context));
         }
@@ -2427,6 +2444,62 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
     static String stickerSizeSummary() {
         return L10n.f("%1$s of Telegram's size", percent(StickerSize.percent(Settings.STICKER_SIZE.savedValue())));
+    }
+
+    /** The size chat list avatars show at: the row says the one picked, and a tap lists the others. */
+    private Preference avatarSizeRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(AVATAR_SIZE_ROW);
+        row.setTitle(L10n.t("Avatar size"));
+        row.setPersistent(false);
+        row.setSummary(avatarSizeSummary());
+        row.setOnPreferenceClickListener(p -> {
+            showAvatarSizes(context, p);
+            return true;
+        });
+        return row;
+    }
+
+    /** The avatar sizes, picked the way {@link #showStickerSizes} picks a sticker size. */
+    void showAvatarSizes(Context context, Preference row) {
+        if (SettingsLock.refuses()) return;
+        CharSequence[] labels = new CharSequence[ChatListAvatar.CHOICES.length];
+        for (int i = 0; i < labels.length; i++) labels[i] = percent(ChatListAvatar.CHOICES[i]);
+        show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("Avatar size"))
+                .setSingleChoiceItems(labels, savedAvatarChoice(), (dialog, which) -> {
+                    boolean started = save((AlertDialog) dialog,
+                            () -> Settings.CHAT_LIST_AVATAR_SIZE.saveCommitted(ChatListAvatar.CHOICES[which]), landed -> {
+                                if (landed) {
+                                    row.setSummary(avatarSizeSummary());
+                                    dialog.dismiss();
+                                    // The chat list lays its rows out again at the new size.
+                                    Utils.runOnMainThreadDelayed(HiddenChats::refreshAll, 0);
+                                } else {
+                                    checkSavedAvatarSize((AlertDialog) dialog);
+                                    Utils.showToastLong(L10n.t("Couldn't save the size. Try again in a moment."));
+                                }
+                            });
+                    if (!started) checkSavedAvatarSize((AlertDialog) dialog);
+                })
+                .setNegativeButton(L10n.t("Cancel"), null));
+    }
+
+    /** Where the saved avatar size sits among the choices. One that's none of them reads as the default. */
+    static int savedAvatarChoice() {
+        int saved = ChatListAvatar.percent(Settings.CHAT_LIST_AVATAR_SIZE.savedValue());
+        for (int i = 0; i < ChatListAvatar.CHOICES.length; i++) {
+            if (ChatListAvatar.CHOICES[i] == saved) return i;
+        }
+        return -1;
+    }
+
+    private static void checkSavedAvatarSize(AlertDialog dialog) {
+        dialog.getListView().setItemChecked(savedAvatarChoice(), true);
+    }
+
+    static String avatarSizeSummary() {
+        return L10n.f("%1$s of Telegram's size", percent(ChatListAvatar.percent(Settings.CHAT_LIST_AVATAR_SIZE.savedValue())));
     }
 
     /** The folder the storage switch moves Telegram's files to: the row names it, and a tap opens its editor. */

@@ -2139,6 +2139,62 @@ public class HushTelegramPreferenceFragmentTest {
     }
 
     /**
+     * Change avatar size gets its own switch, off until turned on, and its Avatar size row right
+     * under it, only in a build where the avatar hook went in. A pick saves at once (#89).
+     */
+    @Test
+    public void changeAvatarSizeHasItsSwitchAndSizeRowWhenItsHookIsIn() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_FOLDER_COUNTERS);
+        try {
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.HIDDEN_CHATS, PatchFamily.Capability.LOCAL_PINS);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                HushTelegramPreferenceFragment page = pageOf(controller);
+                assertNull("a build without the hook has no switch", page.findPreference(Settings.CHAT_LIST_AVATAR.key));
+                assertNull("and no size row", page.findPreference(HushTelegramPreferenceFragment.AVATAR_SIZE_ROW));
+            }
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.HIDDEN_CHATS, PatchFamily.Capability.LOCAL_PINS,
+                    PatchFamily.Capability.CHAT_LIST_AVATAR);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                HushTelegramPreferenceFragment page = pageOf(controller);
+                List<Preference> rows = new ArrayList<>();
+                collect(page.getPreferenceScreen(), rows);
+                int at = indexOfKey(rows, Settings.CHAT_LIST_AVATAR.key);
+                SwitchPreference toggle = (SwitchPreference) rows.get(at);
+                assertEquals("Change avatar size", String.valueOf(toggle.getTitle()));
+                assertEquals("Chat pictures in the chat list show at the size you pick below. Each row keeps its height, "
+                        + "and the picture stays centered where Telegram puts it.", String.valueOf(toggle.getSummary()));
+                assertFalse("off until turned on", toggle.isChecked());
+                assertSame("it comes after Pin chats on this phone", page.findPreference(Settings.LOCAL_PINS.key), rows.get(at - 1));
+                Preference size = rows.get(at + 1);
+                assertEquals(HushTelegramPreferenceFragment.AVATAR_SIZE_ROW, size.getKey());
+                assertEquals("Avatar size", String.valueOf(size.getTitle()));
+                assertEquals("80% of Telegram's size", String.valueOf(size.getSummary()));
+                assertSame(toggle.getParent(), size.getParent());
+                assertFalse("it stores nothing itself", size.isPersistent());
+
+                assertTrue(size.getOnPreferenceClickListener().onPreferenceClick(size));
+                ShadowLooper.idleMainLooper();
+                AlertDialog list = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+                assertEquals("Avatar size", String.valueOf(shadowOf(list).getTitle()));
+                ListView choices = list.getListView();
+                List<String> labels = new ArrayList<>();
+                for (int i = 0; i < choices.getCount(); i++) labels.add(String.valueOf(choices.getAdapter().getItem(i)));
+                assertEquals(Arrays.asList("70%", "80%", "90%", "110%", "120%"), labels);
+                assertEquals("the saved size is checked", 1, choices.getCheckedItemPosition());
+                shadowOf(list).clickOnItem(4);
+                settle();
+                assertFalse(list.isShowing());
+                assertEquals(120, (int) Settings.CHAT_LIST_AVATAR_SIZE.savedValue());
+                assertEquals("120% of Telegram's size", String.valueOf(size.getSummary()));
+                assertFalse("picking a size leaves the switch alone", Settings.CHAT_LIST_AVATAR.savedValue());
+            }
+        } finally {
+            PatchFamily.capabilitiesForTests = null;
+            Settings.CHAT_LIST_AVATAR_SIZE.resetToDefault();
+        }
+    }
+
+    /**
      * Do Not Disturb in the chat list menu sits under Proxy in the chat list menu, off until turned
      * on, only in a build where its hooks went in, and each change of it starts with Do Not Disturb
      * off (#79).

@@ -1820,10 +1820,10 @@ public class SettingsNavigationTest {
             assertEquals(android.content.Intent.ACTION_CREATE_DOCUMENT, export.intent.getAction());
             while (page.navigation.back()) { }
 
-            // Every chooser: sticker size, both filter lists, the title emoji and title text, the translation service
+            // Every chooser: sticker and avatar size, both filter lists, the title emoji and title text, the translation service
             // and language, the push app, Open a chat by ID, the proxy lists, the device in Active sessions and the
             // link preview rules.
-            for (String key : Arrays.asList(HushTelegramPreferenceFragment.STICKER_SIZE_ROW, FilterEditor.GROUPS,
+            for (String key : Arrays.asList(HushTelegramPreferenceFragment.STICKER_SIZE_ROW, HushTelegramPreferenceFragment.AVATAR_SIZE_ROW, FilterEditor.GROUPS,
                     FilterEditor.CHANNELS, TitleEmojiEditor.KEY, TitleEmojiEditor.TITLE_KEY, StorageFolderEditor.KEY, TranslateServiceEditor.KEY, TranslateTargetPicker.KEY,
                     UnifiedPushPicker.KEY, OpenByIdEditor.KEY, ProxyListsEditor.KEY, SessionDeviceEditor.KEY, LinkPreviewRulesEditor.KEY)) {
                 Preference row = page.findPreference(key);
@@ -1837,6 +1837,8 @@ public class SettingsNavigationTest {
             }
             page.showStickerSizes(controller.get(), page.findPreference(HushTelegramPreferenceFragment.STICKER_SIZE_ROW));
             assertSame("sticker sizes opened while locked", shown, org.robolectric.shadows.ShadowDialog.getLatestDialog());
+            page.showAvatarSizes(controller.get(), page.findPreference(HushTelegramPreferenceFragment.AVATAR_SIZE_ROW));
+            assertSame("avatar sizes opened while locked", shown, org.robolectric.shadows.ShadowDialog.getLatestDialog());
             // Every setting that was loaded when the lock went on holds what it held then.
             Map<String, Object> after = savedValues();
             after.keySet().retainAll(before.keySet());
