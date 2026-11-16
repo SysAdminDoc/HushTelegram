@@ -54,6 +54,8 @@ val showLocalIdsPatch = bytecodePatch(
     execute {
         val plan = resolveLocalIds()
         resolveProfileDc()
+        // The registration month is optional too: it needs a user to say whether it's a bot.
+        val registrationMissing = registrationDateMissing()
         // Special contacts is optional: found before anything changes, put in after the rest.
         val (special, specialMissing) = resolveSpecialContacts()
         plan.insert(MutableMethod(ImmutableMethod.of(plan.method)))
@@ -71,6 +73,12 @@ val showLocalIdsPatch = bytecodePatch(
         writeProfileDc()
         plan.insert(plan.method)
         enableCapability("profileLocalIds")
+        if (registrationMissing == null) {
+            writeRegistrationDate()
+            enableCapability("registrationDate")
+        } else {
+            patchLog.warning("Show user and chat IDs: $registrationMissing. The patch goes on without registration dates.")
+        }
         if (special != null) {
             special.applyTo()
             enableCapability("specialContacts")
@@ -110,7 +118,7 @@ internal data class LocalIdsPlan(
 }
 
 internal fun BytecodePatchContext.resolveLocalIds(): LocalIdsPlan {
-    listOf("showLocalIds", "profileLocalIds").forEach(::requireStatusMethod)
+    listOf("showLocalIds", "profileLocalIds", "registrationDate").forEach(::requireStatusMethod)
     controlHook(LOCAL_IDS, "addToProfile", listOf("Landroid/view/View;", "J", "J"), "V")
     controlHook(LOCAL_IDS, "nativeAddRow", listOf("Ljava/lang/Object;", "Ljava/lang/String;"), "Landroid/view/View;")
     controlHook(LOCAL_IDS, "nativeDismiss", listOf("Ljava/lang/Object;"), "V")

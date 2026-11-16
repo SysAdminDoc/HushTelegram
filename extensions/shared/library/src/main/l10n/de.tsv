@@ -1994,3 +1994,17 @@ Send read receipt	Lesebestätigung senden
 Read receipt sent.	Lesebestätigung gesendet.
 # context: Shown when the read receipt for that message couldn't go out
 Couldn't send the read receipt. Try again.	Die Lesebestätigung ließ sich nicht senden. Versuch es noch einmal.
+# context: Row in a person's profile menu (#79), under the ID row. %1$s is a month and year such as "March 2016", already in the phone's language. It's an estimate worked out from the user ID
+Registered about %1$s	Registriert etwa im %1$s
+# context: Row in a person's profile menu (#79) for an account newer than every known point. %1$s is a month and year such as "September 2026", already in the phone's language
+Registered after %1$s	Registriert nach %1$s
+# context: Spoken label of a profile menu row that copies its own text when tapped. %1$s is the row's text
+Copy %1$s	%1$s kopieren
+# context: Short message after the registration month row in a profile menu was tapped and its text copied
+Registration date copied	Registrierungsdatum kopiert
+# context: Title of a switch under Show user and chat IDs (#79). It adds about when a person's account was made to their profile menu
+Show when an account was made	Anzeigen, wann ein Konto erstellt wurde
+# context: Summary under the Show when an account was made switch
+A person's profile menu also shows about which month they joined Telegram, worked out from their user ID. It's an estimate, and nothing is asked of Telegram. Bots, groups and channels get none.	Das Profilmenü einer Person zeigt außerdem, in welchem Monat sie ungefähr Telegram beigetreten ist, berechnet aus ihrer Benutzer-ID. Das ist eine Schätzung, und Telegram wird nichts gefragt. Bots, Gruppen und Kanäle bekommen keine.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Show user and chat IDs that shows about when an account was made
+account registration dates	Erstellungsdaten von Konten

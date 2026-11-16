@@ -139,8 +139,30 @@ class LocalControlsFixtureTest {
                 hostState(build, context, hooked))
             assertEquals("$SPECIAL_CONTACTS->user(Ljava/lang/Object;Ljava/lang/Object;I)V", special.putUser.controlBody().first().controlRef())
             assertEquals("$SPECIAL_CONTACTS->updates(Ljava/lang/Object;Ljava/lang/Object;)V", special.updates.controlBody().first().controlRef())
+            // The registration month asks the selected account's cache for a person, and a bot answers no.
+            val person = context.tgMutableClassDefBy(REGISTRATION_DATE).methods.single { it.origName == "isPerson" }.controlBody()
+            assertEquals(listOf(Opcode.SGET, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT,
+                Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.IF_EQZ, Opcode.IGET_BOOLEAN, Opcode.IF_NEZ, Opcode.CONST_4,
+                Opcode.RETURN, Opcode.CONST_4, Opcode.RETURN), person.map { it.opcode })
+            assertEquals("$DC_ACCOUNTS->selectedAccount:I", person[0].controlRef())
+            assertEquals("$DC_PEERS->getUser(Ljava/lang/Long;)$DC_USER", person[5].controlRef())
+            assertEquals("$DC_USER->bot:Z", person[8].controlRef())
             flags(context, ID_FLAGS + "specialContacts", true)
             flags(context, PASTE_FLAGS + REACTION_FLAGS, false)
+        }
+    }
+
+    @Test fun `profile IDs go in without the registration month when a user no longer says it's a bot`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val context = context(build)
+            context.tgMutableClassDefBy(DC_USER).fields.removeAll { it.origName == "bot" }
+            val warnings = PatchLogCapture.warnings { showLocalIdsPatch.execute(context) }
+            assertEquals("${build.name}: $warnings", 1, warnings.size)
+            assertTrue("${build.name}: $warnings", "without registration dates" in warnings.single())
+            val person = context.tgMutableClassDefBy(REGISTRATION_DATE).methods.single { it.origName == "isPerson" }.controlBody()
+            assertEquals("${build.name}: the stub keeps answering no", listOf(Opcode.CONST_4, Opcode.RETURN), person.map { it.opcode })
+            flags(context, ID_FLAGS - "registrationDate", true)
+            flags(context, listOf("registrationDate"), false)
         }
     }
 
@@ -410,7 +432,7 @@ class LocalControlsFixtureTest {
     companion object {
         private val HOSTS = mutableMapOf<String, SoftReference<List<ClassDef>>>()
         private val PASTE_FLAGS = listOf("normalPaste", "composePlainPaste", "captionPlainPaste")
-        private val ID_FLAGS = listOf("showLocalIds", "profileLocalIds")
+        private val ID_FLAGS = listOf("showLocalIds", "profileLocalIds", "registrationDate")
         private val REACTION_FLAGS = listOf("disableDoubleTapReactions", "chatDoubleTapReaction", "previewDoubleTapReaction")
         private const val OVERFLOW_ICON = "Lorg/telegram/messenger/R\$drawable;->ic_ab_other:I"
         private const val COPY_ICON = "drawable/msg_copy"

@@ -1994,6 +1994,29 @@ public class HushTelegramPreferenceFragmentTest {
         }
     }
 
+    /** The registration month gets its own switch, off until turned on, only in a build where its hook went in. */
+    @Test
+    public void registrationMonthHasItsOwnSwitchWhenItsHookIsIn() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SHOW_LOCAL_IDS);
+        try {
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.PROFILE_LOCAL_IDS);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                assertNull("a build without the hook has no switch", pageOf(controller).findPreference(Settings.REGISTRATION_DATE.key));
+            }
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.PROFILE_LOCAL_IDS, PatchFamily.Capability.REGISTRATION_DATE);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                SwitchPreference toggle = (SwitchPreference) pageOf(controller).findPreference(Settings.REGISTRATION_DATE.key);
+                assertEquals("Show when an account was made", String.valueOf(toggle.getTitle()));
+                assertEquals("A person's profile menu also shows about which month they joined Telegram, worked out from their "
+                        + "user ID. It's an estimate, and nothing is asked of Telegram. Bots, groups and channels get none.",
+                        String.valueOf(toggle.getSummary()));
+                assertFalse("off until turned on", toggle.isChecked());
+            }
+        } finally {
+            PatchFamily.capabilitiesForTests = null;
+        }
+    }
+
     /**
      * Hide folder tab counters brings the folder at launch switch and, under it, a row that lists
      * All Chats and the account's folders and saves the pick for the account shown.

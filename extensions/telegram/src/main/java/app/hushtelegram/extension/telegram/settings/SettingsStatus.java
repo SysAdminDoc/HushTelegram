@@ -75,6 +75,7 @@ public final class SettingsStatus {
     public static boolean captionPlainPaste() { return false; }
     public static boolean profileLocalIds() { return false; }
     public static boolean specialContacts() { return false; }
+    public static boolean registrationDate() { return false; }
     public static boolean chatDoubleTapReaction() { return false; }
     public static boolean previewDoubleTapReaction() { return false; }
     public static boolean reactionRows() { return false; }

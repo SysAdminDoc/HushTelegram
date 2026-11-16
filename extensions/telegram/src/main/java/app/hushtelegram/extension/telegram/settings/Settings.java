@@ -160,6 +160,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting PROFILE_DATA_CENTER =
             new BooleanSetting("hushtelegram_profile_data_center", FALSE);
 
+    /** A person's profile menu also shows about when their account was made, estimated from the user ID (#79). */
+    public static final BooleanSetting REGISTRATION_DATE =
+            new BooleanSetting("hushtelegram_registration_date", FALSE);
+
     /** A profile menu offers Track this user, and the people tracked get a history of what Telegram shows of them. */
     public static final BooleanSetting SPECIAL_CONTACTS =
             new BooleanSetting("hushtelegram_special_contacts", FALSE);

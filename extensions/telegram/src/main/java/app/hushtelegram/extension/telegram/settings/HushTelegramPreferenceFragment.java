@@ -1372,6 +1372,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(toggle(context, Settings.PROFILE_DATA_CENTER, L10n.t("Show where a profile photo is stored"),
                     L10n.t("A profile's menu also shows which of Telegram's five data centers (its server "
                             + "locations) stores the profile photo. No photo, no number.")));
+            if (PatchFamily.Capability.REGISTRATION_DATE.installed()) {
+                on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(toggle(context, Settings.REGISTRATION_DATE, L10n.t("Show when an account was made"),
+                        L10n.t("A person's profile menu also shows about which month they joined Telegram, worked out from their "
+                                + "user ID. It's an estimate, and nothing is asked of Telegram. Bots, groups and channels get none.")));
+            }
             on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(openByIdRow(context));
             if (PatchFamily.Capability.SPECIAL_CONTACTS.installed()) {
                 on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(toggle(context, Settings.SPECIAL_CONTACTS, L10n.t("Special contacts"),
