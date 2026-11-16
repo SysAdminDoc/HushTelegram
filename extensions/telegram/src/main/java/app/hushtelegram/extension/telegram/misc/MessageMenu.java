@@ -36,6 +36,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -648,8 +649,19 @@ public final class MessageMenu {
         int forwardDate;
         int dc;
         long size;
+        /** The file's own name, as sent. */
+        String fileName;
+        String mime;
+        /** A photo's or video's size in pixels, 0 when it has none. */
+        int width;
+        int height;
+        /** A song's, voice message's or video's length in seconds, 0 when it has none. */
+        double duration;
         List<KeepEdits.Version> earlier = new ArrayList<>();
     }
+
+    /** What {@link #attributeKind} says a file attribute holds: a video's size and length, a song's or voice message's length, or the file's name. */
+    static final int OTHER_ATTRIBUTE = 0, VIDEO_ATTRIBUTE = 1, AUDIO_ATTRIBUTE = 2, NAME_ATTRIBUTE = 3;
 
     /** What Keep edit history kept for the message, oldest first. */
     static List<KeepEdits.Version> earlier(Object message) {
@@ -671,11 +683,33 @@ public final class MessageMenu {
         }
         facts.dc = fileDc(message);
         facts.size = documentSize(message);
+        facts.mime = mime(message);
+        ArrayList<?> attributes = attributes(message);
+        if (attributes != null) {
+            for (Object attribute : attributes) {
+                if (attribute == null) continue;
+                int kind = attributeKind(attribute);
+                if (kind == VIDEO_ATTRIBUTE && facts.width <= 0) {
+                    facts.width = attributeWidth(attribute);
+                    facts.height = attributeHeight(attribute);
+                }
+                if ((kind == VIDEO_ATTRIBUTE || kind == AUDIO_ATTRIBUTE) && facts.duration <= 0) facts.duration = attributeDuration(attribute);
+                if (kind == NAME_ATTRIBUTE && facts.fileName == null) facts.fileName = attributeName(attribute);
+            }
+        }
         if (facts.size <= 0) {
             ArrayList<?> sizes = photoSizes(message);
             if (sizes != null) {
+                long area = 0;
                 for (Object size : sizes) {
-                    if (size != null) facts.size = Math.max(facts.size, photoSize(size));
+                    if (size == null) continue;
+                    facts.size = Math.max(facts.size, photoSize(size));
+                    int width = photoWidth(size), height = photoHeight(size);
+                    if (width > 0 && height > 0 && (long) width * height > area) {
+                        area = (long) width * height;
+                        facts.width = width;
+                        facts.height = height;
+                    }
                 }
             }
         }
@@ -700,10 +734,39 @@ public final class MessageMenu {
         }
         if (facts.dc > 0) lines.add(L10n.f(context, "File data center: %1$s", Integer.toString(facts.dc)));
         if (facts.size > 0) lines.add(L10n.f(context, "File size: %1$s", Formatter.formatFileSize(context, facts.size)));
+        if (facts.fileName != null && !facts.fileName.isEmpty()) lines.add(L10n.f(context, "File name: %1$s", L10n.isolate(facts.fileName)));
+        if (facts.mime != null && !facts.mime.isEmpty()) lines.add(L10n.f(context, "MIME type: %1$s", facts.mime));
+        if (facts.width > 0 && facts.height > 0) {
+            String resolution = facts.width + "x" + facts.height;
+            lines.add(L10n.f(context, "Resolution: %1$s", resolution));
+        }
+        if (facts.duration > 0) lines.add(L10n.f(context, "Duration: %1$s", duration(facts.duration)));
+        long kilobits = kilobitsPerSecond(facts);
+        if (kilobits > 0) {
+            lines.add(L10n.f(context, "Bitrate: %1$s kbps", NumberFormat.getIntegerInstance(L10n.locale(context)).format(kilobits)));
+        }
         for (KeepEdits.Version version : facts.earlier) {
             lines.add(L10n.f(context, "Before the edit at %1$s: %2$s", time(context, version.replaced), L10n.isolate(version.text)));
         }
         return String.join("\n", lines);
+    }
+
+    /** A length the way Telegram's player shows it, whole seconds only: 0:12, or 1:02:09 past an hour. */
+    static String duration(double seconds) {
+        int whole = (int) seconds;
+        int hours = whole / 3600;
+        int minutes = whole / 60 % 60;
+        int rest = whole % 60;
+        return hours == 0 ? String.format(Locale.US, "%d:%02d", minutes, rest) : String.format(Locale.US, "%d:%02d:%02d", hours, minutes, rest);
+    }
+
+    /**
+     * The file's average bitrate in kilobits a second, from its size and length, or 0 without both.
+     * Telegram's file attributes carry no bitrate of their own, so there's none to prefer.
+     */
+    static long kilobitsPerSecond(Facts facts) {
+        if (facts.size <= 0 || facts.duration <= 0) return 0;
+        return Math.round(facts.size * 8 / facts.duration / 1000);
     }
 
     private static String time(Context context, int seconds) {
@@ -850,4 +913,15 @@ public final class MessageMenu {
     public static long documentSize(Object message) { return 0L; }
     public static ArrayList<?> photoSizes(Object message) { return null; }
     public static int photoSize(Object size) { return 0; }
+    public static int photoWidth(Object size) { return 0; }
+    public static int photoHeight(Object size) { return 0; }
+    public static String mime(Object message) { return null; }
+    /** The file's attributes, or null without a file. */
+    public static ArrayList<?> attributes(Object message) { return null; }
+    /** One of {@link #VIDEO_ATTRIBUTE}, {@link #AUDIO_ATTRIBUTE}, {@link #NAME_ATTRIBUTE} or {@link #OTHER_ATTRIBUTE}. */
+    public static int attributeKind(Object attribute) { return OTHER_ATTRIBUTE; }
+    public static int attributeWidth(Object attribute) { return 0; }
+    public static int attributeHeight(Object attribute) { return 0; }
+    public static double attributeDuration(Object attribute) { return 0; }
+    public static String attributeName(Object attribute) { return null; }
 }

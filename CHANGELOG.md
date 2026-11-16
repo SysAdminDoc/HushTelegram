@@ -28,6 +28,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** **Also allow screenshots in secret chats** sits under **Allow screenshots in chats that don't allow saving**, off by default. With both on, screenshots and screen recording work in secret chats, their photos and their profiles. Telegram still tells the other person when you take one, unless **Suppress screenshot notification** is on. (#82)
 * **Telegram:** **Keep self-destructing secret chat messages** sits under **Keep deleted messages**, off by default. Messages, photos and videos in a secret chat stay on your phone when their self-destruct timer runs out. The other person's copy still goes on their own timer, and nothing tells them. (#82)
 * **Telegram:** With **Open restricted channels** on, the alert Telegram shows when a public channel has banned you gets an **Open on the web** button. It opens the channel's page at t.me/s/ in your browser, where its posts still show to anyone. The button shows only when HushTelegram knows the channel's public name, from the channel itself or from the link that brought you to it. (#71)
+* **Telegram:** **Message details** lists more about a file. You get its name and MIME type, the resolution of a photo or video, and the length and average bitrate of a song, voice message or video. Telegram doesn't send a bitrate, so it's worked out from the file's size and length. A line with nothing to show is left out. (#87)
 
 ### Fixed
 

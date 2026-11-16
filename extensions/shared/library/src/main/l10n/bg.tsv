@@ -531,6 +531,16 @@ Original sender ID: %1$s	ID на първоначалния подател: %1$s
 Originally sent: %1$s	Първоначално изпратено: %1$s
 File data center: %1$s	Център за данни на файла: %1$s
 File size: %1$s	Размер на файла: %1$s
+# context: a line in Message details (#87): the attached file's name as it was sent
+File name: %1$s	Име на файла: %1$s
+# context: a line in Message details (#87): the file's MIME type, such as video/mp4. Keep the word MIME as is
+MIME type: %1$s	MIME тип: %1$s
+# context: a line in Message details (#87): a photo's or video's size in pixels, width x height, such as 1920x1080
+Resolution: %1$s	Резолюция: %1$s
+# context: a line in Message details (#87): a song's, voice message's or video's length, such as 1:02:09
+Duration: %1$s	Продължителност: %1$s
+# context: a line in Message details (#87): the file's average bitrate in kilobits a second, worked out from its size and length. %1$s is a whole number
+Bitrate: %1$s kbps	Битрейт: %1$s кбит/с
 Copy	Копиране
 Message details copied	Подробностите за съобщението са копирани
 Add Quick forward to the message menu	Добавяне на „Бързо препращане“ в менюто на съобщението
