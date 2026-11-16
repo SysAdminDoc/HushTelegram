@@ -1057,7 +1057,7 @@ Couldn't read your chats.	Чатовете ви не можаха да се пр
 # context: Toast when Chats to hide is tapped and the account has no chats
 You don't have any chats yet.	Още нямате чатове.
 # context: Toast when the ticked chats couldn't be written to the phone's storage
-Couldn't save the chats. Try again in a moment.	Чатовете не можаха да се запазят. Опитайте отново след малко.
+Couldn't save the chats. Try again in a moment.	Чатовете не се запазиха. Опитайте отново след малко.
 # context: Item in the chat list's long press menu (the three dots, under Block). It hides the selected chats from the chat list
 Hide from chat list	Скриване от списъка с чатове
 # context: Toast after the long press menu's Hide from chat list hid the selected chats
@@ -2012,3 +2012,25 @@ Show when members joined	Показване кога са се присъеди�
 A group's member lists, on its profile and its Members page, also show when each person joined, next to their last seen. The date comes with the list, so nothing more is asked of Telegram. Admins and the owner keep their role.	Списъците с членове на група, в профила ѝ и на страницата Членове, показват и кога се е присъединил всеки човек, до последното му посещение. Датата идва със списъка, така че от Telegram не се иска нищо повече. Администраторите и собственикът запазват ролята си.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Show user and chat IDs that shows when each person joined a group
 member join dates	датите на присъединяване на членовете
+# context: Item in the chat list's long press menu (the three dots, under Hide from chat list), shown while Pin chats on this phone is on (#79). It pins the selected chats on this phone only, without Telegram's own pin
+Pin on this phone	Закачи на този телефон
+# context: Item in the chat list's long press menu in place of Pin on this phone when every selected chat is already pinned that way (#79). It takes them off this phone's pins
+Unpin on this phone	Откачи на този телефон
+# context: Toast after Pin on this phone. All Chats is Telegram's name for the first folder tab (Telegram key FilterAllChats); use the name Telegram shows in that language. Two short lines at most
+Pinned in All Chats on this phone.	Закачено в „All Chats“ на този телефон.
+# context: Toast after Unpin on this phone. Two short lines at most
+Unpinned on this phone.	Откачено на този телефон.
+# context: Toast when Pin on this phone would go past the limit. %1$d is the most chats one phone keeps pinned this way, 20 today. Two short lines at most
+You can pin up to %1$d chats on this phone.	Можеш да закачиш до %1$d чата на този телефон.
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default (#79). With it on, the long press menu offers Pin on this phone
+Pin chats on this phone	Закачане на чатове на този телефон
+# context: Summary of Pin chats on this phone. Pin on this phone is the long press menu item above; All Chats is Telegram's first folder tab (Telegram key FilterAllChats); the pin limit is how many chats Telegram lets you pin
+Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under your pinned chats in All Chats, newest first. Nothing is sent to Telegram, so your other devices and Telegram's pin limit stay as they are.	Добавя „Закачи на този телефон“ в менюто при продължително натискане в списъка с чатове. Тези чатове стоят точно под закачените ти чатове в „All Chats“, най-новите първи. Нищо не се изпраща към Telegram, така че другите ти устройства и ограничението на Telegram за закачени чатове остават същите.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that pins chats on this phone only
+chats pinned on this phone	чатовете, закачени на този телефон
+# context: Name of the list Pin on this phone keeps, in the import preview line "%1$s: %2$s to %3$s", where the counts follow
+Chats pinned on this phone	Чатове, закачени на този телефон
+# context: Count of chats in the import preview, singular form. %1$d is the number
+%1$d chat	%1$d чат
+# context: Count of chats in the import preview, plural form. %1$d is the number
+%1$d chats	%1$d чата

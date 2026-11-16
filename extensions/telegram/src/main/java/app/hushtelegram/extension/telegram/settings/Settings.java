@@ -441,6 +441,18 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_sort_oldest_first", FALSE);
 
     /**
+     * The chat list's long press menu offers Pin on this phone, and the chats picked with it sit
+     * right under the pinned chats in All Chats ({@link app.hushtelegram.extension.telegram.misc.LocalPins}).
+     * Nothing goes to Telegram.
+     */
+    public static final BooleanSetting LOCAL_PINS =
+            new BooleanSetting("hushtelegram_local_pins", FALSE);
+
+    /** The chats Pin on this phone picked, as comma-separated dialog ids, the same on every account. */
+    public static final StringSetting LOCAL_PINNED_CHATS =
+            new StringSetting("hushtelegram_local_pinned_chats", "");
+
+    /**
      * Forwards start with Telegram's Hide sender's name option turned on.
      */
     public static final BooleanSetting FORWARD_HIDE_SENDER =

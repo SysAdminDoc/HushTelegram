@@ -1061,7 +1061,7 @@ Couldn't read your chats.	Obrolan Anda tidak dapat dibaca.
 # context: Toast when Chats to hide is tapped and the account has no chats
 You don't have any chats yet.	Anda belum punya obrolan.
 # context: Toast when the ticked chats couldn't be written to the phone's storage
-Couldn't save the chats. Try again in a moment.	Obrolan tidak dapat disimpan. Coba lagi sebentar lagi.
+Couldn't save the chats. Try again in a moment.	Obrolan gagal disimpan. Coba lagi sebentar lagi.
 # context: Item in the chat list's long press menu (the three dots, under Block). It hides the selected chats from the chat list
 Hide from chat list	Sembunyikan dari daftar obrolan
 # context: Toast after the long press menu's Hide from chat list hid the selected chats
@@ -2016,3 +2016,25 @@ Show when members joined	Tampilkan kapan anggota bergabung
 A group's member lists, on its profile and its Members page, also show when each person joined, next to their last seen. The date comes with the list, so nothing more is asked of Telegram. Admins and the owner keep their role.	Daftar anggota grup, di profilnya dan di halaman Anggota, juga menampilkan kapan setiap orang bergabung, di samping terakhir dilihat. Tanggalnya ikut bersama daftar, jadi Telegram tidak dimintai apa pun lagi. Admin dan pemilik tetap menampilkan perannya.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Show user and chat IDs that shows when each person joined a group
 member join dates	tanggal bergabung anggota
+# context: Item in the chat list's long press menu (the three dots, under Hide from chat list), shown while Pin chats on this phone is on (#79). It pins the selected chats on this phone only, without Telegram's own pin
+Pin on this phone	Sematkan di ponsel ini
+# context: Item in the chat list's long press menu in place of Pin on this phone when every selected chat is already pinned that way (#79). It takes them off this phone's pins
+Unpin on this phone	Lepas sematan di ponsel ini
+# context: Toast after Pin on this phone. All Chats is Telegram's name for the first folder tab (Telegram key FilterAllChats); use the name Telegram shows in that language. Two short lines at most
+Pinned in All Chats on this phone.	Disematkan di Semua Obrolan di ponsel ini.
+# context: Toast after Unpin on this phone. Two short lines at most
+Unpinned on this phone.	Sematan di ponsel ini dilepas.
+# context: Toast when Pin on this phone would go past the limit. %1$d is the most chats one phone keeps pinned this way, 20 today. Two short lines at most
+You can pin up to %1$d chats on this phone.	Anda bisa menyematkan hingga %1$d chat di ponsel ini.
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default (#79). With it on, the long press menu offers Pin on this phone
+Pin chats on this phone	Sematkan chat di ponsel ini
+# context: Summary of Pin chats on this phone. Pin on this phone is the long press menu item above; All Chats is Telegram's first folder tab (Telegram key FilterAllChats); the pin limit is how many chats Telegram lets you pin
+Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under your pinned chats in All Chats, newest first. Nothing is sent to Telegram, so your other devices and Telegram's pin limit stay as they are.	Menambahkan Sematkan di ponsel ini ke menu tekan lama di daftar obrolan. Chat itu berada tepat di bawah chat yang Anda sematkan di Semua Obrolan, yang terbaru lebih dulu. Tidak ada yang dikirim ke Telegram, jadi perangkat Anda yang lain dan batas sematan Telegram tetap seperti biasa.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that pins chats on this phone only
+chats pinned on this phone	chat yang disematkan di ponsel ini
+# context: Name of the list Pin on this phone keeps, in the import preview line "%1$s: %2$s to %3$s", where the counts follow
+Chats pinned on this phone	Chat yang disematkan di ponsel ini
+# context: Count of chats in the import preview, singular form. %1$d is the number
+%1$d chat	%1$d chat
+# context: Count of chats in the import preview, plural form. %1$d is the number
+%1$d chats	%1$d chat

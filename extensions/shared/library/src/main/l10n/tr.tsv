@@ -2016,3 +2016,25 @@ Show when members joined	Üyelerin ne zaman katıldığını göster
 A group's member lists, on its profile and its Members page, also show when each person joined, next to their last seen. The date comes with the list, so nothing more is asked of Telegram. Admins and the owner keep their role.	Bir grubun üye listeleri, profilinde ve Üyeler sayfasında, her kişinin ne zaman katıldığını da son görülme bilgisinin yanında gösterir. Tarih listeyle birlikte gelir, bu yüzden Telegram'dan başka bir şey istenmez. Yöneticiler ve sahip rollerini korur.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Show user and chat IDs that shows when each person joined a group
 member join dates	üyelerin katılma tarihleri
+# context: Item in the chat list's long press menu (the three dots, under Hide from chat list), shown while Pin chats on this phone is on (#79). It pins the selected chats on this phone only, without Telegram's own pin
+Pin on this phone	Bu telefonda sabitle
+# context: Item in the chat list's long press menu in place of Pin on this phone when every selected chat is already pinned that way (#79). It takes them off this phone's pins
+Unpin on this phone	Bu telefonda sabitlemeyi kaldır
+# context: Toast after Pin on this phone. All Chats is Telegram's name for the first folder tab (Telegram key FilterAllChats); use the name Telegram shows in that language. Two short lines at most
+Pinned in All Chats on this phone.	Bu telefonda Tüm Sohbetler'e sabitlendi.
+# context: Toast after Unpin on this phone. Two short lines at most
+Unpinned on this phone.	Bu telefonda sabitleme kaldırıldı.
+# context: Toast when Pin on this phone would go past the limit. %1$d is the most chats one phone keeps pinned this way, 20 today. Two short lines at most
+You can pin up to %1$d chats on this phone.	Bu telefonda en fazla %1$d sohbet sabitleyebilirsin.
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default (#79). With it on, the long press menu offers Pin on this phone
+Pin chats on this phone	Sohbetleri bu telefonda sabitle
+# context: Summary of Pin chats on this phone. Pin on this phone is the long press menu item above; All Chats is Telegram's first folder tab (Telegram key FilterAllChats); the pin limit is how many chats Telegram lets you pin
+Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under your pinned chats in All Chats, newest first. Nothing is sent to Telegram, so your other devices and Telegram's pin limit stay as they are.	Sohbet listesinde uzun basınca açılan menüye Bu telefonda sabitle seçeneğini ekler. Bu sohbetler Tüm Sohbetler'de sabitlenmiş sohbetlerinin hemen altında, en yenisi önce olacak şekilde durur. Telegram'a hiçbir şey gönderilmez, bu yüzden diğer cihazların ve Telegram'ın sabitleme sınırı olduğu gibi kalır.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that pins chats on this phone only
+chats pinned on this phone	bu telefonda sabitlenen sohbetler
+# context: Name of the list Pin on this phone keeps, in the import preview line "%1$s: %2$s to %3$s", where the counts follow
+Chats pinned on this phone	Bu telefonda sabitlenen sohbetler
+# context: Count of chats in the import preview, singular form. %1$d is the number
+%1$d chat	%1$d sohbet
+# context: Count of chats in the import preview, plural form. %1$d is the number
+%1$d chats	%1$d sohbet

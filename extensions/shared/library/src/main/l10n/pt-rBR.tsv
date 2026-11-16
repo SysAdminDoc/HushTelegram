@@ -1058,7 +1058,7 @@ Couldn't read your chats.	Não foi possível ler suas conversas.
 # context: Toast when Chats to hide is tapped and the account has no chats
 You don't have any chats yet.	Você ainda não tem conversas.
 # context: Toast when the ticked chats couldn't be written to the phone's storage
-Couldn't save the chats. Try again in a moment.	Não foi possível salvar as conversas. Tente de novo em instantes.
+Couldn't save the chats. Try again in a moment.	Erro ao salvar as conversas. Tente de novo logo.
 # context: Item in the chat list's long press menu (the three dots, under Block). It hides the selected chats from the chat list
 Hide from chat list	Ocultar da lista de conversas
 # context: Toast after the long press menu's Hide from chat list hid the selected chats
@@ -2013,3 +2013,25 @@ Show when members joined	Mostrar quando os membros entraram
 A group's member lists, on its profile and its Members page, also show when each person joined, next to their last seen. The date comes with the list, so nothing more is asked of Telegram. Admins and the owner keep their role.	As listas de membros de um grupo, no perfil e na página Membros, também mostram quando cada pessoa entrou, ao lado do visto por último. A data vem com a lista, então nada mais é pedido ao Telegram. Admins e o dono mantêm seu cargo.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Show user and chat IDs that shows when each person joined a group
 member join dates	datas de entrada dos membros
+# context: Item in the chat list's long press menu (the three dots, under Hide from chat list), shown while Pin chats on this phone is on (#79). It pins the selected chats on this phone only, without Telegram's own pin
+Pin on this phone	Fixar neste telefone
+# context: Item in the chat list's long press menu in place of Pin on this phone when every selected chat is already pinned that way (#79). It takes them off this phone's pins
+Unpin on this phone	Desafixar neste telefone
+# context: Toast after Pin on this phone. All Chats is Telegram's name for the first folder tab (Telegram key FilterAllChats); use the name Telegram shows in that language. Two short lines at most
+Pinned in All Chats on this phone.	Fixado em Todos os Chats neste telefone.
+# context: Toast after Unpin on this phone. Two short lines at most
+Unpinned on this phone.	Desafixado neste telefone.
+# context: Toast when Pin on this phone would go past the limit. %1$d is the most chats one phone keeps pinned this way, 20 today. Two short lines at most
+You can pin up to %1$d chats on this phone.	Você pode fixar até %1$d conversas neste telefone.
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default (#79). With it on, the long press menu offers Pin on this phone
+Pin chats on this phone	Fixar conversas neste telefone
+# context: Summary of Pin chats on this phone. Pin on this phone is the long press menu item above; All Chats is Telegram's first folder tab (Telegram key FilterAllChats); the pin limit is how many chats Telegram lets you pin
+Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under your pinned chats in All Chats, newest first. Nothing is sent to Telegram, so your other devices and Telegram's pin limit stay as they are.	Adiciona Fixar neste telefone ao menu que abre ao tocar e segurar na lista de conversas. Essas conversas ficam logo abaixo das suas conversas fixadas em Todos os Chats, as mais recentes primeiro. Nada é enviado ao Telegram, então seus outros dispositivos e o limite de fixadas do Telegram continuam como estão.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that pins chats on this phone only
+chats pinned on this phone	as conversas fixadas neste telefone
+# context: Name of the list Pin on this phone keeps, in the import preview line "%1$s: %2$s to %3$s", where the counts follow
+Chats pinned on this phone	Conversas fixadas neste telefone
+# context: Count of chats in the import preview, singular form. %1$d is the number
+%1$d chat	%1$d conversa
+# context: Count of chats in the import preview, plural form. %1$d is the number
+%1$d chats	%1$d conversas

@@ -58,6 +58,7 @@ import app.hushtelegram.extension.shared.settings.StringSetting;
 import app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 import app.hushtelegram.extension.shared.settings.preference.QuickSetups;
+import app.hushtelegram.extension.telegram.misc.LocalPins;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.RecordChats;
 import app.hushtelegram.extension.telegram.misc.StickerSize;
@@ -471,6 +472,10 @@ public class SettingsBackupPreference extends Preference {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Calls to record"),
                         HushTelegramPreferenceFragment.recordWhichLabel(RecordChats.scope()),
                         HushTelegramPreferenceFragment.recordWhichLabel((String) change.getValue())));
+            } else if (change.getKey() == Settings.LOCAL_PINNED_CHATS) {
+                // How many, not which: the ids are the person's own chats.
+                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Chats pinned on this phone"),
+                        chatCount(Settings.LOCAL_PINNED_CHATS.savedValue()), chatCount((String) change.getValue())));
             } else if (change.getKey() == Settings.RECORD_CALLS_KEEP_DAYS) {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Keep recordings"),
                         HushTelegramPreferenceFragment.recordKeepShort(Settings.RECORD_CALLS_KEEP_DAYS.savedValue()),
@@ -487,6 +492,12 @@ public class SettingsBackupPreference extends Preference {
             }
         }
         return lines;
+    }
+
+    /** "3 chats" for the chats pinned on this phone that [saved] holds. */
+    private static String chatCount(String saved) {
+        int count = LocalPins.count(saved);
+        return L10n.quantity(count, "%1$d chat", "%1$d chats", count);
     }
 
     /**

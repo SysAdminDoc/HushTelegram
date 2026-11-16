@@ -2040,6 +2040,33 @@ public class HushTelegramPreferenceFragmentTest {
         }
     }
 
+    /** Pin chats on this phone gets its own switch, off until turned on, only in a build where its selection stub went in (#79). */
+    @Test
+    public void pinChatsOnThisPhoneHasItsOwnSwitchWhenItsStubIsIn() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_FOLDER_COUNTERS);
+        try {
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.HIDDEN_CHATS, PatchFamily.Capability.SORT_BY_DATE);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                assertNull("a build without the stub has no switch", pageOf(controller).findPreference(Settings.LOCAL_PINS.key));
+            }
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.HIDDEN_CHATS, PatchFamily.Capability.SORT_BY_DATE,
+                    PatchFamily.Capability.LOCAL_PINS);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                HushTelegramPreferenceFragment page = pageOf(controller);
+                SwitchPreference toggle = (SwitchPreference) page.findPreference(Settings.LOCAL_PINS.key);
+                assertEquals("Pin chats on this phone", String.valueOf(toggle.getTitle()));
+                assertEquals("Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under your "
+                        + "pinned chats in All Chats, newest first. Nothing is sent to Telegram, so your other devices and "
+                        + "Telegram's pin limit stay as they are.", String.valueOf(toggle.getSummary()));
+                assertFalse("off until turned on", toggle.isChecked());
+                // It comes right after the date order's two switches.
+                assertSame(page.findPreference(Settings.SORT_OLDEST_FIRST.key).getParent(), toggle.getParent());
+            }
+        } finally {
+            PatchFamily.capabilitiesForTests = null;
+        }
+    }
+
     /**
      * Hide folder tab counters brings the folder at launch switch and, under it, a row that lists
      * All Chats and the account's folders and saves the pick for the account shown.
