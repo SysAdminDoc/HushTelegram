@@ -250,6 +250,8 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/KeepDeletedBridge.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/KeepEdits.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/KeepTimedMedia.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/KeepSecretTimed.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/BannedChannelWeb.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/TestServers.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/BotSignIn.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/BotTokenRequest.java",
