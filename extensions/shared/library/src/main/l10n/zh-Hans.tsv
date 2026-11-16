@@ -499,10 +499,24 @@ Lots to translate at once. The rest will follow.	一次要翻译的内容太多�
 Turn chat translation on again. It's now set per account.	请重新开启聊天翻译。现在它按账号分别设置.
 Ask before sending a GIF	发送 GIF 前询问
 Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.	点按的 GIF 发送到聊天前，会询问“发送”或“取消”。选择“取消”则不发送。定时发送的 GIF 不会询问.
-Ask before sending a voice or video message	发送语音或视频消息前询问
-Asks Send or Cancel before a voice or video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	你录制的语音或视频消息发送前，会询问“发送”或“取消”。录音会先暂停，选择“取消”后保持暂停，你可以播放、删除或发送.
+# context: Title of the switch on the Conversations page, next to Ask before sending a GIF (#79), that asks before a recorded voice message goes out
+Ask before sending a voice message	发送语音消息前询问
+# context: Summary of the Ask before sending a voice message switch. Send and Cancel are the dialog's buttons
+Asks Send or Cancel before a voice message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	你录制的语音消息发送前，会询问“发送”或“取消”。录音会先暂停，选择“取消”后保持暂停，你可以播放、删除或发送.
+# context: Title of the switch on the Conversations page (#79) that asks before a recorded round video message (Telegram's video in a circle) goes out
+Ask before sending a round video message	发送圆形视频消息前询问
+# context: Summary of the Ask before sending a round video message switch. Send and Cancel are the dialog's buttons
+Asks Send or Cancel before a round video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	你录制的圆形视频消息发送前，会询问“发送”或“取消”。录制会先暂停，选择“取消”后保持暂停，你可以播放、删除或发送.
+# context: Title of the switch on the Conversations page (#79) that asks before a typed text message goes out
+Ask before sending a message	发送消息前询问
+# context: Summary of the Ask before sending a message switch. Send and Cancel are the dialog's buttons; silent messages are the ones sent without sound from the send button's menu
+Asks Send or Cancel before the send button or the keyboard's send key sends what you typed. Cancel leaves the text as it was. Scheduled and silent messages, edits and forwards go out without asking.	发送按钮或键盘上的发送键发送你输入的内容前，会询问“发送”或“取消”。选择“取消”后文字保持原样。定时消息、静音消息、编辑和转发不会询问.
 Ask before starting a call	发起通话前询问
 Asks Call or Cancel before the call button in a chat or on a profile starts a call.	聊天或个人资料中的通话按钮发起通话前，会询问“通话”或“取消”.
+# context: Title of the switch on the Conversations page (#79) that asks before you join a group's voice chat or a channel's live stream
+Ask before joining a voice chat	加入语音聊天前询问
+# context: Summary of the Ask before joining a voice chat switch. Join and Cancel are the dialog's buttons
+Asks Join or Cancel before you join a group's voice chat or a channel's live stream. Starting a new one doesn't ask.	加入群组的语音聊天或频道的直播前，会询问“加入”或“取消”。自己发起新的不会询问.
 Send sticker	发送贴纸
 Send this sticker to this chat?	要将这个贴纸发送到此聊天吗?
 Send GIF	发送 GIF
@@ -516,6 +530,20 @@ Start a call	发起通话
 Start a voice call?	要发起语音通话吗?
 Start a video call?	要发起视频通话吗?
 Call	通话
+# context: Title of the dialog that asks before a typed message goes out (#79)
+Send message	发送消息
+# context: The question in that dialog, above its Send and Cancel buttons
+Send this message to this chat?	要将这条消息发送到此聊天吗?
+# context: Title of the dialog that asks before you join a group's voice chat (#79)
+Join voice chat	加入语音聊天
+# context: The question in that dialog, above its Join and Cancel buttons
+Join this voice chat?	要加入这个语音聊天吗?
+# context: Title of the dialog that asks before you join a channel's live stream (#79)
+Join live stream	加入直播
+# context: The question in that dialog, above its Join and Cancel buttons
+Join this live stream?	要加入这个直播吗?
+# context: The button in those two dialogs that joins the voice chat or live stream
+Join	加入
 # context: the label before the time of a message someone else deleted that this phone kept
 deleted	已删除
 Add Copy photo to the message menu	在消息菜单中添加“复制照片”
@@ -1815,6 +1843,10 @@ Dates on your profile songs	个人资料歌曲的添加日期
 Songs you add to your profile from now on show the day you added them, after the artist. The days are kept on this phone only.	从现在起，你添加到个人资料的歌曲会在歌手名后显示添加日期。这些日期只保存在这部手机上.
 # context: Lowercase noun phrase naming Dates on your profile songs (#71) in the patch status list
 dates on your profile songs	个人资料歌曲的添加日期
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Ask before sending a sticker that asks before a typed message goes out (#79)
+asking before a typed message goes out	发送输入的消息前询问
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Ask before sending a sticker that asks before you join a voice chat or live stream (#79)
+asking before you join a voice chat	加入语音聊天前询问
 # context: Item at the end of the menu under a chat's preview (press and hold a chat, #71) that opens the previewed chat fully
 Open chat	打开聊天
 # context: Item at the end of the menu under a chat's preview (press and hold a chat, #71) that closes the preview

@@ -525,10 +525,24 @@ Lots to translate at once. The rest will follow.	Aynı anda çevrilecek çok şe
 Turn chat translation on again. It's now set per account.	Sohbet çevirisini yeniden açın. Artık her hesap için ayrı.
 Ask before sending a GIF	GIF göndermeden önce sor
 Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.	Dokunduğunuz bir GIF sohbete girmeden önce Gönder veya İptal sorar. İptal onu atar. Zamanlanmış GIF'ler sormadan gider.
-Ask before sending a voice or video message	Sesli veya görüntülü mesaj göndermeden önce sor
-Asks Send or Cancel before a voice or video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	Kaydettiğiniz sesli veya görüntülü mesaj gitmeden önce Gönder veya İptal sorar. Kayıt önce duraklatılır, İptal ise onu oynatmaya, silmeye veya göndermeye hazır şekilde duraklatılmış bırakır.
+# context: Title of the switch on the Conversations page, next to Ask before sending a GIF (#79), that asks before a recorded voice message goes out
+Ask before sending a voice message	Sesli mesaj göndermeden önce sor
+# context: Summary of the Ask before sending a voice message switch. Send and Cancel are the dialog's buttons
+Asks Send or Cancel before a voice message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	Kaydettiğiniz sesli mesaj gitmeden önce Gönder veya İptal sorar. Kayıt önce duraklatılır, İptal ise onu oynatmaya, silmeye veya göndermeye hazır şekilde duraklatılmış bırakır.
+# context: Title of the switch on the Conversations page (#79) that asks before a recorded round video message (Telegram's video in a circle) goes out
+Ask before sending a round video message	Yuvarlak görüntülü mesaj göndermeden önce sor
+# context: Summary of the Ask before sending a round video message switch. Send and Cancel are the dialog's buttons
+Asks Send or Cancel before a round video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	Kaydettiğiniz yuvarlak görüntülü mesaj gitmeden önce Gönder veya İptal sorar. Kayıt önce duraklatılır, İptal ise onu oynatmaya, silmeye veya göndermeye hazır şekilde duraklatılmış bırakır.
+# context: Title of the switch on the Conversations page (#79) that asks before a typed text message goes out
+Ask before sending a message	Mesaj göndermeden önce sor
+# context: Summary of the Ask before sending a message switch. Send and Cancel are the dialog's buttons; silent messages are the ones sent without sound from the send button's menu
+Asks Send or Cancel before the send button or the keyboard's send key sends what you typed. Cancel leaves the text as it was. Scheduled and silent messages, edits and forwards go out without asking.	Gönder düğmesi veya klavyenin gönder tuşu yazdığınızı göndermeden önce Gönder veya İptal sorar. İptal metni olduğu gibi bırakır. Zamanlanmış ve sessiz mesajlar, düzenlemeler ve iletmeler sormadan gider.
 Ask before starting a call	Arama başlatmadan önce sor
 Asks Call or Cancel before the call button in a chat or on a profile starts a call.	Bir sohbetteki veya profildeki arama düğmesi arama başlatmadan önce Ara veya İptal sorar.
+# context: Title of the switch on the Conversations page (#79) that asks before you join a group's voice chat or a channel's live stream
+Ask before joining a voice chat	Sesli sohbete katılmadan önce sor
+# context: Summary of the Ask before joining a voice chat switch. Join and Cancel are the dialog's buttons
+Asks Join or Cancel before you join a group's voice chat or a channel's live stream. Starting a new one doesn't ask.	Bir grubun sesli sohbetine veya bir kanalın canlı yayınına katılmadan önce Katıl veya İptal sorar. Yeni bir tane başlatmak sormaz.
 Send sticker	Çıkartma gönder
 Send this sticker to this chat?	Bu çıkartma bu sohbete gönderilsin mi?
 Send GIF	GIF gönder
@@ -542,6 +556,20 @@ Start a call	Arama başlat
 Start a voice call?	Sesli arama başlatılsın mı?
 Start a video call?	Görüntülü arama başlatılsın mı?
 Call	Ara
+# context: Title of the dialog that asks before a typed message goes out (#79)
+Send message	Mesaj gönder
+# context: The question in that dialog, above its Send and Cancel buttons
+Send this message to this chat?	Bu mesaj bu sohbete gönderilsin mi?
+# context: Title of the dialog that asks before you join a group's voice chat (#79)
+Join voice chat	Sesli sohbete katıl
+# context: The question in that dialog, above its Join and Cancel buttons
+Join this voice chat?	Bu sesli sohbete katılınsın mı?
+# context: Title of the dialog that asks before you join a channel's live stream (#79)
+Join live stream	Canlı yayına katıl
+# context: The question in that dialog, above its Join and Cancel buttons
+Join this live stream?	Bu canlı yayına katılınsın mı?
+# context: The button in those two dialogs that joins the voice chat or live stream
+Join	Katıl
 # context: the label before the time of a message someone else deleted that this phone kept
 deleted	silindi
 Add Copy photo to the message menu	Mesaj menüsüne Fotoğrafı kopyala ekle
@@ -1841,6 +1869,10 @@ Dates on your profile songs	Profil şarkılarınızda tarihler
 Songs you add to your profile from now on show the day you added them, after the artist. The days are kept on this phone only.	Bundan sonra profilinize eklediğiniz şarkılar, sanatçıdan sonra eklediğiniz günü gösterir. Tarihler yalnızca bu telefonda tutulur.
 # context: Lowercase noun phrase naming Dates on your profile songs (#71) in the patch status list
 dates on your profile songs	profil şarkılarında tarihler
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Ask before sending a sticker that asks before a typed message goes out (#79)
+asking before a typed message goes out	yazılan bir mesaj gitmeden önce sorma
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Ask before sending a sticker that asks before you join a voice chat or live stream (#79)
+asking before you join a voice chat	sesli sohbete katılmadan önce sorma
 # context: Item at the end of the menu under a chat's preview (press and hold a chat, #71) that opens the previewed chat fully
 Open chat	Sohbeti aç
 # context: Item at the end of the menu under a chat's preview (press and hold a chat, #71) that closes the preview

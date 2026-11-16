@@ -1021,12 +1021,25 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.ASK_BEFORE_STICKER).addPreference(toggle(context, Settings.ASK_BEFORE_GIF, L10n.t("Ask before sending a GIF"),
                     PatchFamily.ASK_BEFORE_STICKER.coverageSummary(L10n.t("Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. "
                             + "Scheduled GIFs go out without asking."))));
-            on(pages, PatchFamily.ASK_BEFORE_STICKER).addPreference(toggle(context, Settings.ASK_BEFORE_VOICE_VIDEO, L10n.t("Ask before sending a voice or video message"),
-                    PatchFamily.ASK_BEFORE_STICKER.coverageSummary(L10n.t("Asks Send or Cancel before a voice or video message you recorded goes out. "
+            on(pages, PatchFamily.ASK_BEFORE_STICKER).addPreference(toggle(context, Settings.ASK_BEFORE_VOICE_VIDEO, L10n.t("Ask before sending a voice message"),
+                    PatchFamily.ASK_BEFORE_STICKER.coverageSummary(L10n.t("Asks Send or Cancel before a voice message you recorded goes out. "
                             + "The recording pauses first, and Cancel leaves it paused, ready to play, delete or send."))));
+            on(pages, PatchFamily.ASK_BEFORE_STICKER).addPreference(toggle(context, Settings.ASK_BEFORE_ROUND_VIDEO, L10n.t("Ask before sending a round video message"),
+                    PatchFamily.ASK_BEFORE_STICKER.coverageSummary(L10n.t("Asks Send or Cancel before a round video message you recorded goes out. "
+                            + "The recording pauses first, and Cancel leaves it paused, ready to play, delete or send."))));
+            if (PatchFamily.Capability.ASK_TEXT.installed()) {
+                on(pages, PatchFamily.ASK_BEFORE_STICKER).addPreference(toggle(context, Settings.ASK_BEFORE_MESSAGE, L10n.t("Ask before sending a message"),
+                        PatchFamily.ASK_BEFORE_STICKER.coverageSummary(L10n.t("Asks Send or Cancel before the send button or the keyboard's send key sends what "
+                                + "you typed. Cancel leaves the text as it was. Scheduled and silent messages, edits and forwards go out without asking."))));
+            }
             on(pages, PatchFamily.ASK_BEFORE_STICKER).addPreference(toggle(context, Settings.ASK_BEFORE_CALL, L10n.t("Ask before starting a call"),
                     PatchFamily.ASK_BEFORE_STICKER.coverageSummary(L10n.t("Asks Call or Cancel before the call button in a chat or on a profile starts a "
                             + "call."))));
+            if (PatchFamily.Capability.ASK_JOIN.installed()) {
+                on(pages, PatchFamily.ASK_BEFORE_STICKER).addPreference(toggle(context, Settings.ASK_BEFORE_JOIN, L10n.t("Ask before joining a voice chat"),
+                        PatchFamily.ASK_BEFORE_STICKER.coverageSummary(L10n.t("Asks Join or Cancel before you join a group's voice chat or a channel's live "
+                                + "stream. Starting a new one doesn't ask."))));
+            }
         }
         if (build.contains(PatchFamily.CROP_GUARD)) {
             on(pages, PatchFamily.CROP_GUARD).addPreference(toggle(context, Settings.CROP_GUARD, L10n.t("Never send an uncropped photo"),

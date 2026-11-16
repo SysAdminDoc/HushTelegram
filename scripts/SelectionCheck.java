@@ -476,6 +476,8 @@ public final class SelectionCheck {
         hook(calls, flags, "keepDeleted", "misc/KeepDeleted", "userUpdate", "channelUpdate", "push|pushIdsLast", "measuring");
         hook(calls, flags, "redDeletedLabel", "misc/KeepDeleted", "painted");
         hook(calls, flags, "askBeforeSending", "misc/SendConfirm", "sticker", "gif", "voice", "call");
+        hook(calls, flags, "askBeforeText", "misc/SendConfirm", "text|textReordered");
+        hook(calls, flags, "askBeforeJoin", "misc/SendConfirm", "join");
         hook(calls, flags, "outsideTranslate", "misc/OutsideTranslate", "show", "fill", "chosen", "headerMenu", "headerClick");
         hook(calls, flags, "hideChannelButtons", "misc/ChannelButtons", "set");
         hook(calls, flags, "hideChannelMute", "misc/ChannelMute", "begin", "muteLabelled", "finish", "visibility");

@@ -525,10 +525,24 @@ Lots to translate at once. The rest will follow.	Banyak yang diterjemahkan sekal
 Turn chat translation on again. It's now set per account.	Nyalakan lagi terjemahan obrolan. Sekarang diatur per akun.
 Ask before sending a GIF	Tanya dulu sebelum mengirim GIF
 Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.	Menanyakan Kirim atau Batal sebelum GIF yang Anda ketuk masuk ke obrolan. Batal membuangnya. GIF terjadwal terkirim tanpa bertanya.
-Ask before sending a voice or video message	Tanya dulu sebelum mengirim pesan suara atau video
-Asks Send or Cancel before a voice or video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	Menanyakan Kirim atau Batal sebelum pesan suara atau video yang Anda rekam terkirim. Rekaman dijeda dulu, dan Batal membiarkannya terjeda, siap diputar, dihapus, atau dikirim.
+# context: Title of the switch on the Conversations page, next to Ask before sending a GIF (#79), that asks before a recorded voice message goes out
+Ask before sending a voice message	Tanya dulu sebelum mengirim pesan suara
+# context: Summary of the Ask before sending a voice message switch. Send and Cancel are the dialog's buttons
+Asks Send or Cancel before a voice message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	Menanyakan Kirim atau Batal sebelum pesan suara yang Anda rekam terkirim. Rekaman dijeda dulu, dan Batal membiarkannya terjeda, siap diputar, dihapus, atau dikirim.
+# context: Title of the switch on the Conversations page (#79) that asks before a recorded round video message (Telegram's video in a circle) goes out
+Ask before sending a round video message	Tanya dulu sebelum mengirim pesan video bulat
+# context: Summary of the Ask before sending a round video message switch. Send and Cancel are the dialog's buttons
+Asks Send or Cancel before a round video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	Menanyakan Kirim atau Batal sebelum pesan video bulat yang Anda rekam terkirim. Rekaman dijeda dulu, dan Batal membiarkannya terjeda, siap diputar, dihapus, atau dikirim.
+# context: Title of the switch on the Conversations page (#79) that asks before a typed text message goes out
+Ask before sending a message	Tanya dulu sebelum mengirim pesan
+# context: Summary of the Ask before sending a message switch. Send and Cancel are the dialog's buttons; silent messages are the ones sent without sound from the send button's menu
+Asks Send or Cancel before the send button or the keyboard's send key sends what you typed. Cancel leaves the text as it was. Scheduled and silent messages, edits and forwards go out without asking.	Menanyakan Kirim atau Batal sebelum tombol kirim atau tombol kirim di keyboard mengirim yang Anda ketik. Batal membiarkan teksnya seperti semula. Pesan terjadwal dan senyap, suntingan, serta terusan terkirim tanpa bertanya.
 Ask before starting a call	Tanya dulu sebelum memulai panggilan
 Asks Call or Cancel before the call button in a chat or on a profile starts a call.	Menanyakan Panggil atau Batal sebelum tombol panggilan di obrolan atau profil memulai panggilan.
+# context: Title of the switch on the Conversations page (#79) that asks before you join a group's voice chat or a channel's live stream
+Ask before joining a voice chat	Tanya dulu sebelum bergabung ke obrolan suara
+# context: Summary of the Ask before joining a voice chat switch. Join and Cancel are the dialog's buttons
+Asks Join or Cancel before you join a group's voice chat or a channel's live stream. Starting a new one doesn't ask.	Menanyakan Gabung atau Batal sebelum Anda bergabung ke obrolan suara grup atau siaran langsung kanal. Memulai yang baru tidak bertanya.
 Send sticker	Kirim stiker
 Send this sticker to this chat?	Kirim stiker ini ke obrolan ini?
 Send GIF	Kirim GIF
@@ -542,6 +556,20 @@ Start a call	Mulai panggilan
 Start a voice call?	Mulai panggilan suara?
 Start a video call?	Mulai panggilan video?
 Call	Panggil
+# context: Title of the dialog that asks before a typed message goes out (#79)
+Send message	Kirim pesan
+# context: The question in that dialog, above its Send and Cancel buttons
+Send this message to this chat?	Kirim pesan ini ke obrolan ini?
+# context: Title of the dialog that asks before you join a group's voice chat (#79)
+Join voice chat	Gabung obrolan suara
+# context: The question in that dialog, above its Join and Cancel buttons
+Join this voice chat?	Bergabung ke obrolan suara ini?
+# context: Title of the dialog that asks before you join a channel's live stream (#79)
+Join live stream	Gabung siaran langsung
+# context: The question in that dialog, above its Join and Cancel buttons
+Join this live stream?	Bergabung ke siaran langsung ini?
+# context: The button in those two dialogs that joins the voice chat or live stream
+Join	Gabung
 # context: the label before the time of a message someone else deleted that this phone kept
 deleted	dihapus
 Add Copy photo to the message menu	Tambahkan Salin foto ke menu pesan
@@ -1841,6 +1869,10 @@ Dates on your profile songs	Tanggal di lagu profil Anda
 Songs you add to your profile from now on show the day you added them, after the artist. The days are kept on this phone only.	Lagu yang Anda tambahkan ke profil mulai sekarang menampilkan hari Anda menambahkannya, setelah nama artis. Tanggalnya hanya disimpan di ponsel ini.
 # context: Lowercase noun phrase naming Dates on your profile songs (#71) in the patch status list
 dates on your profile songs	tanggal di lagu profil
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Ask before sending a sticker that asks before a typed message goes out (#79)
+asking before a typed message goes out	pertanyaan sebelum pesan yang diketik terkirim
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Ask before sending a sticker that asks before you join a voice chat or live stream (#79)
+asking before you join a voice chat	pertanyaan sebelum Anda bergabung ke obrolan suara
 # context: Item at the end of the menu under a chat's preview (press and hold a chat, #71) that opens the previewed chat fully
 Open chat	Buka chat
 # context: Item at the end of the menu under a chat's preview (press and hold a chat, #71) that closes the preview

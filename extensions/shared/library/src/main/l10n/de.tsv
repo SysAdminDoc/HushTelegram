@@ -525,10 +525,24 @@ Lots to translate at once. The rest will follow.	Viel auf einmal zum Übersetzen
 Turn chat translation on again. It's now set per account.	Schalte die Chat-Übersetzung wieder ein. Sie gilt jetzt pro Konto.
 Ask before sending a GIF	Vor dem Senden eines GIFs nachfragen
 Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.	Fragt Senden oder Abbrechen, bevor ein angetipptes GIF in einen Chat geht. Abbrechen verwirft es. Geplante GIFs gehen ohne Nachfrage raus.
-Ask before sending a voice or video message	Vor dem Senden einer Sprach- oder Videonachricht nachfragen
-Asks Send or Cancel before a voice or video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	Fragt Senden oder Abbrechen, bevor eine aufgenommene Sprach- oder Videonachricht rausgeht. Die Aufnahme pausiert vorher, und Abbrechen lässt sie pausiert, bereit zum Abspielen, Löschen oder Senden.
+# context: Title of the switch on the Conversations page, next to Ask before sending a GIF (#79), that asks before a recorded voice message goes out
+Ask before sending a voice message	Vor dem Senden einer Sprachnachricht nachfragen
+# context: Summary of the Ask before sending a voice message switch. Send and Cancel are the dialog's buttons
+Asks Send or Cancel before a voice message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	Fragt Senden oder Abbrechen, bevor eine aufgenommene Sprachnachricht rausgeht. Die Aufnahme pausiert vorher, und Abbrechen lässt sie pausiert, bereit zum Abspielen, Löschen oder Senden.
+# context: Title of the switch on the Conversations page (#79) that asks before a recorded round video message (Telegram's video in a circle) goes out
+Ask before sending a round video message	Vor dem Senden einer runden Videonachricht nachfragen
+# context: Summary of the Ask before sending a round video message switch. Send and Cancel are the dialog's buttons
+Asks Send or Cancel before a round video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	Fragt Senden oder Abbrechen, bevor eine aufgenommene runde Videonachricht rausgeht. Die Aufnahme pausiert vorher, und Abbrechen lässt sie pausiert, bereit zum Abspielen, Löschen oder Senden.
+# context: Title of the switch on the Conversations page (#79) that asks before a typed text message goes out
+Ask before sending a message	Vor dem Senden einer Nachricht nachfragen
+# context: Summary of the Ask before sending a message switch. Send and Cancel are the dialog's buttons; silent messages are the ones sent without sound from the send button's menu
+Asks Send or Cancel before the send button or the keyboard's send key sends what you typed. Cancel leaves the text as it was. Scheduled and silent messages, edits and forwards go out without asking.	Fragt Senden oder Abbrechen, bevor die Sendetaste im Chat oder auf der Tastatur deinen getippten Text abschickt. Abbrechen lässt den Text, wie er war. Geplante und lautlose Nachrichten, Bearbeitungen und Weiterleitungen gehen ohne Nachfrage raus.
 Ask before starting a call	Vor dem Starten eines Anrufs nachfragen
 Asks Call or Cancel before the call button in a chat or on a profile starts a call.	Fragt Anrufen oder Abbrechen, bevor die Anruftaste in einem Chat oder auf einem Profil einen Anruf startet.
+# context: Title of the switch on the Conversations page (#79) that asks before you join a group's voice chat or a channel's live stream
+Ask before joining a voice chat	Vor dem Beitreten zu einem Sprachchat nachfragen
+# context: Summary of the Ask before joining a voice chat switch. Join and Cancel are the dialog's buttons
+Asks Join or Cancel before you join a group's voice chat or a channel's live stream. Starting a new one doesn't ask.	Fragt Beitreten oder Abbrechen, bevor du dem Sprachchat einer Gruppe oder dem Livestream eines Kanals beitrittst. Wenn du selbst einen startest, wird nicht gefragt.
 Send sticker	Sticker senden
 Send this sticker to this chat?	Diesen Sticker in diesen Chat senden?
 Send GIF	GIF senden
@@ -542,6 +556,20 @@ Start a call	Anruf starten
 Start a voice call?	Sprachanruf starten?
 Start a video call?	Videoanruf starten?
 Call	Anrufen
+# context: Title of the dialog that asks before a typed message goes out (#79)
+Send message	Nachricht senden
+# context: The question in that dialog, above its Send and Cancel buttons
+Send this message to this chat?	Diese Nachricht in diesen Chat senden?
+# context: Title of the dialog that asks before you join a group's voice chat (#79)
+Join voice chat	Sprachchat beitreten
+# context: The question in that dialog, above its Join and Cancel buttons
+Join this voice chat?	Diesem Sprachchat beitreten?
+# context: Title of the dialog that asks before you join a channel's live stream (#79)
+Join live stream	Livestream beitreten
+# context: The question in that dialog, above its Join and Cancel buttons
+Join this live stream?	Diesem Livestream beitreten?
+# context: The button in those two dialogs that joins the voice chat or live stream
+Join	Beitreten
 # context: the label before the time of a message someone else deleted that this phone kept
 deleted	gelöscht
 Add Copy photo to the message menu	Foto kopieren zum Nachrichtenmenü hinzufügen
@@ -1841,6 +1869,10 @@ Dates on your profile songs	Datum bei deinen Profilsongs
 Songs you add to your profile from now on show the day you added them, after the artist. The days are kept on this phone only.	Songs, die du ab jetzt zu deinem Profil hinzufügst, zeigen nach dem Interpreten den Tag, an dem du sie hinzugefügt hast. Die Daten bleiben nur auf diesem Handy.
 # context: Lowercase noun phrase naming Dates on your profile songs (#71) in the patch status list
 dates on your profile songs	Datum bei Profilsongs
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Ask before sending a sticker that asks before a typed message goes out (#79)
+asking before a typed message goes out	das Nachfragen vor dem Senden einer getippten Nachricht
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Ask before sending a sticker that asks before you join a voice chat or live stream (#79)
+asking before you join a voice chat	das Nachfragen vor dem Beitreten zu einem Sprachchat
 # context: Item at the end of the menu under a chat's preview (press and hold a chat, #71) that opens the previewed chat fully
 Open chat	Chat öffnen
 # context: Item at the end of the menu under a chat's preview (press and hold a chat, #71) that closes the preview

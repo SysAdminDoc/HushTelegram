@@ -396,12 +396,16 @@ public class PausedHooksTest {
         probes.put(PatchFamily.KEEP_DELETED_MESSAGES, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.KeepDeleted.on(),
                 () -> app.hushtelegram.extension.telegram.misc.KeepDeletedForTests.paintsRed()));
-        // A sticker, a GIF, a voice or video message and a call each ask first, under their own switches.
+        // A sticker, a GIF, a voice message, a round video message, a typed message, a call and a
+        // voice chat's join each ask first, under their own switches.
         probes.put(PatchFamily.ASK_BEFORE_STICKER, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.SendConfirmForTests.stickerOn(),
                 () -> app.hushtelegram.extension.telegram.misc.SendConfirmForTests.gifOn(),
-                () -> app.hushtelegram.extension.telegram.misc.SendConfirmForTests.voiceVideoOn(),
-                () -> app.hushtelegram.extension.telegram.misc.SendConfirmForTests.callOn()));
+                () -> app.hushtelegram.extension.telegram.misc.SendConfirmForTests.voiceOn(),
+                () -> app.hushtelegram.extension.telegram.misc.SendConfirmForTests.roundVideoOn(),
+                () -> app.hushtelegram.extension.telegram.misc.SendConfirmForTests.messageOn(),
+                () -> app.hushtelegram.extension.telegram.misc.SendConfirmForTests.callOn(),
+                () -> app.hushtelegram.extension.telegram.misc.SendConfirmForTests.joinOn()));
         // Translation only works while the switch is on.
         probes.put(PatchFamily.OUTSIDE_TRANSLATE, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests.active()));

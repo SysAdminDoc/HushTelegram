@@ -522,10 +522,24 @@ Lots to translate at once. The rest will follow.	Има много за прев
 Turn chat translation on again. It's now set per account.	Включете отново превеждането на чата. Вече е за всеки акаунт поотделно.
 Ask before sending a GIF	Потвърждение преди изпращане на GIF
 Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.	Пита „Изпращане“ или „Отказ“, преди докоснат GIF да влезе в чат. „Отказ“ го отхвърля. Планираните GIF файлове се изпращат без питане.
-Ask before sending a voice or video message	Потвърждение преди изпращане на гласово или видеосъобщение
-Asks Send or Cancel before a voice or video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	Пита „Изпращане“ или „Отказ“, преди записано от вас гласово или видеосъобщение да бъде изпратено. Записът първо спира на пауза, а „Отказ“ го оставя на пауза, готов за пускане, изтриване или изпращане.
+# context: Title of the switch on the Conversations page, next to Ask before sending a GIF (#79), that asks before a recorded voice message goes out
+Ask before sending a voice message	Потвърждение преди изпращане на гласово съобщение
+# context: Summary of the Ask before sending a voice message switch. Send and Cancel are the dialog's buttons
+Asks Send or Cancel before a voice message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	Пита „Изпращане“ или „Отказ“, преди записано от вас гласово съобщение да бъде изпратено. Записът първо спира на пауза, а „Отказ“ го оставя на пауза, готов за пускане, изтриване или изпращане.
+# context: Title of the switch on the Conversations page (#79) that asks before a recorded round video message (Telegram's video in a circle) goes out
+Ask before sending a round video message	Потвърждение преди изпращане на кръгло видеосъобщение
+# context: Summary of the Ask before sending a round video message switch. Send and Cancel are the dialog's buttons
+Asks Send or Cancel before a round video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.	Пита „Изпращане“ или „Отказ“, преди записано от вас кръгло видеосъобщение да бъде изпратено. Записът първо спира на пауза, а „Отказ“ го оставя на пауза, готов за пускане, изтриване или изпращане.
+# context: Title of the switch on the Conversations page (#79) that asks before a typed text message goes out
+Ask before sending a message	Потвърждение преди изпращане на съобщение
+# context: Summary of the Ask before sending a message switch. Send and Cancel are the dialog's buttons; silent messages are the ones sent without sound from the send button's menu
+Asks Send or Cancel before the send button or the keyboard's send key sends what you typed. Cancel leaves the text as it was. Scheduled and silent messages, edits and forwards go out without asking.	Пита „Изпращане“ или „Отказ“, преди бутонът за изпращане или клавишът за изпращане на клавиатурата да изпрати написаното от вас. „Отказ“ оставя текста както си е. Планираните и тихите съобщения, редакциите и препращанията се изпращат без питане.
 Ask before starting a call	Потвърждение преди започване на обаждане
 Asks Call or Cancel before the call button in a chat or on a profile starts a call.	Пита „Обаждане“ или „Отказ“, преди бутонът за обаждане в чат или профил да започне обаждане.
+# context: Title of the switch on the Conversations page (#79) that asks before you join a group's voice chat or a channel's live stream
+Ask before joining a voice chat	Потвърждение преди влизане в гласов чат
+# context: Summary of the Ask before joining a voice chat switch. Join and Cancel are the dialog's buttons
+Asks Join or Cancel before you join a group's voice chat or a channel's live stream. Starting a new one doesn't ask.	Пита „Присъединяване“ или „Отказ“, преди да влезете в гласовия чат на група или в предаването на живо на канал. Започването на нов не пита.
 Send sticker	Изпращане на стикер
 Send this sticker to this chat?	Да се изпрати ли този стикер в този чат?
 Send GIF	Изпращане на GIF
@@ -539,6 +553,20 @@ Start a call	Започване на обаждане
 Start a voice call?	Да започне ли гласово обаждане?
 Start a video call?	Да започне ли видеообаждане?
 Call	Обаждане
+# context: Title of the dialog that asks before a typed message goes out (#79)
+Send message	Изпращане на съобщение
+# context: The question in that dialog, above its Send and Cancel buttons
+Send this message to this chat?	Да се изпрати ли това съобщение в този чат?
+# context: Title of the dialog that asks before you join a group's voice chat (#79)
+Join voice chat	Влизане в гласов чат
+# context: The question in that dialog, above its Join and Cancel buttons
+Join this voice chat?	Да се влезе ли в този гласов чат?
+# context: Title of the dialog that asks before you join a channel's live stream (#79)
+Join live stream	Влизане в предаване на живо
+# context: The question in that dialog, above its Join and Cancel buttons
+Join this live stream?	Да се влезе ли в това предаване на живо?
+# context: The button in those two dialogs that joins the voice chat or live stream
+Join	Присъединяване
 # context: the label before the time of a message someone else deleted that this phone kept
 deleted	изтрито
 Add Copy photo to the message menu	Добавяне на „Копиране на снимката“ в менюто на съобщението
@@ -1837,6 +1865,10 @@ Dates on your profile songs	Дати на песните в профила ви
 Songs you add to your profile from now on show the day you added them, after the artist. The days are kept on this phone only.	Песните, които добавяте към профила си отсега нататък, показват деня на добавяне след изпълнителя. Датите се пазят само на този телефон.
 # context: Lowercase noun phrase naming Dates on your profile songs (#71) in the patch status list
 dates on your profile songs	дати на песните в профила
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Ask before sending a sticker that asks before a typed message goes out (#79)
+asking before a typed message goes out	потвърждението преди изпращане на написано съобщение
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Ask before sending a sticker that asks before you join a voice chat or live stream (#79)
+asking before you join a voice chat	потвърждението преди влизане в гласов чат
 # context: Item at the end of the menu under a chat's preview (press and hold a chat, #71) that opens the previewed chat fully
 Open chat	Отвори чата
 # context: Item at the end of the menu under a chat's preview (press and hold a chat, #71) that closes the preview

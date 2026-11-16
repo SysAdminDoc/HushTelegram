@@ -49,6 +49,7 @@ import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
 import app.hushtelegram.extension.shared.settings.PauseForTests;
+import app.hushtelegram.extension.shared.settings.Setting;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 
 /**
@@ -179,7 +180,10 @@ public class PatchFamilyTest {
         Settings.BOT_TOKEN_SIGN_IN.resetToDefault();
         Settings.ASK_BEFORE_GIF.resetToDefault();
         Settings.ASK_BEFORE_VOICE_VIDEO.resetToDefault();
+        Settings.ASK_BEFORE_ROUND_VIDEO.resetToDefault();
+        Settings.ASK_BEFORE_MESSAGE.resetToDefault();
         Settings.ASK_BEFORE_CALL.resetToDefault();
+        Settings.ASK_BEFORE_JOIN.resetToDefault();
         Settings.MESSAGE_MENU_COPY_PHOTO.resetToDefault();
         Settings.MESSAGE_MENU_DETAILS.resetToDefault();
         Settings.MESSAGE_MENU_QUICK_FORWARD.resetToDefault();
@@ -400,16 +404,51 @@ public class PatchFamilyTest {
     }
 
     @Test
-    public void askBeforeSendingHasFourOwnOffByDefaultSwitchesThatApplyAtOnce() {
+    public void askBeforeSendingHasSevenOwnOffByDefaultSwitchesThatApplyAtOnce() {
         PatchFamily family = PatchFamily.ASK_BEFORE_STICKER;
         assertEquals("Ask before sending a sticker", family.patchName);
-        assertEquals(Arrays.asList(Settings.ASK_BEFORE_STICKER, Settings.ASK_BEFORE_GIF, Settings.ASK_BEFORE_VOICE_VIDEO, Settings.ASK_BEFORE_CALL), family.switches);
+        assertEquals(Arrays.asList(Settings.ASK_BEFORE_STICKER, Settings.ASK_BEFORE_GIF, Settings.ASK_BEFORE_VOICE_VIDEO,
+                Settings.ASK_BEFORE_ROUND_VIDEO, Settings.ASK_BEFORE_MESSAGE, Settings.ASK_BEFORE_CALL, Settings.ASK_BEFORE_JOIN), family.switches);
         for (BooleanSetting setting : family.switches) {
             assertFalse(setting.key, setting.defaultValue);
             assertFalse(setting.key, setting.rebootApp);
         }
-        assertTrue(family.expectedCapabilities().isEmpty());
+        // The typed message's and the join's questions each back only their own row.
+        assertEquals(EnumSet.of(PatchFamily.Capability.ASK_TEXT, PatchFamily.Capability.ASK_JOIN), family.expectedCapabilities());
+        assertEquals("askBeforeText", PatchFamily.Capability.ASK_TEXT.statusMethod);
+        assertEquals("askBeforeJoin", PatchFamily.Capability.ASK_JOIN.statusMethod);
+        assertTrue(PatchFamily.Capability.ASK_TEXT.rowOnly);
+        assertTrue(PatchFamily.Capability.ASK_JOIN.rowOnly);
         assertOnItsPage(family);
+    }
+
+    @Test
+    public void aVoiceMessageQuestionTurnedOnBeforeTheSplitAsksAboutRoundVideosTooOnce() {
+        try {
+            Setting.preferences.removeKey(Settings.ROUND_VIDEO_CARRIED);
+            Settings.ASK_BEFORE_VOICE_VIDEO.save(true);
+            Settings.carryRoundVideo();
+            assertTrue("the one switch used to ask about both", Settings.ASK_BEFORE_ROUND_VIDEO.get());
+            assertTrue(Setting.preferences.getBoolean(Settings.ROUND_VIDEO_CARRIED, false));
+            // Turned off afterwards, it stays off: the carry runs once.
+            Settings.ASK_BEFORE_ROUND_VIDEO.save(false);
+            Settings.carryRoundVideo();
+            assertFalse(Settings.ASK_BEFORE_ROUND_VIDEO.get());
+
+            // With the voice question off nothing turns on, and the carry is done all the same.
+            Setting.preferences.removeKey(Settings.ROUND_VIDEO_CARRIED);
+            Settings.ASK_BEFORE_VOICE_VIDEO.save(false);
+            Settings.carryRoundVideo();
+            assertFalse(Settings.ASK_BEFORE_ROUND_VIDEO.get());
+            assertTrue(Setting.preferences.getBoolean(Settings.ROUND_VIDEO_CARRIED, false));
+            Settings.ASK_BEFORE_VOICE_VIDEO.save(true);
+            Settings.carryRoundVideo();
+            assertFalse("turned on later, the voice question stays its own", Settings.ASK_BEFORE_ROUND_VIDEO.get());
+        } finally {
+            Setting.preferences.removeKey(Settings.ROUND_VIDEO_CARRIED);
+            Settings.ASK_BEFORE_VOICE_VIDEO.resetToDefault();
+            Settings.ASK_BEFORE_ROUND_VIDEO.resetToDefault();
+        }
     }
 
     @Test

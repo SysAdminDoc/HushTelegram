@@ -15,9 +15,12 @@ package app.hushtelegram.extension.telegram.settings;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
+import app.hushtelegram.extension.shared.Logger;
+import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.settings.BaseSettings;
 import app.hushtelegram.extension.shared.settings.BooleanSetting;
 import app.hushtelegram.extension.shared.settings.IntegerSetting;
+import app.hushtelegram.extension.shared.settings.Setting;
 import app.hushtelegram.extension.shared.settings.StringSetting;
 
 /**
@@ -855,13 +858,53 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting ASK_BEFORE_GIF =
             new BooleanSetting("hushtelegram_ask_before_gif", FALSE);
 
-    /** A voice or video message you recorded asks Send or Cancel before it goes into the chat. */
+    /**
+     * A voice message you recorded asks Send or Cancel before it goes into the chat. Its key is
+     * older than {@link #ASK_BEFORE_ROUND_VIDEO}, from when this one switch asked about both.
+     */
     public static final BooleanSetting ASK_BEFORE_VOICE_VIDEO =
             new BooleanSetting("hushtelegram_ask_before_voice_video", FALSE);
 
     /** The call button in a chat's header or on a profile asks Call or Cancel before it starts a call. */
     public static final BooleanSetting ASK_BEFORE_CALL =
             new BooleanSetting("hushtelegram_ask_before_call", FALSE);
+
+    /**
+     * A round video message you recorded asks Send or Cancel before it goes into the chat. The
+     * voice message switch used to ask about these too, so a phone that had it on gets this one on
+     * once, the first time this build starts.
+     */
+    public static final BooleanSetting ASK_BEFORE_ROUND_VIDEO =
+            new BooleanSetting("hushtelegram_ask_before_round_video", FALSE);
+
+    /** A message you typed asks Send or Cancel before the send button or the keyboard's send key sends it. */
+    public static final BooleanSetting ASK_BEFORE_MESSAGE =
+            new BooleanSetting("hushtelegram_ask_before_message", FALSE);
+
+    /** Joining a voice chat or a live stream asks Join or Cancel first. */
+    public static final BooleanSetting ASK_BEFORE_JOIN =
+            new BooleanSetting("hushtelegram_ask_before_join_call", FALSE);
+
+    /** Stored once {@link #ASK_BEFORE_ROUND_VIDEO} has taken the voice message switch's value. */
+    static final String ROUND_VIDEO_CARRIED = "hushtelegram_round_video_carried";
+
+    static {
+        carryRoundVideo();
+    }
+
+    /**
+     * Turns {@link #ASK_BEFORE_ROUND_VIDEO} on when {@link #ASK_BEFORE_VOICE_VIDEO} is on, once per
+     * install, so splitting the switch in two doesn't stop a question someone turned on.
+     */
+    static void carryRoundVideo() {
+        try {
+            if (!Utils.isMainProcess() || Setting.preferences.getBoolean(ROUND_VIDEO_CARRIED, false)) return;
+            if (ASK_BEFORE_VOICE_VIDEO.savedValue() && !ASK_BEFORE_ROUND_VIDEO.save(true)) return;
+            Setting.preferences.saveBoolean(ROUND_VIDEO_CARRIED, true);
+        } catch (Throwable failure) {
+            Logger.printException(() -> "Could not carry the voice message question over to round videos", failure);
+        }
+    }
 
     /** A photo's long-press menu gets Copy photo, which puts the downloaded picture on the clipboard. */
     public static final BooleanSetting MESSAGE_MENU_COPY_PHOTO =

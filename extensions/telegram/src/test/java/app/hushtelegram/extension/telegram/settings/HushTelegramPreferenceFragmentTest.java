@@ -1103,12 +1103,30 @@ public class HushTelegramPreferenceFragmentTest {
                     String.valueOf(page.findPreference(Settings.ASK_BEFORE_GIF.key).getSummary()));
             assertFalse(Settings.ASK_BEFORE_GIF.key,
                     ((SwitchPreference) page.findPreference(Settings.ASK_BEFORE_GIF.key)).isChecked());
-            assertEquals("Ask before sending a voice or video message", String.valueOf(page.findPreference(Settings.ASK_BEFORE_VOICE_VIDEO.key).getTitle()));
-            assertEquals("Asks Send or Cancel before a voice or video message you recorded goes out. The recording"
+            assertEquals("Ask before sending a voice message", String.valueOf(page.findPreference(Settings.ASK_BEFORE_VOICE_VIDEO.key).getTitle()));
+            assertEquals("Asks Send or Cancel before a voice message you recorded goes out. The recording"
                     + " pauses first, and Cancel leaves it paused, ready to play, delete or send.",
                     String.valueOf(page.findPreference(Settings.ASK_BEFORE_VOICE_VIDEO.key).getSummary()));
             assertFalse(Settings.ASK_BEFORE_VOICE_VIDEO.key,
                     ((SwitchPreference) page.findPreference(Settings.ASK_BEFORE_VOICE_VIDEO.key)).isChecked());
+            assertEquals("Ask before sending a round video message", String.valueOf(page.findPreference(Settings.ASK_BEFORE_ROUND_VIDEO.key).getTitle()));
+            assertEquals("Asks Send or Cancel before a round video message you recorded goes out. The recording"
+                    + " pauses first, and Cancel leaves it paused, ready to play, delete or send.",
+                    String.valueOf(page.findPreference(Settings.ASK_BEFORE_ROUND_VIDEO.key).getSummary()));
+            assertFalse(Settings.ASK_BEFORE_ROUND_VIDEO.key,
+                    ((SwitchPreference) page.findPreference(Settings.ASK_BEFORE_ROUND_VIDEO.key)).isChecked());
+            assertEquals("Ask before sending a message", String.valueOf(page.findPreference(Settings.ASK_BEFORE_MESSAGE.key).getTitle()));
+            assertEquals("Asks Send or Cancel before the send button or the keyboard's send key sends what you typed. "
+                    + "Cancel leaves the text as it was. Scheduled and silent messages, edits and forwards go out without asking.",
+                    String.valueOf(page.findPreference(Settings.ASK_BEFORE_MESSAGE.key).getSummary()));
+            assertFalse(Settings.ASK_BEFORE_MESSAGE.key,
+                    ((SwitchPreference) page.findPreference(Settings.ASK_BEFORE_MESSAGE.key)).isChecked());
+            assertEquals("Ask before joining a voice chat", String.valueOf(page.findPreference(Settings.ASK_BEFORE_JOIN.key).getTitle()));
+            assertEquals("Asks Join or Cancel before you join a group's voice chat or a channel's live stream. Starting a "
+                    + "new one doesn't ask.",
+                    String.valueOf(page.findPreference(Settings.ASK_BEFORE_JOIN.key).getSummary()));
+            assertFalse(Settings.ASK_BEFORE_JOIN.key,
+                    ((SwitchPreference) page.findPreference(Settings.ASK_BEFORE_JOIN.key)).isChecked());
             assertEquals("Ask before starting a call", String.valueOf(page.findPreference(Settings.ASK_BEFORE_CALL.key).getTitle()));
             assertEquals("Asks Call or Cancel before the call button in a chat or on a profile starts a call.",
                     String.valueOf(page.findPreference(Settings.ASK_BEFORE_CALL.key).getSummary()));
@@ -3114,6 +3132,25 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals(null, page.findPreference(Settings.REPAIR_FIREBASE_PUSH.key));
             assertEquals(null, page.findPreference(Settings.KEEP_ALIVE_RUNNING.key));
             assertFalse(sections(page).contains("Notifications"));
+        }
+    }
+
+    @Test
+    public void theTypedMessageAndJoinQuestionsShowOnlyWhenTheirHooksWerePatchedIn() {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.ASK_BEFORE_STICKER);
+        PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            assertNotNull(page.findPreference(Settings.ASK_BEFORE_STICKER.key));
+            assertNotNull(page.findPreference(Settings.ASK_BEFORE_ROUND_VIDEO.key));
+            assertEquals(null, page.findPreference(Settings.ASK_BEFORE_MESSAGE.key));
+            assertEquals(null, page.findPreference(Settings.ASK_BEFORE_JOIN.key));
+        }
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.ASK_TEXT, PatchFamily.Capability.ASK_JOIN);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            assertNotNull(page.findPreference(Settings.ASK_BEFORE_MESSAGE.key));
+            assertNotNull(page.findPreference(Settings.ASK_BEFORE_JOIN.key));
         }
     }
 
