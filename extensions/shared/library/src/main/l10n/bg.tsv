@@ -1958,3 +1958,9 @@ System version	Версия на системата
 Couldn't save the device. Try again in a moment.	Устройството не се запази. Опитайте отново след малко.
 # context: Lowercase noun phrase naming the Device in Active sessions row (#79) in the patch status list
 the device in Active sessions	устройството в активните сесии
+# context: Item in a message's long-press menu (#79) while Ghost mode keeps the chat's read receipts back. It tells the sender this message, and the ones before it, were read
+Send read receipt	Изпращане на потвърждение за прочитане
+# context: Shown once the read receipt for that message has gone out
+Read receipt sent.	Потвърждението е изпратено.
+# context: Shown when the read receipt for that message couldn't go out
+Couldn't send the read receipt. Try again.	Потвърждението за прочитане не се изпрати. Опитайте отново.

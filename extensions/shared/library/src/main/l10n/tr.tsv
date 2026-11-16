@@ -1962,3 +1962,9 @@ System version	Sistem sürümü
 Couldn't save the device. Try again in a moment.	Cihaz kaydedilemedi. Birazdan tekrar deneyin.
 # context: Lowercase noun phrase naming the Device in Active sessions row (#79) in the patch status list
 the device in Active sessions	aktif oturumlardaki cihaz
+# context: Item in a message's long-press menu (#79) while Ghost mode keeps the chat's read receipts back. It tells the sender this message, and the ones before it, were read
+Send read receipt	Okundu bilgisi gönder
+# context: Shown once the read receipt for that message has gone out
+Read receipt sent.	Okundu bilgisi gönderildi.
+# context: Shown when the read receipt for that message couldn't go out
+Couldn't send the read receipt. Try again.	Okundu bilgisi gönderilemedi. Tekrar deneyin.

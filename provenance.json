@@ -255,6 +255,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FolderReads.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ReadsMenu.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/SessionDevice.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ReadReceipt.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/SessionDeviceEditor.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/TestServers.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/BotSignIn.java",

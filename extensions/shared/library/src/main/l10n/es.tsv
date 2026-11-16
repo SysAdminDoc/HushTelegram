@@ -1962,3 +1962,9 @@ System version	Versión del sistema
 Couldn't save the device. Try again in a moment.	No se pudo guardar el dispositivo. Inténtalo de nuevo en un momento.
 # context: Lowercase noun phrase naming the Device in Active sessions row (#79) in the patch status list
 the device in Active sessions	el dispositivo en Sesiones activas
+# context: Item in a message's long-press menu (#79) while Ghost mode keeps the chat's read receipts back. It tells the sender this message, and the ones before it, were read
+Send read receipt	Enviar confirmación de lectura
+# context: Shown once the read receipt for that message has gone out
+Read receipt sent.	Confirmación de lectura enviada.
+# context: Shown when the read receipt for that message couldn't go out
+Couldn't send the read receipt. Try again.	No se pudo enviar la confirmación de lectura. Inténtalo de nuevo.
