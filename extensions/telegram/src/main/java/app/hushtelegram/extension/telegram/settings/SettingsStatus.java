@@ -138,6 +138,7 @@ public final class SettingsStatus {
     public static boolean sharedMediaSelectAll() { return false; }
     public static boolean hideForMe() { return false; }
     public static boolean alsoDeleteChecked() { return false; }
+    public static boolean bookmarks() { return false; }
     public static boolean silenceNonContacts() { return false; }
     public static boolean disableArchivePull() { return false; }
     public static boolean rearCameraFirst() { return false; }

@@ -2194,3 +2194,51 @@ Banner removed.	Afiş kaldırıldı.
 Banner picture saved.	Afiş resmi kaydedildi.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of New Year look all year that paints the chat list's top bar with colors or a picture.
 the chat list banner	sohbet listesi afişi
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names Bookmark in the message menu and the Bookmarks page
+bookmarking messages	mesajlara yer imi ekleme
+# context: Item in a message's long-press menu. It saves a bookmark of that message on this phone only, to open again later from the Bookmarks page
+Bookmark	Yer imi
+# context: Item in a message's long-press menu when that message already has a bookmark. It removes the bookmark from this phone
+Remove bookmark	Yer imini kaldır
+# context: Toast after Bookmark in the message menu saves the message. Must fit two short toast lines
+Bookmarked.	Yer imi eklendi.
+# context: Toast after Remove bookmark in the message menu, or Remove on the Bookmarks page. Must fit two short toast lines
+Bookmark removed.	Yer imi kaldırıldı.
+# context: Toast when a bookmark couldn't be saved or removed on this phone. Must fit two short toast lines
+Couldn't save the bookmark. Try again.	Yer imi kaydedilemedi. Tekrar deneyin.
+# context: Toast when Bookmark is tapped while the Bookmarks page is full. %1$d is the most it keeps (100). Must fit two short toast lines
+You can keep up to %1$d bookmarks.	En fazla %1$d yer imi tutabilirsiniz.
+# context: Sender name on the Bookmarks page for a message you sent yourself, as in "You: see you at 5"
+You	Sen
+# context: Preview on the Bookmarks page for a bookmarked photo with no caption
+Photo	Fotoğraf
+# context: Preview on the Bookmarks page for a bookmarked video with no caption
+Video	Video
+# context: Preview on the Bookmarks page for a bookmarked message with no text, picture or file name (a sticker, poll or location)
+Message	Mesaj
+# context: A bookmark's preview on the Bookmarks page. %1$s is who sent the message, %2$s is the start of its text
+%1$s: %2$s	%1$s: %2$s
+# context: Toast when a bookmark on the Bookmarks page belongs to a Telegram account that's no longer signed in on this phone. Must fit two short toast lines
+That account isn't signed in here.	Bu hesapla burada oturum açılmamış.
+# context: Toast when a bookmark on the Bookmarks page is in a chat this phone no longer has. Must fit two short toast lines
+That chat isn't on this phone anymore.	Bu sohbet artık bu telefonda yok.
+# context: Toast when a bookmark on the Bookmarks page is in a group or channel you've left. Must fit two short toast lines
+You're not in that chat anymore.	Artık bu sohbette değilsiniz.
+# context: Toast when a bookmarked message is no longer stored on this phone. The chat still opens. Must fit two short toast lines
+That message isn't on this phone anymore.	Bu mesaj artık bu telefonda yok.
+# context: Title of the Bookmarks page, its row on the Conversations page and in the side menu, and the line for them in a settings import preview
+Bookmarks	Yer imleri
+# context: What the Bookmarks page shows while it's empty. Bookmark is the message menu item (use its translation)
+No bookmarks yet. Long-press a message and tap Bookmark.	Henüz yer imi yok. Bir mesajı basılı tutun ve Yer imi seçeneğine dokunun.
+# context: Button on each row of the Bookmarks page that removes that bookmark
+Remove	Kaldır
+# context: Title of the switch on the Conversations page that adds Bookmark to a message's long-press menu. Bookmark is the menu item (use its translation)
+Add Bookmark to the message menu	Mesaj menüsüne Yer imi ekle
+# context: Summary of the Add Bookmark to the message menu switch. Bookmark is the menu item and Bookmarks the page (use their translations)
+Adds Bookmark to any message, post, photo, video or file. Bookmarks stay on this phone only. Tap one on the Bookmarks page to open its chat at that message.	Her mesaja, gönderiye, fotoğrafa, videoya ve dosyaya Yer imi ekler. Yer imleri yalnızca bu telefonda kalır. Sohbeti o mesajda açmak için Yer imleri sayfasında birine dokunun.
+# context: Summary of the Bookmarks row on the Conversations page, which opens the Bookmarks page
+Every message you bookmarked, newest first. Tap one to open it, or long-press it to remove it.	Yer imine eklediğiniz her mesaj, en yenisi önce. Açmak için dokunun, kaldırmak için basılı tutun.
+# context: Count of bookmarks in the settings import preview, singular form. %1$d is the number
+%1$d bookmark	%1$d yer imi
+# context: Count of bookmarks in the settings import preview, plural form. %1$d is the number
+%1$d bookmarks	%1$d yer imi

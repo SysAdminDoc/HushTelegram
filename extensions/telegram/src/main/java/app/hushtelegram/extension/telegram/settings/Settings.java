@@ -1021,6 +1021,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting MESSAGE_MENU_DELETE_FOR_THEM =
             new BooleanSetting("hushtelegram_message_menu_delete_for_them", FALSE);
 
+    /** Bookmark in the message menu (#79): a message saved to a list on this phone, opened again from the Bookmarks page ({@link app.hushtelegram.extension.telegram.misc.Bookmarks}). */
+    public static final BooleanSetting MESSAGE_MENU_BOOKMARKS =
+            new BooleanSetting("hushtelegram_message_menu_bookmarks", FALSE);
+
+    /** The bookmarks themselves, one per line, newest first, as {@link app.hushtelegram.extension.telegram.misc.Bookmarks} writes them. */
+    public static final StringSetting BOOKMARKS =
+            new StringSetting("hushtelegram_bookmarks", "");
+
     /** Also delete for, checked from the start in Telegram's delete messages dialog (#83) ({@link app.hushtelegram.extension.telegram.misc.MessageMenu#alsoDeleteChecked}). */
     public static final BooleanSetting ALSO_DELETE_CHECKED =
             new BooleanSetting("hushtelegram_also_delete_checked", FALSE);

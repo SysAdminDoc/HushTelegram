@@ -151,6 +151,7 @@ public class SettingsBackupTest {
         for (StringSetting list : SettingsBackup.FILTER_LISTS) list.resetToDefault();
         for (IntegerSetting number : SettingsBackup.NUMBERS) number.resetToDefault();
         for (StringSetting text : SettingsBackup.TEXTS) text.resetToDefault();
+        Settings.BOOKMARKS.resetToDefault();
         PatchFamily.inBuildForTests = java.util.EnumSet.allOf(PatchFamily.class);
         ShadowToast.reset();
         ShadowAlertDialog.reset();
@@ -172,6 +173,7 @@ public class SettingsBackupTest {
         for (StringSetting text : SettingsBackup.TEXTS) text.resetToDefault();
         // The release check stays out of every file, so the list above doesn't reach it.
         Settings.CHECK_FOR_RELEASES.resetToDefault();
+        Settings.BOOKMARKS.resetToDefault();
         BaseSettings.PAUSED.resetToDefault();
         BaseSettings.DEBUG.resetToDefault();
         BaseSettings.DEBUG_LOG_FILTERS.resetToDefault();
@@ -212,7 +214,9 @@ public class SettingsBackupTest {
                     // The recordings folder is a permission this phone holds, which another phone can't use.
                     && setting != Settings.RECORD_CALLS_FOLDER
                     // The device in Active sessions names this phone, so another phone doesn't take it.
-                    && setting != Settings.SESSION_DEVICE_NAME && setting != Settings.SESSION_SYSTEM_VERSION)
+                    && setting != Settings.SESSION_DEVICE_NAME && setting != Settings.SESSION_SYSTEM_VERSION
+                    // Bookmarks travel as a list of their own, added to the phone's rather than in place of them.
+                    && setting != Settings.BOOKMARKS)
                 notSwitches.add(setting.key);
         }
         assertEquals("a setting in Settings isn't a switch, and a settings file has no format for it",
@@ -236,7 +240,7 @@ public class SettingsBackupTest {
                         SettingsRoutes.SETTINGS_ROW, SettingsRoutes.TITLE_PRESS, SettingsRoutes.SIDE_MENU_ROW, SettingsRoutes.SHORTCUT, Settings.FASTER_DOWNLOADS, Settings.DATA_SAVER_DOWNLOADS, Settings.FASTER_UPLOADS, Settings.DOWNLOAD_MANAGER, Settings.BEST_QUALITY_MEDIA, Settings.SAVE_DOWNLOADS,
                         Settings.SAVE_RESTRICTED_DOWNLOADS, Settings.SAVE_TIMED_MEDIA, Settings.SAVE_SECRET_CHATS, Settings.STORAGE_FOLDER, Settings.FILE_ICONS, Settings.ASK_BEFORE_GIF, Settings.ASK_BEFORE_VOICE_VIDEO, Settings.ASK_BEFORE_ROUND_VIDEO, Settings.ASK_BEFORE_MESSAGE, Settings.ASK_BEFORE_CALL, Settings.ASK_BEFORE_JOIN, Settings.MESSAGE_MENU_COPY_PHOTO, Settings.MESSAGE_MENU_DETAILS,
                         Settings.MESSAGE_MENU_QUICK_FORWARD, Settings.MESSAGE_MENU_COPY_PROTECTED, Settings.MESSAGE_MENU_SAVE_PROTECTED, Settings.MESSAGE_MENU_FORWARD_COPY, Settings.STORY_SAVE_BUTTON, Settings.ALLOW_SCREENSHOTS, Settings.SECRET_CHAT_SCREENSHOTS, Settings.MESSAGE_MENU_FAST_FORWARD, Settings.MESSAGE_MENU_FORWARD_SAVED, Settings.MESSAGE_MENU_SAVE_COVER,
-                        Settings.MESSAGE_MENU_SAVE_ART, Settings.MESSAGE_MENU_CLEAR_CACHE, Settings.MESSAGE_MENU_HIDE, Settings.MESSAGE_MENU_PLAIN_FORWARD, Settings.MESSAGE_MENU_DELETE_FOR_THEM, Settings.ALSO_DELETE_CHECKED, Settings.DISABLE_ANALYTICS, Settings.GHOST_MODE, Settings.GHOST_READS, Settings.GHOST_STORIES, Settings.GHOST_TYPING, Settings.GHOST_ONLINE, Settings.GHOST_BUTTON, Settings.GHOST_READ_AFTER_SEND, Settings.GHOST_READS_BUTTON, Settings.GHOST_CHATS, Settings.FAKE_TYPING,
+                        Settings.MESSAGE_MENU_SAVE_ART, Settings.MESSAGE_MENU_CLEAR_CACHE, Settings.MESSAGE_MENU_HIDE, Settings.MESSAGE_MENU_PLAIN_FORWARD, Settings.MESSAGE_MENU_DELETE_FOR_THEM, Settings.MESSAGE_MENU_BOOKMARKS, Settings.ALSO_DELETE_CHECKED, Settings.DISABLE_ANALYTICS, Settings.GHOST_MODE, Settings.GHOST_READS, Settings.GHOST_STORIES, Settings.GHOST_TYPING, Settings.GHOST_ONLINE, Settings.GHOST_BUTTON, Settings.GHOST_READ_AFTER_SEND, Settings.GHOST_READS_BUTTON, Settings.GHOST_CHATS, Settings.FAKE_TYPING,
                         Settings.RECEIVE_ONLY, Settings.POWER_OFF_ACCOUNTS, Settings.INSTANT_LOCK, Settings.QUIET_SIGN_UP, Settings.DISABLE_CALL_DEBUG, Settings.RECORD_CALLS, Settings.RECORD_CALL_BUTTON, Settings.RECORD_CALLS_NOTIFY, Settings.RECORD_CALLS_OPUS, Settings.DISABLE_DRAFT_PREVIEWS, Settings.LOCAL_DRAFTS, Settings.LOCAL_SEARCH, Settings.LINK_PREVIEW_RULES,
                         Settings.GALLERY_CAMERA_ON_TAP, Settings.OPEN_EXTERNAL_LINKS, Settings.MINI_APP_LOCATION_OFF, Settings.STRIP_LINK_TRACKING, Settings.SKIP_AUTOLOGIN, Settings.STRIP_LINK_COPY_PASTE, Settings.DISABLE_UPDATE_CHECKS, Settings.REPAIR_FIREBASE_PUSH, Settings.KEEP_ALIVE_RUNNING,
                         Settings.SUPPRESS_SCREENSHOT_NOTIFICATION, Settings.UNLOCK_PREMIUM, Settings.BYPASS_CHANNEL_RESTRICTIONS,
@@ -649,6 +653,68 @@ public class SettingsBackupTest {
                 new org.json.JSONArray(Arrays.asList("/(unclosed/", "/(a+)+/", "/(?:(?=x)){16777215}(?!x)/")));
         assertEquals("/(unclosed/\n/(a+)+/\n/(?:(?=x)){16777215}(?!x)/",
                 SettingsBackup.parse(file.toString()).lists.get(Settings.MESSAGE_FILTERS_GROUPS));
+    }
+
+    /**
+     * Bookmarks (#79) go out as an array of their lines and come back added to the phone's own:
+     * each message once, the phone's copy kept, newest first. A file without them leaves them alone,
+     * and a phone with none writes no list.
+     */
+    @Test
+    public void theBookmarksRoundTripAndJoinThePhonesOwn() throws Exception {
+        assertFalse("no bookmarks, no list", new JSONObject(SettingsBackup.create()).getJSONObject("settings")
+                .has(Settings.BOOKMARKS.key));
+        String older = "5\t-100\t7\t3\t1700000000\t1000\tAnna\tFriends\thello";
+        String newer = "5\t200\t9\t0\t1700000100\t3000\t\tBob\ta photo";
+        Settings.BOOKMARKS.save(newer + "\n" + older);
+        String file = SettingsBackup.create();
+        org.json.JSONArray marks = new JSONObject(file).getJSONObject("settings").getJSONArray(Settings.BOOKMARKS.key);
+        assertEquals(2, marks.length());
+        assertEquals(Arrays.asList(newer, older), Arrays.asList(marks.getString(0), marks.getString(1)));
+
+        // Since the file: one bookmark gone, one made, and one of the file's read again with a new preview.
+        String since = "6\t300\t4\t0\t1700000200\t2000\tCara\tWork\tlater";
+        String reread = "5\t200\t9\t0\t1700000100\t500\t\tBob\tedited";
+        Settings.BOOKMARKS.save(since + "\n" + reread);
+        SettingsBackup.Snapshot snapshot = SettingsBackup.parse(file);
+        assertEquals(0, snapshot.unknown);
+        SettingsBackup.Snapshot kept = SettingsBackup.Snapshot.fromBundle(snapshot.toBundle());
+        assertEquals(snapshot.bookmarks, kept.bookmarks);
+        assertEquals(1, SettingsBackup.apply(kept));
+        assertEquals(since + "\n" + older + "\n" + reread, Settings.BOOKMARKS.savedValue());
+        assertEquals("the same file again changes nothing", 0, SettingsBackup.apply(SettingsBackup.parse(file)));
+
+        SettingsBackup.Snapshot without = SettingsBackup.parse(fileWith(Settings.HIDE_ADS, false));
+        assertNull(without.bookmarks);
+        SettingsBackup.apply(without);
+        assertEquals("a file without bookmarks left them alone", since + "\n" + older + "\n" + reread,
+                Settings.BOOKMARKS.savedValue());
+    }
+
+    @Test
+    public void aBookmarkListThatIsNotOneIsRefused() throws Exception {
+        String good = "5\t-100\t7\t3\t1700000000\t1000\tAnna\tFriends\thello";
+        List<String> tooMany = new ArrayList<>();
+        for (int i = 1; i <= app.hushtelegram.extension.telegram.misc.Bookmarks.MAX + 1; i++) {
+            tooMany.add("5\t-100\t" + i + "\t0\t1700000000\t" + i + "\t\tFriends\thello");
+        }
+        for (Object bad : new Object[]{good, true, 1, JSONObject.NULL, new JSONObject(),
+                new org.json.JSONArray(Arrays.asList(good, 1)),
+                new org.json.JSONArray(Collections.singletonList("not a bookmark")),
+                new org.json.JSONArray(Collections.singletonList("5\t0\t7\t0\t1\t1\t\tA\tb")),
+                new org.json.JSONArray(Collections.singletonList(good + "\n" + good)),
+                new org.json.JSONArray(Collections.singletonList(good.replace("hello", "hel\rlo"))),
+                new org.json.JSONArray(tooMany)}) {
+            JSONObject file = new JSONObject(SettingsBackup.create());
+            file.getJSONObject("settings").put(Settings.BOOKMARKS.key, bad);
+            assertEquals(printable(String.valueOf(bad)), SettingsBackup.Reason.VALUE, reasonFor(file.toString()));
+        }
+        // Exactly as many as the list keeps come in.
+        JSONObject full = new JSONObject(SettingsBackup.create());
+        full.getJSONObject("settings").put(Settings.BOOKMARKS.key, new org.json.JSONArray(tooMany.subList(0, tooMany.size() - 1)));
+        SettingsBackup.apply(SettingsBackup.parse(full.toString()));
+        assertEquals(app.hushtelegram.extension.telegram.misc.Bookmarks.MAX,
+                app.hushtelegram.extension.telegram.misc.Bookmarks.count(Settings.BOOKMARKS.savedValue()));
     }
 
     /**

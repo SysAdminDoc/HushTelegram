@@ -45,6 +45,7 @@ import app.hushtelegram.extension.shared.settings.Setting;
 import app.hushtelegram.extension.shared.settings.SettingsJson;
 import app.hushtelegram.extension.shared.settings.StringSetting;
 import app.hushtelegram.extension.telegram.misc.ChatListAvatar;
+import app.hushtelegram.extension.telegram.misc.Bookmarks;
 import app.hushtelegram.extension.telegram.misc.ChatListBanner;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.FolderIcons;
@@ -256,6 +257,7 @@ public final class SettingsBackup {
             Settings.MESSAGE_MENU_HIDE,
             Settings.MESSAGE_MENU_PLAIN_FORWARD,
             Settings.MESSAGE_MENU_DELETE_FOR_THEM,
+            Settings.MESSAGE_MENU_BOOKMARKS,
             Settings.ALSO_DELETE_CHECKED,
             Settings.DISABLE_ANALYTICS,
             Settings.GHOST_MODE,
@@ -399,6 +401,7 @@ public final class SettingsBackup {
         private static final String NUMBER_VALUES = "numbers";
         private static final String TEXT_VALUES = "texts";
         private static final String UNKNOWN = "unknown";
+        private static final String BOOKMARK_VALUES = "bookmarks";
 
         /** In {@link #ALLOWLIST} order, and only the switches the file named. */
         final Map<BooleanSetting, Boolean> values;
@@ -410,14 +413,23 @@ public final class SettingsBackup {
         final Map<StringSetting, String> texts;
         /** Names the file holds that aren't settings this build knows. They're left out. */
         final int unknown;
+        /** The file's bookmarks as the list saves them, or null when it carries none. They join the phone's own. */
+        @Nullable final String bookmarks;
 
         Snapshot(Map<BooleanSetting, Boolean> values, Map<StringSetting, String> lists,
                  Map<IntegerSetting, Integer> numbers, Map<StringSetting, String> texts, int unknown) {
+            this(values, lists, numbers, texts, unknown, null);
+        }
+
+        Snapshot(Map<BooleanSetting, Boolean> values, Map<StringSetting, String> lists,
+                 Map<IntegerSetting, Integer> numbers, Map<StringSetting, String> texts, int unknown,
+                 @Nullable String bookmarks) {
             this.values = Collections.unmodifiableMap(values);
             this.lists = Collections.unmodifiableMap(lists);
             this.numbers = Collections.unmodifiableMap(numbers);
             this.texts = Collections.unmodifiableMap(texts);
             this.unknown = unknown;
+            this.bookmarks = bookmarks;
         }
 
         /**
@@ -445,6 +457,12 @@ public final class SettingsBackup {
                 if (!entry.getValue().equals(entry.getKey().savedValue())) {
                     changes.put(entry.getKey(), entry.getValue());
                 }
+            }
+            if (bookmarks != null) {
+                // Added to the phone's bookmarks, never in place of them.
+                String saved = Settings.BOOKMARKS.savedValue();
+                String merged = Bookmarks.merged(saved, bookmarks);
+                if (!merged.equals(saved)) changes.put(Settings.BOOKMARKS, merged);
             }
             keepAWayIn(changes);
             return changes;
@@ -527,6 +545,7 @@ public final class SettingsBackup {
             state.putBundle(NUMBER_VALUES, sizes);
             state.putBundle(TEXT_VALUES, shortTexts);
             state.putInt(UNKNOWN, unknown);
+            if (bookmarks != null) state.putString(BOOKMARK_VALUES, bookmarks);
             return state;
         }
 
@@ -572,7 +591,9 @@ public final class SettingsBackup {
                     if (value instanceof String && allowed(setting, (String) value)) written.put(setting, (String) value);
                 }
             }
-            return new Snapshot(values, lists, numbers, written, unknown);
+            Object marks = state.get(BOOKMARK_VALUES);
+            String bookmarks = marks instanceof String ? Bookmarks.fromLines(Bookmarks.lines((String) marks)) : null;
+            return new Snapshot(values, lists, numbers, written, unknown, bookmarks);
         }
     }
 
@@ -596,11 +617,20 @@ public final class SettingsBackup {
             List<String> lines = MessageFilters.lines(setting.savedValue());
             if (usable(lines)) switches.put(setting.key, new JSONArray(lines));
         }
-        return new JSONObject()
+        JSONObject root = new JSONObject()
                 .put(FORMAT_NAME, FORMAT)
                 .put(SCHEMA_NAME, SCHEMA)
-                .put(SETTINGS_NAME, switches)
-                .toString(2);
+                .put(SETTINGS_NAME, switches);
+        String file = root.toString(2);
+        List<String> marks = Bookmarks.lines(Settings.BOOKMARKS.savedValue());
+        while (!marks.isEmpty()) {
+            switches.put(Settings.BOOKMARKS.key, new JSONArray(marks));
+            String withMarks = root.toString(2);
+            // The oldest bookmarks stay behind before the file grows past what the import reads.
+            if (withMarks.getBytes(StandardCharsets.UTF_8).length <= MAX_BYTES) return withMarks;
+            marks = marks.subList(0, marks.size() - 1);
+        }
+        return file;
     }
 
     /**
@@ -689,9 +719,14 @@ public final class SettingsBackup {
         Map<StringSetting, String> foundLists = new HashMap<>();
         Map<IntegerSetting, Integer> foundNumbers = new HashMap<>();
         Map<StringSetting, String> foundTexts = new HashMap<>();
+        String bookmarks = null;
         JSONObject values = (JSONObject) settings;
         for (Iterator<String> names = values.keys(); names.hasNext(); ) {
             String name = names.next();
+            if (Settings.BOOKMARKS.key.equals(name)) {
+                bookmarks = bookmarkList(values.opt(name));
+                continue;
+            }
             StringSetting list = knownLists.get(name);
             if (list != null) {
                 foundLists.put(list, filterList(name, values.opt(name)));
@@ -748,7 +783,24 @@ public final class SettingsBackup {
             String value = foundTexts.get(setting);
             if (value != null) orderedTexts.put(setting, value);
         }
-        return new Snapshot(ordered, orderedLists, orderedNumbers, orderedTexts, unknown);
+        return new Snapshot(ordered, orderedLists, orderedNumbers, orderedTexts, unknown, bookmarks);
+    }
+
+    /** A file's bookmarks as the list saves them, from its array of lines; anything else is refused. */
+    private static String bookmarkList(Object value) throws Rejected {
+        if (!(value instanceof JSONArray) || ((JSONArray) value).length() > Bookmarks.MAX) {
+            throw new Rejected(Reason.VALUE, "Not a list of bookmarks");
+        }
+        JSONArray array = (JSONArray) value;
+        List<String> lines = new ArrayList<>();
+        for (int i = 0; i < array.length(); i++) {
+            Object line = array.opt(i);
+            if (!(line instanceof String)) throw new Rejected(Reason.VALUE, "Not a list of bookmarks");
+            lines.add((String) line);
+        }
+        String saved = Bookmarks.fromLines(lines);
+        if (saved == null) throw new Rejected(Reason.VALUE, "Not a list of bookmarks");
+        return saved;
     }
 
     /** Whether a number is one of its setting's choices. */

@@ -196,6 +196,13 @@ val messageMenuPatch = bytecodePatch(
         } else {
             patchLog.warning("Add Repeat to the message menu: ${alsoDelete.missing}. The patch goes on without checking Also delete for by default.")
         }
+        val bookmarks = resolveBookmarks()
+        if (bookmarks.missing == null) {
+            bookmarks.apply(this)
+            enableCapability("bookmarks")
+        } else {
+            patchLog.warning("Add Repeat to the message menu: ${bookmarks.missing}. The patch goes on without Bookmark.")
+        }
         enableStatus("messageMenuRepeat")
     }
 }

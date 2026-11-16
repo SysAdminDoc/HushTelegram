@@ -61,6 +61,7 @@ import app.hushtelegram.extension.shared.settings.preference.QuickSetups;
 import app.hushtelegram.extension.telegram.misc.ChatListAvatar;
 import app.hushtelegram.extension.telegram.misc.KeepRemoved;
 import app.hushtelegram.extension.telegram.misc.LinkPreviewRules;
+import app.hushtelegram.extension.telegram.misc.Bookmarks;
 import app.hushtelegram.extension.telegram.misc.ChatListBanner;
 import app.hushtelegram.extension.telegram.misc.ListBackground;
 import app.hushtelegram.extension.telegram.misc.LocalPins;
@@ -498,6 +499,10 @@ public class SettingsBackupPreference extends Preference {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Link preview rules"),
                         L10n.quantity(before, "%1$d rule", "%1$d rules", before),
                         L10n.quantity(after, "%1$d rule", "%1$d rules", after)));
+            } else if (change.getKey() == Settings.BOOKMARKS) {
+                // How many, not which: they're the person's own messages.
+                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Bookmarks"),
+                        bookmarkCount(Settings.BOOKMARKS.savedValue()), bookmarkCount((String) change.getValue())));
             } else if (change.getKey() instanceof StringSetting) {
                 String title = L10n.t(change.getKey() == Settings.MESSAGE_FILTERS_GROUPS ? "Filters for groups" : "Filters for channels");
                 int count = MessageFilters.lines((String) change.getValue()).size();
@@ -531,6 +536,12 @@ public class SettingsBackupPreference extends Preference {
     private static String keptCount(String saved) {
         int count = KeepRemoved.count(saved);
         return L10n.quantity(count, "%1$d chat", "%1$d chats", count);
+    }
+
+    /** "3 bookmarks" for the bookmarks [saved] holds. */
+    private static String bookmarkCount(String saved) {
+        int count = Bookmarks.count(saved);
+        return L10n.quantity(count, "%1$d bookmark", "%1$d bookmarks", count);
     }
 
     /**

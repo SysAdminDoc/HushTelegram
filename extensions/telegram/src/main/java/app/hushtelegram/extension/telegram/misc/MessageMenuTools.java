@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * The long-press menu items that forward with a choice (Fast forward, Forward to Saved Messages,
  * Forward as plain text), and the ones beside them (Save video cover, Save album art, Clear from
- * cache, Hide for me, Delete for them), each behind its own switch under Add Repeat to the message menu. {@link MessageMenu} hands them
+ * cache, Hide for me, Delete for them, Bookmark), each behind its own switch under Add Repeat to the message menu. {@link MessageMenu} hands them
  * the menu's lists as it finishes and the chosen number as it comes back.
  *
  * <p>The first two go through Telegram's own forward with its two flags: the sender's name hidden
@@ -40,11 +40,13 @@ public final class MessageMenuTools {
     static final int UNSEND = 0x48544d0f;
     /** Send read receipt, which Ghost mode offers rather than a switch of its own ({@link ReadReceipt}). */
     static final int READ = 0x48544d10;
+    /** Bookmark, or Remove bookmark on a message that has one ({@link Bookmarks}). */
+    static final int BOOKMARK = 0x48544d11;
 
     /** Whether the number is one of this class's. */
     static boolean owns(int option) {
         return option == FAST_FORWARD || option == FORWARD_SAVED || option == SAVE_COVER || option == SAVE_ART || option == CLEAR_CACHE || option == HIDE
-                || option == PLAIN || option == UNSEND || option == READ;
+                || option == PLAIN || option == UNSEND || option == READ || option == BOOKMARK;
     }
 
     static BooleanSetting setting(int option) {
@@ -55,6 +57,7 @@ public final class MessageMenuTools {
                 : option == HIDE ? Settings.MESSAGE_MENU_HIDE
                 : option == PLAIN ? Settings.MESSAGE_MENU_PLAIN_FORWARD
                 : option == UNSEND ? Settings.MESSAGE_MENU_DELETE_FOR_THEM
+                : option == BOOKMARK ? Settings.MESSAGE_MENU_BOOKMARKS
                 : option == READ ? Settings.GHOST_READS : Settings.MESSAGE_MENU_FORWARD_SAVED;
     }
 
@@ -64,7 +67,7 @@ public final class MessageMenuTools {
                 || MessageMenu.on(Settings.MESSAGE_MENU_SAVE_COVER) || MessageMenu.on(Settings.MESSAGE_MENU_SAVE_ART)
                 || MessageMenu.on(Settings.MESSAGE_MENU_CLEAR_CACHE) || MessageMenu.on(Settings.MESSAGE_MENU_HIDE)
                 || MessageMenu.on(Settings.MESSAGE_MENU_PLAIN_FORWARD) || MessageMenu.on(Settings.MESSAGE_MENU_DELETE_FOR_THEM)
-                || ReadReceipt.on();
+                || MessageMenu.on(Settings.MESSAGE_MENU_BOOKMARKS) || ReadReceipt.on();
     }
 
     /** One way to forward: a label, and the two flags Telegram's forward takes. */
@@ -100,14 +103,16 @@ public final class MessageMenuTools {
         if (MessageMenu.on(Settings.MESSAGE_MENU_CLEAR_CACHE) && clearable(message)) chosen.add(CLEAR_CACHE);
         if (HiddenMessages.offered(message)) chosen.add(HIDE);
         if (DeleteForThem.offered(message)) chosen.add(UNSEND);
+        if (Bookmarks.offered(message)) chosen.add(BOOKMARK);
         if (ReadReceipt.offered(message)) chosen.add(READ);
         int at = options.indexOf(MessageMenu.DETAILS);
         for (int option : chosen) {
             int position = at < 0 ? options.size() : at++;
             icons.add(position, option == SAVE_COVER || option == SAVE_ART ? saveIcon()
                     : option == CLEAR_CACHE || option == UNSEND ? deleteIcon() : option == HIDE ? HiddenMessages.icon()
+                    : option == BOOKMARK ? Bookmarks.icon(message)
                     : option == READ ? ReadsMenu.icon() : MessageMenu.quickIcon());
-            items.add(position, label(option));
+            items.add(position, option == BOOKMARK ? Bookmarks.label(message) : label(option));
             options.add(position, option);
         }
     }
@@ -208,6 +213,10 @@ public final class MessageMenuTools {
         }
         if (option == READ) {
             ReadReceipt.send(context, message);
+            return;
+        }
+        if (option == BOOKMARK) {
+            Bookmarks.toggle(context, message);
             return;
         }
         if (option == PLAIN) {

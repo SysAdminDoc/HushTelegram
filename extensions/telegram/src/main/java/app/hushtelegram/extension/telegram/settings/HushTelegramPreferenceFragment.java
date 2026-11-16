@@ -1008,6 +1008,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("When you delete messages in a chat with a person, Telegram's Also delete for box starts checked, "
                                 + "so they're deleted for both of you. Uncheck it to delete them just for you.")));
             }
+            if (PatchFamily.Capability.BOOKMARKS.installed()) {
+                on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_BOOKMARKS,
+                        L10n.t("Add Bookmark to the message menu"),
+                        L10n.t("Adds Bookmark to any message, post, photo, video or file. Bookmarks stay on this phone only. "
+                                + "Tap one on the Bookmarks page to open its chat at that message.")));
+                on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(bookmarksRow(context));
+            }
             if (PatchFamily.Capability.SELECT_BETWEEN.installed()) {
                 on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.SELECT_BETWEEN, L10n.t("Select between"),
                         L10n.t("Adds a Select between button to the bar that shows while you pick messages. It selects everything between the first and"
@@ -2338,6 +2345,24 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             if (SettingsLock.refuses()) return true;
             if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
                 own(LinkPreviewRulesEditor.open(activity, p));
+            }
+            return true;
+        });
+        return row;
+    }
+
+    /** The Bookmarks page: every bookmarked message, opened or removed from there. */
+    private Preference bookmarksRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(BookmarksPage.KEY);
+        row.setTitle(L10n.t("Bookmarks"));
+        row.setPersistent(false);
+        row.setSummary(L10n.t("Every message you bookmarked, newest first. Tap one to open it, or long-press it to remove it."));
+        row.setOnPreferenceClickListener(p -> {
+            Activity activity = getActivity();
+            if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
+                AlertDialog page = BookmarksPage.show(activity);
+                if (page != null) own(page);
             }
             return true;
         });
