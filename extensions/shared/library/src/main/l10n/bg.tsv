@@ -2238,3 +2238,9 @@ Every message you bookmarked, newest first. Tap one to open it, or long-press it
 %1$d bookmark	%1$d отметка
 # context: Count of bookmarks in the settings import preview, plural form. %1$d is the number
 %1$d bookmarks	%1$d отметки
+# context: Chat list page switch title, under Hide Contacts tab. When on, the bar at the bottom of the main screen (Chats, Contacts, Calls or Settings, Profile) gets a thin outline in Telegram's blue.
+Outline the bottom bar	Контур на долната лента
+# context: Summary under that switch. Telegram blue is Telegram's own light blue brand color. The black background is AMOLED black or any dark theme.
+Draws a thin Telegram blue line around the bar at the bottom of the main screen, so it stands out on a black background. Restart Telegram to see the change.	Рисува тънка синя линия в цвета на Telegram около лентата в долната част на главния екран, за да се откроява на черен фон. Рестартирайте Telegram, за да видите промяната.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Contacts tab that outlines the bottom bar.
+bottom bar outline	контура на долната лента

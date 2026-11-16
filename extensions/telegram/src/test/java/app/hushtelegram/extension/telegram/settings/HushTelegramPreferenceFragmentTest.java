@@ -1100,6 +1100,12 @@ public class HushTelegramPreferenceFragmentTest {
                     String.valueOf(page.findPreference(Settings.COMPACT_TAB_BAR.key).getSummary()));
             // The bar keeps Telegram's size until the switch is turned on.
             assertFalse(((SwitchPreference) page.findPreference(Settings.COMPACT_TAB_BAR.key)).isChecked());
+            assertEquals("Outline the bottom bar", String.valueOf(page.findPreference(Settings.BAR_OUTLINE.key).getTitle()));
+            assertEquals("Draws a thin Telegram blue line around the bar at the bottom of the main screen, so it stands "
+                            + "out on a black background. Restart Telegram to see the change.",
+                    String.valueOf(page.findPreference(Settings.BAR_OUTLINE.key).getSummary()));
+            // The bar has no outline until the switch is turned on.
+            assertFalse(((SwitchPreference) page.findPreference(Settings.BAR_OUTLINE.key)).isChecked());
             assertEquals("Side menu", String.valueOf(page.findPreference(Settings.SIDE_MENU.key).getTitle()));
             assertEquals("Swipe right on your first chat folder and a menu slides in, like the one older Telegram had. It has "
                             + "your profile, new message, contacts, calls, saved messages and settings, plus a way to switch "

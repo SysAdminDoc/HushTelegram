@@ -799,6 +799,13 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_NEW_MESSAGE =
             new BooleanSetting("hushtelegram_hide_new_message", FALSE, true);
 
+    /**
+     * The bar at the bottom of the main screen gets a thin Telegram blue outline. Its glass reads the
+     * outline when the main screen is built, so a restart shows the change.
+     */
+    public static final BooleanSetting BAR_OUTLINE =
+            new BooleanSetting("hushtelegram_bar_outline", FALSE, true);
+
     /** Downloads take 512 KB pieces, 8 at a time, unless Telegram drops back to small ones itself. */
     public static final BooleanSetting FASTER_DOWNLOADS =
             new BooleanSetting("hushtelegram_faster_downloads", FALSE);

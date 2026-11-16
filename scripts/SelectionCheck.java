@@ -490,6 +490,7 @@ public final class SelectionCheck {
         hook(calls, flags, "compactTabBar", "misc/MainTabs", "barPadding", "barCorner", "barHeight", "barMinWidth");
         hook(calls, flags, "sideMenu", "misc/SideMenu", "swipeStarts", "back");
         hook(calls, flags, "hideNewMessage", "misc/MainTabs", "newMessageButton");
+        hook(calls, flags, "barOutline", "misc/MainTabs", "barGlass", "barOutlineColor", "barOutlineWidth");
         hook(calls, flags, "fasterDownloads", "misc/DownloadSpeed", "fast");
         hook(calls, flags, "dataSaverDownloads", "misc/DataSaverDownloads", "hold", "holdMask");
         hook(calls, flags, "fasterUploads", "misc/UploadSpeed", "requests");
