@@ -2107,3 +2107,11 @@ link preview rules	regras de prévias de links
 %1$d rule	%1$d regra
 # context: Count of rules in the settings import preview line "Link preview rules: 6 rules to 7 rules", when it's more than one
 %1$d rules	%1$d regras
+# context: Playback page switch under Save downloaded files. It gives APK and EXE files their own icon and shows a downloaded PDF's first page or a video's frame as the file's picture
+File icons and thumbnails	Ícones e miniaturas de arquivos
+# context: Line under the File icons and thumbnails switch. APK, EXE and PDF are file types and stay as they are. Shared media is the page of a chat's photos, files and links
+APK and EXE files get their own icon in chats and in Shared media. Once downloaded, a PDF shows its first page and a video a frame from it. Files with a thumbnail from Telegram keep it.	Arquivos APK e EXE ganham um ícone próprio nas conversas e na mídia compartilhada. Depois de baixado, um PDF mostra a primeira página e um vídeo um quadro dele. Arquivos com miniatura do Telegram continuam com ela.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Save downloaded files that draws file icons in chat bubbles
+file icons and thumbnails in chats	ícones e miniaturas de arquivos nas conversas
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Save downloaded files that draws file icons in a chat's Shared media page
+file icons and thumbnails in Shared media	ícones e miniaturas de arquivos na mídia compartilhada

@@ -225,6 +225,7 @@ public final class SettingsBackup {
             Settings.SAVE_TIMED_MEDIA,
             Settings.SAVE_SECRET_CHATS,
             Settings.STORAGE_FOLDER,
+            Settings.FILE_ICONS,
             Settings.ASK_BEFORE_GIF,
             Settings.ASK_BEFORE_VOICE_VIDEO,
             Settings.ASK_BEFORE_ROUND_VIDEO,

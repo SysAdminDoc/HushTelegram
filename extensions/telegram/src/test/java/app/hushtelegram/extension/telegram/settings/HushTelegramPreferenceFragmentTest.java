@@ -1691,6 +1691,41 @@ public class HushTelegramPreferenceFragmentTest {
     }
 
     /**
+     * Save downloaded files brings the File icons and thumbnails switch last on its page when either
+     * of its places went in (#79), and it starts off.
+     */
+    @Test
+    public void theFileIconsSwitchShowsWhenEitherPlaceWentInAndStartsOff() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SAVE_DOWNLOADS);
+        PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            assertNotNull(page.findPreference(Settings.SAVE_DOWNLOADS.key));
+            assertNull("a build without either place has no row", page.findPreference(Settings.FILE_ICONS.key));
+        }
+        for (PatchFamily.Capability place : EnumSet.of(PatchFamily.Capability.FILE_ICONS_CHAT, PatchFamily.Capability.FILE_ICONS_SHARED)) {
+            PatchFamily.capabilitiesForTests = EnumSet.of(place);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                SwitchPreference icons = (SwitchPreference) pageOf(controller).findPreference(Settings.FILE_ICONS.key);
+                assertNotNull(place.name(), icons);
+                assertEquals("Playback", String.valueOf(icons.getParent().getTitle()));
+                assertEquals("File icons and thumbnails", String.valueOf(icons.getTitle()));
+                assertEquals("APK and EXE files get their own icon in chats and in Shared media. Once downloaded, a PDF"
+                        + " shows its first page and a video a frame from it. Files with a thumbnail from Telegram keep it.",
+                        String.valueOf(icons.getSummary()));
+                assertFalse("Telegram's icons stay until someone turns it on", icons.isChecked());
+            }
+        }
+        PatchFamily.capabilitiesForTests = null;
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            List<Preference> rows = new ArrayList<>();
+            collect(pageOf(controller).getPreferenceScreen(), rows);
+            assertEquals("it comes after the folder rows", indexOfKey(rows, StorageFolderEditor.KEY) + 1,
+                    indexOfKey(rows, Settings.FILE_ICONS.key));
+        }
+    }
+
+    /**
      * Translate with an outside service brings a Translate into row under the service (#35). A tap
      * lists Telegram's language and then every language Google's web translate knows, the search
      * finds one by any of its names, and a pick saves it at once and closes the list.

@@ -1199,6 +1199,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(storage);
                 on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(storageFolderNameRow(context));
             }
+            if (PatchFamily.Capability.FILE_ICONS_CHAT.installed() || PatchFamily.Capability.FILE_ICONS_SHARED.installed()) {
+                on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(toggle(context, Settings.FILE_ICONS,
+                        L10n.t("File icons and thumbnails"),
+                        L10n.t("APK and EXE files get their own icon in chats and in Shared media. Once downloaded, a PDF"
+                                + " shows its first page and a video a frame from it. Files with a thumbnail from Telegram"
+                                + " keep it.")));
+            }
         }
     }
 

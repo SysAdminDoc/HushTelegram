@@ -350,11 +350,12 @@ public class PausedHooksTest {
                 () -> app.hushtelegram.extension.telegram.misc.MediaQuality.hdPhoto(false),
                 () -> app.hushtelegram.extension.telegram.misc.MediaQuality.videoLimit(0x3e800000L) < 0));
         // A finished file from a message is queued for a copy in Download/Telegram, and so are one from
-        // a chat that doesn't allow saving and a view-once photo.
+        // a chat that doesn't allow saving and a view-once photo. An APK in Shared media gets its own icon.
         probes.put(PatchFamily.SAVE_DOWNLOADS, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.SaveDownloadsForTests.queuesACopy(),
                 () -> app.hushtelegram.extension.telegram.misc.SaveDownloadsForTests.queuesARestrictedCopy(),
-                () -> app.hushtelegram.extension.telegram.misc.SaveDownloadsForTests.queuesATimedCopy()));
+                () -> app.hushtelegram.extension.telegram.misc.SaveDownloadsForTests.queuesATimedCopy(),
+                () -> app.hushtelegram.extension.telegram.misc.FileIconsForTests.on()));
         // Flipping the switch on asks Telegram for the folders.
         probes.put(PatchFamily.CHAT_TYPE_FOLDERS, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.ChatTypeFoldersForTests.asksForFolders()));

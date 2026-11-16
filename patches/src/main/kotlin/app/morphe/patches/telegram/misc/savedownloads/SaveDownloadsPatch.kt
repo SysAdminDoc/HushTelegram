@@ -128,6 +128,11 @@ val saveDownloadsPatch = bytecodePatch(
         val storage = resolveStorageFolder()
         val older = resolveOlderFiles()
         val olderLoads = resolveOlderLoads()
+        requireStatusMethod("fileIconsChat")
+        requireStatusMethod("fileIconsShared")
+        requireFileIconsRuntime()
+        val chatIcons = resolveChatFileIcons()
+        val sharedIcons = resolveSharedFileIcons()
         // Assembled on copies first, so a refusal leaves the app untouched.
         insertSaveDownloadsHook(MutableMethod(ImmutableMethod.of(callback.method)), callback)
         insertFoundFileHook(MutableMethod(ImmutableMethod.of(finishing)))
@@ -162,6 +167,18 @@ val saveDownloadsPatch = bytecodePatch(
             }
         } else {
             patchLog.warning("Save downloaded files: ${gallery.missing}. The patch goes on without the gallery folder choice.")
+        }
+        val chatIconsLeft = chatIcons.missing ?: chatIcons.apply(this)
+        if (chatIconsLeft == null) {
+            enableCapability("fileIconsChat")
+        } else {
+            patchLog.warning("Save downloaded files: $chatIconsLeft. The patch goes on without file icons in chats.")
+        }
+        val sharedIconsLeft = sharedIcons.missing ?: sharedIcons.apply(this)
+        if (sharedIconsLeft == null) {
+            enableCapability("fileIconsShared")
+        } else {
+            patchLog.warning("Save downloaded files: $sharedIconsLeft. The patch goes on without file icons in Shared media.")
         }
         enableStatus("saveDownloads")
     }

@@ -828,6 +828,15 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_storage_folder", FALSE, true);
 
     /**
+     * File icons and thumbnails (#79): a file sent as a document shows what it is in a chat and in
+     * Shared media &gt; Files. An APK or EXE gets an Android-style or Windows-style glyph, and once
+     * downloaded a PDF shows its first page and a video a frame from it. A file with a thumbnail
+     * from Telegram's servers keeps it. Starts off.
+     */
+    public static final BooleanSetting FILE_ICONS =
+            new BooleanSetting("hushtelegram_file_icons", FALSE);
+
+    /**
      * The folder under Internal storage that {@link #STORAGE_FOLDER} moves Telegram's files to, one
      * {@link app.hushtelegram.extension.telegram.misc.StorageFolder#allowedName} takes. Empty is
      * Internal storage/Telegram (#7). Read once with the folder, so it needs a restart too.

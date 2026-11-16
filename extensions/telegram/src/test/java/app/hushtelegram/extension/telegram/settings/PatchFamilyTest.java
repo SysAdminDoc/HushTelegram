@@ -770,8 +770,9 @@ public class PatchFamilyTest {
         // The second switch lets chats that don't allow saving through and the third view-once and timed media (#9),
         // and the fourth secret chats on top of the second (#82), so they start off like the first.
         // The storage folder switch (#7) moves Telegram's own folder at startup, so it starts off and needs a restart.
+        // File icons and thumbnails (#79) only changes how files look, so it starts off and applies at once.
         assertEquals(Arrays.asList(Settings.SAVE_DOWNLOADS, Settings.SAVE_RESTRICTED_DOWNLOADS, Settings.SAVE_TIMED_MEDIA,
-                Settings.SAVE_SECRET_CHATS, Settings.STORAGE_FOLDER), family.switches);
+                Settings.SAVE_SECRET_CHATS, Settings.STORAGE_FOLDER, Settings.FILE_ICONS), family.switches);
         for (BooleanSetting setting : family.switches) {
             assertFalse(setting.key, setting.defaultValue);
             // Each finished download reads the first four switches, so they need no restart.
@@ -779,9 +780,12 @@ public class PatchFamilyTest {
         }
         // The gallery folder choice (#30) and the storage folder (#7) ride on this patch as its tracked targets,
         // and both start on Telegram's folders.
-        assertEquals(EnumSet.of(PatchFamily.Capability.GALLERY_FOLDER, PatchFamily.Capability.STORAGE_FOLDER),
+        assertEquals(EnumSet.of(PatchFamily.Capability.GALLERY_FOLDER, PatchFamily.Capability.STORAGE_FOLDER,
+                PatchFamily.Capability.FILE_ICONS_CHAT, PatchFamily.Capability.FILE_ICONS_SHARED),
                 family.expectedCapabilities());
         assertEquals("storageFolder", PatchFamily.Capability.STORAGE_FOLDER.statusMethod);
+        assertEquals("fileIconsChat", PatchFamily.Capability.FILE_ICONS_CHAT.statusMethod);
+        assertEquals("fileIconsShared", PatchFamily.Capability.FILE_ICONS_SHARED.statusMethod);
         assertEquals("galleryFolder", PatchFamily.Capability.GALLERY_FOLDER.statusMethod);
         assertEquals("", Settings.GALLERY_FOLDER.defaultValue);
         assertFalse(Settings.GALLERY_FOLDER.rebootApp);
@@ -1432,7 +1436,8 @@ public class PatchFamilyTest {
         List<String> report = PatchFamily.reportLines(build, false);
         assertTrue(report.toString(), report.contains(
                 "Save downloaded files coverage: switch only; missing: gallery folder for saved photos and videos, "
-                        + "Telegram's own files in internal storage"));
+                        + "Telegram's own files in internal storage, file icons and thumbnails in chats, "
+                        + "file icons and thumbnails in Shared media"));
         assertTrue(report.toString(), report.contains(
                 "Faster downloads coverage: switch only; missing: automatic downloads on Data Saver, uploads, download manager, "
                         + "photos and videos in their best quality"));
@@ -1442,7 +1447,8 @@ public class PatchFamilyTest {
                 PatchFamily.Capability.DATA_SAVER_DOWNLOADS);
         report = PatchFamily.reportLines(build, false);
         assertTrue(report.toString(), report.contains("Save downloaded files coverage: gallery folder for saved photos and videos; "
-                + "missing: Telegram's own files in internal storage"));
+                + "missing: Telegram's own files in internal storage, file icons and thumbnails in chats, "
+                + "file icons and thumbnails in Shared media"));
         assertTrue(report.toString(), report.contains("Faster downloads coverage: automatic downloads on Data Saver; missing: uploads, download manager, "
                 + "photos and videos in their best quality"));
     }

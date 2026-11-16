@@ -171,6 +171,8 @@ public final class SettingsStatus {
     public static boolean saveDownloads() { return false; }
     public static boolean galleryFolder() { return false; }
     public static boolean storageFolder() { return false; }
+    public static boolean fileIconsChat() { return false; }
+    public static boolean fileIconsShared() { return false; }
     public static boolean chatTypeFolders() { return false; }
     public static boolean storyRequests() { return false; }
     public static boolean storyBar() { return false; }

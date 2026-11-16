@@ -493,6 +493,8 @@ public final class SelectionCheck {
         hook(calls, flags, "fasterUploads", "misc/UploadSpeed", "requests");
         hook(calls, flags, "saveDownloads", "misc/SaveDownloads", "fileLoaded");
         hook(calls, flags, "storageFolder", "misc/StorageFolder", "telegramFolder", "olderFile");
+        hook(calls, flags, "fileIconsChat", "misc/FileIcons", "bubble");
+        hook(calls, flags, "fileIconsShared", "misc/FileIcons", "sharedIcon");
         hook(calls, flags, "unifiedPush", "misc/UnifiedPush", "token", "type");
         hook(calls, flags, "reactionAlerts", "misc/ReactionAlerts", "changed");
         hook(calls, flags, "reactionSound", "misc/ReactionAlerts", "quiet");
