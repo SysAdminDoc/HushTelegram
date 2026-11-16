@@ -384,6 +384,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_locked_voice_guard", FALSE);
 
     /**
+     * The voice changer (#79): empty records voice messages as they are, otherwise one of
+     * {@link app.hushtelegram.extension.telegram.misc.VoiceChanger#PRESETS}. Each recording keeps
+     * the voice it started with.
+     */
+    public static final StringSetting VOICE_CHANGER =
+            new StringSetting("hushtelegram_voice_changer", "");
+
+    /**
      * Telegram stops vibrating for taps, long presses, swipes and wrong entries.
      */
     public static final BooleanSetting NO_HAPTICS =

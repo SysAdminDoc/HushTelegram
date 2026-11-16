@@ -961,7 +961,10 @@ public class PatchFamilyTest {
             // Each play asks again, so both apply at once.
             assertFalse(setting.key, setting.rebootApp);
         }
-        assertEquals(EnumSet.of(PatchFamily.Capability.LOCKED_VOICE), family.expectedCapabilities());
+        assertEquals(EnumSet.of(PatchFamily.Capability.LOCKED_VOICE, PatchFamily.Capability.VOICE_CHANGER), family.expectedCapabilities());
+        // The voice is a choice, not a switch, and each recording reads it as it starts.
+        assertEquals("", Settings.VOICE_CHANGER.defaultValue);
+        assertFalse(Settings.VOICE_CHANGER.rebootApp);
         assertOnItsPage(family);
     }
 

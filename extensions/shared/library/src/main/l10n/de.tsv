@@ -2316,3 +2316,19 @@ Telegram kept the Admin folder. Try again later.	Telegram hat den Ordner „Admi
 admin tools in a chat's menu	die Admin-Werkzeuge im Menü eines Chats
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Folders by chat type that makes the Admin folder
 the Admin folder	den Ordner „Admin“
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record
+Voice changer	Stimmverzerrer
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record: no change
+Off	Aus
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record: a baby's voice
+Baby	Baby
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record: a woman's voice
+Woman	Frau
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record: a man's voice
+Man	Mann
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record: a deep, echoing voice
+Horror movie	Horrorfilm
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record: a robot's voice
+Robot	Roboter
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Play voice messages one at a time that changes how the voice messages you record sound
+the voice changer	den Stimmverzerrer

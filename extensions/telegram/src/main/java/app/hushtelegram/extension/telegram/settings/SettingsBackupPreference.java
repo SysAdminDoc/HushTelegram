@@ -67,6 +67,7 @@ import app.hushtelegram.extension.telegram.misc.ListBackground;
 import app.hushtelegram.extension.telegram.misc.LocalPins;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.RecordChats;
+import app.hushtelegram.extension.telegram.misc.VoiceChanger;
 import app.hushtelegram.extension.telegram.misc.StickerSize;
 
 /**
@@ -474,6 +475,10 @@ public class SettingsBackupPreference extends Preference {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Translate into"),
                         TranslateTargetPicker.label(Settings.TRANSLATE_TARGET.savedValue()),
                         TranslateTargetPicker.label((String) change.getValue())));
+            } else if (change.getKey() == Settings.VOICE_CHANGER) {
+                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Voice changer"),
+                        HushTelegramPreferenceFragment.voiceChangerLabel(Settings.VOICE_CHANGER.savedValue()),
+                        HushTelegramPreferenceFragment.voiceChangerLabel((String) change.getValue())));
             } else if (change.getKey() == Settings.RECORD_CALLS_WHICH) {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Calls to record"),
                         HushTelegramPreferenceFragment.recordWhichLabel(RecordChats.scope()),

@@ -191,6 +191,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ChatBlur.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/VoicePlaylist.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/LockedVoice.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/VoiceChanger.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/RegistrationDate.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/JoinDates.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ForwardDates.java",

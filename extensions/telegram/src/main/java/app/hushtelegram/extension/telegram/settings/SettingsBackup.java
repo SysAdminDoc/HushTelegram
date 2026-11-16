@@ -51,6 +51,7 @@ import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.FolderIcons;
 import app.hushtelegram.extension.telegram.misc.GalleryFolder;
 import app.hushtelegram.extension.telegram.misc.KeepRemoved;
+import app.hushtelegram.extension.telegram.misc.VoiceChanger;
 import app.hushtelegram.extension.telegram.misc.LinkPreviewRules;
 import app.hushtelegram.extension.telegram.misc.ListBackground;
 import app.hushtelegram.extension.telegram.misc.LocalPins;
@@ -337,7 +338,7 @@ public final class SettingsBackup {
     static final List<StringSetting> TEXTS = Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER,
             Settings.TRANSLATE_TARGET, Settings.FOLDER_ICON_PACK, Settings.STORAGE_FOLDER_NAME, Settings.SAVE_KINDS_LEFT_OUT,
             Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LOCAL_PINNED_CHATS, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS,
-            Settings.CHAT_LIST_BANNER);
+            Settings.CHAT_LIST_BANNER, Settings.VOICE_CHANGER);
 
     /**
      * Bounds for the parser, well past anything this class writes, so a file built to be
@@ -828,6 +829,7 @@ public final class SettingsBackup {
         if (setting == Settings.LINK_PREVIEW_RULE_LIST) return LinkPreviewRules.allowed(value);
         if (setting == Settings.KEPT_REMOVED_CHATS) return KeepRemoved.allowed(value);
         if (setting == Settings.CHAT_LIST_BANNER) return ChatListBanner.allowed(value);
+        if (setting == Settings.VOICE_CHANGER) return VoiceChanger.PRESETS.contains(value);
         return setting == Settings.TITLE_EMOJI && TitleEmoji.allowed(value);
     }
 

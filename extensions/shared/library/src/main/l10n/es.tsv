@@ -2316,3 +2316,19 @@ Telegram kept the Admin folder. Try again later.	Telegram mantuvo la carpeta Adm
 admin tools in a chat's menu	las herramientas de admin en el menú de un chat
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Folders by chat type that makes the Admin folder
 the Admin folder	la carpeta Admin
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record
+Voice changer	Cambiador de voz
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record: no change
+Off	Desactivado
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record: a baby's voice
+Baby	Bebé
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record: a woman's voice
+Woman	Mujer
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record: a man's voice
+Man	Hombre
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record: a deep, echoing voice
+Horror movie	Película de terror
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record: a robot's voice
+Robot	Robot
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Play voice messages one at a time that changes how the voice messages you record sound
+the voice changer	el cambiador de voz

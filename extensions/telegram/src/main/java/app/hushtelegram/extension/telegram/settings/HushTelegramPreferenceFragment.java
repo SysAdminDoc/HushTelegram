@@ -114,6 +114,7 @@ import app.hushtelegram.extension.telegram.misc.ListBackground;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 import app.hushtelegram.extension.telegram.misc.ProxyOrder;
 import app.hushtelegram.extension.telegram.misc.RecordChats;
+import app.hushtelegram.extension.telegram.misc.VoiceChanger;
 import app.hushtelegram.extension.telegram.misc.SaveDownloads;
 import app.hushtelegram.extension.telegram.misc.SavedPicture;
 import app.hushtelegram.extension.telegram.misc.SpecialContacts;
@@ -171,6 +172,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String GHOST_CHATS_ROW = "action_ghost_chats";
     /** The Calls to record row's key. The choice itself is saved under {@link Settings#RECORD_CALLS_WHICH}. */
     static final String RECORD_WHICH_ROW = "action_record_calls_which";
+    /** The Voice changer row's key. The voice itself is saved under {@link Settings#VOICE_CHANGER}. */
+    static final String VOICE_CHANGER_ROW = "action_voice_changer";
     /** The Chats to record row's key. The chats are kept by {@link RecordChats}. */
     static final String RECORD_CHATS_ROW = "action_record_chats";
     /** The Keep recordings row's key. The days are saved under {@link Settings#RECORD_CALLS_KEEP_DAYS}. */
@@ -399,6 +402,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (gallery != null) gallery.setSummary(galleryFolderSummary());
         Preference recordWhich = findPreference(RECORD_WHICH_ROW);
         if (recordWhich != null) recordWhich.setSummary(recordWhichLabel(RecordChats.scope()));
+        Preference voiceChanger = findPreference(VOICE_CHANGER_ROW);
+        if (voiceChanger != null) voiceChanger.setSummary(voiceChangerLabel(Settings.VOICE_CHANGER.get()));
         Preference recordKeep = findPreference(RECORD_KEEP_ROW);
         if (recordKeep != null) recordKeep.setSummary(recordKeepLabel(Settings.RECORD_CALLS_KEEP_DAYS.get()));
         Preference kinds = findPreference(SAVE_KINDS_ROW);
@@ -1199,6 +1204,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("While your phone is locked, voice and round video messages don't start, resume or skip to the next one, "
                                 + "whether from headphones, a car, the notification or the lock screen. One that's already playing "
                                 + "finishes. Music and other videos play as usual.")));
+            }
+            if (PatchFamily.Capability.VOICE_CHANGER.installed()) {
+                on(pages, PatchFamily.VOICE_ONE_AT_A_TIME).addPreference(voiceChangerRow(context));
             }
         }
         if (build.contains(PatchFamily.VOICE_MUSIC_PLAYER)) {
@@ -3372,6 +3380,59 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (RecordChats.GROUPS.equals(scope)) return L10n.t("Voice chats and live streams only");
         if (RecordChats.CHOSEN.equals(scope)) return L10n.t("Only calls in the chats you pick below");
         return L10n.t("Every call");
+    }
+
+    /** The voice changer (#79): the row names the voice, and a tap lists them. */
+    private Preference voiceChangerRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(VOICE_CHANGER_ROW);
+        row.setTitle(L10n.t("Voice changer"));
+        row.setPersistent(false);
+        row.setSummary(voiceChangerLabel(Settings.VOICE_CHANGER.get()));
+        row.setOnPreferenceClickListener(p -> {
+            showVoiceChanger(context, p);
+            return true;
+        });
+        return row;
+    }
+
+    /** The voices with the saved one checked, saved and closed the way Calls to record is. */
+    void showVoiceChanger(Context context, Preference row) {
+        if (SettingsLock.refuses()) return;
+        List<String> choices = VoiceChanger.PRESETS;
+        CharSequence[] labels = new CharSequence[choices.size()];
+        for (int i = 0; i < labels.length; i++) labels[i] = voiceChangerLabel(choices.get(i));
+        show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("Voice changer"))
+                .setSingleChoiceItems(labels, savedVoice(), (dialog, which) -> {
+                    boolean started = save((AlertDialog) dialog,
+                            () -> Settings.VOICE_CHANGER.saveCommitted(choices.get(which)), landed -> {
+                                if (landed) {
+                                    row.setSummary(voiceChangerLabel(Settings.VOICE_CHANGER.get()));
+                                    dialog.dismiss();
+                                } else {
+                                    checkSaved((AlertDialog) dialog, savedVoice());
+                                    Utils.showToastLong(L10n.t("Couldn't save the choice. Try again in a moment."));
+                                }
+                            });
+                    if (!started) checkSaved((AlertDialog) dialog, savedVoice());
+                })
+                .setNegativeButton(L10n.t("Cancel"), null));
+    }
+
+    private static int savedVoice() {
+        return Math.max(0, VoiceChanger.PRESETS.indexOf(VoiceChanger.normalized(Settings.VOICE_CHANGER.get())));
+    }
+
+    static String voiceChangerLabel(String preset) {
+        switch (VoiceChanger.normalized(preset)) {
+            case "baby": return L10n.t("Baby");
+            case "woman": return L10n.t("Woman");
+            case "man": return L10n.t("Man");
+            case "horror": return L10n.t("Horror movie");
+            case "robot": return L10n.t("Robot");
+            default: return L10n.t("Off");
+        }
     }
 
     private static void checkSaved(AlertDialog dialog, int position) {

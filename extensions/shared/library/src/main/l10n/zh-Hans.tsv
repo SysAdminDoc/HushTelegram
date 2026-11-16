@@ -2316,3 +2316,19 @@ Telegram kept the Admin folder. Try again later.	Telegram 保留了“管理”�
 admin tools in a chat's menu	聊天菜单中的管理工具
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Folders by chat type that makes the Admin folder
 the Admin folder	“管理”文件夹
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record
+Voice changer	变声器
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record: no change
+Off	关闭
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record: a baby's voice
+Baby	婴儿
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record: a woman's voice
+Woman	女声
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record: a man's voice
+Man	男声
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record: a deep, echoing voice
+Horror movie	恐怖片
+# context: The Voice changer row on the Playback page and its list of voices for the voice messages you record: a robot's voice
+Robot	机器人
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Play voice messages one at a time that changes how the voice messages you record sound
+the voice changer	变声器

@@ -456,6 +456,7 @@ public enum PatchFamily {
         HIDDEN_UNREAD(HIDE_FOLDER_COUNTERS, "hiddenUnread", "hidden chats in the unread counts", true),
         CHAT_LIST_AVATAR(HIDE_FOLDER_COUNTERS, "chatListAvatar", "avatar size in the chat list", true),
         LOCKED_VOICE(VOICE_ONE_AT_A_TIME, "lockedVoice", "voice playback while locked", true),
+        VOICE_CHANGER(VOICE_ONE_AT_A_TIME, "voiceChanger", "the voice changer", true),
         PLAYBACK_POSITION(VOICE_MUSIC_PLAYER, "playbackPosition", "remembering where playback stopped", true),
         VOICE_SKIP(VOICE_MUSIC_PLAYER, "voiceSkip", "skipping between voice messages", true),
         DATA_SAVER_DOWNLOADS(FASTER_DOWNLOADS, "dataSaverDownloads", "automatic downloads on Data Saver", true),
