@@ -2274,3 +2274,45 @@ That font file is too large.	Die Schriftdatei ist zu groß.
 Couldn't save the font. Try again.	Schrift nicht gespeichert. Versuch es noch mal.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Use system font that draws Telegram's text in a font file you picked
 a font file of your own	eine eigene Schriftdatei
+# context: Item in the menu at the top of a group or channel the user owns or manages, and the title of its switch on the Chats page under My messages. It opens a list of Telegram's admin screens
+Admin tools	Admin-Werkzeuge
+# context: Summary of the Admin tools switch. Recent Actions and Invite Links are Telegram's own screen names; use Telegram's translations of them
+A group or channel you own or manage gets Admin tools in its menu at the top. It opens Recent Actions, the member lists and Invite Links, as far as your rights there go.	Eine Gruppe oder ein Kanal, die du besitzt oder verwaltest, bekommt im Menü oben „Admin-Werkzeuge“. Darüber öffnest du Letzte Aktionen, die Mitgliederlisten und Einladungslinks, soweit deine Rechte dort reichen.
+# context: Toast when Admin tools is tapped in a chat where none of its screens can open
+Couldn't open admin tools here.	Admin-Werkzeuge ließen sich hier nicht öffnen.
+# context: Row in the Admin tools list. Telegram's own name for the admin log screen (its key EventLog); Telegram's translation
+Recent Actions	Letzte Aktionen
+# context: Row in the Admin tools list for a group. Telegram's own name for the member list (its key ChannelMembers); Telegram's translation
+Members	Mitglieder
+# context: Row in the Admin tools list for a channel. Telegram's own name for the subscriber list (its key ChannelSubscribers); Telegram's translation
+Subscribers	Abonnenten
+# context: Row in the Admin tools list for a group. Telegram's own name for the group permissions screen (its key ChannelPermissions); Telegram's translation
+Permissions	Berechtigungen
+# context: Row in the Admin tools list for a channel. Telegram's own name for the removed users list (its key ChannelBlacklist); Telegram's translation
+Removed Users	Entfernte Nutzer
+# context: Row in the Admin tools list. Telegram's own name for the invite links screen (its key InviteLinks); Telegram's translation
+Invite Links	Einladungslinks
+# context: Name of the Telegram chat folder the Admin folder switch makes, shown as a tab above the chat list and on the user's other devices. Telegram allows at most 12 characters
+Admin	Admin
+# context: Switch title on the Folders by chat type page, off by default. It makes a Telegram folder named Admin with the chats the user owns or manages
+Admin folder	Ordner „Admin“
+# context: Summary of the Admin folder switch. Admin is the folder's name
+Turning this on makes an Admin folder with the groups and channels you own or manage, and keeps it up to date as that changes. Turning it off removes it, unless you renamed or changed it.	Beim Einschalten entsteht ein Ordner „Admin“ mit den Gruppen und Kanälen, die du besitzt oder verwaltest, und er bleibt aktuell, wenn sich das ändert. Beim Ausschalten wird er entfernt, außer du hast ihn umbenannt oder geändert.
+# context: Toast when the Admin folder switch is turned on but the user owns or manages no group or channel; the switch goes back off
+You don't manage any groups or channels yet.	Du verwaltest noch keine Gruppen oder Kanäle.
+# context: Toast after Telegram made the Admin folder
+Made the Admin folder.	Ordner „Admin“ erstellt.
+# context: Toast after Telegram made the Admin folder when the user manages more chats than a folder can hold
+Made the Admin folder. Some chats didn't fit.	Ordner „Admin“ erstellt. Einige Chats passten nicht hinein.
+# context: Toast after the Admin folder switch was turned off and Telegram removed the folder
+Removed the Admin folder.	Ordner „Admin“ entfernt.
+# context: Toast when the Admin folder switch is turned off but the user renamed or edited the folder, so it isn't removed
+You changed the Admin folder, so it stays.	Du hast den Ordner „Admin“ geändert, also bleibt er.
+# context: Toast when Telegram refused to make the Admin folder; the switch goes back off
+Telegram didn't make the folder. Try again later.	Telegram hat den Ordner nicht erstellt. Versuch es später noch mal.
+# context: Toast when Telegram refused to remove the Admin folder; the switch goes back on
+Telegram kept the Admin folder. Try again later.	Telegram hat den Ordner „Admin“ behalten. Versuch es später noch mal.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of My messages that adds Admin tools to the menu at the top of a group or channel
+admin tools in a chat's menu	die Admin-Werkzeuge im Menü eines Chats
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Folders by chat type that makes the Admin folder
+the Admin folder	den Ordner „Admin“

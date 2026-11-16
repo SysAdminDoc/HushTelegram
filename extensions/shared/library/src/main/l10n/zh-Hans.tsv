@@ -2274,3 +2274,45 @@ That font file is too large.	字体文件太大.
 Couldn't save the font. Try again.	无法保存字体。请重试.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Use system font that draws Telegram's text in a font file you picked
 a font file of your own	你自己的字体文件
+# context: Item in the menu at the top of a group or channel the user owns or manages, and the title of its switch on the Chats page under My messages. It opens a list of Telegram's admin screens
+Admin tools	管理工具
+# context: Summary of the Admin tools switch. Recent Actions and Invite Links are Telegram's own screen names; use Telegram's translations of them
+A group or channel you own or manage gets Admin tools in its menu at the top. It opens Recent Actions, the member lists and Invite Links, as far as your rights there go.	你拥有或管理的群组和频道，顶部菜单会多出“管理工具”。它能打开近期操作、成员列表和邀请链接，以你在那里的权限为限.
+# context: Toast when Admin tools is tapped in a chat where none of its screens can open
+Couldn't open admin tools here.	无法在此打开管理工具.
+# context: Row in the Admin tools list. Telegram's own name for the admin log screen (its key EventLog); Telegram's translation
+Recent Actions	近期操作
+# context: Row in the Admin tools list for a group. Telegram's own name for the member list (its key ChannelMembers); Telegram's translation
+Members	成员
+# context: Row in the Admin tools list for a channel. Telegram's own name for the subscriber list (its key ChannelSubscribers); Telegram's translation
+Subscribers	订阅者
+# context: Row in the Admin tools list for a group. Telegram's own name for the group permissions screen (its key ChannelPermissions); Telegram's translation
+Permissions	权限
+# context: Row in the Admin tools list for a channel. Telegram's own name for the removed users list (its key ChannelBlacklist); Telegram's translation
+Removed Users	被移除的用户
+# context: Row in the Admin tools list. Telegram's own name for the invite links screen (its key InviteLinks); Telegram's translation
+Invite Links	邀请链接
+# context: Name of the Telegram chat folder the Admin folder switch makes, shown as a tab above the chat list and on the user's other devices. Telegram allows at most 12 characters
+Admin	管理
+# context: Switch title on the Folders by chat type page, off by default. It makes a Telegram folder named Admin with the chats the user owns or manages
+Admin folder	“管理”文件夹
+# context: Summary of the Admin folder switch. Admin is the folder's name
+Turning this on makes an Admin folder with the groups and channels you own or manage, and keeps it up to date as that changes. Turning it off removes it, unless you renamed or changed it.	开启后会创建“管理”文件夹，收录你拥有或管理的群组和频道，并随之更新。关闭后会删除它，除非你改过它的名称或内容.
+# context: Toast when the Admin folder switch is turned on but the user owns or manages no group or channel; the switch goes back off
+You don't manage any groups or channels yet.	你还没有管理任何群组或频道.
+# context: Toast after Telegram made the Admin folder
+Made the Admin folder.	已创建“管理”文件夹.
+# context: Toast after Telegram made the Admin folder when the user manages more chats than a folder can hold
+Made the Admin folder. Some chats didn't fit.	已创建“管理”文件夹。有些聊天放不下.
+# context: Toast after the Admin folder switch was turned off and Telegram removed the folder
+Removed the Admin folder.	已删除“管理”文件夹.
+# context: Toast when the Admin folder switch is turned off but the user renamed or edited the folder, so it isn't removed
+You changed the Admin folder, so it stays.	你改过“管理”文件夹，所以它会保留.
+# context: Toast when Telegram refused to make the Admin folder; the switch goes back off
+Telegram didn't make the folder. Try again later.	Telegram 没有创建该文件夹。请稍后再试.
+# context: Toast when Telegram refused to remove the Admin folder; the switch goes back on
+Telegram kept the Admin folder. Try again later.	Telegram 保留了“管理”文件夹。请稍后再试.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of My messages that adds Admin tools to the menu at the top of a group or channel
+admin tools in a chat's menu	聊天菜单中的管理工具
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Folders by chat type that makes the Admin folder
+the Admin folder	“管理”文件夹

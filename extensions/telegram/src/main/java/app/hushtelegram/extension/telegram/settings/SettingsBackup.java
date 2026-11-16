@@ -80,7 +80,8 @@ import app.hushtelegram.extension.telegram.misc.TranslateTarget;
  * <p>The release check stays out of the file: it puts the phone online, so it's switched on
  * from the phone's own screen, never by a file. Free proxies stays out for the same reason, and
  * it connects Telegram through strangers' proxies besides. So does Folders by chat type: flipping it makes or
- * removes folders on your account, and an import would flip it without doing either.
+ * removes folders on your account, and an import would flip it without doing either. The Admin
+ * folder's switch stays out the same way.
  * The chats picked under Hide picked chats stay out too, though the switch goes in: they name the
  * account and the chats someone chose to hide, and settings files get passed around to help others.
  * Ghost mode's exception chats stay out the same way, with their switch going in.
@@ -306,6 +307,7 @@ public final class SettingsBackup {
             Settings.DND_MENU,
             Settings.SIGN_IN_PROXY,
             Settings.MY_MESSAGES,
+            Settings.ADMIN_TOOLS,
             Settings.TEXT_DIRECTION));
 
     /**

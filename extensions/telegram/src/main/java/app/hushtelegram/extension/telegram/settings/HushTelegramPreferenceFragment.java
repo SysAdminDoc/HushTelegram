@@ -92,6 +92,7 @@ import app.hushtelegram.extension.telegram.misc.AutoForwarding;
 import app.hushtelegram.extension.telegram.misc.CallRecorder;
 import app.hushtelegram.extension.telegram.misc.ChatListAvatar;
 import app.hushtelegram.extension.telegram.misc.ChatListBanner;
+import app.hushtelegram.extension.telegram.misc.AdminFolder;
 import app.hushtelegram.extension.telegram.misc.ChatTypeFolders;
 import app.hushtelegram.extension.telegram.misc.CustomFont;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
@@ -760,6 +761,21 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 return true;
             });
             on(pages, PatchFamily.CHAT_TYPE_FOLDERS).addPreference(folders);
+            if (PatchFamily.Capability.ADMIN_FOLDER.installed()) {
+                SwitchPreference admin = toggle(context, Settings.ADMIN_FOLDER, L10n.t("Admin folder"),
+                        L10n.t("Turning this on makes an Admin folder with the groups and channels you own or manage, and keeps "
+                                + "it up to date as that changes. Turning it off removes it, unless you renamed or changed it.") + " "
+                                + L10n.t("Both work on the account you have open."));
+                admin.setOnPreferenceChangeListener((row, value) -> {
+                    // Once the switch is saved, so the folder follows what it says.
+                    Utils.runOnMainThreadDelayed(() -> {
+                        String said = AdminFolder.apply(context);
+                        if (said != null) Utils.showToastLong(said);
+                    }, 0);
+                    return true;
+                });
+                on(pages, PatchFamily.CHAT_TYPE_FOLDERS).addPreference(admin);
+            }
         }
         if (build.contains(PatchFamily.DISABLE_ARCHIVE_PULL)) {
             on(pages, PatchFamily.DISABLE_ARCHIVE_PULL).addPreference(toggle(context, Settings.DISABLE_ARCHIVE_PULL, L10n.t("Disable pull to archive"),
@@ -917,6 +933,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.MY_MESSAGES).addPreference(toggle(context, Settings.MY_MESSAGES, L10n.t("My messages"),
                     PatchFamily.MY_MESSAGES.coverageSummary(L10n.t("A group's menu at the top gets My messages, which shows the messages "
                             + "you sent there in the chat's search."))));
+            if (PatchFamily.Capability.ADMIN_TOOLS.installed()) {
+                on(pages, PatchFamily.MY_MESSAGES).addPreference(toggle(context, Settings.ADMIN_TOOLS, L10n.t("Admin tools"),
+                        L10n.t("A group or channel you own or manage gets Admin tools in its menu at the top. It opens Recent "
+                                + "Actions, the member lists and Invite Links, as far as your rights there go.")));
+            }
         }
         if (build.contains(PatchFamily.TEXT_DIRECTION)) {
             on(pages, PatchFamily.TEXT_DIRECTION).addPreference(toggle(context, Settings.TEXT_DIRECTION, L10n.t("Text direction"),
@@ -1962,6 +1983,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 L10n.t("Settings look")));
         if (build.contains(PatchFamily.UNIFIED_PUSH)) leftOut.add(L10n.t("UnifiedPush notifications"));
         if (build.contains(PatchFamily.CHAT_TYPE_FOLDERS)) leftOut.add(L10n.t("Folders by chat type"));
+        if (build.contains(PatchFamily.CHAT_TYPE_FOLDERS) && PatchFamily.Capability.ADMIN_FOLDER.installed()) {
+            leftOut.add(L10n.t("Admin folder"));
+        }
         if (build.contains(PatchFamily.FREE_PROXIES)) leftOut.add(L10n.t("Free proxies"));
         if (build.contains(PatchFamily.FREE_PROXIES) && PatchFamily.Capability.PROXY_ORDER.installed()) {
             leftOut.add(L10n.t("Proxy order"));

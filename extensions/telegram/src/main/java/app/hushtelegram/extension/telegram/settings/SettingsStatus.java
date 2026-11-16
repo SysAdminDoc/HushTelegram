@@ -182,6 +182,7 @@ public final class SettingsStatus {
     public static boolean fileIconsChat() { return false; }
     public static boolean fileIconsShared() { return false; }
     public static boolean chatTypeFolders() { return false; }
+    public static boolean adminFolder() { return false; }
     public static boolean storyRequests() { return false; }
     public static boolean storyBar() { return false; }
     public static boolean storyCamera() { return false; }
@@ -277,6 +278,7 @@ public final class SettingsStatus {
     public static boolean freeProxies() { return false; }
     public static boolean proxyOrder() { return false; }
     public static boolean myMessages() { return false; }
+    public static boolean adminTools() { return false; }
     public static boolean textDirection() { return false; }
     public static boolean lyrics() { return false; }
     public static boolean songDates() { return false; }

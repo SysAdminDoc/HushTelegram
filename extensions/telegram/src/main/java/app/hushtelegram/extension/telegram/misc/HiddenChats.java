@@ -112,6 +112,8 @@ public final class HiddenChats {
         HookStatus.invoked(FamilyNames.HIDE_FOLDER_COUNTERS);
         pruneHidden(controller);
         AdminChats.prune(controller);
+        // Only asks for the Admin folder's chats to be put right, at most once a minute, after this sort.
+        AdminFolder.refresh();
         // After the hidden chats left, so the order only covers what shows.
         ChatSort.sortLists(controller);
         // Last, so the chats pinned on this phone lead whatever order the list ended up in.

@@ -736,6 +736,23 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_my_messages", FALSE);
 
     /**
+     * The menu at the top of a group or channel you own or administer has Admin tools, a list of
+     * the admin screens your rights there open: Recent Actions, Administrators, Members or
+     * Subscribers, Permissions or Removed users, and Invite Links (#79). Off by default.
+     */
+    public static final BooleanSetting ADMIN_TOOLS =
+            new BooleanSetting("hushtelegram_admin_tools", FALSE);
+
+    /**
+     * An Admin folder with every group and channel you own or administer, made as Telegram's own
+     * folder so it's a tab above the chat list and on your other devices (#79). Turning it off
+     * removes the folder unless you changed it. Off by default, and it stays out of settings files
+     * like {@link #CHAT_TYPE_FOLDERS}: an import would flip it without making or removing anything.
+     */
+    public static final BooleanSetting ADMIN_FOLDER =
+            new BooleanSetting("hushtelegram_admin_folder", FALSE);
+
+    /**
      * The message box's text menu has Right to left and Left to right, which start the selected
      * lines with an invisible direction mark, and Control character, which picks one of the
      * invisible Unicode marks Telegram Desktop offers. Off by default.

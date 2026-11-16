@@ -121,6 +121,9 @@ public class SettingsBackupTest {
         out.put("hushtelegram_chat_type_folders",
                 "Flipping it makes or removes folders on the Telegram account. An import would flip it "
                         + "without doing either, so it would say folders are there that aren't.");
+        out.put("hushtelegram_admin_folder",
+                "Flipping it makes or removes the Admin folder on the Telegram account, so an import would "
+                        + "flip it without doing either, the same as Folders by chat type.");
         out.put("hushtelegram_unified_push",
                 "On, it signs Telegram up with a push app at the next start and routes every wake-up through "
                         + "that app, picking the only one installed on its own. Like the release check, that's a "
@@ -247,7 +250,7 @@ public class SettingsBackupTest {
                         Settings.GALLERY_CAMERA_ON_TAP, Settings.OPEN_EXTERNAL_LINKS, Settings.MINI_APP_LOCATION_OFF, Settings.STRIP_LINK_TRACKING, Settings.SKIP_AUTOLOGIN, Settings.STRIP_LINK_COPY_PASTE, Settings.DISABLE_UPDATE_CHECKS, Settings.REPAIR_FIREBASE_PUSH, Settings.KEEP_ALIVE_RUNNING,
                         Settings.SUPPRESS_SCREENSHOT_NOTIFICATION, Settings.UNLOCK_PREMIUM, Settings.BYPASS_CHANNEL_RESTRICTIONS,
                         Settings.OPEN_RESTRICTED_CHATS, Settings.BYPASS_INTEGRITY_CHECK, Settings.AUTO_FORWARDING, Settings.CROP_GUARD, Settings.CAPTION_ORDER, Settings.PROXY_MENU,
-                        Settings.DND_MENU, Settings.SIGN_IN_PROXY, Settings.MY_MESSAGES, Settings.TEXT_DIRECTION),
+                        Settings.DND_MENU, Settings.SIGN_IN_PROXY, Settings.MY_MESSAGES, Settings.ADMIN_TOOLS, Settings.TEXT_DIRECTION),
                 SettingsBackup.ALLOWLIST);
     }
 

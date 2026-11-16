@@ -657,10 +657,12 @@ public class PatchFamilyTest {
         PatchFamily family = PatchFamily.MY_MESSAGES;
         assertEquals("My messages", family.patchName);
         assertEquals("myMessages", family.statusMethod);
-        assertEquals(Collections.singletonList(Settings.MY_MESSAGES), family.switches);
+        assertEquals(Arrays.asList(Settings.MY_MESSAGES, Settings.ADMIN_TOOLS), family.switches);
         assertFalse(Settings.MY_MESSAGES.defaultValue);
         assertFalse(Settings.MY_MESSAGES.rebootApp);
-        assertTrue(family.expectedCapabilities().isEmpty());
+        assertFalse(Settings.ADMIN_TOOLS.defaultValue);
+        assertFalse(Settings.ADMIN_TOOLS.rebootApp);
+        assertEquals(EnumSet.of(PatchFamily.Capability.ADMIN_TOOLS), family.expectedCapabilities());
         assertEquals(PatchFamily.Page.CONVERSATIONS, PatchFamily.Page.of(family));
         assertOnItsPage(family);
     }
@@ -813,12 +815,14 @@ public class PatchFamilyTest {
         PatchFamily family = PatchFamily.CHAT_TYPE_FOLDERS;
         assertEquals("Folders by chat type", family.patchName);
         assertEquals("chatTypeFolders", family.statusMethod);
-        assertEquals(Collections.singletonList(Settings.CHAT_TYPE_FOLDERS), family.switches);
+        assertEquals(Arrays.asList(Settings.CHAT_TYPE_FOLDERS, Settings.ADMIN_FOLDER), family.switches);
         assertFalse(Settings.CHAT_TYPE_FOLDERS.defaultValue);
+        assertFalse(Settings.ADMIN_FOLDER.defaultValue);
+        assertFalse(Settings.ADMIN_FOLDER.rebootApp);
         // Flipping the switch makes or removes the folders then and there, so no restart is needed.
         assertFalse(Settings.CHAT_TYPE_FOLDERS.rebootApp);
         assertNull(family.staysWhilePaused);
-        assertTrue(family.expectedCapabilities().isEmpty());
+        assertEquals(EnumSet.of(PatchFamily.Capability.ADMIN_FOLDER), family.expectedCapabilities());
         assertOnItsPage(family);
         assertEquals(PatchFamily.Page.CHAT_LIST, PatchFamily.Page.of(family));
     }
