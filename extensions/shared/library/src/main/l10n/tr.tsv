@@ -482,6 +482,16 @@ Removing %1$d kept messages.	%1$d saklanan mesaj kaldırılıyor.
 # context: the notice once Telegram has finished removing them, with how many went
 Removed %1$d kept message.	%1$d saklanan mesaj kaldırıldı.
 Removed %1$d kept messages.	%1$d saklanan mesaj kaldırıldı.
+# context: A row under Clear kept messages on the Keep deleted messages page (#91). A tap lists how long a kept deleted message stays on the phone before it's removed: Never, 1 day, 7 days, 30 days, 90 days.
+Remove kept messages after	Saklanan mesajları şu süre sonra kaldır
+# context: Line under Remove kept messages after when it's set to Never. Clear kept messages is the name of the row above it.
+Kept messages stay until you clear them.	Saklanan mesajlar siz temizleyene kadar kalır.
+# context: Line under Remove kept messages after once a number of days is picked, singular. The days count from when the other person deleted the message.
+Kept messages are removed %1$d day after they were deleted.	Saklanan mesajlar silindikten %1$d gün sonra kaldırılır.
+# context: The same line, plural.
+Kept messages are removed %1$d days after they were deleted.	Saklanan mesajlar silindikten %1$d gün sonra kaldırılır.
+# context: The first choice in the Remove kept messages after list, and how a settings file's preview names it: kept messages are never removed on their own.
+Never	Asla
 # context: a third switch under Keep deleted messages. Turned on, the text a message had before someone else edited it is kept on the phone.
 Keep edit history	Düzenleme geçmişini sakla
 # context: that switch's summary. "Message details" is HushTelegram's own message menu item, translated the same as that row.

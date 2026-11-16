@@ -670,6 +670,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_keep_own_deleted", FALSE);
 
     /**
+     * Days a kept deleted message stays before it goes to Telegram's own deletion, 0 to keep them
+     * until Clear kept messages (#91).
+     */
+    public static final IntegerSetting KEEP_DELETED_DAYS =
+            new IntegerSetting("hushtelegram_keep_deleted_days", 0).withRange(0, 365);
+
+    /**
      * When someone else edits a message, this phone keeps the text it had before, shown in Message details.
      */
     public static final BooleanSetting KEEP_EDIT_HISTORY =

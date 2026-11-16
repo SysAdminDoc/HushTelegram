@@ -456,6 +456,16 @@ Removing %1$d kept messages.	正在移除 %1$d 条保留的消息.
 # context: the notice once Telegram has finished removing them, with how many went
 Removed %1$d kept message.	已移除 %1$d 条保留的消息.
 Removed %1$d kept messages.	已移除 %1$d 条保留的消息.
+# context: A row under Clear kept messages on the Keep deleted messages page (#91). A tap lists how long a kept deleted message stays on the phone before it's removed: Never, 1 day, 7 days, 30 days, 90 days.
+Remove kept messages after	保留的消息在此时间后移除
+# context: Line under Remove kept messages after when it's set to Never. Clear kept messages is the name of the row above it.
+Kept messages stay until you clear them.	保留的消息会一直保留，直到你清除.
+# context: Line under Remove kept messages after once a number of days is picked, singular. The days count from when the other person deleted the message.
+Kept messages are removed %1$d day after they were deleted.	保留的消息在被删除 %1$d 天后移除.
+# context: The same line, plural.
+Kept messages are removed %1$d days after they were deleted.	保留的消息在被删除 %1$d 天后移除.
+# context: The first choice in the Remove kept messages after list, and how a settings file's preview names it: kept messages are never removed on their own.
+Never	从不
 # context: a third switch under Keep deleted messages. Turned on, the text a message had before someone else edited it is kept on the phone.
 Keep edit history	保留编辑历史
 # context: that switch's summary. "Message details" is HushTelegram's own message menu item, translated the same as that row.

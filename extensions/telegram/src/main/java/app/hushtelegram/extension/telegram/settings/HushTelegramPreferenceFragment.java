@@ -152,6 +152,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String SUPPORTED_LINKS = "action_supported_links";
     /** The Clear kept messages row's key, which stores nothing. */
     static final String CLEAR_KEPT = "action_clear_kept_messages";
+    /** The Remove kept messages after row's key. The days are saved under {@link Settings#KEEP_DELETED_DAYS}. */
+    static final String KEPT_DAYS_ROW = "action_keep_deleted_days";
     /** The Show hidden messages row's key, which stores nothing. */
     static final String SHOW_HIDDEN = "action_show_hidden_messages";
     /** The Clear edit history row's key, which stores nothing. */
@@ -406,6 +408,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (voiceChanger != null) voiceChanger.setSummary(voiceChangerLabel(Settings.VOICE_CHANGER.get()));
         Preference recordKeep = findPreference(RECORD_KEEP_ROW);
         if (recordKeep != null) recordKeep.setSummary(recordKeepLabel(Settings.RECORD_CALLS_KEEP_DAYS.get()));
+        Preference keptDays = findPreference(KEPT_DAYS_ROW);
+        if (keptDays != null) keptDays.setSummary(keptDaysLabel(Settings.KEEP_DELETED_DAYS.get()));
         Preference kinds = findPreference(SAVE_KINDS_ROW);
         if (kinds != null) kinds.setSummary(saveKindsSummary());
         Preference storageName = findPreference(StorageFolderEditor.KEY);
@@ -1092,6 +1096,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + " it stands out in the chat. Works with Keep deleted messages on.")));
             }
             on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(clearKeptRow(context));
+            on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(keptDaysRow(context));
             on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(toggle(context, Settings.KEEP_OWN_DELETED,
                     L10n.t("Keep my messages too"), L10n.t("When someone deletes a whole chat for both of you, your own messages"
                             + " stay here along with theirs. So do messages you delete on another of your devices. Works with Keep"
@@ -2501,6 +2506,62 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             return true;
         });
         return row;
+    }
+
+    /** How long kept deleted messages stay (#91): the row names it, and a tap lists the choices. */
+    private Preference keptDaysRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(KEPT_DAYS_ROW);
+        row.setTitle(L10n.t("Remove kept messages after"));
+        row.setPersistent(false);
+        row.setSummary(keptDaysLabel(Settings.KEEP_DELETED_DAYS.get()));
+        row.setOnPreferenceClickListener(p -> {
+            showKeptDays(context, p);
+            return true;
+        });
+        return row;
+    }
+
+    /** A pick that saves hands over the messages already past it at once, and says how many go. */
+    void showKeptDays(Context context, Preference row) {
+        if (SettingsLock.refuses()) return;
+        CharSequence[] labels = new CharSequence[KeepDeleted.DAYS.size()];
+        for (int i = 0; i < labels.length; i++) labels[i] = keptDaysShort(KeepDeleted.DAYS.get(i));
+        show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("Remove kept messages after"))
+                .setSingleChoiceItems(labels, savedKeptDaysChoice(), (dialog, which) -> {
+                    boolean started = save((AlertDialog) dialog,
+                            () -> Settings.KEEP_DELETED_DAYS.saveCommitted(KeepDeleted.DAYS.get(which)), landed -> {
+                                if (landed) {
+                                    row.setSummary(keptDaysLabel(Settings.KEEP_DELETED_DAYS.get()));
+                                    dialog.dismiss();
+                                    int going = KeepDeleted.sweep();
+                                    if (going > 0) Utils.showToastLong(KeepDeleted.clearedMessage(going));
+                                } else {
+                                    checkSaved((AlertDialog) dialog, savedKeptDaysChoice());
+                                    Utils.showToastLong(L10n.t("Couldn't save the choice. Try again in a moment."));
+                                }
+                            });
+                    if (!started) checkSaved((AlertDialog) dialog, savedKeptDaysChoice());
+                })
+                .setNegativeButton(L10n.t("Cancel"), null));
+    }
+
+    /** Where the saved days sit in the list. A number that isn't one of them reads as Never. */
+    static int savedKeptDaysChoice() {
+        return Math.max(0, KeepDeleted.DAYS.indexOf(Settings.KEEP_DELETED_DAYS.get()));
+    }
+
+    static String keptDaysLabel(int days) {
+        if (days <= 0 || !KeepDeleted.DAYS.contains(days)) return L10n.t("Kept messages stay until you clear them.");
+        return L10n.quantity(days, "Kept messages are removed %1$d day after they were deleted.",
+                "Kept messages are removed %1$d days after they were deleted.", days);
+    }
+
+    /** The days as a choice in the list and in a settings file's preview. */
+    static String keptDaysShort(int days) {
+        if (days <= 0 || !KeepDeleted.DAYS.contains(days)) return L10n.t("Never");
+        return L10n.quantity(days, "%1$d day", "%1$d days", days);
     }
 
     /** Brings back every message Hide for me hid, in every account, and says how many. */

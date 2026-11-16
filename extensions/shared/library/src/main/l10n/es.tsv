@@ -482,6 +482,16 @@ Removing %1$d kept messages.	Eliminando %1$d mensajes conservados.
 # context: the notice once Telegram has finished removing them, with how many went
 Removed %1$d kept message.	Se eliminó %1$d mensaje conservado.
 Removed %1$d kept messages.	Se eliminaron %1$d mensajes conservados.
+# context: A row under Clear kept messages on the Keep deleted messages page (#91). A tap lists how long a kept deleted message stays on the phone before it's removed: Never, 1 day, 7 days, 30 days, 90 days.
+Remove kept messages after	Quitar los mensajes conservados tras
+# context: Line under Remove kept messages after when it's set to Never. Clear kept messages is the name of the row above it.
+Kept messages stay until you clear them.	Los mensajes conservados se quedan hasta que los borres.
+# context: Line under Remove kept messages after once a number of days is picked, singular. The days count from when the other person deleted the message.
+Kept messages are removed %1$d day after they were deleted.	Los mensajes conservados se quitan %1$d día después de que se borraran.
+# context: The same line, plural.
+Kept messages are removed %1$d days after they were deleted.	Los mensajes conservados se quitan %1$d días después de que se borraran.
+# context: The first choice in the Remove kept messages after list, and how a settings file's preview names it: kept messages are never removed on their own.
+Never	Nunca
 # context: a third switch under Keep deleted messages. Turned on, the text a message had before someone else edited it is kept on the phone.
 Keep edit history	Conservar el historial de ediciones
 # context: that switch's summary. "Message details" is HushTelegram's own message menu item, translated the same as that row.

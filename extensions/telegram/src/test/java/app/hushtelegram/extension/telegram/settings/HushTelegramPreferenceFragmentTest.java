@@ -1256,6 +1256,46 @@ public class HushTelegramPreferenceFragmentTest {
     }
 
     /**
+     * Remove kept messages after (#91) sits right under Clear kept messages and saves one of its
+     * days. The test JVM has no account to hand anything over from, so no notice follows.
+     */
+    @Test
+    public void removeKeptMessagesAfterSitsUnderClearAndSavesOneOfItsDays() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.KEEP_DELETED_MESSAGES);
+        ShadowToast.reset();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            List<Preference> rows = new ArrayList<>();
+            collect(pageOf(controller).getPreferenceScreen(), rows);
+            Preference days = rows.get(indexOfKey(rows, HushTelegramPreferenceFragment.CLEAR_KEPT) + 1);
+            assertEquals(HushTelegramPreferenceFragment.KEPT_DAYS_ROW, days.getKey());
+            assertEquals("Remove kept messages after", String.valueOf(days.getTitle()));
+            assertEquals("Kept messages stay until you clear them.", String.valueOf(days.getSummary()));
+            assertFalse(days.isPersistent());
+
+            AlertDialog list = dialogOf(days);
+            assertEquals("Remove kept messages after", String.valueOf(shadowOf(list).getTitle()));
+            List<String> labels = new ArrayList<>();
+            for (int i = 0; i < list.getListView().getCount(); i++) {
+                labels.add(String.valueOf(list.getListView().getAdapter().getItem(i)));
+            }
+            assertEquals(Arrays.asList("Never", "1 day", "7 days", "30 days", "90 days"), labels);
+            assertEquals(0, list.getListView().getCheckedItemPosition());
+            shadowOf(list).clickOnItem(2);
+            settle();
+            assertFalse(list.isShowing());
+            assertEquals(7, (int) Settings.KEEP_DELETED_DAYS.get());
+            assertEquals("Kept messages are removed 7 days after they were deleted.", String.valueOf(days.getSummary()));
+            assertEquals(2, dialogOf(days).getListView().getCheckedItemPosition());
+            assertNull("nothing could be handed over, so nothing is announced", ShadowToast.getLatestToast());
+            assertEquals("Kept messages are removed 1 day after they were deleted.", HushTelegramPreferenceFragment.keptDaysLabel(1));
+            assertEquals("a number the list doesn't offer reads as Never", "Never", HushTelegramPreferenceFragment.keptDaysShort(45));
+        } finally {
+            Settings.KEEP_DELETED_DAYS.resetToDefault();
+            HookStatus.clear();
+        }
+    }
+
+    /**
      * Hide messages by keyword brings a row for each list under its switch. A tap opens the list;
      * Save keeps the dialog and what was typed when a line can't be used, and saves the list
      * trimmed when every line can.

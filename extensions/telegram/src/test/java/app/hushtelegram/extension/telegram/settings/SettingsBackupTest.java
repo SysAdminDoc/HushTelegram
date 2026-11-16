@@ -227,7 +227,8 @@ public class SettingsBackupTest {
         assertEquals("a setting in Settings isn't a switch, and a settings file has no format for it",
                 Collections.emptyList(), notSwitches);
         assertEquals(Arrays.asList(Settings.MESSAGE_FILTERS_GROUPS, Settings.MESSAGE_FILTERS_CHANNELS), SettingsBackup.FILTER_LISTS);
-        assertEquals(Arrays.asList(Settings.STICKER_SIZE, Settings.RECORD_CALLS_KEEP_DAYS, Settings.CHAT_LIST_AVATAR_SIZE, Settings.LIST_BACKGROUND_DIM), SettingsBackup.NUMBERS);
+        assertEquals(Arrays.asList(Settings.STICKER_SIZE, Settings.RECORD_CALLS_KEEP_DAYS, Settings.CHAT_LIST_AVATAR_SIZE, Settings.LIST_BACKGROUND_DIM,
+                Settings.KEEP_DELETED_DAYS), SettingsBackup.NUMBERS);
         assertEquals(Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET, Settings.FOLDER_ICON_PACK, Settings.STORAGE_FOLDER_NAME,
                 Settings.SAVE_KINDS_LEFT_OUT, Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LOCAL_PINNED_CHATS, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS, Settings.CHAT_LIST_BANNER, Settings.VOICE_CHANGER), SettingsBackup.TEXTS);
         assertEquals(Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_STORIES, Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_KEYBOARD_FEATURED, Settings.HIDE_COMMERCE, Settings.HIDE_EMOJI_STATUS, Settings.UNLOCK_PREMIUM_ICONS, Settings.LOCAL_EMOJI_STATUS,
@@ -756,9 +757,9 @@ public class SettingsBackupTest {
         }
 
         // A saved state is read back as strictly: a size that isn't a choice is left out, and only the
-        // days recordings stay, the avatar size and the background's dim come back.
+        // days recordings stay, the avatar size, the background's dim and the days kept messages stay come back.
         Set<Object> others = new HashSet<>(Arrays.asList(Settings.RECORD_CALLS_KEEP_DAYS, Settings.CHAT_LIST_AVATAR_SIZE,
-                Settings.LIST_BACKGROUND_DIM));
+                Settings.LIST_BACKGROUND_DIM, Settings.KEEP_DELETED_DAYS));
         Bundle state = snapshot.toBundle();
         state.getBundle("numbers").putInt(Settings.STICKER_SIZE.key, 100);
         assertEquals(others, new HashSet<Object>(SettingsBackup.Snapshot.fromBundle(state).numbers.keySet()));
@@ -1499,6 +1500,37 @@ public class SettingsBackupTest {
         } finally {
             Settings.RECORD_CALLS_WHICH.resetToDefault();
             Settings.RECORD_CALLS_KEEP_DAYS.resetToDefault();
+        }
+    }
+
+    /**
+     * How long kept deleted messages stay goes out with the switches, comes back only as one of the
+     * days its row offers, and shows in the preview (#91).
+     */
+    @Test
+    public void theKeptMessageDaysRoundTripAsOneOfTheirChoicesAndShowInThePreview() throws Exception {
+        Settings.KEEP_DELETED_DAYS.save(7);
+        String file = SettingsBackup.create();
+        assertEquals(7, new JSONObject(file).getJSONObject("settings").get(Settings.KEEP_DELETED_DAYS.key));
+        for (Object bad : new Object[]{2, -7, 366, "7", true, JSONObject.NULL}) {
+            JSONObject wrong = new JSONObject(file);
+            wrong.getJSONObject("settings").put(Settings.KEEP_DELETED_DAYS.key, bad);
+            assertEquals(String.valueOf(bad), SettingsBackup.Reason.VALUE, reasonFor(wrong.toString()));
+        }
+
+        Settings.KEEP_DELETED_DAYS.resetToDefault();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
+            deliver(activity, tap(activity, page, IMPORT_ROW), file);
+            AlertDialog preview = shownPreview();
+            assertEquals("Remove kept messages after: Never to 7 days", String.valueOf(shadowOf(preview).getMessage()));
+            preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertEquals("Settings imported.", ShadowToast.getTextOfLatestToast());
+            assertEquals(7, (int) Settings.KEEP_DELETED_DAYS.savedValue());
+        } finally {
+            Settings.KEEP_DELETED_DAYS.resetToDefault();
         }
     }
 

@@ -47,6 +47,7 @@ import app.hushtelegram.extension.shared.settings.StringSetting;
 import app.hushtelegram.extension.telegram.misc.ChatListAvatar;
 import app.hushtelegram.extension.telegram.misc.Bookmarks;
 import app.hushtelegram.extension.telegram.misc.ChatListBanner;
+import app.hushtelegram.extension.telegram.misc.KeepDeleted;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.FolderIcons;
 import app.hushtelegram.extension.telegram.misc.GalleryFolder;
@@ -324,11 +325,12 @@ public final class SettingsBackup {
 
     /**
      * The numbers a file carries, each one of a few choices: the sticker size, how many days call
-     * recordings stay, the chat list's avatar size and how much the picture behind the lists is
-     * dimmed. A build from before them counts the name as unknown and leaves it out.
+     * recordings stay, the chat list's avatar size, how much the picture behind the lists is
+     * dimmed and how many days kept deleted messages stay. A build from before them counts the name
+     * as unknown and leaves it out.
      */
     static final List<IntegerSetting> NUMBERS = Arrays.asList(Settings.STICKER_SIZE, Settings.RECORD_CALLS_KEEP_DAYS,
-            Settings.CHAT_LIST_AVATAR_SIZE, Settings.LIST_BACKGROUND_DIM);
+            Settings.CHAT_LIST_AVATAR_SIZE, Settings.LIST_BACKGROUND_DIM, Settings.KEEP_DELETED_DAYS);
 
     /**
      * The short texts a file carries as they're saved: the emoji beside the chat list's title, the
@@ -814,6 +816,7 @@ public final class SettingsBackup {
     /** Whether a number is one of its setting's choices. */
     static boolean allowed(IntegerSetting setting, int value) {
         if (setting == Settings.RECORD_CALLS_KEEP_DAYS) return HushTelegramPreferenceFragment.RECORD_KEEP_DAYS.contains(value);
+        if (setting == Settings.KEEP_DELETED_DAYS) return KeepDeleted.DAYS.contains(value);
         if (setting == Settings.CHAT_LIST_AVATAR_SIZE) return ChatListAvatar.percent(value) == value;
         if (setting == Settings.LIST_BACKGROUND_DIM) return ListBackground.dimOffered(value);
         return setting == Settings.STICKER_SIZE && StickerSize.percent(value) == value;

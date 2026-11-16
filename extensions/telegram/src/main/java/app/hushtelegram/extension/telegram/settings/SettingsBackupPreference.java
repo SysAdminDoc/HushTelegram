@@ -498,6 +498,10 @@ public class SettingsBackupPreference extends Preference {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Keep recordings"),
                         HushTelegramPreferenceFragment.recordKeepShort(Settings.RECORD_CALLS_KEEP_DAYS.savedValue()),
                         HushTelegramPreferenceFragment.recordKeepShort((Integer) change.getValue())));
+            } else if (change.getKey() == Settings.KEEP_DELETED_DAYS) {
+                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Remove kept messages after"),
+                        HushTelegramPreferenceFragment.keptDaysShort(Settings.KEEP_DELETED_DAYS.savedValue()),
+                        HushTelegramPreferenceFragment.keptDaysShort((Integer) change.getValue())));
             } else if (change.getKey() == Settings.LINK_PREVIEW_RULE_LIST) {
                 int before = LinkPreviewRules.saved().rules.size();
                 int after = LinkPreviewRules.parse((String) change.getValue()).rules.size();
