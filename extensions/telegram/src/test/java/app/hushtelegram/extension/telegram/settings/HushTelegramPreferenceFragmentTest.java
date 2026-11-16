@@ -614,6 +614,13 @@ public class HushTelegramPreferenceFragmentTest {
             // Telegram's translate bar stays until someone turns the switch on.
             assertFalse(Settings.HIDE_TRANSLATE_BAR.key,
                     ((SwitchPreference) page.findPreference(Settings.HIDE_TRANSLATE_BAR.key)).isChecked());
+            assertEquals("Hide pinned message bar", String.valueOf(page.findPreference(Settings.HIDE_PINNED_BAR.key).getTitle()));
+            assertEquals("The bar under a chat's top bar that shows pinned messages is gone, along with its counter "
+                    + "and list button. Messages stay pinned and nothing is marked as read.",
+                    String.valueOf(page.findPreference(Settings.HIDE_PINNED_BAR.key).getSummary()));
+            // The pinned message bar stays until someone turns its own switch on.
+            assertFalse(Settings.HIDE_PINNED_BAR.key,
+                    ((SwitchPreference) page.findPreference(Settings.HIDE_PINNED_BAR.key)).isChecked());
             assertEquals("Exact numbers", String.valueOf(page.findPreference(Settings.EXACT_NUMBERS.key).getTitle()));
             assertEquals("Member, subscriber, view, reply and reaction counts show in full, like 12,345 instead of "
                     + "12.3K.",

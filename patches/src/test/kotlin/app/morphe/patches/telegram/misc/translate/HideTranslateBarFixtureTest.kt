@@ -12,10 +12,13 @@ import app.morphe.util.names.origRef
 import app.morphe.util.names.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
+import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
+import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -25,6 +28,8 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.SwitchPayload
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
@@ -38,6 +43,7 @@ import java.lang.ref.SoftReference
 import app.morphe.util.names.origDefiningClass
 import app.morphe.util.names.origName
 import app.morphe.util.names.origString
+import app.morphe.util.names.origType
 import app.morphe.util.names.tgClassDefByOrNull
 import app.morphe.util.names.tgMutableClassDefBy
 
@@ -49,7 +55,7 @@ class HideTranslateBarFixtureTest {
             val context = context(build)
             val sites = context.resolveTranslateBar()
             assertEquals("$name: the top bar and the menu", 2, sites.size)
-            val changed = sites.map { key(it.method) }.toSet()
+            val changed = sites.map { key(it.method) }.toSet() + key(pinnedDecision(context, sites.first().method.definingClass))
             val old = sites.associate { key(it.method) to ImmutableMethod.of(it.method) }
             val untouched = hostState(build, context, changed)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { hideTranslateBarPatch.execute(context) })
@@ -95,6 +101,8 @@ class HideTranslateBarFixtureTest {
                 "private hidden hook" to { c, _ -> val h = c.tgMutableClassDefBy(TRANSLATE_BAR).methods.single { it.origName == "hidden" }
                     h.accessFlags = h.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value },
                 "missing stock stub" to { c, _ -> c.tgMutableClassDefBy(TRANSLATE_BAR).methods.removeAll { it.origName == "stockHidden" } },
+                "missing pinned bar hook" to { c, _ -> c.tgMutableClassDefBy(TRANSLATE_BAR).methods.removeAll { it.origName == "pinnedBarHidden" } },
+                "missing pinned bar flag" to { c, _ -> c.tgMutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.origName == "hidePinnedBar" } },
             )
             for ((case, change) in mutations) {
                 val c = context(build)
@@ -103,6 +111,113 @@ class HideTranslateBarFixtureTest {
                 assertThrows("${build.name}: $case", PatchException::class.java) { hideTranslateBarPatch.execute(c) }
                 assertEquals("${build.name}: $case preserves every method, path and build fact", before, completeState(build, c))
             }
+        }
+    }
+
+    @Test fun `the pinned message bar asks the runtime first and a yes takes Telegram's own hide path`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = context(build)
+            val screen = context.resolveTranslateBar().first().method.definingClass
+            val stock = ImmutableMethod.of(pinnedDecision(context, screen))
+            val stockBody = stock.controlBody()
+            val stockFlow = ControlFlow.of(stock)
+            val info = stockBody.indices.single { stockBody.chatInfoAt(it) }
+            // Telegram's no-info branch is its hide path: the screen's hide, then the chat laid out again.
+            val hide = stockFlow.normal[info + 3].first()
+            // The first check asks whether this is a comment thread, and a plain chat goes on to the info.
+            val head = stockBody.indices.single { at -> stockBody[at].fieldType() == MESSAGE_OBJECT &&
+                stockBody[at].controlField()?.definingClass == screen && stockBody[at + 1].opcode == Opcode.IF_EQZ &&
+                stockFlow.normal[at + 1].first() == info }
+
+            assertEquals(emptyList<String>(), PatchLogCapture.warnings { hideTranslateBarPatch.execute(context) })
+            val changed = pinnedDecision(context, screen)
+            val body = changed.controlBody()
+            assertEquals("$name: asked once, ahead of the thread check", listOf(head), body.indices.filter { body[it].controlRef() == PINNED_HOOK })
+            assertEquals(listOf(Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.IF_NEZ), (head..head + 2).map { body[it].opcode })
+            val scratch = (stockBody[head] as TwoRegisterInstruction).registerA
+            assertEquals("$name: the answer lands in the register the thread check loads next", listOf(scratch), body[head + 1].namedRegisters())
+            assertEquals(listOf(scratch), body[head + 2].namedRegisters())
+            val flow = ControlFlow.of(changed)
+            val moved = stockToChanged(stock, changed, head until head + 3)
+            assertEquals("$name: a yes hides the bar, a no runs Telegram's checks", listOf(moved.getValue(hide), moved.getValue(head)), flow.normal[head + 2])
+            assertEquals("$name: the hook sits where the thread check did", stockFlow.exceptional[head].map { moved[it] }, flow.exceptional[head])
+            assertEquals("$name: every stock instruction, branch and handler", shape(stock, IntRange.EMPTY, head), shape(changed, head until head + 3, head))
+            assertEquals("$name: handlers", stock.implementation!!.tryBlocks.map { b -> b.exceptionHandlers.map { it.exceptionType } },
+                changed.implementation!!.tryBlocks.map { b -> b.exceptionHandlers.map { it.exceptionType } })
+
+            assertEquals(1L, flag(context, "hidePinnedBar"))
+            assertEquals(1L, flag(context, "hideTranslateBar"))
+        }
+    }
+
+    @Test fun `a pinned message bar decided another way stays Telegram's and the translate bar still lands`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val cases: List<Pair<String, (List<Instruction>, MutableMethod) -> Unit>> = listOf(
+                "the closed pin is read elsewhere" to { body, m -> body.indices.filter { body[it].controlString() == "pin_" }
+                    .forEach { m.replaceInstruction(it, "const-string v${body[it].namedRegisters().first()}, \"pinned_\"") } },
+                "the user's info isn't asked" to { body, m -> val at = body.indices.single { body.chatInfoAt(it) } + 2
+                    m.replaceInstruction(at, "const/16 v${body[at].namedRegisters().first()}, 0x0") },
+                "the hide path returns at once" to { body, m -> m.replaceInstruction(ControlFlow.of(m).normal[body.indices.single { body.chatInfoAt(it) } + 3].first(), "return-void") },
+                "no thread check comes first" to { body, m -> val at = body.indices.single { body.chatInfoAt(it) } - 4
+                    m.replaceInstruction(at, "const/16 v${body[at].namedRegisters().first()}, 0x0") },
+            )
+            for ((case, change) in cases) {
+                val c = context(build)
+                val sites = c.resolveTranslateBar()
+                val decision = pinnedDecision(c, sites.first().method.definingClass)
+                change(decision.controlBody(), decision)
+                val before = decision.state()
+                val warnings = PatchLogCapture.warnings { hideTranslateBarPatch.execute(c) }
+                assertEquals("${build.name}: $case: $warnings", 1, warnings.size)
+                assertTrue(warnings.single(), warnings.single().startsWith("Hide translate bar: ") &&
+                    warnings.single().endsWith("The patch goes on without the pinned message bar switch."))
+                assertEquals("${build.name}: $case keeps the decision", before, decision.state())
+                assertTrue(c.tgMutableClassDefBy(sites.first().method.definingClass).methods.none { m -> m.controlBody().any { it.controlRef() == PINNED_HOOK } })
+                assertEquals("${build.name}: $case", 0L, flag(c, "hidePinnedBar"))
+                assertEquals("${build.name}: $case", 1L, flag(c, "hideTranslateBar"))
+                assertTrue(sites.all { it.method.controlBody()[it.index].controlRef() == "$TRANSLATE_BAR->hidden(Ljava/lang/Object;J)Z" })
+            }
+        }
+    }
+
+    /** The screen method that reads the closed pin and checks the chat's and user's info: where the pinned bar is decided. */
+    private fun pinnedDecision(c: BytecodePatchContext, screen: String) = c.tgMutableClassDefBy(screen).methods.single { m ->
+        val body = m.controlBody()
+        body.any { it.controlString() == "pin_" } && body.indices.any { body.chatInfoAt(it) }
+    }
+    private fun List<Instruction>.chatInfoAt(at: Int) = at + 3 < size && this[at].fieldType() == CHAT_FULL &&
+        this[at + 1].opcode == Opcode.IF_NEZ && this[at + 2].fieldType() == USER_FULL && this[at + 3].opcode == Opcode.IF_EQZ
+    /** The type an object read loads, as Telegram's source names it: R8 renames MessageObject in some builds. */
+    private fun Instruction.fieldType() = if (opcode == Opcode.IGET_OBJECT) controlField()?.origType else null
+    private fun flag(c: BytecodePatchContext, name: String) =
+        (c.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == name }.controlBody().first() as WideLiteralInstruction).wideLiteral
+
+    /** Each stock instruction's place in [changed], the hook at [hook] and the NOPs of payload alignment left out. */
+    private fun stockToChanged(stock: Method, changed: Method, hook: IntRange): Map<Int, Int> {
+        val a = stock.controlBody().let { b -> b.indices.filter { b[it].opcode != Opcode.NOP } }
+        val b = changed.controlBody().let { c -> c.indices.filter { it !in hook && c[it].opcode != Opcode.NOP } }
+        assertEquals("the same stock instructions", a.size, b.size)
+        return a.zip(b).toMap()
+    }
+
+    /**
+     * The body outside [hook], NOPs left out: operands, branches and handlers, GOTO_16 and GOTO_32 read
+     * as GOTO. A branch onto [landing] or into the hook reads as the hook, so a stock branch onto the
+     * instruction the hook went in front of matches the same branch onto the hook.
+     */
+    private fun shape(method: Method, hook: IntRange, landing: Int): List<List<Any?>> {
+        val body = method.controlBody()
+        val flow = ControlFlow.of(method)
+        val kept = body.indices.filter { it !in hook && body[it].opcode != Opcode.NOP }
+        val place = kept.withIndex().associate { (at, index) -> index to at }
+        fun at(target: Int): Any = if (target in hook || target == landing) "the hook" else place[target]
+            ?: "a nop before ${kept.firstOrNull { it > target }?.let { place[it] } ?: "the end"}"
+        return kept.map { i ->
+            val instruction = body[i]
+            val opcode = if (instruction.opcode == Opcode.GOTO_16 || instruction.opcode == Opcode.GOTO_32) Opcode.GOTO else instruction.opcode
+            listOf(opcode, instruction.namedRegisters(), instruction.origRef(), (instruction as? WideLiteralInstruction)?.wideLiteral,
+                (instruction as? SwitchPayload)?.switchElements?.map { it.key }, flow.normal[i].map(::at), flow.exceptional[i].map(::at))
         }
     }
 
@@ -138,6 +253,10 @@ class HideTranslateBarFixtureTest {
     private fun key(m: Method) = "${m.definingClass}->${m.name}(${m.parameterTypes.joinToString("")})${m.returnType}"
 
     companion object {
+        /** Spelled out, so the test reads the same on a tree that doesn't have the hook yet. */
+        private const val PINNED_HOOK = "$TRANSLATE_BAR->pinnedBarHidden()Z"
+        private const val CHAT_FULL = "Lorg/telegram/tgnet/TLRPC\$ChatFull;"
+        private const val USER_FULL = "Lorg/telegram/tgnet/TLRPC\$UserFull;"
         private val HOSTS = mutableMapOf<String, SoftReference<List<ClassDef>>>()
         @AfterClass @JvmStatic fun releaseFixtures() { HOSTS.clear() }
     }

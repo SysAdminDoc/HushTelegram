@@ -271,9 +271,11 @@ public class PausedHooksTest {
             app.hushtelegram.extension.telegram.misc.BlackTheme.loaded("night.attheme", night);
             return night.get(1) == 0xFF000000;
         }));
-        // A chat that isn't being translated answers that its translate bar is hidden.
-        probes.put(PatchFamily.HIDE_TRANSLATE_BAR, Collections.singletonList(
-                () -> app.hushtelegram.extension.telegram.misc.TranslateBar.hidden(new Object(), 42L)));
+        // A chat that isn't being translated answers that its translate bar is hidden, and the
+        // pinned message bar answers hidden too.
+        probes.put(PatchFamily.HIDE_TRANSLATE_BAR, Arrays.asList(
+                () -> app.hushtelegram.extension.telegram.misc.TranslateBar.hidden(new Object(), 42L),
+                app.hushtelegram.extension.telegram.misc.TranslateBar::pinnedBarHidden));
         // A count comes back written in full.
         probes.put(PatchFamily.EXACT_NUMBERS, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.ExactNumbers.format(12345, null) != null));

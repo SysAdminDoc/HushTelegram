@@ -803,6 +803,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.HIDE_TRANSLATE_BAR).addPreference(toggle(context, Settings.HIDE_TRANSLATE_BAR, L10n.t("Hide translate bar"),
                     PatchFamily.HIDE_TRANSLATE_BAR.coverageSummary(L10n.t("Chats in another language stop showing the translate bar at the top. Translate "
                             + "moves to the chat's menu, and a chat you're translating keeps its bar."))));
+            if (PatchFamily.Capability.HIDE_PINNED_BAR.installed()) {
+                on(pages, PatchFamily.HIDE_TRANSLATE_BAR).addPreference(toggle(context, Settings.HIDE_PINNED_BAR,
+                        L10n.t("Hide pinned message bar"), L10n.t("The bar under a chat's top bar that shows pinned messages is gone, "
+                                + "along with its counter and list button. Messages stay pinned and nothing is marked as read.")));
+            }
         }
         if (build.contains(PatchFamily.REVEAL_SPOILERS)) {
             on(pages, PatchFamily.REVEAL_SPOILERS).addPreference(toggle(context, Settings.REVEAL_SPOILERS, L10n.t("Reveal spoilers"),

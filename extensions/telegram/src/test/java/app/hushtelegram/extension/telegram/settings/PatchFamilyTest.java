@@ -94,6 +94,7 @@ public class PatchFamilyTest {
         Settings.USE_SYSTEM_FONT.resetToDefault();
         Settings.AMOLED_BLACK.resetToDefault();
         Settings.HIDE_TRANSLATE_BAR.resetToDefault();
+        Settings.HIDE_PINNED_BAR.resetToDefault();
         Settings.EXACT_NUMBERS.resetToDefault();
         Settings.REVEAL_SPOILERS.resetToDefault();
         Settings.REVEAL_MENU.resetToDefault();
@@ -1133,10 +1134,14 @@ public class PatchFamilyTest {
     public void translateBarHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
         PatchFamily family = PatchFamily.HIDE_TRANSLATE_BAR;
         assertEquals("Hide translate bar", family.patchName);
-        assertEquals(Collections.singletonList(Settings.HIDE_TRANSLATE_BAR), family.switches);
-        assertFalse(Settings.HIDE_TRANSLATE_BAR.defaultValue);
-        assertFalse(Settings.HIDE_TRANSLATE_BAR.rebootApp);
-        assertTrue(family.expectedCapabilities().isEmpty());
+        // The pinned message bar sits in the same chat screen and has its own switch.
+        assertEquals(Arrays.asList(Settings.HIDE_TRANSLATE_BAR, Settings.HIDE_PINNED_BAR), family.switches);
+        for (BooleanSetting setting : family.switches) {
+            assertFalse(setting.key, setting.defaultValue);
+            assertFalse(setting.key, setting.rebootApp);
+        }
+        assertEquals(EnumSet.of(PatchFamily.Capability.HIDE_PINNED_BAR), family.expectedCapabilities());
+        assertEquals("hidePinnedBar", PatchFamily.Capability.HIDE_PINNED_BAR.statusMethod);
         assertOnItsPage(family);
     }
 

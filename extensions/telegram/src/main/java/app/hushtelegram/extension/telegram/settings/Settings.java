@@ -218,6 +218,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_hide_translate_bar", FALSE);
 
     /**
+     * No pinned message bar under a chat's top bar, its counter and list button included. The pinned
+     * messages stay pinned and nothing is marked as read; the chat screen takes the bar's place.
+     */
+    public static final BooleanSetting HIDE_PINNED_BAR =
+            new BooleanSetting("hushtelegram_hide_pinned_bar", FALSE);
+
+    /**
      * Member, subscriber, view, reply and reaction counts written in full instead of shortened to
      * 12.3K.
      */

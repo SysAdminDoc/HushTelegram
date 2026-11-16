@@ -363,6 +363,12 @@ AMOLED black	Hitam AMOLED
 Night and Dark themes use pure black screens. Message bubbles and menus keep their colors. Restart Telegram to see the change.	Tema Malam dan Gelap memakai layar hitam pekat. Gelembung pesan dan menu tetap berwarna. Mulai ulang Telegram untuk melihat perubahannya.
 Hide translate bar	Sembunyikan bilah terjemahan
 Chats in another language stop showing the translate bar at the top. Translate moves to the chat's menu, and a chat you're translating keeps its bar.	Obrolan dalam bahasa lain tidak lagi menampilkan bilah terjemahan di bagian atas. Terjemahkan pindah ke menu obrolan, dan obrolan yang sedang Anda terjemahkan tetap menampilkan bilahnya.
+# context: Conversations page switch title, below Hide translate bar. It hides the bar under a chat's top bar that shows the pinned message (Telegram's PinnedMessage strings).
+Hide pinned message bar	Sembunyikan bilah pesan yang disematkan
+# context: Summary under the Hide pinned message bar switch. The counter is the multi-pin indicator and the list button opens all pinned messages.
+The bar under a chat's top bar that shows pinned messages is gone, along with its counter and list button. Messages stay pinned and nothing is marked as read.	Bilah di bawah bilah atas obrolan yang menampilkan pesan yang disematkan hilang, bersama penghitung dan tombol daftarnya. Pesan tetap disematkan dan tidak ada yang ditandai sudah dibaca.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide translate bar that hides the pinned message bar in chats.
+pinned message bar in chats	bilah pesan yang disematkan di obrolan
 Exact numbers	Angka lengkap
 Member, subscriber, view, reply and reaction counts show in full, like 12,345 instead of 12.3K.	Jumlah anggota, pelanggan, tayangan, balasan, dan reaksi ditampilkan lengkap, misalnya 12.345 dan bukan 12,3 rb.
 Reveal spoilers	Tampilkan spoiler

@@ -133,6 +133,7 @@ public final class SettingsBackup {
             Settings.USE_SYSTEM_FONT,
             Settings.AMOLED_BLACK,
             Settings.HIDE_TRANSLATE_BAR,
+            Settings.HIDE_PINNED_BAR,
             Settings.EXACT_NUMBERS,
             Settings.REVEAL_SPOILERS,
             Settings.REVEAL_MENU,

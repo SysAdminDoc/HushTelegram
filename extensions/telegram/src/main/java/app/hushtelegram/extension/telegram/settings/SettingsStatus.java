@@ -90,6 +90,7 @@ public final class SettingsStatus {
     public static boolean useSystemFont() { return false; }
     public static boolean amoledBlack() { return false; }
     public static boolean hideTranslateBar() { return false; }
+    public static boolean hidePinnedBar() { return false; }
     public static boolean exactNumbers() { return false; }
     public static boolean revealSpoilers() { return false; }
     public static boolean chatRevealMenu() { return false; }

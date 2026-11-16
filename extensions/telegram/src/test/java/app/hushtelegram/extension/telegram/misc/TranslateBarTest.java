@@ -30,8 +30,44 @@ public class TranslateBarTest {
     @After public void restore() {
         PauseForTests.resume();
         SettingReadsForTests.mend(Settings.HIDE_TRANSLATE_BAR);
+        SettingReadsForTests.mend(Settings.HIDE_PINNED_BAR);
         Settings.HIDE_TRANSLATE_BAR.resetToDefault();
+        Settings.HIDE_PINNED_BAR.resetToDefault();
         HookStatus.clear();
+    }
+
+    @Test public void thePinnedBarShowsUntilItsOwnSwitchIsOn() {
+        assertFalse(Settings.HIDE_PINNED_BAR.get());
+        assertFalse(TranslateBar.pinnedBarHidden());
+        // The translate bar's switch is a separate choice.
+        Settings.HIDE_TRANSLATE_BAR.save(true);
+        assertFalse(TranslateBar.pinnedBarHidden());
+
+        Settings.HIDE_PINNED_BAR.save(true);
+        assertTrue(TranslateBar.pinnedBarHidden());
+        assertTrue(String.join("\n", HookStatus.report()).contains("pinned bar hidden 1"));
+        Settings.HIDE_TRANSLATE_BAR.save(false);
+        assertTrue(TranslateBar.pinnedBarHidden());
+    }
+
+    @Test public void pausingOrAnEarlyStartShowsThePinnedBar() {
+        Settings.HIDE_PINNED_BAR.save(true);
+        for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
+            if (reason == HushTelegramPause.Reason.NONE) continue;
+            PauseForTests.pause(reason);
+            assertFalse(reason.name(), TranslateBar.pinnedBarHidden());
+            assertTrue(Settings.HIDE_PINNED_BAR.savedValue());
+            PauseForTests.resume();
+            assertTrue(reason.name(), TranslateBar.pinnedBarHidden());
+        }
+        SettingsContextRule.withoutContext(() -> assertFalse(TranslateBar.pinnedBarHidden()));
+    }
+
+    @Test public void aFailedReadShowsThePinnedBarAndReportsIt() {
+        Settings.HIDE_PINNED_BAR.save(true);
+        SettingReadsForTests.breakReads(Settings.HIDE_PINNED_BAR);
+        assertFalse(TranslateBar.pinnedBarHidden());
+        assertFalse(HookStatus.missing(FamilyNames.HIDE_TRANSLATE_BAR).isEmpty());
     }
 
     @Test public void offByDefaultShowsTheBarWhereTelegramDoes() {

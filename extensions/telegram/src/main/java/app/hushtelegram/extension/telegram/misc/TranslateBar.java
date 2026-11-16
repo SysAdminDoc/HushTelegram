@@ -17,6 +17,12 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * bar is hidden in two places: the top bar itself, and the menu, which offers Translate exactly when
  * the bar is hidden. Both ask here instead. Message translation asks Telegram directly, so a chat
  * being translated stays translated, and it keeps its bar so the original is one tap away.
+ *
+ * <p>The same screen decides on its pinned message bar in one place, and every reason it has to keep
+ * the bar away (no chat info yet, nothing pinned, a pin the person closed) takes one path, which
+ * hides the bar and lays the chat out again. {@link #pinnedBarHidden()} sends it down that path first.
+ * Nothing is unpinned or marked as read, and the bar is back the next time the screen decides with
+ * the switch off.
  */
 public final class TranslateBar {
     private TranslateBar() {}
@@ -44,6 +50,23 @@ public final class TranslateBar {
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.HIDE_TRANSLATE_BAR, "translate bar", failure);
             return stock;
+        }
+    }
+
+    /**
+     * Asked before the chat screen's own checks each time it decides on its pinned message bar.
+     *
+     * @return whether the bar is hidden: the switch, and never while paused or before settings load
+     */
+    public static boolean pinnedBarHidden() {
+        HookStatus.invoked(FamilyNames.HIDE_TRANSLATE_BAR);
+        try {
+            if (!Utils.settingsReady() || !Settings.HIDE_PINNED_BAR.get()) return false;
+            HookStatus.counted(FamilyNames.HIDE_TRANSLATE_BAR, "pinned bar hidden");
+            return true;
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.HIDE_TRANSLATE_BAR, "pinned bar", failure);
+            return false;
         }
     }
 

@@ -363,6 +363,12 @@ AMOLED black	AMOLED-Schwarz
 Night and Dark themes use pure black screens. Message bubbles and menus keep their colors. Restart Telegram to see the change.	Die Designs Nacht und Dunkel verwenden reinschwarze Bildschirme. Nachrichtenblasen und Menüs behalten ihre Farben. Starte Telegram neu, um die Änderung zu sehen.
 Hide translate bar	Übersetzungsleiste ausblenden
 Chats in another language stop showing the translate bar at the top. Translate moves to the chat's menu, and a chat you're translating keeps its bar.	Chats in einer anderen Sprache zeigen oben keine Übersetzungsleiste mehr. Übersetzen wandert ins Chatmenü, und ein Chat, den du gerade übersetzt, behält seine Leiste.
+# context: Conversations page switch title, below Hide translate bar. It hides the bar under a chat's top bar that shows the pinned message (Telegram's PinnedMessage strings).
+Hide pinned message bar	Leiste für angeheftete Nachrichten ausblenden
+# context: Summary under the Hide pinned message bar switch. The counter is the multi-pin indicator and the list button opens all pinned messages.
+The bar under a chat's top bar that shows pinned messages is gone, along with its counter and list button. Messages stay pinned and nothing is marked as read.	Die Leiste unter der oberen Leiste eines Chats, die angeheftete Nachrichten zeigt, verschwindet samt Zähler und Listen-Taste. Nachrichten bleiben angeheftet, und nichts wird als gelesen markiert.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide translate bar that hides the pinned message bar in chats.
+pinned message bar in chats	Leiste für angeheftete Nachrichten in Chats
 Exact numbers	Genaue Zahlen
 Member, subscriber, view, reply and reaction counts show in full, like 12,345 instead of 12.3K.	Zahlen für Mitglieder, Abonnenten, Aufrufe, Antworten und Reaktionen erscheinen vollständig, etwa 12.345 statt 12,3K.
 Reveal spoilers	Spoiler aufdecken
