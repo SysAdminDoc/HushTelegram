@@ -2017,6 +2017,29 @@ public class HushTelegramPreferenceFragmentTest {
         }
     }
 
+    /** Member join dates get their own switch, off until turned on, only in a build where their hooks went in. */
+    @Test
+    public void memberJoinDatesHaveTheirOwnSwitchWhenTheirHooksAreIn() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SHOW_LOCAL_IDS);
+        try {
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.PROFILE_LOCAL_IDS);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                assertNull("a build without the hooks has no switch", pageOf(controller).findPreference(Settings.MEMBER_JOIN_DATES.key));
+            }
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.PROFILE_LOCAL_IDS, PatchFamily.Capability.MEMBER_JOIN_DATES);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                SwitchPreference toggle = (SwitchPreference) pageOf(controller).findPreference(Settings.MEMBER_JOIN_DATES.key);
+                assertEquals("Show when members joined", String.valueOf(toggle.getTitle()));
+                assertEquals("A group's member lists, on its profile and its Members page, also show when each person joined, "
+                        + "next to their last seen. The date comes with the list, so nothing more is asked of Telegram. "
+                        + "Admins and the owner keep their role.", String.valueOf(toggle.getSummary()));
+                assertFalse("off until turned on", toggle.isChecked());
+            }
+        } finally {
+            PatchFamily.capabilitiesForTests = null;
+        }
+    }
+
     /**
      * Hide folder tab counters brings the folder at launch switch and, under it, a row that lists
      * All Chats and the account's folders and saves the pick for the account shown.

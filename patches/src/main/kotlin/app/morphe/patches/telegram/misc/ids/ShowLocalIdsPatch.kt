@@ -58,6 +58,8 @@ val showLocalIdsPatch = bytecodePatch(
         val registrationMissing = registrationDateMissing()
         // Special contacts is optional: found before anything changes, put in after the rest.
         val (special, specialMissing) = resolveSpecialContacts()
+        // So are member join dates, rehearsed on copies of every method they change.
+        val (joinDates, joinDatesMissing) = resolveMemberJoinDates()
         plan.insert(MutableMethod(ImmutableMethod.of(plan.method)))
         val runtime = tgMutableClassDefBy(LOCAL_IDS)
         // Compile both bridges before changing any host method, runtime body or build flag.
@@ -84,6 +86,13 @@ val showLocalIdsPatch = bytecodePatch(
             enableCapability("specialContacts")
         } else {
             patchLog.warning("Show user and chat IDs: $specialMissing. The patch goes on without Special contacts.")
+        }
+        if (joinDates != null) {
+            writeJoinDates()
+            joinDates.applyTo()
+            enableCapability("memberJoinDates")
+        } else {
+            patchLog.warning("Show user and chat IDs: $joinDatesMissing. The patch goes on without member join dates.")
         }
         enableStatus("showLocalIds")
     }
@@ -118,7 +127,7 @@ internal data class LocalIdsPlan(
 }
 
 internal fun BytecodePatchContext.resolveLocalIds(): LocalIdsPlan {
-    listOf("showLocalIds", "profileLocalIds", "registrationDate").forEach(::requireStatusMethod)
+    listOf("showLocalIds", "profileLocalIds", "registrationDate", "memberJoinDates").forEach(::requireStatusMethod)
     controlHook(LOCAL_IDS, "addToProfile", listOf("Landroid/view/View;", "J", "J"), "V")
     controlHook(LOCAL_IDS, "nativeAddRow", listOf("Ljava/lang/Object;", "Ljava/lang/String;"), "Landroid/view/View;")
     controlHook(LOCAL_IDS, "nativeDismiss", listOf("Ljava/lang/Object;"), "V")

@@ -2008,3 +2008,11 @@ Show when an account was made	Hesabın ne zaman açıldığını göster
 A person's profile menu also shows about which month they joined Telegram, worked out from their user ID. It's an estimate, and nothing is asked of Telegram. Bots, groups and channels get none.	Bir kişinin profil menüsü, kullanıcı kimliğinden hesaplanarak Telegram'a yaklaşık hangi ay katıldığını da gösterir. Bu bir tahmindir ve Telegram'dan hiçbir şey istenmez. Botlar, gruplar ve kanallar bunu almaz.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Show user and chat IDs that shows about when an account was made
 account registration dates	hesap kayıt tarihleri
+# context: Second line of a row in a group's member list (#79). %1$s is Telegram's own text there, such as "last seen recently" or "online", and %2$s is the date and time the person joined the group, already written the way the phone writes dates
+%1$s · joined %2$s	%1$s · katılma: %2$s
+# context: Title of a switch under Show user and chat IDs (#79). It adds when each person joined to a group's member lists
+Show when members joined	Üyelerin ne zaman katıldığını göster
+# context: Summary under the Show when members joined switch. Members is the title of Telegram's page listing a group's members (Telegram key ChannelMembers); last seen is the text Telegram shows under a person's name
+A group's member lists, on its profile and its Members page, also show when each person joined, next to their last seen. The date comes with the list, so nothing more is asked of Telegram. Admins and the owner keep their role.	Bir grubun üye listeleri, profilinde ve Üyeler sayfasında, her kişinin ne zaman katıldığını da son görülme bilgisinin yanında gösterir. Tarih listeyle birlikte gelir, bu yüzden Telegram'dan başka bir şey istenmez. Yöneticiler ve sahip rollerini korur.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Show user and chat IDs that shows when each person joined a group
+member join dates	üyelerin katılma tarihleri

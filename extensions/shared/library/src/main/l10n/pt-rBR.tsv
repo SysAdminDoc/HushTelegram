@@ -2005,3 +2005,11 @@ Show when an account was made	Mostrar quando uma conta foi criada
 A person's profile menu also shows about which month they joined Telegram, worked out from their user ID. It's an estimate, and nothing is asked of Telegram. Bots, groups and channels get none.	O menu do perfil de uma pessoa também mostra mais ou menos em que mês ela entrou no Telegram, calculado a partir do ID de usuário. É uma estimativa, e nada é pedido ao Telegram. Bots, grupos e canais não recebem.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Show user and chat IDs that shows about when an account was made
 account registration dates	datas de registro das contas
+# context: Second line of a row in a group's member list (#79). %1$s is Telegram's own text there, such as "last seen recently" or "online", and %2$s is the date and time the person joined the group, already written the way the phone writes dates
+%1$s · joined %2$s	%1$s · entrou em %2$s
+# context: Title of a switch under Show user and chat IDs (#79). It adds when each person joined to a group's member lists
+Show when members joined	Mostrar quando os membros entraram
+# context: Summary under the Show when members joined switch. Members is the title of Telegram's page listing a group's members (Telegram key ChannelMembers); last seen is the text Telegram shows under a person's name
+A group's member lists, on its profile and its Members page, also show when each person joined, next to their last seen. The date comes with the list, so nothing more is asked of Telegram. Admins and the owner keep their role.	As listas de membros de um grupo, no perfil e na página Membros, também mostram quando cada pessoa entrou, ao lado do visto por último. A data vem com a lista, então nada mais é pedido ao Telegram. Admins e o dono mantêm seu cargo.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Show user and chat IDs that shows when each person joined a group
+member join dates	datas de entrada dos membros

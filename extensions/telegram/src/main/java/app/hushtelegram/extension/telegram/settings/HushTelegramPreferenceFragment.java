@@ -1377,6 +1377,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("A person's profile menu also shows about which month they joined Telegram, worked out from their "
                                 + "user ID. It's an estimate, and nothing is asked of Telegram. Bots, groups and channels get none.")));
             }
+            if (PatchFamily.Capability.MEMBER_JOIN_DATES.installed()) {
+                on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(toggle(context, Settings.MEMBER_JOIN_DATES, L10n.t("Show when members joined"),
+                        L10n.t("A group's member lists, on its profile and its Members page, also show when each person joined, "
+                                + "next to their last seen. The date comes with the list, so nothing more is asked of Telegram. "
+                                + "Admins and the owner keep their role.")));
+            }
             on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(openByIdRow(context));
             if (PatchFamily.Capability.SPECIAL_CONTACTS.installed()) {
                 on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(toggle(context, Settings.SPECIAL_CONTACTS, L10n.t("Special contacts"),

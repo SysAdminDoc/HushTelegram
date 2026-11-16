@@ -164,6 +164,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting REGISTRATION_DATE =
             new BooleanSetting("hushtelegram_registration_date", FALSE);
 
+    /** A group's member lists also show when each person joined, from the date Telegram sends with each member (#79). */
+    public static final BooleanSetting MEMBER_JOIN_DATES =
+            new BooleanSetting("hushtelegram_member_join_dates", FALSE);
+
     /** A profile menu offers Track this user, and the people tracked get a history of what Telegram shows of them. */
     public static final BooleanSetting SPECIAL_CONTACTS =
             new BooleanSetting("hushtelegram_special_contacts", FALSE);

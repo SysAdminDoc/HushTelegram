@@ -2004,3 +2004,11 @@ Show when an account was made	Показване кога е създаден а
 A person's profile menu also shows about which month they joined Telegram, worked out from their user ID. It's an estimate, and nothing is asked of Telegram. Bots, groups and channels get none.	Менюто на профила на човек показва и приблизително през кой месец се е присъединил към Telegram, изчислено от потребителския му ID. Това е оценка и от Telegram не се иска нищо. Ботовете, групите и каналите нямат такава.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Show user and chat IDs that shows about when an account was made
 account registration dates	датите на регистрация на акаунтите
+# context: Second line of a row in a group's member list (#79). %1$s is Telegram's own text there, such as "last seen recently" or "online", and %2$s is the date and time the person joined the group, already written the way the phone writes dates
+%1$s · joined %2$s	%1$s · член от %2$s
+# context: Title of a switch under Show user and chat IDs (#79). It adds when each person joined to a group's member lists
+Show when members joined	Показване кога са се присъединили членовете
+# context: Summary under the Show when members joined switch. Members is the title of Telegram's page listing a group's members (Telegram key ChannelMembers); last seen is the text Telegram shows under a person's name
+A group's member lists, on its profile and its Members page, also show when each person joined, next to their last seen. The date comes with the list, so nothing more is asked of Telegram. Admins and the owner keep their role.	Списъците с членове на група, в профила ѝ и на страницата Членове, показват и кога се е присъединил всеки човек, до последното му посещение. Датата идва със списъка, така че от Telegram не се иска нищо повече. Администраторите и собственикът запазват ролята си.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Show user and chat IDs that shows when each person joined a group
+member join dates	датите на присъединяване на членовете

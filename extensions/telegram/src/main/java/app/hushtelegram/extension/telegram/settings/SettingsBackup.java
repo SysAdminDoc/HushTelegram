@@ -124,6 +124,7 @@ public final class SettingsBackup {
             Settings.SHOW_LOCAL_IDS,
             Settings.PROFILE_DATA_CENTER,
             Settings.REGISTRATION_DATE,
+            Settings.MEMBER_JOIN_DATES,
             Settings.SPECIAL_CONTACTS,
             Settings.DISABLE_DOUBLE_TAP_REACTIONS,
             Settings.HIDE_REACTION_ROWS,
