@@ -197,6 +197,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/LinkPreviewRules.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/LinkPreviewRulesEditor.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FileIcons.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/KeepRemoved.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/Haptics.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ReactionEffects.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FolderTabs.java",
