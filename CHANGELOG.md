@@ -7,6 +7,7 @@ Every HushTelegram release, newest first.
 ### Changed
 
 * **Telegram:** Both builds move from Telegram 13.2.1 to 13.2.2, code 73031 from Google Play and 73039 from telegram.org.
+* **Telegram:** HushTelegram now builds on Morphe patcher 2.4.0, the one in Morphe Manager 2.6.0 and morphe-desktop 2.2.0. Manager won't load a bundle made with a newer patcher than its own, so update Manager to 2.6.0 or newer before you add the next release.
 
 ### Added
 
