@@ -54,12 +54,22 @@ public final class SessionDevice {
             String model = clean(Settings.SESSION_DEVICE_NAME.get());
             String system = clean(Settings.SESSION_SYSTEM_VERSION.get());
             if (model.isEmpty() && system.isEmpty()) return stock;
-            int mix = (model + '\n' + system).hashCode();
-            return stock ^ (mix == 0 ? 1 : mix);
+            return fold(stock, (model + '\n' + system).hashCode());
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "session device version", failure);
             return stock;
         }
+    }
+
+    /**
+     * Telegram's build number with a saved pair's hash folded in, never the number itself and never
+     * 0, which the connection keeps for "not started yet" and would answer by sending the device on
+     * every launch.
+     */
+    static int fold(int stock, int mix) {
+        int folded = stock ^ (mix == 0 ? 1 : mix);
+        // Differs from stock in every bit but the last, which is set, so it's neither stock nor 0.
+        return folded != 0 ? folded : ~stock | 1;
     }
 
     private static String chosen(StringSetting setting, String stock, String what) {

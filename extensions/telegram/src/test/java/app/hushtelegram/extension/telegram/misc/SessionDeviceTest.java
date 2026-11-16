@@ -120,6 +120,16 @@ public class SessionDeviceTest {
         }
     }
 
+    @Test public void aFoldedNumberIsNeverTheStockOneOrZero() {
+        for (int stock : new int[] {73039, 73031, 1, -1, -2, Integer.MIN_VALUE, Integer.MAX_VALUE}) {
+            for (int mix : new int[] {stock, 0, 1, -1, ~stock, stock ^ 1}) {
+                int folded = SessionDevice.fold(stock, mix);
+                assertNotEquals(stock + " with " + mix + " is the connection's not started mark", 0, folded);
+                assertNotEquals(stock + " with " + mix + " would never send the device", stock, folded);
+            }
+        }
+    }
+
     private static int withName(String typed, java.util.function.IntSupplier read) {
         String saved = Settings.SESSION_DEVICE_NAME.get();
         Settings.SESSION_DEVICE_NAME.save(typed);
