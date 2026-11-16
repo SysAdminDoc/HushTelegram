@@ -231,6 +231,7 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
     requireStatusMethod("allowScreenshots")
     controlHook(SCREENSHOTS, "protectedContent", listOf("I"), "Z")
     controlHook(SCREENSHOTS, "storyAllowed", listOf("I"), "Z")
+    controlHook(SCREENSHOTS, "secretChat", listOf(OBJECT), OBJECT)
     controlHook(MESSAGE_MENU, "selectionCopy", listOf(), "Z")
     controlHook(MESSAGE_MENU, "fill", listOf(OBJECT, OBJECT, LIST, LIST, LIST), "V")
     controlHook(MESSAGE_MENU, "chosen", listOf(OBJECT, "I"), "V")

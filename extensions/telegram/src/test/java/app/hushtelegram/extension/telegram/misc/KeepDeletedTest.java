@@ -63,6 +63,7 @@ public class KeepDeletedTest {
         Settings.KEEP_DELETED_MESSAGES.resetToDefault();
         SettingReadsForTests.mend(Settings.RED_DELETED_LABEL);
         Settings.RED_DELETED_LABEL.resetToDefault();
+        Settings.KEEP_OWN_DELETED.resetToDefault();
         KeepDeleted.measuring(null);
         KeepDeleted.persist = REAL_PERSIST;
         KeepDeleted.keys = REAL_KEYS;
@@ -100,6 +101,36 @@ public class KeepDeletedTest {
         assertFalse(KeepDeleted.isKept(SELF, SELF, 6));
         assertEquals("your own, timed, protected, saved-messages and unknown ones go the stock way",
                 Arrays.asList("0:[2, 3, 4, 5, 6]:0"), telegram.stock);
+    }
+
+    @Test public void withYourOwnOnAChatDeletedForBothKeepsYourMessagesToo() {
+        Settings.KEEP_DELETED_MESSAGES.save(true);
+        Settings.KEEP_OWN_DELETED.save(true);
+        Fake telegram = new Fake(
+                new KeepDeleted.Row(10, 1, false, false, false),
+                new KeepDeleted.Row(10, 2, true, false, false),
+                new KeepDeleted.Row(10, 3, true, true, false),
+                new KeepDeleted.Row(10, 4, true, false, true),
+                new KeepDeleted.Row(SELF, 6, true, false, false));
+        assertTrue(KeepDeleted.start(telegram, 0, ids(1, 2, 3, 4, 6), 0));
+        telegram.posted.get(0).run();
+
+        assertTrue("theirs", KeepDeleted.isKept(SELF, 10, 1));
+        assertTrue("and yours", KeepDeleted.isKept(SELF, 10, 2));
+        assertEquals("timed, protected and saved messages still go the stock way",
+                Arrays.asList("0:[3, 4, 6]:0"), telegram.stock);
+    }
+
+    @Test public void yourOwnStaysOffWithoutKeepDeletedMessages() {
+        Settings.KEEP_OWN_DELETED.save(true);
+        assertFalse("nothing is taken", KeepDeleted.userUpdate(new Update(1, 2), null));
+        Settings.KEEP_DELETED_MESSAGES.save(true);
+        Settings.KEEP_OWN_DELETED.save(false);
+        Fake telegram = new Fake(new KeepDeleted.Row(10, 2, true, false, false));
+        assertTrue(KeepDeleted.start(telegram, 0, ids(2), 0));
+        telegram.posted.get(0).run();
+        assertFalse(KeepDeleted.isKept(SELF, 10, 2));
+        assertEquals(Arrays.asList("0:[2]:0"), telegram.stock);
     }
 
     @Test public void aFailedLookupLeavesEverythingToTelegramAndKeepsNothing() {

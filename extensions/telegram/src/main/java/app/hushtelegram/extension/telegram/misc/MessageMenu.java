@@ -105,7 +105,7 @@ public final class MessageMenu {
             copy = copy && forwardable && photo(message) && downloaded(message) != null;
             quick = quick && forwardable && quickable(chat, message);
             text = text && restricted(message) && !copyable(chat, message).isEmpty();
-            save = save && restricted(message) && downloaded(message) != null;
+            save = save && (restricted(message) || secretSaving(message)) && downloaded(message) != null;
             again = again && restricted(message) && (!copyable(chat, message).isEmpty() || media(message));
             offer(icons, items, options, repeat, copy, details, quick, text, save, again, forwardOption());
             if (tools) MessageMenuTools.offer(chat, message, icons, items, options, forwardable);
@@ -587,6 +587,14 @@ public final class MessageMenu {
             HookStatus.threw(FamilyNames.MESSAGE_MENU_REPEAT, "quick forward", failure);
             feedback(context, L10n.t(context, "Can't forward there"));
         }
+    }
+
+    /**
+     * Whether Save to Downloads fits a secret chat's message: Also save from secret chats is on (#82)
+     * and it isn't view-once or timed media, whose file Telegram keeps encrypted.
+     */
+    private static boolean secretSaving(Object message) {
+        return on(Settings.SAVE_SECRET_CHATS) && secret(dialog(message)) && !SaveDownloads.timedMedia(message);
     }
 
     /** The photo's file once it's on the phone: the sent original first, then Telegram's own copy. */

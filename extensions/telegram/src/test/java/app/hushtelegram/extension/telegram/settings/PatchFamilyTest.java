@@ -135,6 +135,8 @@ public class PatchFamilyTest {
         Settings.MESSAGE_MENU_REPEAT.resetToDefault();
         Settings.KEEP_DELETED_MESSAGES.resetToDefault();
         Settings.RED_DELETED_LABEL.resetToDefault();
+        Settings.KEEP_OWN_DELETED.resetToDefault();
+        Settings.KEEP_SECRET_TIMED.resetToDefault();
         Settings.ASK_BEFORE_STICKER.resetToDefault();
         Settings.OUTSIDE_TRANSLATE.resetToDefault();
         Settings.HIDE_CHANNEL_BUTTONS.resetToDefault();
@@ -152,6 +154,7 @@ public class PatchFamilyTest {
         Settings.SAVE_DOWNLOADS.resetToDefault();
         Settings.SAVE_RESTRICTED_DOWNLOADS.resetToDefault();
         Settings.SAVE_TIMED_MEDIA.resetToDefault();
+        Settings.SAVE_SECRET_CHATS.resetToDefault();
         Settings.CHAT_TYPE_FOLDERS.resetToDefault();
         Settings.UNIFIED_PUSH.resetToDefault();
         Settings.REACTION_ALERTS.resetToDefault();
@@ -179,6 +182,7 @@ public class PatchFamilyTest {
         Settings.MESSAGE_MENU_FORWARD_COPY.resetToDefault();
         Settings.STORY_SAVE_BUTTON.resetToDefault();
         Settings.ALLOW_SCREENSHOTS.resetToDefault();
+        Settings.SECRET_CHAT_SCREENSHOTS.resetToDefault();
         Settings.MESSAGE_MENU_FAST_FORWARD.resetToDefault();
         Settings.MESSAGE_MENU_FORWARD_SAVED.resetToDefault();
         Settings.MESSAGE_MENU_SAVE_COVER.resetToDefault();
@@ -398,20 +402,22 @@ public class PatchFamilyTest {
     public void keepDeletedMessagesHasItsOwnOffByDefaultSwitchThatAppliesAtOnce() {
         PatchFamily family = PatchFamily.KEEP_DELETED_MESSAGES;
         assertEquals("Keep deleted messages", family.patchName);
-        // The second switch, the red label, starts off too and shows at the next measuring. The third,
-        // the edit history, starts off and keeps from the next edit on. The fourth, timed media, starts off
-        // and holds the next timed media you open.
-        assertEquals(Arrays.asList(Settings.KEEP_DELETED_MESSAGES, Settings.RED_DELETED_LABEL, Settings.KEEP_EDIT_HISTORY,
-                Settings.KEEP_TIMED_MEDIA), family.switches);
+        // The second switch, the red label, starts off too and shows at the next measuring. The third, your
+        // own messages, starts off and keeps from the next deletion on. The edit history starts off and keeps
+        // from the next edit on. Timed media starts off and holds the next timed media you open. Secret chat
+        // timers start off and keep what's due from the next timer on.
+        assertEquals(Arrays.asList(Settings.KEEP_DELETED_MESSAGES, Settings.RED_DELETED_LABEL, Settings.KEEP_OWN_DELETED, Settings.KEEP_EDIT_HISTORY,
+                Settings.KEEP_TIMED_MEDIA, Settings.KEEP_SECRET_TIMED), family.switches);
         for (BooleanSetting setting : family.switches) {
             assertFalse(setting.key, setting.defaultValue);
             assertFalse(setting.key, setting.rebootApp);
         }
         assertEquals(EnumSet.of(PatchFamily.Capability.RED_DELETED_LABEL, PatchFamily.Capability.EDIT_HISTORY,
-                PatchFamily.Capability.TIMED_MEDIA), family.expectedCapabilities());
+                PatchFamily.Capability.TIMED_MEDIA, PatchFamily.Capability.SECRET_TIMED), family.expectedCapabilities());
         assertEquals("redDeletedLabel", PatchFamily.Capability.RED_DELETED_LABEL.statusMethod);
         assertEquals("keepEditHistory", PatchFamily.Capability.EDIT_HISTORY.statusMethod);
         assertEquals("keepTimedMedia", PatchFamily.Capability.TIMED_MEDIA.statusMethod);
+        assertEquals("keepSecretTimed", PatchFamily.Capability.SECRET_TIMED.statusMethod);
         assertOnItsPage(family);
     }
 
@@ -420,7 +426,7 @@ public class PatchFamilyTest {
         PatchFamily family = PatchFamily.MESSAGE_MENU_REPEAT;
         assertEquals("Add Repeat to the message menu", family.patchName);
         assertEquals(Arrays.asList(Settings.MESSAGE_MENU_REPEAT, Settings.MESSAGE_MENU_COPY_PHOTO, Settings.MESSAGE_MENU_DETAILS,
-                Settings.MESSAGE_MENU_QUICK_FORWARD, Settings.MESSAGE_MENU_COPY_PROTECTED, Settings.MESSAGE_MENU_SAVE_PROTECTED, Settings.MESSAGE_MENU_FORWARD_COPY, Settings.MESSAGE_MENU_FAST_FORWARD, Settings.MESSAGE_MENU_FORWARD_SAVED, Settings.MESSAGE_MENU_SAVE_COVER, Settings.MESSAGE_MENU_SAVE_ART, Settings.MESSAGE_MENU_CLEAR_CACHE, Settings.MESSAGE_MENU_HIDE, Settings.MESSAGE_MENU_PLAIN_FORWARD, Settings.MESSAGE_MENU_DELETE_FOR_THEM, Settings.STORY_SAVE_BUTTON, Settings.ALLOW_SCREENSHOTS, Settings.SELECT_BETWEEN, Settings.SELECTION_SCREENSHOT, Settings.SELECT_ALL), family.switches);
+                Settings.MESSAGE_MENU_QUICK_FORWARD, Settings.MESSAGE_MENU_COPY_PROTECTED, Settings.MESSAGE_MENU_SAVE_PROTECTED, Settings.MESSAGE_MENU_FORWARD_COPY, Settings.MESSAGE_MENU_FAST_FORWARD, Settings.MESSAGE_MENU_FORWARD_SAVED, Settings.MESSAGE_MENU_SAVE_COVER, Settings.MESSAGE_MENU_SAVE_ART, Settings.MESSAGE_MENU_CLEAR_CACHE, Settings.MESSAGE_MENU_HIDE, Settings.MESSAGE_MENU_PLAIN_FORWARD, Settings.MESSAGE_MENU_DELETE_FOR_THEM, Settings.STORY_SAVE_BUTTON, Settings.ALLOW_SCREENSHOTS, Settings.SECRET_CHAT_SCREENSHOTS, Settings.SELECT_BETWEEN, Settings.SELECTION_SCREENSHOT, Settings.SELECT_ALL), family.switches);
         for (BooleanSetting setting : family.switches) {
             assertFalse(setting.key, setting.defaultValue);
             assertFalse(setting.key, setting.rebootApp);
@@ -704,13 +710,13 @@ public class PatchFamilyTest {
         assertEquals("Save downloaded files", family.patchName);
         assertEquals("saveDownloads", family.statusMethod);
         // The second switch lets chats that don't allow saving through and the third view-once and timed media (#9),
-        // so they start off like the first.
+        // and the fourth secret chats on top of the second (#82), so they start off like the first.
         // The storage folder switch (#7) moves Telegram's own folder at startup, so it starts off and needs a restart.
         assertEquals(Arrays.asList(Settings.SAVE_DOWNLOADS, Settings.SAVE_RESTRICTED_DOWNLOADS, Settings.SAVE_TIMED_MEDIA,
-                Settings.STORAGE_FOLDER), family.switches);
+                Settings.SAVE_SECRET_CHATS, Settings.STORAGE_FOLDER), family.switches);
         for (BooleanSetting setting : family.switches) {
             assertFalse(setting.key, setting.defaultValue);
-            // Each finished download reads the first three switches, so they need no restart.
+            // Each finished download reads the first four switches, so they need no restart.
             assertEquals(setting.key, setting == Settings.STORAGE_FOLDER, setting.rebootApp);
         }
         // The gallery folder choice (#30) and the storage folder (#7) ride on this patch as its tracked targets,

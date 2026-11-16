@@ -562,6 +562,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_red_deleted_label", FALSE);
 
     /**
+     * With {@link #KEEP_DELETED_MESSAGES} on, your own messages stay too when their deletion comes from
+     * the server, such as the other person deleting the whole chat for both of you (#82).
+     */
+    public static final BooleanSetting KEEP_OWN_DELETED =
+            new BooleanSetting("hushtelegram_keep_own_deleted", FALSE);
+
+    /**
      * When someone else edits a message, this phone keeps the text it had before, shown in Message details.
      */
     public static final BooleanSetting KEEP_EDIT_HISTORY =
@@ -573,6 +580,13 @@ public class Settings extends BaseSettings {
      */
     public static final BooleanSetting KEEP_TIMED_MEDIA =
             new BooleanSetting("hushtelegram_keep_timed_media", FALSE);
+
+    /**
+     * Messages in secret chats stay on this phone when their self-destruct timer runs out (#82). The
+     * key says encrypted, since the diagnostic report hides the value of any name with secret in it.
+     */
+    public static final BooleanSetting KEEP_SECRET_TIMED =
+            new BooleanSetting("hushtelegram_keep_encrypted_timed", FALSE);
 
     /**
      * A sticker you tap asks Send or Cancel before it goes into the chat.
@@ -720,7 +734,8 @@ public class Settings extends BaseSettings {
 
     /**
      * With {@link #SAVE_DOWNLOADS} on, a file from a chat or message whose owner turned off saving
-     * gets its copy too. Secret chats and self-destructing media still stay in Telegram. Starts off,
+     * gets its copy too. A secret chat needs {@link #SAVE_SECRET_CHATS} as well, and self-destructing
+     * media {@link #SAVE_TIMED_MEDIA}. Starts off,
      * since it goes past the owner's setting (#29).
      */
     public static final BooleanSetting SAVE_RESTRICTED_DOWNLOADS =
@@ -728,12 +743,22 @@ public class Settings extends BaseSettings {
 
     /**
      * With {@link #SAVE_DOWNLOADS} on, view-once and self-destructing photos, videos, voice and
-     * round videos get a copy too, decrypted from Telegram's cache. Secret chats keep theirs, and a
-     * chat that doesn't allow saving needs {@link #SAVE_RESTRICTED_DOWNLOADS} as well. Starts off,
+     * round videos get a copy too, decrypted from Telegram's cache. A chat that doesn't allow saving
+     * needs {@link #SAVE_RESTRICTED_DOWNLOADS} as well, and a secret chat {@link #SAVE_SECRET_CHATS} on
+     * top of that. Starts off,
      * since it goes past the sender's choice (#9).
      */
     public static final BooleanSetting SAVE_TIMED_MEDIA =
             new BooleanSetting("hushtelegram_save_timed_media", FALSE);
+
+    /**
+     * With {@link #SAVE_RESTRICTED_DOWNLOADS} on, a secret chat's files, photos and videos get their
+     * copy too, and its view-once and timed media with {@link #SAVE_TIMED_MEDIA} on. The message
+     * menu's Save to Downloads shows in a secret chat as well. Starts off, since a secret chat is
+     * meant to stay on the two phones in it (#82).
+     */
+    public static final BooleanSetting SAVE_SECRET_CHATS =
+            new BooleanSetting("hushtelegram_save_encrypted_chats", FALSE);
 
     /**
      * What to copy: with {@link #SAVE_DOWNLOADS} on, the kinds of files left in Telegram, as
@@ -817,6 +842,9 @@ public class Settings extends BaseSettings {
     /** Screenshots and screen recording work in chats, profiles, photos and stories that don't allow saving (Discussion #34). */
     public static final BooleanSetting ALLOW_SCREENSHOTS =
             new BooleanSetting("hushtelegram_allow_screenshots", FALSE);
+    /** With {@link #ALLOW_SCREENSHOTS} on, secret chats, their profiles and their photos can be captured too (#82). */
+    public static final BooleanSetting SECRET_CHAT_SCREENSHOTS =
+            new BooleanSetting("hushtelegram_encrypted_chat_screenshots", FALSE);
     /** A message in a chat that doesn't allow forwarding gets Forward as copy in its long-press menu (#46, #47). */
     public static final BooleanSetting MESSAGE_MENU_FORWARD_COPY =
             new BooleanSetting("hushtelegram_message_menu_forward_copy", FALSE);

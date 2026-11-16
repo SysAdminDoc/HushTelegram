@@ -208,6 +208,8 @@ class KeepDeletedFixtureTest {
             assertEquals(1L, (history.first() as WideLiteralInstruction).wideLiteral)
             val timed = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "keepTimedMedia" }.controlBody()
             assertEquals("$name: the timed media switch shows", 1L, (timed.first() as WideLiteralInstruction).wideLiteral)
+            val secretTimed = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "keepSecretTimed" }.controlBody()
+            assertEquals("$name: the secret chat timer switch shows", 1L, (secretTimed.first() as WideLiteralInstruction).wideLiteral)
             // Message times with seconds wasn't picked, so its switch stays hidden (#49).
             val seconds = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "messageSeconds" }.controlBody()
             assertEquals("$name: no seconds switch without its patch", 0L, (seconds.first() as WideLiteralInstruction).wideLiteral)
@@ -253,6 +255,24 @@ class KeepDeletedFixtureTest {
             assertEquals(1L, (status.single { it.origName == "keepDeleted" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
             assertEquals(1L, (status.single { it.origName == "keepEditHistory" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
             assertEquals(0L, (status.single { it.origName == "keepTimedMedia" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
+        }
+    }
+
+    @Test fun `a moved self-destruct timer leaves that switch out and keeps the rest`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = context(build)
+            assertEquals(emptyList<String>(), PatchLogCapture.warnings { messageTimePatch.execute(context) })
+            val timer = context.resolveKeepSecretTimed().method!!
+            context.tgMutableClassDefBy(timer.definingClass).methods.removeAll { it.name == "run" }
+            val warnings = PatchLogCapture.warnings { keepDeletedPatch.execute(context) }
+            assertEquals("$name: $warnings", 1, warnings.size)
+            assertTrue(warnings.single(), "self-destruct timer" in warnings.single() &&
+                "without Keep self-destructing secret chat messages" in warnings.single())
+            val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods
+            assertEquals(1L, (status.single { it.origName == "keepDeleted" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
+            assertEquals(1L, (status.single { it.origName == "keepTimedMedia" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
+            assertEquals(0L, (status.single { it.origName == "keepSecretTimed" }.controlBody().first() as WideLiteralInstruction).wideLiteral)
         }
     }
 
@@ -404,7 +424,9 @@ class KeepDeletedFixtureTest {
         assertEquals("${build.name}: the renamed sparse array", setOf(sparseType(build)), sparse.keys)
         val dialog = FixtureDex.classes(build, setOf(TIMED_DIALOG_OBJECT))
         assertEquals("${build.name}: the chat kinds", setOf(TIMED_DIALOG_OBJECT), dialog.keys)
+        // The deleting task's runnable too, which the self-destruct timer runs (#82).
         val runnables = (pushRunnables(build, telegram.getValue(MESSAGES_CONTROLLER)) +
+            runnablesOf(build, telegram.getValue(MESSAGES_CONTROLLER), "checkDeletingTask") +
             replaceRunnables(build, telegram.getValue(MESSAGES_STORAGE))).distinctBy { it.type }
         // The bubble and time hosts, the chat that opens and expires timed media, and what empties it from storage.
         val hosts = FixtureDex.classesWhere(build, { true }) { m ->
@@ -432,8 +454,11 @@ class KeepDeletedFixtureTest {
     }
 
     /** What the push deletion posts: 13.2 moved the lambda's body into that runnable's run(). */
-    private fun pushRunnables(build: File, controller: ClassDef): Collection<ClassDef> {
-        val made = controller.methods.filter { it.origName == "deleteMessagesByPush" }
+    private fun pushRunnables(build: File, controller: ClassDef) = runnablesOf(build, controller, "deleteMessagesByPush")
+
+    /** What MessagesController's [method] builds, read independently of the patch. */
+    private fun runnablesOf(build: File, controller: ClassDef, method: String): Collection<ClassDef> {
+        val made = controller.methods.filter { it.origName == method }
             .flatMap { it.implementation?.instructions?.toList() ?: emptyList() }
             .filter { it.opcode == Opcode.NEW_INSTANCE }
             .mapNotNull { ((it as ReferenceInstruction).reference as? TypeReference)?.type }.toSet() - controller.type

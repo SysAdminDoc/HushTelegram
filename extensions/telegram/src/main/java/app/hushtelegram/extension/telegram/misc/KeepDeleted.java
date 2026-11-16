@@ -338,12 +338,13 @@ public final class KeepDeleted {
         ArrayList<Object> media = new ArrayList<>();
         List<String> overflow = Collections.emptyList();
         long self = 0;
+        boolean own = others && keepsOwn();
         try {
             self = source.self();
             // With no account to keep it for, nothing could find it again to clear it.
             if (self <= 0) throw new IllegalStateException("no signed-in account");
             for (Row row : source.rows(dialogId, ids)) {
-                boolean keep = others ? keeps(row, self) || held(self, row) : held(self, row);
+                boolean keep = others ? keeps(row, self, own) || held(self, row) : held(self, row);
                 if (!keep || !release.remove(Integer.valueOf(row.id))) continue;
                 kept.add(new long[] {row.dialog, row.id});
                 if (row.message != null) media.add(row.message);
@@ -384,9 +385,25 @@ public final class KeepDeleted {
         }
     }
 
-    /** Someone else's plain message in a chat that allows saving. Anything else goes the stock way. */
-    static boolean keeps(Row row, long self) {
-        return !row.mine && !row.timed && !row.guarded && row.dialog != self;
+    /**
+     * Someone else's plain message in a chat that allows saving, and with [own] set your own too.
+     * Anything else goes the stock way.
+     */
+    static boolean keeps(Row row, long self, boolean own) {
+        return (own || !row.mine) && !row.timed && !row.guarded && row.dialog != self;
+    }
+
+    /**
+     * Whether your own messages stay too (#82). A deletion of them that reaches here came from the
+     * server: the other person deleting the whole chat for both of you, or you on another device.
+     */
+    private static boolean keepsOwn() {
+        try {
+            return Utils.settingsReady() && Settings.KEEP_OWN_DELETED.get();
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.KEEP_DELETED_MESSAGES, "own messages switch", failure);
+            return false;
+        }
     }
 
     /** Already on [owner]'s kept list, such as your own message after Delete for them. */

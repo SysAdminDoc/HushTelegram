@@ -888,7 +888,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             if (PatchFamily.Capability.SCREENSHOTS.installed()) {
                 on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.ALLOW_SCREENSHOTS, L10n.t("Allow screenshots in chats that don't allow saving"),
                         PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Screenshots and screen recording work in those chats, their photos, profiles "
-                                + "and stories. Telegram doesn't tell anyone. Secret chats, view-once media and the passcode screen stay blocked."))));
+                                + "and stories. Telegram doesn't tell anyone. Secret chats need Also allow screenshots in secret chats. "
+                                + "View-once media and the passcode screen stay blocked."))));
+                on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.SECRET_CHAT_SCREENSHOTS, L10n.t("Also allow screenshots in secret chats"),
+                        PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Works with Allow screenshots in chats that don't allow saving on. "
+                                + "Secret chats, their photos and profiles can be captured too. Telegram tells the other person when you take one, "
+                                + "unless Suppress screenshot notification is on. Their view-once media stays blocked."))));
             }
             on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_SAVE_PROTECTED, L10n.t("Add Save to Downloads to the message menu"),
                     PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Save to Downloads to a downloaded photo, video, file or song "
@@ -948,6 +953,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + " it stands out in the chat. Works with Keep deleted messages on.")));
             }
             on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(clearKeptRow(context));
+            on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(toggle(context, Settings.KEEP_OWN_DELETED,
+                    L10n.t("Keep my messages too"), L10n.t("When someone deletes a whole chat for both of you, your own messages"
+                            + " stay here along with theirs. So do messages you delete on another of your devices. Works with Keep"
+                            + " deleted messages on.")));
             // The earlier text shows in Message details, which the message menu patch adds.
             if (PatchFamily.Capability.EDIT_HISTORY.installed()) {
                 on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(toggle(context, Settings.KEEP_EDIT_HISTORY,
@@ -960,6 +969,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("Keep view-once and timed media"), L10n.t("View-once and timed photos, videos and voice messages"
                                 + " someone sends you stay in the chat after you open them, with no timer. The sender doesn't"
                                 + " see them opened. Secret chats work as usual.")));
+            }
+            if (PatchFamily.Capability.SECRET_TIMED.installed()) {
+                on(pages, PatchFamily.KEEP_DELETED_MESSAGES).addPreference(toggle(context, Settings.KEEP_SECRET_TIMED,
+                        L10n.t("Keep self-destructing secret chat messages"), L10n.t("Messages, photos and videos in secret chats"
+                                + " stay on this phone when their self-destruct timer runs out. The other person's copy still"
+                                + " disappears on their own timer, and they aren't told.")));
             }
         }
         if (build.contains(PatchFamily.ASK_BEFORE_STICKER)) {
@@ -1105,12 +1120,19 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     L10n.t("Also save from chats that don't allow saving"),
                     L10n.t("With Save downloaded files on, files from chats whose owner turned off saving get copied too. Only use"
                             + " it where the owner is fine with you keeping a copy, since it goes past their setting. Secret chats"
-                            + " still stay in Telegram.")));
+                            + " need Also save from secret chats too.")));
             on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(toggle(context, Settings.SAVE_TIMED_MEDIA,
                     L10n.t("Also save view-once and timed media"),
                     L10n.t("With Save downloaded files on, view-once and self-destructing photos, videos, voice and video"
                             + " messages get copied to Download/Telegram when they download. The sender meant them to disappear,"
-                            + " so only use it where they're fine with you keeping a copy. Secret chats still stay in Telegram.")));
+                            + " so only use it where they're fine with you keeping a copy. Secret chats need Also save from secret"
+                            + " chats too.")));
+            on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(toggle(context, Settings.SAVE_SECRET_CHATS,
+                    L10n.t("Also save from secret chats"),
+                    L10n.t("Works with Also save from chats that don't allow saving on. Files, photos and videos from secret chats"
+                            + " get copied too, and the message menu's Save to Downloads shows up there. Their view-once and timed"
+                            + " media also need Also save view-once and timed media. A secret chat is meant to stay on your two"
+                            + " phones, so only use it where the other person is fine with that.")));
             if (PatchFamily.Capability.GALLERY_FOLDER.installed()) {
                 on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(galleryFolderRow(context));
             }

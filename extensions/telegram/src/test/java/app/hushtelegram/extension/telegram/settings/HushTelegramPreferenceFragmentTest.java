@@ -830,7 +830,7 @@ public class HushTelegramPreferenceFragmentTest {
                     String.valueOf(page.findPreference(Settings.SAVE_RESTRICTED_DOWNLOADS.key).getTitle()));
             assertEquals("With Save downloaded files on, files from chats whose owner turned off saving get copied too. "
                     + "Only use it where the owner is fine with you keeping a copy, since it goes past their setting. "
-                    + "Secret chats still stay in Telegram.",
+                    + "Secret chats need Also save from secret chats too.",
                     String.valueOf(page.findPreference(Settings.SAVE_RESTRICTED_DOWNLOADS.key).getSummary()));
             // The owner's setting holds until this one is turned on as well.
             assertFalse(Settings.SAVE_RESTRICTED_DOWNLOADS.key,
@@ -839,11 +839,35 @@ public class HushTelegramPreferenceFragmentTest {
                     String.valueOf(page.findPreference(Settings.SAVE_TIMED_MEDIA.key).getTitle()));
             assertEquals("With Save downloaded files on, view-once and self-destructing photos, videos, voice and video "
                     + "messages get copied to Download/Telegram when they download. The sender meant them to disappear, "
-                    + "so only use it where they're fine with you keeping a copy. Secret chats still stay in Telegram.",
+                    + "so only use it where they're fine with you keeping a copy. Secret chats need Also save from secret "
+                    + "chats too.",
                     String.valueOf(page.findPreference(Settings.SAVE_TIMED_MEDIA.key).getSummary()));
             // The sender's timer holds until this one is turned on as well.
             assertFalse(Settings.SAVE_TIMED_MEDIA.key,
                     ((SwitchPreference) page.findPreference(Settings.SAVE_TIMED_MEDIA.key)).isChecked());
+            assertEquals("Also save from secret chats",
+                    String.valueOf(page.findPreference(Settings.SAVE_SECRET_CHATS.key).getTitle()));
+            assertEquals("Works with Also save from chats that don't allow saving on. Files, photos and videos from "
+                    + "secret chats get copied too, and the message menu's Save to Downloads shows up there. Their "
+                    + "view-once and timed media also need Also save view-once and timed media. A secret chat is meant "
+                    + "to stay on your two phones, so only use it where the other person is fine with that.",
+                    String.valueOf(page.findPreference(Settings.SAVE_SECRET_CHATS.key).getSummary()));
+            // A secret chat stays on its two phones until this one is turned on as well (#82).
+            assertFalse(Settings.SAVE_SECRET_CHATS.key,
+                    ((SwitchPreference) page.findPreference(Settings.SAVE_SECRET_CHATS.key)).isChecked());
+            assertEquals("Screenshots and screen recording work in those chats, their photos, profiles and stories. "
+                    + "Telegram doesn't tell anyone. Secret chats need Also allow screenshots in secret chats. "
+                    + "View-once media and the passcode screen stay blocked.",
+                    String.valueOf(page.findPreference(Settings.ALLOW_SCREENSHOTS.key).getSummary()));
+            assertEquals("Also allow screenshots in secret chats",
+                    String.valueOf(page.findPreference(Settings.SECRET_CHAT_SCREENSHOTS.key).getTitle()));
+            assertEquals("Works with Allow screenshots in chats that don't allow saving on. Secret chats, their photos "
+                    + "and profiles can be captured too. Telegram tells the other person when you take one, unless "
+                    + "Suppress screenshot notification is on. Their view-once media stays blocked.",
+                    String.valueOf(page.findPreference(Settings.SECRET_CHAT_SCREENSHOTS.key).getSummary()));
+            // A secret chat stays blocked until this one is turned on as well (#82).
+            assertFalse(Settings.SECRET_CHAT_SCREENSHOTS.key,
+                    ((SwitchPreference) page.findPreference(Settings.SECRET_CHAT_SCREENSHOTS.key)).isChecked());
             assertEquals("Silence people outside your contacts", String.valueOf(page.findPreference(Settings.SILENCE_NON_CONTACTS.key).getTitle()));
             assertEquals("Private messages from people not in your contacts still show a notification, but without "
                     + "sound or vibration. Bots, reminders and login codes keep their sound.",
@@ -939,6 +963,20 @@ public class HushTelegramPreferenceFragmentTest {
             // The label keeps the time's color until the switch is turned on.
             assertFalse(Settings.RED_DELETED_LABEL.key,
                     ((SwitchPreference) page.findPreference(Settings.RED_DELETED_LABEL.key)).isChecked());
+            assertEquals("Keep my messages too", String.valueOf(page.findPreference(Settings.KEEP_OWN_DELETED.key).getTitle()));
+            assertEquals("When someone deletes a whole chat for both of you, your own messages stay here along with theirs. "
+                    + "So do messages you delete on another of your devices. Works with Keep deleted messages on.",
+                    String.valueOf(page.findPreference(Settings.KEEP_OWN_DELETED.key).getSummary()));
+            assertFalse(Settings.KEEP_OWN_DELETED.key,
+                    ((SwitchPreference) page.findPreference(Settings.KEEP_OWN_DELETED.key)).isChecked());
+            assertEquals("Keep self-destructing secret chat messages",
+                    String.valueOf(page.findPreference(Settings.KEEP_SECRET_TIMED.key).getTitle()));
+            assertEquals("Messages, photos and videos in secret chats stay on this phone when their self-destruct timer "
+                    + "runs out. The other person's copy still disappears on their own timer, and they aren't told.",
+                    String.valueOf(page.findPreference(Settings.KEEP_SECRET_TIMED.key).getSummary()));
+            // A secret chat's timer deletes as usual until the switch is turned on.
+            assertFalse(Settings.KEEP_SECRET_TIMED.key,
+                    ((SwitchPreference) page.findPreference(Settings.KEEP_SECRET_TIMED.key)).isChecked());
             assertEquals("Ask before sending a sticker", String.valueOf(page.findPreference(Settings.ASK_BEFORE_STICKER.key).getTitle()));
             assertEquals("Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled "
                     + "stickers go out without asking.",
@@ -1433,7 +1471,7 @@ public class HushTelegramPreferenceFragmentTest {
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             List<Preference> rows = new ArrayList<>();
             collect(pageOf(controller).getPreferenceScreen(), rows);
-            Preference folder = rows.get(indexOfKey(rows, Settings.SAVE_TIMED_MEDIA.key) + 1);
+            Preference folder = rows.get(indexOfKey(rows, Settings.SAVE_SECRET_CHATS.key) + 1);
             assertEquals(HushTelegramPreferenceFragment.GALLERY_FOLDER_ROW, folder.getKey());
             assertEquals("Playback", String.valueOf(folder.getParent().getTitle()));
             assertFalse("it stores nothing itself", folder.isPersistent());
