@@ -118,6 +118,10 @@ public class ToastLengthTest {
         assertTrue(texts.contains("Couldn't save the picture. Try again."));
         assertTrue(texts.contains("Couldn't save the dim. Try again in a moment."));
         assertTrue(texts.contains("This phone has no gallery picker."));
+        // The chat list banner's texts.
+        assertTrue(texts.contains("Banner picture saved."));
+        assertTrue(texts.contains("Banner removed."));
+        assertTrue(texts.contains("Couldn't save the choice. Try again in a moment."));
     }
 
     private static int fixedLength(String text) {

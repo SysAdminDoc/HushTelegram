@@ -431,8 +431,10 @@ public final class SelectionCheck {
         hook(calls, flags, "quietContactsNag", "misc/ContactsNag", "skipAsk", "hideBadge");
         hook(calls, flags, "holidayLook", "misc/HolidayLook", "mode");
         hook(calls, flags, "titleEmoji", "misc/TitleEmoji", "decorate");
+        hook(calls, flags, "chatListBanner", "misc/ChatListBanner", "draw", "blur");
         hook(calls, flags, "useSystemFont", "misc/SystemFont", "typeface", "built");
         hook(calls, flags, "amoledBlack", "misc/BlackTheme", "loaded");
+        hook(calls, flags, "listBackground", "misc/ListBackground", "refreshing", "laidOut");
         hook(calls, flags, "hideTranslateBar", "misc/TranslateBar", "hidden");
         hook(calls, flags, "exactNumbers", "misc/ExactNumbers", "format");
         hook(calls, flags, "revealSpoilers", "misc/Spoilers", "mediaCovered");

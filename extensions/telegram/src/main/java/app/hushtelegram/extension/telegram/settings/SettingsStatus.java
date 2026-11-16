@@ -90,6 +90,7 @@ public final class SettingsStatus {
     public static boolean holidayLook() { return false; }
     public static boolean titleEmoji() { return false; }
     public static boolean chatListTitle() { return false; }
+    public static boolean chatListBanner() { return false; }
     public static boolean useSystemFont() { return false; }
     public static boolean amoledBlack() { return false; }
     public static boolean listBackground() { return false; }

@@ -76,6 +76,7 @@ import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests;
 import app.hushtelegram.extension.telegram.misc.RecordChats;
+import app.hushtelegram.extension.telegram.misc.ChatListBanner;
 import app.hushtelegram.extension.telegram.misc.SavedPicture;
 import app.hushtelegram.extension.telegram.misc.SpecialContactsForTests;
 
@@ -3163,6 +3164,86 @@ public class HushTelegramPreferenceFragmentTest {
             Settings.CHAT_LIST_TITLE_TEXT.resetToDefault();
             app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending
                     .remove(Settings.CHAT_LIST_TITLE_TEXT.key);
+        }
+    }
+
+    /**
+     * Chat list banner (#86): the row sits under the own title's text row and offers none, five
+     * gradients and a picture. A gradient saves at once; a picture not picked yet opens the gallery
+     * and is saved from there; None takes the picture away too.
+     */
+    @Test
+    @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
+    public void theChatListBannerRowPicksAGradientAPictureOrNone() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HOLIDAY_LOOK);
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.CHAT_LIST_TITLE);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            assertNull("a build without the bar's hooks has no row",
+                    pageOf(controller).findPreference(HushTelegramPreferenceFragment.CHAT_LIST_BANNER_ROW));
+        }
+        PatchFamily.capabilitiesForTests = null;
+        Context appContext = RuntimeEnvironment.getApplication();
+        Uri gallery = Uri.parse("content://media.test/picture/86");
+        android.graphics.Bitmap made = android.graphics.Bitmap.createBitmap(60, 20, android.graphics.Bitmap.Config.ARGB_8888);
+        java.io.ByteArrayOutputStream png = new java.io.ByteArrayOutputStream();
+        made.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, png);
+        shadowOf(appContext.getContentResolver()).registerInputStream(gallery, new java.io.ByteArrayInputStream(png.toByteArray()));
+        ShadowToast.reset();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            List<Preference> rows = new ArrayList<>();
+            collect(page.getPreferenceScreen(), rows);
+            Preference row = rows.get(indexOfKey(rows, TitleEmojiEditor.TITLE_KEY) + 1);
+            assertEquals(HushTelegramPreferenceFragment.CHAT_LIST_BANNER_ROW, row.getKey());
+            assertEquals("Chat list banner", String.valueOf(row.getTitle()));
+            assertEquals("None. Tap to pick colors or a picture.", String.valueOf(row.getSummary()));
+            assertFalse("it stores nothing itself", row.isPersistent());
+
+            AlertDialog choice = dialogOf(row);
+            assertEquals("Chat list banner", String.valueOf(shadowOf(choice).getTitle()));
+            List<String> labels = new ArrayList<>();
+            for (int i = 0; i < choice.getListView().getCount(); i++) labels.add(String.valueOf(choice.getListView().getItemAtPosition(i)));
+            assertEquals(java.util.Arrays.asList("None", "Dusk", "Ocean", "Forest", "Ember", "Slate", "Picture from your gallery"), labels);
+            assertEquals("none is checked", 0, choice.getListView().getCheckedItemPosition());
+            Button swap = choice.getButton(AlertDialog.BUTTON_POSITIVE);
+            assertTrue("no picture yet, so nothing to swap", swap == null || swap.getVisibility() != View.VISIBLE);
+            shadowOf(choice).clickOnItem(2);
+            settle();
+            settle();
+            assertFalse(choice.isShowing());
+            assertEquals("ocean", Settings.CHAT_LIST_BANNER.savedValue());
+            assertEquals("Ocean", String.valueOf(row.getSummary()));
+
+            choice = dialogOf(row);
+            assertEquals("the saved one is checked", 2, choice.getListView().getCheckedItemPosition());
+            shadowOf(choice).clickOnItem(6);
+            settle();
+            ShadowActivity.IntentForResult picker = shadowOf(controller.get()).getNextStartedActivityForResult();
+            assertEquals(HushTelegramPreferenceFragment.CHAT_LIST_BANNER_REQUEST, picker.requestCode);
+            assertEquals(Intent.ACTION_GET_CONTENT, picker.intent.getAction());
+            assertEquals("the gradient stays until a picture lands", "ocean", Settings.CHAT_LIST_BANNER.savedValue());
+            shadowOf(controller.get()).receiveResult(picker.intent, Activity.RESULT_OK, new Intent().setData(gallery));
+            settle();
+            settle();
+            assertTrue(SavedPicture.present(appContext, SavedPicture.CHAT_LIST_BANNER));
+            assertFalse("the lists' picture is a separate file", SavedPicture.present(appContext, SavedPicture.LIST_BACKGROUND));
+            assertEquals(ChatListBanner.PICTURE, Settings.CHAT_LIST_BANNER.savedValue());
+            assertEquals("Banner picture saved.", ShadowToast.getTextOfLatestToast());
+            assertEquals("Your picture", String.valueOf(row.getSummary()));
+
+            choice = dialogOf(row);
+            assertEquals(6, choice.getListView().getCheckedItemPosition());
+            assertEquals("Choose another picture", String.valueOf(choice.getButton(AlertDialog.BUTTON_POSITIVE).getText()));
+            shadowOf(choice).clickOnItem(0);
+            settle();
+            assertFalse(choice.isShowing());
+            assertFalse(SavedPicture.present(appContext, SavedPicture.CHAT_LIST_BANNER));
+            assertEquals(ChatListBanner.NONE, Settings.CHAT_LIST_BANNER.savedValue());
+            assertEquals("Banner removed.", ShadowToast.getTextOfLatestToast());
+            assertEquals("None. Tap to pick colors or a picture.", String.valueOf(row.getSummary()));
+        } finally {
+            SavedPicture.remove(appContext, SavedPicture.CHAT_LIST_BANNER);
+            Settings.CHAT_LIST_BANNER.resetToDefault();
         }
     }
 

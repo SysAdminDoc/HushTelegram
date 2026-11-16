@@ -91,6 +91,7 @@ import app.hushtelegram.extension.telegram.misc.Accounts;
 import app.hushtelegram.extension.telegram.misc.AutoForwarding;
 import app.hushtelegram.extension.telegram.misc.CallRecorder;
 import app.hushtelegram.extension.telegram.misc.ChatListAvatar;
+import app.hushtelegram.extension.telegram.misc.ChatListBanner;
 import app.hushtelegram.extension.telegram.misc.ChatTypeFolders;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.DeleteAccount;
@@ -180,6 +181,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String LIST_BACKGROUND_ROW = "action_list_background";
     /** The gallery picker for the picture behind the lists. */
     static final int LIST_BACKGROUND_REQUEST = 7314;
+    /** The Chat list banner row's key. The choice is saved under {@link Settings#CHAT_LIST_BANNER}, its picture by {@link SavedPicture}. */
+    static final String CHAT_LIST_BANNER_ROW = "action_chat_list_banner";
+    /** The gallery picker for the chat list banner's picture. */
+    static final int CHAT_LIST_BANNER_REQUEST = 7315;
     static final String HIDDEN_ACCOUNTS_ROW = "action_hidden_accounts";
     /** The Delete account row's key. Nothing is saved: a tap asks, then sends the deletion. */
     static final String DELETE_ACCOUNT_ROW = "action_delete_account";
@@ -345,6 +350,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             if (picture != null) pictureChosen(picture, SavedPicture.LIST_BACKGROUND);
             return;
         }
+        if (requestCode == CHAT_LIST_BANNER_REQUEST) {
+            Uri picture = resultCode == Activity.RESULT_OK && data != null ? data.getData() : null;
+            if (picture != null) pictureChosen(picture, SavedPicture.CHAT_LIST_BANNER);
+            return;
+        }
         SettingsBackupPreference.onResult(this, requestCode, resultCode, data);
     }
 
@@ -390,6 +400,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (target != null) target.setSummary(TranslateTargetPicker.summary(Settings.TRANSLATE_TARGET.savedValue()));
         Preference picture = findPreference(LIST_BACKGROUND_ROW);
         if (picture != null) picture.setSummary(listBackgroundSummary(getContext()));
+        Preference banner = findPreference(CHAT_LIST_BANNER_ROW);
+        if (banner != null) banner.setSummary(chatListBannerSummary(getContext()));
     }
 
     @Override
@@ -1488,6 +1500,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("Shows text of your choice in place of Telegram's name at the top of the chat list, in the title's own "
                                 + "font and color. It stays on this phone. Restart Telegram to see the change.")));
                 on(pages, PatchFamily.HOLIDAY_LOOK).addPreference(chatListTitleRow(context));
+            }
+            if (PatchFamily.Capability.CHAT_LIST_BANNER.installed()) {
+                on(pages, PatchFamily.HOLIDAY_LOOK).addPreference(chatListBannerRow(context));
             }
         }
         if (build.contains(PatchFamily.USE_SYSTEM_FONT)) {
@@ -3566,7 +3581,117 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             ListBackground.changed();
             Utils.showToastShort(L10n.t("Background picture saved."));
         }
+        if (SavedPicture.CHAT_LIST_BANNER.equals(name)) {
+            Settings.CHAT_LIST_BANNER.save(ChatListBanner.PICTURE);
+            ChatListBanner.changed();
+            Utils.showToastShort(L10n.t("Banner picture saved."));
+        }
         if (getPreferenceScreen() != null) refreshSwitches();
+    }
+
+    /** The chat list banner: the row says which one shows, and a tap offers colors, a picture or none. */
+    private Preference chatListBannerRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(CHAT_LIST_BANNER_ROW);
+        row.setTitle(L10n.t("Chat list banner"));
+        row.setPersistent(false);
+        row.setSummary(chatListBannerSummary(context));
+        row.setOnPreferenceClickListener(p -> {
+            showChatListBanner(context, p);
+            return true;
+        });
+        return row;
+    }
+
+    /** The banner's choices in the order the list shows them: none, each gradient, then the picture. */
+    static String[] chatListBannerChoices() {
+        String[] choices = new String[ChatListBanner.GRADIENTS.length + 2];
+        choices[0] = ChatListBanner.NONE;
+        System.arraycopy(ChatListBanner.GRADIENTS, 0, choices, 1, ChatListBanner.GRADIENTS.length);
+        choices[choices.length - 1] = ChatListBanner.PICTURE;
+        return choices;
+    }
+
+    /** What [saved] is called in the banner's list, the settings file's preview and the row. */
+    static String chatListBannerLabel(@Nullable String saved) {
+        if (ChatListBanner.PICTURE.equals(saved)) return L10n.t("Your picture");
+        switch (ChatListBanner.gradientName(saved)) {
+            case "dusk": return L10n.t("Dusk");
+            case "ocean": return L10n.t("Ocean");
+            case "forest": return L10n.t("Forest");
+            case "ember": return L10n.t("Ember");
+            case "slate": return L10n.t("Slate");
+            default: return L10n.t("None");
+        }
+    }
+
+    static String chatListBannerSummary(@Nullable Context context) {
+        String saved = Settings.CHAT_LIST_BANNER.savedValue();
+        boolean picture = ChatListBanner.PICTURE.equals(saved) && SavedPicture.present(context, SavedPicture.CHAT_LIST_BANNER);
+        if (ChatListBanner.showsSomething(saved, picture)) return chatListBannerLabel(saved);
+        return L10n.t("None. Tap to pick colors or a picture.");
+    }
+
+    /** Where the saved banner sits among the choices; a picture that's gone counts as none. */
+    static int savedBannerChoice(@Nullable Context context) {
+        String saved = Settings.CHAT_LIST_BANNER.savedValue();
+        boolean picture = ChatListBanner.PICTURE.equals(saved) && SavedPicture.present(context, SavedPicture.CHAT_LIST_BANNER);
+        if (!ChatListBanner.showsSomething(saved, picture)) return 0;
+        return Arrays.asList(chatListBannerChoices()).indexOf(saved);
+    }
+
+    /**
+     * None, the gradients and a picture, with the one showing checked. A gradient or a picture
+     * that's already saved shows at once; a picture not picked yet opens the gallery first. None
+     * takes the picture away too.
+     */
+    void showChatListBanner(Context context, Preference row) {
+        if (SettingsLock.refuses()) return;
+        String[] choices = chatListBannerChoices();
+        CharSequence[] labels = new CharSequence[choices.length];
+        for (int i = 0; i < choices.length; i++) {
+            labels[i] = ChatListBanner.PICTURE.equals(choices[i]) ? L10n.t("Picture from your gallery") : chatListBannerLabel(choices[i]);
+        }
+        boolean hasPicture = SavedPicture.present(context, SavedPicture.CHAT_LIST_BANNER);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context)
+                .setTitle(L10n.t("Chat list banner"))
+                .setSingleChoiceItems(labels, savedBannerChoice(context), (dialog, which) -> {
+                    String choice = choices[which];
+                    if (ChatListBanner.NONE.equals(choice)) {
+                        dialog.dismiss();
+                        removeChatListBanner(context);
+                        return;
+                    }
+                    if (ChatListBanner.PICTURE.equals(choice) && !SavedPicture.present(context, SavedPicture.CHAT_LIST_BANNER)) {
+                        dialog.dismiss();
+                        pickPicture(CHAT_LIST_BANNER_REQUEST);
+                        return;
+                    }
+                    boolean started = save((AlertDialog) dialog, () -> Settings.CHAT_LIST_BANNER.saveCommitted(choice), landed -> {
+                        if (landed) {
+                            ChatListBanner.changed();
+                            row.setSummary(chatListBannerSummary(context));
+                            dialog.dismiss();
+                        } else {
+                            ((AlertDialog) dialog).getListView().setItemChecked(savedBannerChoice(context), true);
+                            Utils.showToastLong(L10n.t("Couldn't save the choice. Try again in a moment."));
+                        }
+                    });
+                    if (!started) ((AlertDialog) dialog).getListView().setItemChecked(savedBannerChoice(context), true);
+                })
+                .setNegativeButton(L10n.t("Cancel"), null);
+        if (hasPicture) builder.setPositiveButton(L10n.t("Choose another picture"), (dialog, which) -> pickPicture(CHAT_LIST_BANNER_REQUEST));
+        show(builder);
+    }
+
+    /** Takes the banner and its picture away, so the chat list's bar looks like Telegram's again at once. */
+    void removeChatListBanner(Context context) {
+        if (SettingsLock.refuses()) return;
+        SavedPicture.remove(context, SavedPicture.CHAT_LIST_BANNER);
+        Settings.CHAT_LIST_BANNER.save(ChatListBanner.NONE);
+        ChatListBanner.changed();
+        Utils.showToastShort(L10n.t("Banner removed."));
+        refreshSwitches();
     }
 
     /** Android's folder picker, asked for a folder Telegram can keep writing to after a restart. */

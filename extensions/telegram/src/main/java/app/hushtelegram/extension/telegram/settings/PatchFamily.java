@@ -463,6 +463,7 @@ public enum PatchFamily {
         FILE_ICONS_SHARED(SAVE_DOWNLOADS, "fileIconsShared", "file icons and thumbnails in Shared media", true),
         TITLE_EMOJI(HOLIDAY_LOOK, "titleEmoji", "emoji next to the chat list title", true),
         CHAT_LIST_TITLE(HOLIDAY_LOOK, "chatListTitle", "your own chat list title", true),
+        CHAT_LIST_BANNER(HOLIDAY_LOOK, "chatListBanner", "the chat list banner", true),
         LIST_BACKGROUND(AMOLED_BLACK, "listBackground", "a picture behind the lists", true),
         HIDE_PINNED_BAR(HIDE_TRANSLATE_BAR, "hidePinnedBar", "pinned message bar in chats", true),
         RED_DELETED_LABEL(KEEP_DELETED_MESSAGES, "redDeletedLabel", "red deleted label", true),

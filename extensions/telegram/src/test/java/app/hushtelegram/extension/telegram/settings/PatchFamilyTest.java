@@ -391,10 +391,15 @@ public class PatchFamilyTest {
         // The emoji and the title's text are text, not switches: Pause reaches them through their own
         // empty paused values. The own title has a switch of its own, off by default.
         assertEquals(Arrays.asList(Settings.HOLIDAY_LOOK, Settings.CHAT_LIST_TITLE), family.switches);
-        assertEquals(EnumSet.of(PatchFamily.Capability.TITLE_EMOJI, PatchFamily.Capability.CHAT_LIST_TITLE),
+        assertEquals(EnumSet.of(PatchFamily.Capability.TITLE_EMOJI, PatchFamily.Capability.CHAT_LIST_TITLE,
+                        PatchFamily.Capability.CHAT_LIST_BANNER),
                 family.expectedCapabilities());
         assertEquals("titleEmoji", PatchFamily.Capability.TITLE_EMOJI.statusMethod);
         assertEquals("chatListTitle", PatchFamily.Capability.CHAT_LIST_TITLE.statusMethod);
+        // The chat list banner (#86) is a choice, not a switch: empty is Telegram's own bar, and it shows at once.
+        assertEquals("chatListBanner", PatchFamily.Capability.CHAT_LIST_BANNER.statusMethod);
+        assertEquals("", Settings.CHAT_LIST_BANNER.defaultValue);
+        assertFalse(Settings.CHAT_LIST_BANNER.rebootApp);
         assertEquals("", Settings.TITLE_EMOJI.defaultValue);
         assertEquals(Boolean.FALSE, Settings.CHAT_LIST_TITLE.defaultValue);
         assertEquals("", Settings.CHAT_LIST_TITLE_TEXT.defaultValue);

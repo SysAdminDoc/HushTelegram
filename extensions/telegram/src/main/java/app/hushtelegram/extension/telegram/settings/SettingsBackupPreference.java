@@ -61,6 +61,7 @@ import app.hushtelegram.extension.shared.settings.preference.QuickSetups;
 import app.hushtelegram.extension.telegram.misc.ChatListAvatar;
 import app.hushtelegram.extension.telegram.misc.KeepRemoved;
 import app.hushtelegram.extension.telegram.misc.LinkPreviewRules;
+import app.hushtelegram.extension.telegram.misc.ChatListBanner;
 import app.hushtelegram.extension.telegram.misc.ListBackground;
 import app.hushtelegram.extension.telegram.misc.LocalPins;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
@@ -483,6 +484,10 @@ public class SettingsBackupPreference extends Preference {
             } else if (change.getKey() == Settings.KEPT_REMOVED_CHATS) {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Chats you were removed from"),
                         keptCount(Settings.KEPT_REMOVED_CHATS.savedValue()), keptCount((String) change.getValue())));
+            } else if (change.getKey() == Settings.CHAT_LIST_BANNER) {
+                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Chat list banner"),
+                        HushTelegramPreferenceFragment.chatListBannerLabel(Settings.CHAT_LIST_BANNER.savedValue()),
+                        HushTelegramPreferenceFragment.chatListBannerLabel((String) change.getValue())));
             } else if (change.getKey() == Settings.RECORD_CALLS_KEEP_DAYS) {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Keep recordings"),
                         HushTelegramPreferenceFragment.recordKeepShort(Settings.RECORD_CALLS_KEEP_DAYS.savedValue()),
@@ -590,6 +595,7 @@ public class SettingsBackupPreference extends Preference {
                         if (named.contains(Settings.LIST_BACKGROUND) || named.contains(Settings.LIST_BACKGROUND_DIM)) {
                             ListBackground.changed();
                         }
+                        if (named.contains(Settings.CHAT_LIST_BANNER)) ChatListBanner.changed();
                         importing(null);
                         finish(run);
                         if (result != null) tell(IMPORT, result);

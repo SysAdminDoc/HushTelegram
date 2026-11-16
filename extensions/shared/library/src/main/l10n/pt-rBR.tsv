@@ -2167,3 +2167,27 @@ Background picture saved.	Imagem de fundo salva.
 Background dim	Escurecimento do fundo
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of AMOLED black that shows a gallery picture behind the list screens.
 a picture behind the lists	uma imagem atrás das listas
+# context: Row title on the Look and feel page under Your own chat list title (#86), and the label in the settings import preview, as in "Chat list banner: None to Ocean". A tap paints the chat list's top bar with two colors or a picture from the gallery.
+Chat list banner	Banner da lista de conversas
+# context: Name of a Chat list banner gradient, pink fading into violet. A color mood, not a time of day setting.
+Dusk	Crepúsculo
+# context: Name of a Chat list banner gradient, blue fading into sea green.
+Ocean	Oceano
+# context: Name of a Chat list banner gradient, green fading into olive.
+Forest	Floresta
+# context: Name of a Chat list banner gradient, orange fading into red, like glowing coals.
+Ember	Brasa
+# context: Name of a Chat list banner gradient, two cool grays like slate stone.
+Slate	Ardósia
+# context: What the Chat list banner row and the import preview call a banner made from a picture the person picked from the gallery.
+Your picture	Sua imagem
+# context: Last choice in the Chat list banner list. Picking it opens the phone's gallery when no picture is saved yet.
+Picture from your gallery	Imagem da sua galeria
+# context: Summary of the Chat list banner row while no banner is set. Must fit two short lines.
+None. Tap to pick colors or a picture.	Nenhum. Toque para escolher cores ou uma imagem.
+# context: Toast after None is picked for the Chat list banner. The bar looks like Telegram's own again. Must fit two short toast lines.
+Banner removed.	Banner removido.
+# context: Toast once the picture picked for the Chat list banner is saved and shows on the chat list's top bar. Must fit two short toast lines.
+Banner picture saved.	Imagem do banner salva.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of New Year look all year that paints the chat list's top bar with colors or a picture.
+the chat list banner	o banner da lista de conversas

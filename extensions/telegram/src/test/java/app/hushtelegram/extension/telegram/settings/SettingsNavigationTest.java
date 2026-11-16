@@ -300,6 +300,7 @@ public class SettingsNavigationTest {
         assertEquals(position(Settings.HOLIDAY_LOOK.key) + 1, position(TitleEmojiEditor.KEY));
         assertEquals(position(TitleEmojiEditor.KEY) + 1, position(Settings.CHAT_LIST_TITLE.key));
         assertEquals(position(Settings.CHAT_LIST_TITLE.key) + 1, position(TitleEmojiEditor.TITLE_KEY));
+        assertEquals(position(TitleEmojiEditor.TITLE_KEY) + 1, position(HushTelegramPreferenceFragment.CHAT_LIST_BANNER_ROW));
         assertEquals(position(Settings.AMOLED_BLACK.key) - 1, titles().indexOf("Theme"));
         assertEquals(position(Settings.AMOLED_BLACK.key) + 1, position(Settings.LIST_BACKGROUND.key));
         assertEquals(position(Settings.LIST_BACKGROUND.key) + 1, position(HushTelegramPreferenceFragment.LIST_BACKGROUND_ROW));
@@ -1822,11 +1823,11 @@ public class SettingsNavigationTest {
             assertEquals(android.content.Intent.ACTION_CREATE_DOCUMENT, export.intent.getAction());
             while (page.navigation.back()) { }
 
-            // Every chooser: sticker and avatar size, the background picture, both filter lists, the title emoji and title
-            // text, the translation service and language, the push app, Open a chat by ID, the proxy lists, the device in
-            // Active sessions and the link preview rules.
+            // Every chooser: sticker and avatar size, the background picture, the chat list banner, both filter lists, the
+            // title emoji and title text, the translation service and language, the push app, Open a chat by ID, the proxy
+            // lists, the device in Active sessions and the link preview rules.
             for (String key : Arrays.asList(HushTelegramPreferenceFragment.STICKER_SIZE_ROW, HushTelegramPreferenceFragment.AVATAR_SIZE_ROW,
-                    HushTelegramPreferenceFragment.LIST_BACKGROUND_ROW, FilterEditor.GROUPS,
+                    HushTelegramPreferenceFragment.LIST_BACKGROUND_ROW, HushTelegramPreferenceFragment.CHAT_LIST_BANNER_ROW, FilterEditor.GROUPS,
                     FilterEditor.CHANNELS, TitleEmojiEditor.KEY, TitleEmojiEditor.TITLE_KEY, StorageFolderEditor.KEY, TranslateServiceEditor.KEY, TranslateTargetPicker.KEY,
                     UnifiedPushPicker.KEY, OpenByIdEditor.KEY, ProxyListsEditor.KEY, SessionDeviceEditor.KEY, LinkPreviewRulesEditor.KEY)) {
                 Preference row = page.findPreference(key);

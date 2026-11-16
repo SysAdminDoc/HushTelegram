@@ -45,6 +45,7 @@ import app.hushtelegram.extension.shared.settings.Setting;
 import app.hushtelegram.extension.shared.settings.SettingsJson;
 import app.hushtelegram.extension.shared.settings.StringSetting;
 import app.hushtelegram.extension.telegram.misc.ChatListAvatar;
+import app.hushtelegram.extension.telegram.misc.ChatListBanner;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.FolderIcons;
 import app.hushtelegram.extension.telegram.misc.GalleryFolder;
@@ -323,13 +324,14 @@ public final class SettingsBackup {
      * The short texts a file carries as they're saved: the emoji beside the chat list's title, the
      * gallery folder choice, the translation language, the folder icon pack, the name of Telegram's
      * own folder, the kinds What to copy leaves out, which calls Record calls saves, the text shown
-     * in place of Telegram's name, the chats pinned on this phone, the link preview rules and the chats
-     * kept after you were removed from them. A build from before them counts the name as unknown and
-     * leaves it out.
+     * in place of Telegram's name, the chats pinned on this phone, the link preview rules, the chats
+     * kept after you were removed from them and the chat list banner's choice (never its picture). A
+     * build from before them counts the name as unknown and leaves it out.
      */
     static final List<StringSetting> TEXTS = Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER,
             Settings.TRANSLATE_TARGET, Settings.FOLDER_ICON_PACK, Settings.STORAGE_FOLDER_NAME, Settings.SAVE_KINDS_LEFT_OUT,
-            Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LOCAL_PINNED_CHATS, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS);
+            Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LOCAL_PINNED_CHATS, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS,
+            Settings.CHAT_LIST_BANNER);
 
     /**
      * Bounds for the parser, well past anything this class writes, so a file built to be
@@ -769,6 +771,7 @@ public final class SettingsBackup {
         if (setting == Settings.LOCAL_PINNED_CHATS) return LocalPins.allowed(value);
         if (setting == Settings.LINK_PREVIEW_RULE_LIST) return LinkPreviewRules.allowed(value);
         if (setting == Settings.KEPT_REMOVED_CHATS) return KeepRemoved.allowed(value);
+        if (setting == Settings.CHAT_LIST_BANNER) return ChatListBanner.allowed(value);
         return setting == Settings.TITLE_EMOJI && TitleEmoji.allowed(value);
     }
 

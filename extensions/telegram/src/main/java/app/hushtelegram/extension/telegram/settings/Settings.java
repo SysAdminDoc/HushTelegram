@@ -223,6 +223,14 @@ public class Settings extends BaseSettings {
             new StringSetting("hushtelegram_chat_list_title_text", "", true);
 
     /**
+     * What the chat list's top bar shows behind its title and buttons on this phone
+     * ({@link app.hushtelegram.extension.telegram.misc.ChatListBanner}): empty for Telegram's own
+     * bar, one of the gradients by name, or {@code picture} for the one picked from the gallery.
+     */
+    public static final StringSetting CHAT_LIST_BANNER =
+            new StringSetting("hushtelegram_chat_list_banner", "", false);
+
+    /**
      * Medium, italic, extra bold, condensed and monospace text in the phone's own font instead of
      * Telegram's bundled Roboto files. Telegram keeps the faces it loaded, so a change waits for a restart.
      */
