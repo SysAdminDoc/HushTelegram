@@ -355,6 +355,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (ownTitle != null) ownTitle.setSummary(TitleEmojiEditor.titleSummary(Settings.CHAT_LIST_TITLE_TEXT.savedValue()));
         Preference proxyOrder = findPreference(ProxyOrderEditor.KEY);
         if (proxyOrder != null) proxyOrder.setSummary(ProxyOrder.summary());
+        Preference previewRules = findPreference(LinkPreviewRulesEditor.KEY);
+        if (previewRules != null) previewRules.setSummary(LinkPreviewRulesEditor.summary());
         Preference gallery = findPreference(GALLERY_FOLDER_ROW);
         if (gallery != null) gallery.setSummary(galleryFolderSummary());
         Preference recordWhich = findPreference(RECORD_WHICH_ROW);
@@ -1651,6 +1653,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                     + "messages or public accounts. Channels, Apps, the media tabs and chat or date filters "
                                     + "don't search for typed text. Search inside a chat still goes to Telegram.")));
                 }
+                if (PatchFamily.Capability.LINK_PREVIEW_RULES.installed()) {
+                    privacy.addPreference(toggle(context, Settings.LINK_PREVIEW_RULES, L10n.t("Fix link previews"),
+                            L10n.t("When you send a link to a site in your rules, its preview comes from the other site "
+                                    + "the rule names, like fixupx.com for x.com. Your message keeps the link you typed.")));
+                    privacy.addPreference(linkPreviewRulesRow(context));
+                }
             }
             if (build.contains(PatchFamily.GALLERY_CAMERA_ON_TAP)) {
                 privacy.addPreference(toggle(context, Settings.GALLERY_CAMERA_ON_TAP, L10n.t("Camera only on tap"),
@@ -2239,6 +2247,23 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             if (SettingsLock.refuses()) return true;
             if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
                 own(ProxyListsEditor.open(activity, p));
+            }
+            return true;
+        });
+        return row;
+    }
+
+    private Preference linkPreviewRulesRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(LinkPreviewRulesEditor.KEY);
+        row.setTitle(L10n.t("Link preview rules"));
+        row.setPersistent(false);
+        row.setSummary(LinkPreviewRulesEditor.summary());
+        row.setOnPreferenceClickListener(p -> {
+            Activity activity = getActivity();
+            if (SettingsLock.refuses()) return true;
+            if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
+                own(LinkPreviewRulesEditor.open(activity, p));
             }
             return true;
         });

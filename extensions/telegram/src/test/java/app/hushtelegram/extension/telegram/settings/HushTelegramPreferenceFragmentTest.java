@@ -530,6 +530,16 @@ public class HushTelegramPreferenceFragmentTest {
             // Search keeps asking Telegram's server until someone turns the switch on.
             assertFalse(Settings.LOCAL_SEARCH.key,
                     ((SwitchPreference) page.findPreference(Settings.LOCAL_SEARCH.key)).isChecked());
+            assertEquals("Fix link previews", String.valueOf(page.findPreference(Settings.LINK_PREVIEW_RULES.key).getTitle()));
+            assertEquals("When you send a link to a site in your rules, its preview comes from the other site the rule "
+                    + "names, like fixupx.com for x.com. Your message keeps the link you typed.",
+                    String.valueOf(page.findPreference(Settings.LINK_PREVIEW_RULES.key).getSummary()));
+            // Previews come from the linked site itself until someone turns the switch on.
+            assertFalse(Settings.LINK_PREVIEW_RULES.key,
+                    ((SwitchPreference) page.findPreference(Settings.LINK_PREVIEW_RULES.key)).isChecked());
+            assertEquals("Link preview rules", String.valueOf(page.findPreference(LinkPreviewRulesEditor.KEY).getTitle()));
+            assertEquals("Rules: 6. Fix link previews follows these for the links you send.",
+                    String.valueOf(page.findPreference(LinkPreviewRulesEditor.KEY).getSummary()));
             assertEquals("Camera only on tap", String.valueOf(page.findPreference(Settings.GALLERY_CAMERA_ON_TAP.key).getTitle()));
             assertEquals("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the "
                     + "camera tile to start it.",
@@ -2814,6 +2824,88 @@ public class HushTelegramPreferenceFragmentTest {
                     .remove(Settings.SESSION_DEVICE_NAME.key);
             app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment.restartPending
                     .remove(Settings.SESSION_SYSTEM_VERSION.key);
+        }
+    }
+
+    /**
+     * Link preview rules (#79): the row under Fix link previews opens the rules, one per line. Save
+     * keeps the lines that are rules, written the editor's way, and says how many it left out.
+     * Default rules puts the starting rules back in the box without saving them, and rules too long
+     * to keep or a write that fails keep the dialog and what was typed.
+     */
+    @Test
+    public void theLinkPreviewRulesEditorKeepsTheRulesAndSaysWhatItLeftOut() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.allOf(PatchFamily.class);
+        String defaults = app.hushtelegram.extension.telegram.misc.LinkPreviewRules.DEFAULT_RULES;
+        String kept = "x.com -> fixupx.com\n*.example.org -> *.mirror.example";
+        ShadowToast.reset();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Preference row = pageOf(controller).findPreference(LinkPreviewRulesEditor.KEY);
+            assertFalse("it stores nothing itself", row.isPersistent());
+            AlertDialog editor = dialogOf(row);
+            assertTrue(editor.isShowing());
+            assertEquals("Link preview rules", String.valueOf(shadowOf(editor).getTitle()));
+            EditText field = editor.findViewById(android.R.id.edit);
+            assertEquals(defaults, field.getText().toString());
+            assertEquals("One rule per line, like x.com -> fixupx.com", String.valueOf(field.getHint()));
+
+            field.setText("X.COM  ->  FixupX.com\nnot a rule\n\n*.Example.org -> *.mirror.example\nx.com -> x.com");
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertFalse(editor.isShowing());
+            assertEquals(kept, Settings.LINK_PREVIEW_RULE_LIST.savedValue());
+            assertEquals("Lines left out: 2. They aren't rules.", ShadowToast.getTextOfLatestToast());
+            assertEquals("Rules: 2. Fix link previews follows these for the links you send.", String.valueOf(row.getSummary()));
+
+            // Default rules only fills the box: Cancel keeps what was saved.
+            editor = dialogOf(row);
+            field = editor.findViewById(android.R.id.edit);
+            assertEquals(kept, field.getText().toString());
+            editor.getButton(AlertDialog.BUTTON_NEUTRAL).performClick();
+            assertTrue("Default rules keeps the dialog", editor.isShowing());
+            assertEquals(defaults, field.getText().toString());
+            editor.getButton(AlertDialog.BUTTON_NEGATIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertEquals(kept, Settings.LINK_PREVIEW_RULE_LIST.savedValue());
+
+            // Emptied, there are no rules and the row says how to add one.
+            editor = dialogOf(row);
+            field = editor.findViewById(android.R.id.edit);
+            field.setText("");
+            ShadowToast.reset();
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertFalse(editor.isShowing());
+            assertNull("nothing to say when every line was a rule", ShadowToast.getTextOfLatestToast());
+            assertEquals("", Settings.LINK_PREVIEW_RULE_LIST.savedValue());
+            assertEquals("No rules yet. Add one per line, like x.com -> fixupx.com.", String.valueOf(row.getSummary()));
+
+            // Rules too long to keep stay in the box, and nothing is saved.
+            StringBuilder many = new StringBuilder();
+            for (int i = 0; many.length() <= app.hushtelegram.extension.telegram.misc.LinkPreviewRules.MAX_TEXT + 50; i++) {
+                many.append("site").append(i).append(".com -> fixupx.com\n");
+            }
+            editor = dialogOf(row);
+            field = editor.findViewById(android.R.id.edit);
+            field.setText(many);
+            editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertTrue(editor.isShowing());
+            assertEquals(many.toString(), field.getText().toString());
+            assertEquals("Too many rules to keep. Take some out.", ShadowToast.getTextOfLatestToast());
+            assertEquals("", Settings.LINK_PREVIEW_RULE_LIST.savedValue());
+
+            field.setText("x.com -> fixupx.com");
+            try (FailingStore ignored = FailingStore.install(FailingStore.Fault.COMMIT_FALSE)) {
+                editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+                settle();
+            }
+            assertTrue("a save that fails keeps the dialog", editor.isShowing());
+            assertEquals("Couldn't save the rules. Try again in a moment.", ShadowToast.getTextOfLatestToast());
+            assertEquals("", Settings.LINK_PREVIEW_RULE_LIST.savedValue());
+            editor.dismiss();
+        } finally {
+            Settings.LINK_PREVIEW_RULE_LIST.resetToDefault();
         }
     }
 

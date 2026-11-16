@@ -58,6 +58,7 @@ import app.hushtelegram.extension.shared.settings.StringSetting;
 import app.hushtelegram.extension.shared.settings.preference.AbstractPreferenceFragment;
 import app.hushtelegram.extension.shared.settings.preference.LogBufferManager;
 import app.hushtelegram.extension.shared.settings.preference.QuickSetups;
+import app.hushtelegram.extension.telegram.misc.LinkPreviewRules;
 import app.hushtelegram.extension.telegram.misc.LocalPins;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.RecordChats;
@@ -480,6 +481,12 @@ public class SettingsBackupPreference extends Preference {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Keep recordings"),
                         HushTelegramPreferenceFragment.recordKeepShort(Settings.RECORD_CALLS_KEEP_DAYS.savedValue()),
                         HushTelegramPreferenceFragment.recordKeepShort((Integer) change.getValue())));
+            } else if (change.getKey() == Settings.LINK_PREVIEW_RULE_LIST) {
+                int before = LinkPreviewRules.saved().rules.size();
+                int after = LinkPreviewRules.parse((String) change.getValue()).rules.size();
+                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Link preview rules"),
+                        L10n.quantity(before, "%1$d rule", "%1$d rules", before),
+                        L10n.quantity(after, "%1$d rule", "%1$d rules", after)));
             } else if (change.getKey() instanceof StringSetting) {
                 String title = L10n.t(change.getKey() == Settings.MESSAGE_FILTERS_GROUPS ? "Filters for groups" : "Filters for channels");
                 int count = MessageFilters.lines((String) change.getValue()).size();

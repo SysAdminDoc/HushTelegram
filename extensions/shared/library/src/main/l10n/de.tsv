@@ -1615,7 +1615,7 @@ No rules yet.	Noch keine Regeln.
 %1$s to %2$s, media only	%1$s an %2$s, nur Medien
 Add rule	Regel hinzufügen
 Tap a rule to remove it	Tippe auf eine Regel, um sie zu entfernen
-Couldn't save the rules. Try again in a moment.	Die Regeln ließen sich nicht speichern. Versuch es gleich noch einmal.
+Couldn't save the rules. Try again in a moment.	Regeln nicht gespeichert. Versuch es gleich noch mal.
 Rule removed	Regel entfernt
 A rule needs two chats.	Eine Regel braucht zwei Chats.
 Forward new messages from	Neue Nachrichten weiterleiten aus
@@ -2084,3 +2084,29 @@ Do Not Disturb in the chat list menu	„Bitte nicht stören“ im Chatlisten-Men
 Adds Do Not Disturb to the menu at the top of the chat list. While it's on, no message notification shows or makes a sound, and messages still arrive. Calls ring as usual.	Fügt „Bitte nicht stören“ zum Menü oben in der Chatliste hinzu. Solange es an ist, erscheint keine Benachrichtigung zu Nachrichten und kein Ton ist zu hören, Nachrichten kommen aber weiter an. Anrufe klingeln wie gewohnt.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Do Not Disturb item that Proxy in the chat list menu adds to the menu at the top of the chat list. Do Not Disturb here is HushTelegram's own quiet mode, named like Android's Do Not Disturb (use that name in this language), not Telegram's per-chat mute
 Do Not Disturb menu item	der Menüpunkt „Bitte nicht stören“
+# context: Privacy page switch under Draft link previews. It makes the preview of a link you send come from another site, the way the rules in Link preview rules say
+Fix link previews	Linkvorschauen reparieren
+# context: Line under the Fix link previews switch. fixupx.com and x.com are web sites and stay as they are
+When you send a link to a site in your rules, its preview comes from the other site the rule names, like fixupx.com for x.com. Your message keeps the link you typed.	Wenn du einen Link zu einer Seite aus deinen Regeln sendest, kommt seine Vorschau von der anderen Seite, die die Regel nennt, etwa fixupx.com für x.com. Deine Nachricht behält den Link, den du eingegeben hast.
+# context: Privacy page row title under the Fix link previews switch, the title of its editor dialog, and a label in the settings import preview line "%1$s: %2$s to %3$s"
+Link preview rules	Regeln für Linkvorschauen
+# context: Summary of the Link preview rules row when it holds no rules. x.com -> fixupx.com is a rule as typed and stays as it is
+No rules yet. Add one per line, like x.com -> fixupx.com.	Noch keine Regeln. Füge eine pro Zeile hinzu, etwa x.com -> fixupx.com.
+# context: Summary of the Link preview rules row with the number of rules. Fix link previews is the name of the switch above it
+Rules: %1$s. Fix link previews follows these for the links you send.	Regeln: %1$s. Linkvorschauen reparieren folgt ihnen bei den Links, die du sendest.
+# context: Hint and label of the box in the Link preview rules dialog, where each line is one rule. x.com -> fixupx.com stays as it is
+One rule per line, like x.com -> fixupx.com	Eine Regel pro Zeile, etwa x.com -> fixupx.com
+# context: Note in the Link preview rules dialog. The arrow is the -> typed between two sites; *. and the sites stay as they are
+Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. Lines that aren't rules are left out.	Jede Zeile ist eine Seite, ein Pfeil und die Seite, von der ihre Vorschauen kommen. Setze *. vor beide, um auch Subdomains abzudecken, etwa *.tiktok.com -> *.kktiktok.com. Zeilen, die keine Regeln sind, werden ausgelassen.
+# context: Button in the Link preview rules dialog, next to Save and Cancel. It puts the starting rules back in the box. Short
+Default rules	Standardregeln
+# context: Toast when the rules typed in Link preview rules are too long to keep. Two short lines at most.
+Too many rules to keep. Take some out.	Zu viele Regeln. Nimm ein paar raus.
+# context: Toast after saving Link preview rules when some lines weren't rules; %1$s is how many were left out. Two short lines at most.
+Lines left out: %1$s. They aren't rules.	Ausgelassene Zeilen: %1$s. Das sind keine Regeln.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Draft link previews that points a sent link's preview at another site
+link preview rules	Regeln für Linkvorschauen
+# context: Count of rules in the settings import preview line "Link preview rules: 6 rules to 7 rules", when it's one
+%1$d rule	%1$d Regel
+# context: Count of rules in the settings import preview line "Link preview rules: 6 rules to 7 rules", when it's more than one
+%1$d rules	%1$d Regeln

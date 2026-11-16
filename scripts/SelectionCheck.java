@@ -375,6 +375,7 @@ public final class SelectionCheck {
         hook(calls, flags, "botSharePreviews", "misc/DraftPreviews", "skipBotSharePreview");
         hook(calls, flags, "localDrafts", "misc/LocalDrafts", "keepOnPhone");
         hook(calls, flags, "localSearch", "misc/LocalSearch", "keep", "sent", "emptyText", "phones");
+        hook(calls, flags, "linkPreviewRules", "misc/LinkPreviewRules", "send");
         hook(calls, flags, "skipAutologin", "misc/LinkRouting", "addAutologinToken");
         hook(calls, flags, "commerceSettingsRows", "misc/Commerce", "addSettingsRow", "showWalletRow");
         hook(calls, flags, "commerceProfileGifts", "misc/Commerce", "addProfileTab", "showGiftsTab");

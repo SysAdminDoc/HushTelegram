@@ -1611,7 +1611,7 @@ No rules yet.	Още няма правила.
 %1$s to %2$s, media only	%1$s към %2$s, само медия
 Add rule	Добавяне на правило
 Tap a rule to remove it	Докоснете правило, за да го премахнете
-Couldn't save the rules. Try again in a moment.	Правилата не можаха да се запазят. Опитайте отново след малко.
+Couldn't save the rules. Try again in a moment.	Правилата не се запазиха. Опитайте пак след малко.
 Rule removed	Правилото е премахнато
 A rule needs two chats.	Правилото изисква два чата.
 Forward new messages from	Препращане на нови съобщения от
@@ -2080,3 +2080,29 @@ Do Not Disturb in the chat list menu	„Не безпокойте“ в меню
 Adds Do Not Disturb to the menu at the top of the chat list. While it's on, no message notification shows or makes a sound, and messages still arrive. Calls ring as usual.	Добавя „Не безпокойте“ в менюто в горната част на списъка с чатове. Докато е включено, никое известие за съобщение не се показва и не издава звук, а съобщенията пак пристигат. Обажданията звънят както обикновено.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Do Not Disturb item that Proxy in the chat list menu adds to the menu at the top of the chat list. Do Not Disturb here is HushTelegram's own quiet mode, named like Android's Do Not Disturb (use that name in this language), not Telegram's per-chat mute
 Do Not Disturb menu item	елементът „Не безпокойте“ в менюто
+# context: Privacy page switch under Draft link previews. It makes the preview of a link you send come from another site, the way the rules in Link preview rules say
+Fix link previews	Поправяне на визуализациите на връзки
+# context: Line under the Fix link previews switch. fixupx.com and x.com are web sites and stay as they are
+When you send a link to a site in your rules, its preview comes from the other site the rule names, like fixupx.com for x.com. Your message keeps the link you typed.	Когато изпратиш връзка към сайт от правилата си, визуализацията ѝ идва от другия сайт, посочен в правилото, например fixupx.com за x.com. Съобщението ти запазва връзката, която въведе.
+# context: Privacy page row title under the Fix link previews switch, the title of its editor dialog, and a label in the settings import preview line "%1$s: %2$s to %3$s"
+Link preview rules	Правила за визуализации на връзки
+# context: Summary of the Link preview rules row when it holds no rules. x.com -> fixupx.com is a rule as typed and stays as it is
+No rules yet. Add one per line, like x.com -> fixupx.com.	Още няма правила. Добави по едно на ред, например x.com -> fixupx.com.
+# context: Summary of the Link preview rules row with the number of rules. Fix link previews is the name of the switch above it
+Rules: %1$s. Fix link previews follows these for the links you send.	Правила: %1$s. Поправяне на визуализациите на връзки ги следва за връзките, които изпращаш.
+# context: Hint and label of the box in the Link preview rules dialog, where each line is one rule. x.com -> fixupx.com stays as it is
+One rule per line, like x.com -> fixupx.com	По едно правило на ред, например x.com -> fixupx.com
+# context: Note in the Link preview rules dialog. The arrow is the -> typed between two sites; *. and the sites stay as they are
+Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. Lines that aren't rules are left out.	Всеки ред е сайт, стрелка и сайтът, от който идват визуализациите му. Сложи *. пред двата, за да обхванеш и поддомейните, например *.tiktok.com -> *.kktiktok.com. Редовете, които не са правила, се пропускат.
+# context: Button in the Link preview rules dialog, next to Save and Cancel. It puts the starting rules back in the box. Short
+Default rules	Правила по подразбиране
+# context: Toast when the rules typed in Link preview rules are too long to keep. Two short lines at most.
+Too many rules to keep. Take some out.	Твърде много правила. Махнете няколко.
+# context: Toast after saving Link preview rules when some lines weren't rules; %1$s is how many were left out. Two short lines at most.
+Lines left out: %1$s. They aren't rules.	Пропуснати редове: %1$s. Това не са правила.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Draft link previews that points a sent link's preview at another site
+link preview rules	правилата за визуализации на връзки
+# context: Count of rules in the settings import preview line "Link preview rules: 6 rules to 7 rules", when it's one
+%1$d rule	%1$d правило
+# context: Count of rules in the settings import preview line "Link preview rules: 6 rules to 7 rules", when it's more than one
+%1$d rules	%1$d правила

@@ -1615,7 +1615,7 @@ No rules yet.	Belum ada aturan.
 %1$s to %2$s, media only	%1$s ke %2$s, hanya media
 Add rule	Tambah aturan
 Tap a rule to remove it	Ketuk aturan untuk menghapusnya
-Couldn't save the rules. Try again in a moment.	Aturan tidak dapat disimpan. Coba lagi sebentar lagi.
+Couldn't save the rules. Try again in a moment.	Aturan tidak tersimpan. Coba lagi sebentar lagi.
 Rule removed	Aturan dihapus
 A rule needs two chats.	Aturan butuh dua obrolan.
 Forward new messages from	Teruskan pesan baru dari
@@ -2084,3 +2084,29 @@ Do Not Disturb in the chat list menu	Jangan Ganggu di menu daftar obrolan
 Adds Do Not Disturb to the menu at the top of the chat list. While it's on, no message notification shows or makes a sound, and messages still arrive. Calls ring as usual.	Menambahkan Jangan Ganggu ke menu di atas daftar obrolan. Selama aktif, tidak ada notifikasi pesan yang muncul atau berbunyi, dan pesan tetap masuk. Panggilan tetap berdering seperti biasa.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Do Not Disturb item that Proxy in the chat list menu adds to the menu at the top of the chat list. Do Not Disturb here is HushTelegram's own quiet mode, named like Android's Do Not Disturb (use that name in this language), not Telegram's per-chat mute
 Do Not Disturb menu item	item menu Jangan Ganggu
+# context: Privacy page switch under Draft link previews. It makes the preview of a link you send come from another site, the way the rules in Link preview rules say
+Fix link previews	Perbaiki pratinjau tautan
+# context: Line under the Fix link previews switch. fixupx.com and x.com are web sites and stay as they are
+When you send a link to a site in your rules, its preview comes from the other site the rule names, like fixupx.com for x.com. Your message keeps the link you typed.	Saat Anda mengirim tautan ke situs dalam aturan Anda, pratinjaunya diambil dari situs lain yang disebut aturan itu, misalnya fixupx.com untuk x.com. Pesan Anda tetap memuat tautan yang Anda ketik.
+# context: Privacy page row title under the Fix link previews switch, the title of its editor dialog, and a label in the settings import preview line "%1$s: %2$s to %3$s"
+Link preview rules	Aturan pratinjau tautan
+# context: Summary of the Link preview rules row when it holds no rules. x.com -> fixupx.com is a rule as typed and stays as it is
+No rules yet. Add one per line, like x.com -> fixupx.com.	Belum ada aturan. Tambahkan satu per baris, misalnya x.com -> fixupx.com.
+# context: Summary of the Link preview rules row with the number of rules. Fix link previews is the name of the switch above it
+Rules: %1$s. Fix link previews follows these for the links you send.	Aturan: %1$s. Perbaiki pratinjau tautan mengikutinya untuk tautan yang Anda kirim.
+# context: Hint and label of the box in the Link preview rules dialog, where each line is one rule. x.com -> fixupx.com stays as it is
+One rule per line, like x.com -> fixupx.com	Satu aturan per baris, misalnya x.com -> fixupx.com
+# context: Note in the Link preview rules dialog. The arrow is the -> typed between two sites; *. and the sites stay as they are
+Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. Lines that aren't rules are left out.	Setiap baris berisi situs, tanda panah, dan situs asal pratinjaunya. Tambahkan *. di depan keduanya untuk mencakup subdomain juga, misalnya *.tiktok.com -> *.kktiktok.com. Baris yang bukan aturan dilewati.
+# context: Button in the Link preview rules dialog, next to Save and Cancel. It puts the starting rules back in the box. Short
+Default rules	Aturan bawaan
+# context: Toast when the rules typed in Link preview rules are too long to keep. Two short lines at most.
+Too many rules to keep. Take some out.	Terlalu banyak aturan. Hapus beberapa.
+# context: Toast after saving Link preview rules when some lines weren't rules; %1$s is how many were left out. Two short lines at most.
+Lines left out: %1$s. They aren't rules.	Baris yang dilewati: %1$s. Itu bukan aturan.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Draft link previews that points a sent link's preview at another site
+link preview rules	aturan pratinjau tautan
+# context: Count of rules in the settings import preview line "Link preview rules: 6 rules to 7 rules", when it's one
+%1$d rule	%1$d aturan
+# context: Count of rules in the settings import preview line "Link preview rules: 6 rules to 7 rules", when it's more than one
+%1$d rules	%1$d aturan

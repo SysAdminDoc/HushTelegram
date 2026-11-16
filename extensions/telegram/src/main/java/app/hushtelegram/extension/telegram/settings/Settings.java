@@ -1167,6 +1167,18 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting LOCAL_SEARCH =
             new BooleanSetting("hushtelegram_local_search", FALSE);
 
+    /**
+     * A sent message's link preview only: a link one of {@link #LINK_PREVIEW_RULE_LIST}'s rules
+     * covers gets its preview from the rule's other site, and the text goes out as typed
+     * ({@link app.hushtelegram.extension.telegram.misc.LinkPreviewRules}).
+     */
+    public static final BooleanSetting LINK_PREVIEW_RULES =
+            new BooleanSetting("hushtelegram_link_preview_rules", FALSE);
+
+    /** The rules Fix link previews follows, one {@code original -> alternative} a line. */
+    public static final StringSetting LINK_PREVIEW_RULE_LIST = new StringSetting("hushtelegram_link_preview_rule_list",
+            app.hushtelegram.extension.telegram.misc.LinkPreviewRules.DEFAULT_RULES);
+
     /** The attachment gallery's camera tile only; the camera wakes on a tap and every other camera stays stock. */
     public static final BooleanSetting GALLERY_CAMERA_ON_TAP =
             new BooleanSetting("hushtelegram_gallery_camera_on_tap", FALSE);

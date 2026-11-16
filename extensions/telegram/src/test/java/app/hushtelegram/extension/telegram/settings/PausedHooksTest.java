@@ -184,7 +184,8 @@ public class PausedHooksTest {
                 app.hushtelegram.extension.telegram.misc.CallRecorderForTests::takesAFrameAfterATap,
                 app.hushtelegram.extension.telegram.misc.CallRecorderForTests::addsARecordButton));
         // An unsent message's link preview is never asked for, on any compose surface, its draft
-        // stays off Telegram's server, and what's typed in search stays here too.
+        // stays off Telegram's server, what's typed in search stays here too, and a sent link's
+        // preview comes from the site its rule names.
         probes.put(PatchFamily.DISABLE_DRAFT_PREVIEWS, Arrays.asList(
                 app.hushtelegram.extension.telegram.misc.DraftPreviews::skipChatPreview,
                 app.hushtelegram.extension.telegram.misc.DraftPreviews::skipSharePreview,
@@ -197,7 +198,8 @@ public class PausedHooksTest {
                 () -> !"none".equals(app.hushtelegram.extension.telegram.misc.LocalSearch.emptyText("none")),
                 () -> app.hushtelegram.extension.telegram.misc.LocalSearch.keepsText("cat"),
                 () -> app.hushtelegram.extension.telegram.misc.LocalSearch.phones(new Object(), "+15551234",
-                        true, true, true, true, false, 0, true, 0, 7, 0L, null)));
+                        true, true, true, true, false, 0, true, 0, 7, 0L, null),
+                app.hushtelegram.extension.telegram.misc.LinkPreviewRulesForTests::on));
         // Search's Apps tab neither loads nor draws the Popular apps list, and search keeps to your
         // own chats: no public tab, lookup, account match or hashtag posts, and Downloads opens
         // where it now sits.

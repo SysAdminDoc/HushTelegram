@@ -197,6 +197,7 @@ public final class SettingsStatus {
     public static boolean botSharePreviews() { return false; }
     public static boolean localDrafts() { return false; }
     public static boolean localSearch() { return false; }
+    public static boolean linkPreviewRules() { return false; }
 
     public static boolean galleryCameraOnTap() { return false; }
 
