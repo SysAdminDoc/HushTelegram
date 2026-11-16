@@ -125,6 +125,7 @@ public class PausedHooksTest {
         for (BooleanSetting setting : settingsSwitches()) setting.resetToDefault();
         Settings.CHAT_LIST_TITLE_TEXT.resetToDefault();
         ReleaseCheckForTests.forget();
+        app.hushtelegram.extension.telegram.misc.DoNotDisturbForTests.forget();
     }
 
     /**
@@ -498,8 +499,12 @@ public class PausedHooksTest {
             order.remove(0);
             return app.hushtelegram.extension.telegram.misc.CaptionOrder.after(order, 0) != null;
         }));
-        probes.put(PatchFamily.PROXY_MENU, Collections.singletonList(
-                () -> app.hushtelegram.extension.telegram.misc.ProxyMenu.show(1)));
+        // Proxy stays where Telegram puts it, and Do Not Disturb, tapped on, holds no notification or sound.
+        app.hushtelegram.extension.telegram.misc.DoNotDisturbForTests.on(true);
+        probes.put(PatchFamily.PROXY_MENU, Arrays.asList(
+                () -> app.hushtelegram.extension.telegram.misc.ProxyMenu.show(1),
+                app.hushtelegram.extension.telegram.misc.DoNotDisturb::quiet,
+                () -> !app.hushtelegram.extension.telegram.misc.DoNotDisturb.chatSound(1)));
         probes.put(PatchFamily.FREE_PROXIES, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.FreeProxies.signInButton(1)));
         probes.put(PatchFamily.MY_MESSAGES, Collections.singletonList(

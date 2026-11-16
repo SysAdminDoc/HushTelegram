@@ -656,6 +656,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_proxy_menu", FALSE);
 
     /**
+     * The chat list's menu gets a Do Not Disturb item, which holds every message notification and
+     * the in-chat sound until it's tapped again (#79). Off by default.
+     */
+    public static final BooleanSetting DND_MENU =
+            new BooleanSetting("hushtelegram_dnd_menu", FALSE);
+
+    /**
      * Every six hours, a public list of MTProto proxies is downloaded and the fastest ten go in
      * Telegram's proxy list, and Telegram connects through them unless a proxy of your own is in
      * use (#66). Off by default, since it goes online and a proxy's operator sees your address.

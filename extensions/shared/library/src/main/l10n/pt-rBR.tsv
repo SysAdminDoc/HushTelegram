@@ -2035,3 +2035,17 @@ Chats pinned on this phone	Conversas fixadas neste telefone
 %1$d chat	%1$d conversa
 # context: Count of chats in the import preview, plural form. %1$d is the number
 %1$d chats	%1$d conversas
+# context: Item at the end of the menu that opens from the top of the chat list (New Group, Saved Messages and so on), shown while Do Not Disturb in the chat list menu is on (#79). Do Not Disturb here is HushTelegram's own quiet mode, named like Android's Do Not Disturb (use that name in this language), not Telegram's per-chat mute
+Turn on Do Not Disturb	Ativar Não perturbe
+# context: The same chat list menu item while Do Not Disturb is on (#79). Do Not Disturb here is HushTelegram's own quiet mode, named like Android's Do Not Disturb (use that name in this language), not Telegram's per-chat mute
+Turn off Do Not Disturb	Desativar Não perturbe
+# context: Toast after Turn on Do Not Disturb in the chat list menu. Two short lines at most
+Do Not Disturb is on.	Não perturbe está ativado.
+# context: Toast after Turn off Do Not Disturb in the chat list menu. Two short lines at most
+Do Not Disturb is off.	Não perturbe está desativado.
+# context: Switch title on the Chat list page under Proxy in the chat list menu, off by default (#79). With it on, the menu at the top of the chat list gets a Do Not Disturb item. Do Not Disturb here is HushTelegram's own quiet mode, named like Android's Do Not Disturb (use that name in this language), not Telegram's per-chat mute
+Do Not Disturb in the chat list menu	Não perturbe no menu da lista de conversas
+# context: Summary of Do Not Disturb in the chat list menu. The menu is the one that opens from the top of the chat list; a message notification is the one Telegram posts for a new message; calls still ring
+Adds Do Not Disturb to the menu at the top of the chat list. While it's on, no message notification shows or makes a sound, and messages still arrive. Calls ring as usual.	Adiciona Não perturbe ao menu no topo da lista de conversas. Enquanto estiver ativado, nenhuma notificação de mensagem aparece nem toca, e as mensagens continuam chegando. As chamadas tocam normalmente.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Do Not Disturb item that Proxy in the chat list menu adds to the menu at the top of the chat list. Do Not Disturb here is HushTelegram's own quiet mode, named like Android's Do Not Disturb (use that name in this language), not Telegram's per-chat mute
+Do Not Disturb menu item	o item Não perturbe do menu

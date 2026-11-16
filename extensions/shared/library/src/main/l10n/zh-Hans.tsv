@@ -2038,3 +2038,17 @@ Chats pinned on this phone	在这部手机上置顶的聊天
 %1$d chat	%1$d 个聊天
 # context: Count of chats in the import preview, plural form. %1$d is the number
 %1$d chats	%1$d 个聊天
+# context: Item at the end of the menu that opens from the top of the chat list (New Group, Saved Messages and so on), shown while Do Not Disturb in the chat list menu is on (#79). Do Not Disturb here is HushTelegram's own quiet mode, named like Android's Do Not Disturb (use that name in this language), not Telegram's per-chat mute
+Turn on Do Not Disturb	开启勿扰模式
+# context: The same chat list menu item while Do Not Disturb is on (#79). Do Not Disturb here is HushTelegram's own quiet mode, named like Android's Do Not Disturb (use that name in this language), not Telegram's per-chat mute
+Turn off Do Not Disturb	关闭勿扰模式
+# context: Toast after Turn on Do Not Disturb in the chat list menu. Two short lines at most
+Do Not Disturb is on.	勿扰模式已开启.
+# context: Toast after Turn off Do Not Disturb in the chat list menu. Two short lines at most
+Do Not Disturb is off.	勿扰模式已关闭.
+# context: Switch title on the Chat list page under Proxy in the chat list menu, off by default (#79). With it on, the menu at the top of the chat list gets a Do Not Disturb item. Do Not Disturb here is HushTelegram's own quiet mode, named like Android's Do Not Disturb (use that name in this language), not Telegram's per-chat mute
+Do Not Disturb in the chat list menu	聊天列表菜单中的勿扰模式
+# context: Summary of Do Not Disturb in the chat list menu. The menu is the one that opens from the top of the chat list; a message notification is the one Telegram posts for a new message; calls still ring
+Adds Do Not Disturb to the menu at the top of the chat list. While it's on, no message notification shows or makes a sound, and messages still arrive. Calls ring as usual.	在聊天列表顶部的菜单中加入“勿扰模式”。开启后，消息通知不会显示，也不会发出声音，消息仍会照常收到。来电照常响铃.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the Do Not Disturb item that Proxy in the chat list menu adds to the menu at the top of the chat list. Do Not Disturb here is HushTelegram's own quiet mode, named like Android's Do Not Disturb (use that name in this language), not Telegram's per-chat mute
+Do Not Disturb menu item	菜单中的勿扰模式项

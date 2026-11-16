@@ -167,6 +167,7 @@ public class PatchFamilyTest {
         Settings.CROP_GUARD.resetToDefault();
         Settings.CAPTION_ORDER.resetToDefault();
         Settings.PROXY_MENU.resetToDefault();
+        Settings.DND_MENU.resetToDefault();
         Settings.FREE_PROXIES.resetToDefault();
         Settings.SIGN_IN_PROXY.resetToDefault();
         Settings.MY_MESSAGES.resetToDefault();
@@ -568,10 +569,14 @@ public class PatchFamilyTest {
         PatchFamily family = PatchFamily.PROXY_MENU;
         assertEquals("Proxy in the chat list menu", family.patchName);
         assertEquals("proxyMenu", family.statusMethod);
-        assertEquals(Collections.singletonList(Settings.PROXY_MENU), family.switches);
+        assertEquals(Arrays.asList(Settings.PROXY_MENU, Settings.DND_MENU), family.switches);
         assertFalse(Settings.PROXY_MENU.defaultValue);
         assertFalse(Settings.PROXY_MENU.rebootApp);
-        assertTrue(family.expectedCapabilities().isEmpty());
+        // Do Not Disturb's switch starts off and applies at once; the item comes from its own capability.
+        assertFalse(Settings.DND_MENU.defaultValue);
+        assertFalse(Settings.DND_MENU.rebootApp);
+        assertEquals(EnumSet.of(PatchFamily.Capability.DO_NOT_DISTURB), family.expectedCapabilities());
+        assertEquals("doNotDisturb", PatchFamily.Capability.DO_NOT_DISTURB.statusMethod);
         assertOnItsPage(family);
     }
 

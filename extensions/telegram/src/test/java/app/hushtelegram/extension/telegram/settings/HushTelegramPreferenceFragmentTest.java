@@ -2068,6 +2068,42 @@ public class HushTelegramPreferenceFragmentTest {
     }
 
     /**
+     * Do Not Disturb in the chat list menu sits under Proxy in the chat list menu, off until turned
+     * on, only in a build where its hooks went in, and each change of it starts with Do Not Disturb
+     * off (#79).
+     */
+    @Test
+    public void doNotDisturbHasItsOwnSwitchUnderProxyWhenItsHooksAreIn() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.PROXY_MENU);
+        try {
+            PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                HushTelegramPreferenceFragment page = pageOf(controller);
+                assertNotNull(page.findPreference(Settings.PROXY_MENU.key));
+                assertNull("a build without the hooks has no switch", page.findPreference(Settings.DND_MENU.key));
+            }
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.DO_NOT_DISTURB);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                HushTelegramPreferenceFragment page = pageOf(controller);
+                SwitchPreference toggle = (SwitchPreference) page.findPreference(Settings.DND_MENU.key);
+                assertEquals("Do Not Disturb in the chat list menu", String.valueOf(toggle.getTitle()));
+                assertEquals("Adds Do Not Disturb to the menu at the top of the chat list. While it's on, no message "
+                        + "notification shows or makes a sound, and messages still arrive. Calls ring as usual.",
+                        String.valueOf(toggle.getSummary()));
+                assertFalse("off until turned on", toggle.isChecked());
+                assertSame(page.findPreference(Settings.PROXY_MENU.key).getParent(), toggle.getParent());
+                app.hushtelegram.extension.telegram.misc.DoNotDisturbForTests.on(true);
+                assertTrue(toggle.getOnPreferenceChangeListener().onPreferenceChange(toggle, true));
+                assertFalse("a change of the switch starts with it off",
+                        app.hushtelegram.extension.telegram.misc.DoNotDisturbForTests.isOn());
+            }
+        } finally {
+            PatchFamily.capabilitiesForTests = null;
+            app.hushtelegram.extension.telegram.misc.DoNotDisturbForTests.forget();
+        }
+    }
+
+    /**
      * Hide folder tab counters brings the folder at launch switch and, under it, a row that lists
      * All Chats and the account's folders and saves the pick for the account shown.
      */

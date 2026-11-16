@@ -92,6 +92,7 @@ import app.hushtelegram.extension.telegram.misc.CallRecorder;
 import app.hushtelegram.extension.telegram.misc.ChatTypeFolders;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.DeleteAccount;
+import app.hushtelegram.extension.telegram.misc.DoNotDisturb;
 import app.hushtelegram.extension.telegram.misc.FirebasePush;
 import app.hushtelegram.extension.telegram.misc.FolderIcons;
 import app.hushtelegram.extension.telegram.misc.FreeProxies;
@@ -737,6 +738,17 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.PROXY_MENU).addPreference(toggle(context, Settings.PROXY_MENU, L10n.t("Proxy in the chat list menu"),
                     PatchFamily.PROXY_MENU.coverageSummary(L10n.t("The menu at the top of the chat list always has Proxy, so your "
                             + "proxies are one tap away even where Telegram isn't blocked."))));
+            if (PatchFamily.Capability.DO_NOT_DISTURB.installed()) {
+                SwitchPreference dnd = toggle(context, Settings.DND_MENU, L10n.t("Do Not Disturb in the chat list menu"),
+                        L10n.t("Adds Do Not Disturb to the menu at the top of the chat list. While it's on, no message "
+                                + "notification shows or makes a sound, and messages still arrive. Calls ring as usual."));
+                dnd.setOnPreferenceChangeListener((row, value) -> {
+                    // Each change of the switch starts with Do Not Disturb off.
+                    DoNotDisturb.switched();
+                    return true;
+                });
+                on(pages, PatchFamily.PROXY_MENU).addPreference(dnd);
+            }
         }
         if (build.contains(PatchFamily.FREE_PROXIES)) {
             PreferenceGroup proxies = on(pages, PatchFamily.FREE_PROXIES);

@@ -286,6 +286,7 @@ public final class SettingsBackup {
             Settings.CROP_GUARD,
             Settings.CAPTION_ORDER,
             Settings.PROXY_MENU,
+            Settings.DND_MENU,
             Settings.SIGN_IN_PROXY,
             Settings.MY_MESSAGES,
             Settings.TEXT_DIRECTION));

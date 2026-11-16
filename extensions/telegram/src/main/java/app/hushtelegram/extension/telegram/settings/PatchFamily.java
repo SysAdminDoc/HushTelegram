@@ -156,7 +156,7 @@ public enum PatchFamily {
     AUTO_FORWARDING(FamilyNames.AUTO_FORWARDING, "autoForwarding", null, Settings.AUTO_FORWARDING),
     CROP_GUARD(FamilyNames.CROP_GUARD, "cropGuard", null, Settings.CROP_GUARD),
     CAPTION_ORDER(FamilyNames.CAPTION_ORDER, "captionOrder", null, Settings.CAPTION_ORDER),
-    PROXY_MENU(FamilyNames.PROXY_MENU, "proxyMenu", null, Settings.PROXY_MENU),
+    PROXY_MENU(FamilyNames.PROXY_MENU, "proxyMenu", null, Settings.PROXY_MENU, Settings.DND_MENU),
     FREE_PROXIES(FamilyNames.FREE_PROXIES, "freeProxies", null, Settings.FREE_PROXIES, Settings.SIGN_IN_PROXY),
     MY_MESSAGES(FamilyNames.MY_MESSAGES, "myMessages", null, Settings.MY_MESSAGES),
     TEXT_DIRECTION(FamilyNames.TEXT_DIRECTION, "textDirection", null, Settings.TEXT_DIRECTION),
@@ -474,6 +474,7 @@ public enum PatchFamily {
         KEEP_ALIVE_RUNNING(REPAIR_FIREBASE_PUSH, "keepAliveRunning", "Keep-Alive Service start", true),
         REACTION_ALERTS(UNIFIED_PUSH, "reactionAlerts", "reaction notifications without push", true),
         REACTION_SOUND(UNIFIED_PUSH, "reactionSound", "sound for reaction notifications", true),
+        DO_NOT_DISTURB(PROXY_MENU, "doNotDisturb", "Do Not Disturb menu item", true),
         PROXY_ORDER(FREE_PROXIES, "proxyOrder", "proxy order", true),
         SONG_DATES(LYRICS, "songDates", "dates on your profile songs", true);
 
