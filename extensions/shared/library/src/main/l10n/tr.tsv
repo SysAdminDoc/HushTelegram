@@ -2332,3 +2332,11 @@ Horror movie	Korku filmi
 Robot	Robot
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Play voice messages one at a time that changes how the voice messages you record sound
 the voice changer	ses değiştiriciyi
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names Edit a copy in the message menu, which opens a chat photo in Telegram's photo editor
+editing a copy of a photo	bir fotoğrafın kopyasını düzenleme
+# context: Item in a photo message's long-press menu. It opens a copy of the photo in Telegram's photo editor, and sending it sends the edited copy to the chat
+Edit a copy	Kopyasını düzenle
+# context: Switch title in HushTelegram settings that adds Edit a copy to a photo message's long-press menu
+Add Edit a copy to the message menu	Mesaj menüsüne Kopyasını düzenle ekle
+# context: Summary under the Edit a copy switch in HushTelegram settings
+Opens a photo from a chat in Telegram's photo editor, where you can draw, add text or blur parts. Sending it sends the edited copy to the chat. The photo in the chat stays as it was.	Sohbetteki bir fotoğrafı Telegram'ın fotoğraf düzenleyicisinde açar. Orada çizim yapabilir, metin ekleyebilir veya bazı kısımları bulanıklaştırabilirsiniz. Gönderdiğinizde düzenlenmiş kopya sohbete gider. Sohbetteki fotoğraf olduğu gibi kalır.

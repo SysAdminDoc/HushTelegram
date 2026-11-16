@@ -1059,6 +1059,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "Tap one on the Bookmarks page to open its chat at that message.")));
                 on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(bookmarksRow(context));
             }
+            if (PatchFamily.Capability.PHOTO_EDIT.installed()) {
+                on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_EDIT_COPY,
+                        L10n.t("Add Edit a copy to the message menu"),
+                        L10n.t("Opens a photo from a chat in Telegram's photo editor, where you can draw, add text or blur parts. "
+                                + "Sending it sends the edited copy to the chat. The photo in the chat stays as it was.")));
+            }
             if (PatchFamily.Capability.SELECT_BETWEEN.installed()) {
                 on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.SELECT_BETWEEN, L10n.t("Select between"),
                         L10n.t("Adds a Select between button to the bar that shows while you pick messages. It selects everything between the first and"

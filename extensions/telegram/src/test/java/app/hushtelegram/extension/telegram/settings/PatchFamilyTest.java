@@ -206,6 +206,7 @@ public class PatchFamilyTest {
         Settings.MESSAGE_MENU_PLAIN_FORWARD.resetToDefault();
         Settings.MESSAGE_MENU_DELETE_FOR_THEM.resetToDefault();
         Settings.MESSAGE_MENU_BOOKMARKS.resetToDefault();
+        Settings.MESSAGE_MENU_EDIT_COPY.resetToDefault();
         Settings.SELECT_BETWEEN.resetToDefault();
         Settings.SELECTION_SCREENSHOT.resetToDefault();
         Settings.SELECT_ALL.resetToDefault();
@@ -493,7 +494,7 @@ public class PatchFamilyTest {
         PatchFamily family = PatchFamily.MESSAGE_MENU_REPEAT;
         assertEquals("Add Repeat to the message menu", family.patchName);
         assertEquals(Arrays.asList(Settings.MESSAGE_MENU_REPEAT, Settings.MESSAGE_MENU_COPY_PHOTO, Settings.MESSAGE_MENU_DETAILS,
-                Settings.MESSAGE_MENU_QUICK_FORWARD, Settings.MESSAGE_MENU_COPY_PROTECTED, Settings.MESSAGE_MENU_SAVE_PROTECTED, Settings.MESSAGE_MENU_FORWARD_COPY, Settings.MESSAGE_MENU_FAST_FORWARD, Settings.MESSAGE_MENU_FORWARD_SAVED, Settings.MESSAGE_MENU_SAVE_COVER, Settings.MESSAGE_MENU_SAVE_ART, Settings.MESSAGE_MENU_CLEAR_CACHE, Settings.MESSAGE_MENU_HIDE, Settings.MESSAGE_MENU_PLAIN_FORWARD, Settings.MESSAGE_MENU_DELETE_FOR_THEM, Settings.MESSAGE_MENU_BOOKMARKS, Settings.STORY_SAVE_BUTTON, Settings.ALLOW_SCREENSHOTS, Settings.SECRET_CHAT_SCREENSHOTS, Settings.SELECT_BETWEEN, Settings.SELECTION_SCREENSHOT, Settings.SELECT_ALL, Settings.ALSO_DELETE_CHECKED), family.switches);
+                Settings.MESSAGE_MENU_QUICK_FORWARD, Settings.MESSAGE_MENU_COPY_PROTECTED, Settings.MESSAGE_MENU_SAVE_PROTECTED, Settings.MESSAGE_MENU_FORWARD_COPY, Settings.MESSAGE_MENU_FAST_FORWARD, Settings.MESSAGE_MENU_FORWARD_SAVED, Settings.MESSAGE_MENU_SAVE_COVER, Settings.MESSAGE_MENU_SAVE_ART, Settings.MESSAGE_MENU_CLEAR_CACHE, Settings.MESSAGE_MENU_HIDE, Settings.MESSAGE_MENU_PLAIN_FORWARD, Settings.MESSAGE_MENU_DELETE_FOR_THEM, Settings.MESSAGE_MENU_BOOKMARKS, Settings.MESSAGE_MENU_EDIT_COPY, Settings.STORY_SAVE_BUTTON, Settings.ALLOW_SCREENSHOTS, Settings.SECRET_CHAT_SCREENSHOTS, Settings.SELECT_BETWEEN, Settings.SELECTION_SCREENSHOT, Settings.SELECT_ALL, Settings.ALSO_DELETE_CHECKED), family.switches);
         for (BooleanSetting setting : family.switches) {
             assertFalse(setting.key, setting.defaultValue);
             assertFalse(setting.key, setting.rebootApp);
@@ -501,10 +502,12 @@ public class PatchFamilyTest {
         assertEquals(EnumSet.of(PatchFamily.Capability.COPY_SELECTION, PatchFamily.Capability.STORY_SAVE,
                 PatchFamily.Capability.SCREENSHOTS, PatchFamily.Capability.SELECT_BETWEEN, PatchFamily.Capability.SELECTION_SCREENSHOT, PatchFamily.Capability.SELECT_ALL,
                 PatchFamily.Capability.SHARED_MEDIA_SELECT_ALL,
-                PatchFamily.Capability.HIDE_FOR_ME, PatchFamily.Capability.ALSO_DELETE_CHECKED, PatchFamily.Capability.BOOKMARKS),
+                PatchFamily.Capability.HIDE_FOR_ME, PatchFamily.Capability.ALSO_DELETE_CHECKED, PatchFamily.Capability.BOOKMARKS,
+                PatchFamily.Capability.PHOTO_EDIT),
                 family.expectedCapabilities());
         assertEquals("hideForMe", PatchFamily.Capability.HIDE_FOR_ME.statusMethod);
         assertEquals("bookmarks", PatchFamily.Capability.BOOKMARKS.statusMethod);
+        assertEquals("photoEdit", PatchFamily.Capability.PHOTO_EDIT.statusMethod);
         assertEquals("alsoDeleteChecked", PatchFamily.Capability.ALSO_DELETE_CHECKED.statusMethod);
         assertOnItsPage(family);
     }

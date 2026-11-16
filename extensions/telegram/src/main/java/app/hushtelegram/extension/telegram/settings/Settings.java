@@ -1074,6 +1074,10 @@ public class Settings extends BaseSettings {
     public static final StringSetting BOOKMARKS =
             new StringSetting("hushtelegram_bookmarks", "");
 
+    /** Edit a copy in the message menu (#79): a photo opened in Telegram's photo editor, the edited copy sent to the chat ({@link app.hushtelegram.extension.telegram.misc.PhotoEdit}). */
+    public static final BooleanSetting MESSAGE_MENU_EDIT_COPY =
+            new BooleanSetting("hushtelegram_message_menu_edit_copy", FALSE);
+
     /** Also delete for, checked from the start in Telegram's delete messages dialog (#83) ({@link app.hushtelegram.extension.telegram.misc.MessageMenu#alsoDeleteChecked}). */
     public static final BooleanSetting ALSO_DELETE_CHECKED =
             new BooleanSetting("hushtelegram_also_delete_checked", FALSE);

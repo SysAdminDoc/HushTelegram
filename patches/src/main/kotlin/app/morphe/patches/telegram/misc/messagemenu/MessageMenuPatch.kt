@@ -203,6 +203,13 @@ val messageMenuPatch = bytecodePatch(
         } else {
             patchLog.warning("Add Repeat to the message menu: ${bookmarks.missing}. The patch goes on without Bookmark.")
         }
+        val photoEdit = resolvePhotoEdit(site.chat)
+        if (photoEdit.missing == null) {
+            photoEdit.apply(this)
+            enableCapability("photoEdit")
+        } else {
+            patchLog.warning("Add Repeat to the message menu: ${photoEdit.missing}. The patch goes on without Edit a copy.")
+        }
         enableStatus("messageMenuRepeat")
     }
 }
