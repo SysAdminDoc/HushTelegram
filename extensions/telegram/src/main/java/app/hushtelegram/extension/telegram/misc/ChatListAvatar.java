@@ -5,7 +5,9 @@
 package app.hushtelegram.extension.telegram.misc;
 
 import android.graphics.RectF;
+import android.view.View;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -38,6 +40,12 @@ public final class ChatListAvatar {
     private static final Map<Object, int[]> RADII = new WeakHashMap<>();
 
     /**
+     * Every chat row that has laid itself out, so a change to the switch or the size can lay them
+     * out again. Main thread only, like the chat rows.
+     */
+    private static final Map<Object, Boolean> CELLS = new WeakHashMap<>();
+
+    /**
      * Injected in the chat row's layout right after it sets the avatar's square.
      *
      * @param rect the square, in the row's pixels, changed in place
@@ -45,6 +53,7 @@ public final class ChatListAvatar {
      */
     public static void resize(RectF rect, Object cell) {
         if (rect == null) return;
+        if (cell != null) CELLS.put(cell, Boolean.TRUE);
         boolean on = on();
         if (!on && RADII.isEmpty()) return;
         try {
@@ -56,6 +65,23 @@ public final class ChatListAvatar {
             HookStatus.counted(FamilyNames.HIDE_FOLDER_COUNTERS, "avatar resized");
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.HIDE_FOLDER_COUNTERS, "chat list avatar", failure);
+        }
+    }
+
+    /**
+     * Lays every chat row out again and redraws it, so a change to the switch or the size shows
+     * now. A row lays itself out again only when its own size changes, and the picture's size
+     * isn't the row's, so without this the rows already on screen kept the old size until Telegram
+     * restarted (#89). Main thread only.
+     */
+    public static void relayoutAll() {
+        for (Object cell : new ArrayList<>(CELLS.keySet())) {
+            try {
+                telegram.relayout(cell);
+                if (cell instanceof View) ((View) cell).invalidate();
+            } catch (Throwable failure) {
+                HookStatus.threw(FamilyNames.HIDE_FOLDER_COUNTERS, "chat list avatar relayout", failure);
+            }
         }
     }
 
@@ -119,6 +145,7 @@ public final class ChatListAvatar {
         Object avatarOf(Object cell);
         int[] radii(Object image);
         void setRadius(Object image, int radius);
+        void relayout(Object cell);
     }
 
     static Telegram telegram = new Stubs();
@@ -127,11 +154,13 @@ public final class ChatListAvatar {
         @Override public Object avatarOf(Object cell) { return ChatListAvatar.avatarOf(cell); }
         @Override public int[] radii(Object image) { return ChatListAvatar.radii(image); }
         @Override public void setRadius(Object image, int radius) { ChatListAvatar.setRadius(image, radius); }
+        @Override public void relayout(Object cell) { ChatListAvatar.relayout(cell); }
     }
 
-    /** Forgets every remembered radius. For tests. */
+    /** Forgets every remembered radius and row. For tests. */
     static void forget() {
         RADII.clear();
+        CELLS.clear();
     }
 
     // Stubs. The patch gives each one Telegram's code; until then they do nothing.
@@ -144,4 +173,7 @@ public final class ChatListAvatar {
 
     /** Gives the ImageReceiver one corner radius for all four corners. */
     public static void setRadius(Object image, int radius) {}
+
+    /** Runs the chat row's own layout, the one {@link #resize} is injected in. */
+    public static void relayout(Object cell) {}
 }

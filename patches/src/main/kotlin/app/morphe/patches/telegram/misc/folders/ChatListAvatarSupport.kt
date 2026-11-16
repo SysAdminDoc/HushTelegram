@@ -67,6 +67,7 @@ internal fun BytecodePatchContext.resolveChatListAvatar(): ChatListAvatarPlan {
     controlHook(CHAT_LIST_AVATAR, "avatarOf", listOf("Ljava/lang/Object;"), "Ljava/lang/Object;")
     controlHook(CHAT_LIST_AVATAR, "radii", listOf("Ljava/lang/Object;"), "[I")
     controlHook(CHAT_LIST_AVATAR, "setRadius", listOf("Ljava/lang/Object;", "I"), "V")
+    controlHook(CHAT_LIST_AVATAR, "relayout", listOf("Ljava/lang/Object;"), "V")
     requireReachable(GET_ROUND_RADIUS, false)
     requireReachable(SET_ROUND_RADIUS, false)
 
@@ -127,8 +128,17 @@ private fun Instruction.writes(register: Int): Boolean {
     return written == register || (opcode.setsWideRegister() && written + 1 == register)
 }
 
-/** Gives the stubs the row's avatar field and ImageReceiver's round radius getter and setter. */
+/**
+ * Gives the stubs the row's avatar field, ImageReceiver's round radius getter and setter, and the
+ * row's layout. The row only runs its layout again when its own size changes, so relayout calls it
+ * the way the chat list's notification handler does for one chat.
+ */
 internal fun BytecodePatchContext.writeChatListAvatarStubs(plan: ChatListAvatarPlan) {
+    writeStub(CHAT_LIST_AVATAR, "relayout", 1, """
+        check-cast p0, ${plan.cellType}
+        invoke-virtual {p0}, ${plan.cellType}->${plan.method.name}()V
+        return-void
+    """)
     writeStub(CHAT_LIST_AVATAR, "avatarOf", 2, """
         check-cast p0, ${plan.cellType}
         iget-object v0, p0, ${plan.avatar}
