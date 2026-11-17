@@ -1418,7 +1418,7 @@ public class SettingsBackupTest {
             HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
             deliver(activity, tap(activity, page, IMPORT_ROW), file);
             AlertDialog preview = shownPreview();
-            assertEquals("Link preview rules: 6 rules to 1 rule", String.valueOf(shadowOf(preview).getMessage()));
+            assertEquals("Link preview rules: 14 rules to 1 rule", String.valueOf(shadowOf(preview).getMessage()));
             preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
             settle();
             assertEquals("Settings imported.", ShadowToast.getTextOfLatestToast());
