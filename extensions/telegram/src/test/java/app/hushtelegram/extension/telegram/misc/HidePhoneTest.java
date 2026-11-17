@@ -13,6 +13,11 @@ import app.hushtelegram.extension.shared.settings.PauseForTests;
 import app.hushtelegram.extension.shared.settings.SettingReadsForTests;
 import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -20,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 30)
@@ -79,6 +85,41 @@ public class HidePhoneTest {
         elsewhere.start();
         elsewhere.join();
         assertEquals(card, HidePhone.asked(card));
+    }
+
+    /** Telegram's NotificationCenter as far as a redraw reaches it. */
+    public static final class Centers {
+        public static int updateInterfaces = 7;
+        public static int mainUserInfoChanged = 9;
+        static final Map<Integer, Centers> MADE = new HashMap<>();
+        final List<String> posted = new ArrayList<>();
+
+        public static Centers getInstance(int account) { return MADE.computeIfAbsent(account, made -> new Centers()); }
+
+        public void postNotificationName(int id, Object... args) { posted.add(id + Arrays.toString(args)); }
+    }
+
+    @Test public void aFlipRedrawsTheNumbersAlreadyOnScreen() throws Exception {
+        // The switch is watched from the first number Telegram shows.
+        assertFalse(HidePhone.on());
+        Settings.HIDE_PHONE_NUMBER.save(true);
+        ShadowLooper.idleMainLooper();
+        assertTrue(String.join("\n", HookStatus.report()).contains("switch flipped"));
+
+        // Another switch's write redraws nothing.
+        HookStatus.clear();
+        Settings.HIDE_ADS.save(!Settings.HIDE_ADS.get());
+        Settings.HIDE_ADS.resetToDefault();
+        ShadowLooper.idleMainLooper();
+        assertFalse(String.join("\n", HookStatus.report()).contains("switch flipped"));
+
+        // Each signed-in account's screens hear that the interface and the account's own info changed,
+        // the first with the mask of what changed that its readers cast.
+        Centers.MADE.clear();
+        HidePhone.redraw(Centers.class, Arrays.asList(new Accounts.Entry(0, "First"), new Accounts.Entry(2, "Third")));
+        assertEquals(2, Centers.MADE.size());
+        assertEquals(Arrays.asList("7[0]", "9[]"), Centers.MADE.get(0).posted);
+        assertEquals(Arrays.asList("7[0]", "9[]"), Centers.MADE.get(2).posted);
     }
 
     @Test public void pausingOrAnEarlyStartLeavesNumbersAlone() {
