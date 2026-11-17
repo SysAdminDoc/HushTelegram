@@ -1600,7 +1600,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.AMOLED_BLACK).addPreference(toggle(context, Settings.AMOLED_BLACK, L10n.t("AMOLED black"),
                     PatchFamily.AMOLED_BLACK.coverageSummary(L10n.t("Night and Dark themes use pure black screens. Message bubbles and menus keep "
                             + "their colors. Restart Telegram to see the change."))));
-            if (PatchFamily.Capability.LIST_BACKGROUND.installed()) {
+            // Finding the list pages' colors takes Android 13, so older phones don't get the rows.
+            if (PatchFamily.Capability.LIST_BACKGROUND.installed() && ListBackground.supported()) {
                 SwitchPreference lists = toggle(context, Settings.LIST_BACKGROUND, L10n.t("Picture behind the lists"),
                         L10n.t("Shows a picture from your gallery behind the chat list, Settings, profiles and the other lists. "
                                 + "Chats keep their wallpaper, and menus and dialogs stay solid. Works with Telegram's built-in themes."));

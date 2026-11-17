@@ -93,8 +93,6 @@ public final class BlackTheme {
         if (asset == null || colors == null) return;
         HookStatus.invoked(FamilyNames.AMOLED_BLACK);
         try {
-            // Picture behind the lists changes only a built-in theme's colors, so it's told which sets those are.
-            ListBackground.builtIn(colors);
             if (!Utils.settingsReady() || !Settings.AMOLED_BLACK.get()) return;
             if (blacken(colors, ids()) > 0) HookStatus.counted(FamilyNames.AMOLED_BLACK, "dark theme turned black");
         } catch (Throwable failure) {

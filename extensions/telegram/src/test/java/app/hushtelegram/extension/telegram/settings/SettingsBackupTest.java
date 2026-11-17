@@ -1565,8 +1565,9 @@ public class SettingsBackupTest {
     /**
      * The picture behind the lists (#88) goes out as its switch and its dim, never as the picture,
      * comes back only as a dim its row offers, and shows in the preview without a restart owed.
+     * Android 13, where its row is drawn for the preview to name.
      */
-    @Test
+    @Test @Config(sdk = 33)
     public void theListBackgroundSwitchAndDimRoundTripWithoutThePicture() throws Exception {
         Settings.LIST_BACKGROUND.save(true);
         Settings.LIST_BACKGROUND_DIM.save(60);

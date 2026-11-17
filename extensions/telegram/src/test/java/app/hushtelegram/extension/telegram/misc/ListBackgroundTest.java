@@ -5,14 +5,26 @@
 package app.hushtelegram.extension.telegram.misc;
 
 import static org.junit.Assert.*;
+import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.content.Context;
-import android.graphics.Rect;
-import android.util.SparseIntArray;
-import android.view.View;
+import android.graphics.Bitmap;
+import android.graphics.BitmapShader;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RuntimeShader;
+import android.graphics.Shader;
+import android.net.Uri;
+import android.os.Looper;
 import android.widget.FrameLayout;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+
 import app.hushtelegram.extension.shared.SettingsContextRule;
+import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
 import app.hushtelegram.extension.shared.settings.HushTelegramPause;
 import app.hushtelegram.extension.shared.settings.PauseForTests;
@@ -23,31 +35,34 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.GraphicsMode;
+import org.robolectric.util.ReflectionHelpers;
 
 /**
- * The picture behind the lists (#88): which of a theme's colors go see-through, by how much, and
- * that every way of turning it off gives the theme its own colors back.
+ * The picture behind the lists (#88): which colors getColor hands out marked, that every way of
+ * turning it off hands Telegram's own colors back, and that the keyer lays the picture under the
+ * marked page colors and nothing else.
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 30)
 public class ListBackgroundTest {
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
 
-    /** Stand-in ids for windowBackgroundWhite, windowBackgroundGray and graySection, then two keys that stay. */
-    private static final int WHITE = 1, GRAY = 2, SECTION = 3, ACTION_BAR = 4, BUBBLE = 5;
-    private static final int DAY_WHITE = 0xFFFFFFFF, DAY_GRAY = 0xFFF0F0F0, DAY_SECTION = 0xFFF2F3F5;
+    /** Stand-in ids for windowBackgroundWhite, windowBackgroundGray and graySection, then a key that stays. */
+    private static final int WHITE = 1, GRAY = 2, SECTION = 3, ACTION_BAR = 4;
+    private static final int DAY_WHITE = 0xFFFFFFFF, DAY_GRAY = 0xFFF0F0F0, DAY_SECTION = 0xFFF2F3F5, DAY_BAR = 0xFF527DA3;
 
     private Context context;
-    private SparseIntArray current;
 
     @Before public void setUp() {
         context = RuntimeEnvironment.getApplication();
         HookStatus.clear();
         ListBackground.ids = new int[]{WHITE, GRAY, SECTION};
-        ListBackground.tables = () -> current;
     }
 
     @After public void tearDown() {
@@ -58,170 +73,124 @@ public class ListBackgroundTest {
         HookStatus.clear();
     }
 
-    /** Day's colors as Telegram reads them from the built-in asset, which the black theme hook hands on. */
-    private SparseIntArray builtInDay() {
-        SparseIntArray day = day();
-        BlackTheme.loaded("day.attheme", day);
-        return day;
-    }
-
-    private static SparseIntArray day() {
-        SparseIntArray day = new SparseIntArray();
-        day.put(WHITE, DAY_WHITE);
-        day.put(GRAY, DAY_GRAY);
-        day.put(SECTION, DAY_SECTION);
-        day.put(ACTION_BAR, 0xFF527DA3);
-        day.put(BUBBLE, 0xFFEFFFDE);
-        return day;
-    }
-
     private void on() {
         Settings.LIST_BACKGROUND.save(true);
         ListBackgroundForTests.keepPicture(context);
     }
 
-    @Test public void offByDefaultAndWithoutAPictureTheColorsStayTelegrams() {
+    /** Whether getColor's answers for the day theme come back marked, all three pages alike. */
+    private static boolean marked() {
+        boolean white = ListBackground.mark(WHITE, DAY_WHITE) != DAY_WHITE;
+        assertEquals(white, ListBackground.mark(GRAY, DAY_GRAY) != DAY_GRAY);
+        assertEquals(white, ListBackground.mark(SECTION, DAY_SECTION) != DAY_SECTION);
+        assertEquals("only the pages", DAY_BAR, ListBackground.mark(ACTION_BAR, DAY_BAR));
+        return white;
+    }
+
+    @Test public void offByDefaultOrWithoutAPictureEveryColorStaysTelegrams() {
         assertFalse(Settings.LIST_BACKGROUND.get());
         assertEquals(40, (int) Settings.LIST_BACKGROUND_DIM.get());
-        current = builtInDay();
         ListBackground.refreshing();
-        assertEquals(day().toString(), current.toString());
+        assertFalse(marked());
 
         // The switch on with no picture saved yet changes nothing either.
         Settings.LIST_BACKGROUND.save(true);
         ListBackground.refreshing();
-        assertEquals(day().toString(), current.toString());
+        assertFalse(marked());
         // And a picture with the switch off.
         Settings.LIST_BACKGROUND.save(false);
         ListBackgroundForTests.keepPicture(context);
         ListBackground.refreshing();
-        assertEquals(day().toString(), current.toString());
-        assertFalse(String.join("\n", HookStatus.report()).contains("see-through"));
+        assertFalse(marked());
+        assertFalse(String.join("\n", HookStatus.report()).contains("marked"));
     }
 
-    @Test public void onWithAPictureThePageColorsGoSeeThroughAndNothingElseChanges() {
+    @Test public void onWithAPictureOnlyThePageColorsComeBackMarked() {
         on();
-        current = builtInDay();
         ListBackground.refreshing();
-        // Same color, a share of its opacity: rows keep 0x66, the gray between them 0x26, headers 0x80.
-        assertEquals(0x66FFFFFF, current.get(WHITE));
-        assertEquals(0x26F0F0F0, current.get(GRAY));
-        assertEquals(0x80F2F3F5, current.get(SECTION));
-        assertEquals(0xFF527DA3, current.get(ACTION_BAR));
-        assertEquals(0xFFEFFFDE, current.get(BUBBLE));
-        assertEquals(day().size(), current.size());
-        assertTrue(String.join("\n", HookStatus.report()).contains("lists turned see-through over the picture 1"));
-        // The backdrop paints the theme's own page color, not the see-through one.
-        assertEquals(DAY_WHITE, ListBackground.stockColor(current, 0));
+        assertEquals(0xFFFEFFFE, ListBackground.mark(WHITE, DAY_WHITE));
+        assertEquals(0xFFF0F1F1, ListBackground.mark(GRAY, DAY_GRAY));
+        assertEquals(0xFFF3F2F5, ListBackground.mark(SECTION, DAY_SECTION));
+        assertEquals(DAY_BAR, ListBackground.mark(ACTION_BAR, DAY_BAR));
+        // What the keyer looks for is what getColor handed out.
+        assertEquals(0xFFFEFFFE, ListBackground.marked(0));
+        assertEquals(0xFFF0F1F1, ListBackground.marked(1));
+        assertEquals(0xFFF3F2F5, ListBackground.marked(2));
+        // Asked again, the same answer, and a new theme's page color is taken on.
+        assertEquals(0xFFFEFFFE, ListBackground.mark(WHITE, DAY_WHITE));
+        assertEquals(0xFF1E1F1F, ListBackground.mark(WHITE, 0xFF1F1F1E));
+        assertEquals(0xFF1E1F1F, ListBackground.marked(0));
+        assertTrue(String.join("\n", HookStatus.report()).contains("page colors marked for the picture"));
     }
 
-    @Test public void workingTheColorsOutAgainDoesNotThinThemTwice() {
-        on();
-        current = builtInDay();
-        ListBackground.refreshing();
-        ListBackground.refreshing();
-        ListBackground.refreshing();
-        assertEquals(0x66FFFFFF, current.get(WHITE));
-        assertEquals(0x26F0F0F0, current.get(GRAY));
-        assertEquals(DAY_WHITE, ListBackground.stockColor(current, 0));
+    /** One step in two channels, never the alpha, and each page its own pair so none is taken for another. */
+    @Test public void theMarkersAreOneStepOffAndTellThePagesApart() {
+        assertEquals(ListBackground.PAGES.length, ListBackground.CODES.length);
+        assertEquals(ListBackground.PAGES.length, ListBackground.KEEP.length);
+        for (int i = 0; i < ListBackground.CODES.length; i++) {
+            int code = ListBackground.CODES[i];
+            assertEquals("two channels", 2, Integer.bitCount(code));
+            assertEquals("lowest bits only", 0, code & ~0x010101);
+            for (int j = i + 1; j < ListBackground.CODES.length; j++) assertNotEquals(code, ListBackground.CODES[j]);
+            for (int color : new int[]{DAY_WHITE, DAY_GRAY, 0xFF000000, 0xFF1F1F1E, 0x80123456}) {
+                int marked = color ^ code;
+                assertEquals(color >>> 24, marked >>> 24);
+                for (int shift = 0; shift < 24; shift += 8) {
+                    assertTrue(Math.abs(((color >> shift) & 0xFF) - ((marked >> shift) & 0xFF)) <= 1);
+                }
+            }
+        }
     }
 
-    @Test public void turningItOffOrRemovingThePictureGivesTheThemeItsColorsBack() {
+    @Test public void theSwitchThePictureAndAPauseEachTakeTheMarkersOff() {
         on();
-        current = builtInDay();
         ListBackground.refreshing();
+        assertTrue(marked());
         Settings.LIST_BACKGROUND.save(false);
         ListBackground.refreshing();
-        assertEquals(day().toString(), current.toString());
+        assertFalse(marked());
 
         Settings.LIST_BACKGROUND.save(true);
         ListBackground.refreshing();
-        assertEquals(0x66FFFFFF, current.get(WHITE));
+        assertTrue(marked());
         SavedPicture.remove(context, SavedPicture.LIST_BACKGROUND);
         ListBackground.refreshing();
-        assertEquals(day().toString(), current.toString());
-    }
+        assertFalse(marked());
 
-    @Test public void pausedTelegramGetsItsOwnColorsBackAndKeepsThem() {
-        on();
-        current = builtInDay();
+        ListBackgroundForTests.keepPicture(context);
         ListBackground.refreshing();
+        assertTrue(marked());
         PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
         ListBackground.refreshing();
-        assertEquals(day().toString(), current.toString());
-
-        SparseIntArray fresh = builtInDay();
-        current = fresh;
-        ListBackground.refreshing();
-        assertEquals(day().toString(), fresh.toString());
+        assertFalse(marked());
     }
 
-    @Test public void aThemeInstalledFromAFileKeepsItsColors() {
+    /** The settings page's change marks or unmarks at once, without waiting for Telegram to refresh. */
+    @Test public void aChangeOnTheSettingsPageTakesAtOnce() {
         on();
-        SparseIntArray file = day();
-        BlackTheme.loaded(null, file);
-        current = file;
-        ListBackground.refreshing();
-        assertEquals(day().toString(), file.toString());
-        assertFalse(String.join("\n", HookStatus.report()).contains("see-through"));
+        ListBackground.changed();
+        assertTrue(marked());
+        Settings.LIST_BACKGROUND.save(false);
+        ListBackground.changed();
+        assertFalse(marked());
     }
 
-    /**
-     * Telegram's Classic theme has no file: its set starts empty and every key takes Telegram's
-     * default. The page keys go in see-through, and come out again when it's turned off.
-     */
-    @Test public void theClassicThemeGetsSeeThroughPagesAndLosesThemAgain() {
-        on();
-        current = new SparseIntArray();
-        ListBackground.refreshing();
-        assertEquals(3, current.size());
-        assertTrue(current.indexOfKey(WHITE) >= 0);
-        // Unpatched, Telegram's default answers 0, which stays 0 with any opacity.
-        assertEquals(0, current.get(WHITE, 1));
-        Settings.LIST_BACKGROUND.save(false);
-        ListBackground.refreshing();
-        assertEquals(0, current.size());
-    }
-
-    @Test public void aColorTelegramChangedSinceIsLeftAsTelegramSetIt() {
-        on();
-        current = builtInDay();
-        ListBackground.refreshing();
-        // The theme editor, say, writes a new row color over the see-through one.
-        current.put(WHITE, 0xFF00FF00);
-        Settings.LIST_BACKGROUND.save(false);
-        ListBackground.refreshing();
-        assertEquals(0xFF00FF00, current.get(WHITE));
-        assertEquals(DAY_GRAY, current.get(GRAY));
-        assertEquals(DAY_SECTION, current.get(SECTION));
-
-        // On again, the color Telegram set is the one kept to put back.
-        Settings.LIST_BACKGROUND.save(true);
-        ListBackground.refreshing();
-        assertEquals(0x6600FF00, current.get(WHITE));
-        Settings.LIST_BACKGROUND.save(false);
-        ListBackground.refreshing();
-        assertEquals(0xFF00FF00, current.get(WHITE));
-    }
-
-    @Test public void anUnknownKeyIsSkippedAndNoTableChangesNothing() {
+    @Test public void aPageKeyTelegramDoesNotKnowIsNeverMarked() {
         on();
         ListBackground.ids = new int[]{WHITE, -1, SECTION};
-        current = builtInDay();
         ListBackground.refreshing();
-        assertEquals(DAY_GRAY, current.get(GRAY));
-        assertEquals(0x66FFFFFF, current.get(WHITE));
-
-        current = null;
-        ListBackground.refreshing();
+        assertEquals(0xFFFEFFFE, ListBackground.mark(WHITE, DAY_WHITE));
+        assertEquals(DAY_GRAY, ListBackground.mark(GRAY, DAY_GRAY));
         assertFalse(String.join("\n", HookStatus.report()).contains("threw"));
     }
 
-    @Test public void aFailingLookupIsReportedAndTelegramGoesOn() {
+    /** Unpatched there are no key ids at all: each one is reported and nothing Telegram asks about is marked. */
+    @Test public void withoutTelegramsKeyIdsTheMissIsReported() {
         on();
-        ListBackground.tables = () -> { throw new IllegalStateException("gone"); };
+        ListBackground.ids = null;
         ListBackground.refreshing();
-        assertTrue(String.join("\n", HookStatus.report()).contains("list background colors"));
+        assertFalse(marked());
+        assertTrue(String.join("\n", HookStatus.report()).contains("windowBackgroundWhite"));
     }
 
     @Test public void theDimRowOffersAFewStepsAndABackupTakesOnlyThose() {
@@ -231,27 +200,166 @@ public class ListBackgroundTest {
         assertFalse(ListBackground.dimOffered(0));
         assertFalse(ListBackground.dimOffered(50));
         assertFalse(ListBackground.dimOffered(90));
-        assertEquals(0x80123456, ListBackground.withAlpha(0xFF123456, 0x80));
-        assertEquals(0x40123456, ListBackground.withAlpha(0x80123456, 0x80));
     }
 
-    /** A holder draws the picture only behind the screens it shows, so an empty one shows nothing. */
-    @Test public void theBackdropCoversOnlyTheVisibleScreens() {
-        FrameLayout holder = new FrameLayout(context);
-        holder.layout(0, 0, 1080, 2000);
-        Rect area = new Rect();
-        assertFalse(ListBackground.Backdrop.covered(holder, area));
+    /** Android 11 has no runtime shaders, so a holder never gets an effect even with the markers on. */
+    @Test public void belowAndroid13NoHolderGetsTheKeyer() throws Exception {
+        on();
+        ListBackground.refreshing();
+        assertFalse(ListBackground.supported());
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            FrameLayout holder = new FrameLayout(controller.get());
+            controller.get().setContentView(holder);
+            holder.layout(0, 0, 120, 200);
+            assertTrue(ListBackground.onScreen(holder));
+            ListBackground.dress(holder);
+            settle();
+            ListBackground.dress(holder);
+            assertFalse(ListBackground.dressed(holder));
+        }
+    }
 
-        View screen = new View(context);
-        holder.addView(screen);
-        screen.layout(0, 0, 1080, 2000);
-        screen.setTranslationX(300);
-        assertTrue(ListBackground.Backdrop.covered(holder, area));
-        assertEquals(new Rect(300, 0, 1080, 2000), area);
+    /**
+     * On Android 13 a holder in the main window gets the keyer once the picture is decoded at its
+     * size, a holder in no window doesn't, and turning it off takes the keyer away again.
+     */
+    @Test @Config(sdk = 33, shadows = RuntimeShaderEffectShadow.class) @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    public void onAndroid13TheMainWindowsHoldersGetTheKeyerAndLoseItAgain() throws Exception {
+        Uri gallery = Uri.parse("content://media.test/picture/88");
+        shadowOf(context.getContentResolver()).registerInputStream(gallery, new ByteArrayInputStream(png(60, 100)));
+        assertEquals(SavedPicture.Saved.SAVED, SavedPicture.save(context, gallery, SavedPicture.LIST_BACKGROUND));
+        Settings.LIST_BACKGROUND.save(true);
+        ListBackground.changed();
+        assertTrue(marked());
+        assertTrue(ListBackground.supported());
 
-        screen.setVisibility(View.GONE);
-        assertFalse(ListBackground.Backdrop.covered(holder, area));
-        assertFalse("a plain view holds no screens", ListBackground.Backdrop.covered(screen, area));
-        assertFalse("off any activity's window", ListBackground.Backdrop.onScreen(holder));
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            FrameLayout holder = new FrameLayout(controller.get());
+            controller.get().setContentView(holder);
+            holder.layout(0, 0, 120, 200);
+            FrameLayout elsewhere = new FrameLayout(context);
+            elsewhere.layout(0, 0, 120, 200);
+            assertTrue(ListBackground.onScreen(holder));
+            assertFalse(ListBackground.onScreen(elsewhere));
+
+            ListBackground.dress(holder);
+            ListBackground.dress(elsewhere);
+            assertFalse("nothing until the picture is decoded", ListBackground.dressed(holder));
+            settle();
+            ListBackground.dress(holder);
+            ListBackground.dress(elsewhere);
+            assertTrue(ListBackground.dressed(holder));
+            assertFalse("a sheet's or dialog's holder stays as it is", ListBackground.dressed(elsewhere));
+            assertTrue(String.join("\n", HookStatus.report()).contains("list holders showing the picture 1"));
+
+            Settings.LIST_BACKGROUND.save(false);
+            ListBackground.changed();
+            assertFalse(marked());
+            ListBackground.dress(holder);
+            assertFalse(ListBackground.dressed(holder));
+        }
+    }
+
+    /**
+     * The keyer itself, run by Skia: a page drawn in its marked color shows the picture under the
+     * page color at the dim, then that page's own color at what it keeps. The same color unmarked,
+     * text in another color and a lone marked pixel come through exactly as drawn.
+     */
+    @Test @Config(sdk = 33) @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    public void theKeyerLaysThePictureUnderOnlyTheMarkedPages() {
+        on();
+        ListBackground.refreshing();
+        int white = ListBackground.mark(WHITE, DAY_WHITE);
+        int gray = ListBackground.mark(GRAY, DAY_GRAY);
+        int section = ListBackground.mark(SECTION, DAY_SECTION);
+
+        int width = 12, height = 6;
+        Bitmap drawn = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        drawn.eraseColor(Color.BLACK);
+        for (int y = 0; y < 4; y++) {
+            for (int x = 0; x < 4; x++) drawn.setPixel(x, y, white);
+            for (int x = 4; x < 8; x++) drawn.setPixel(x, y, y < 2 ? gray : section);
+            for (int x = 8; x < 12; x++) drawn.setPixel(x, y, DAY_WHITE);
+        }
+        // Below a row of plain white, with text all around it.
+        drawn.setPixel(9, 4, white);
+        int blue = 0xFF0000FF;
+        Bitmap picture = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        picture.eraseColor(blue);
+
+        RuntimeShader keyer = ListBackground.keyer(picture, width, height, 40);
+        BitmapShader content = new BitmapShader(drawn, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+        content.setFilterMode(BitmapShader.FILTER_MODE_NEAREST);
+        keyer.setInputShader("content", content);
+        Bitmap shown = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Paint paint = new Paint();
+        paint.setShader(keyer);
+        canvasRunningShaders(shown).drawRect(0, 0, width, height, paint);
+
+        assertNear(composite(blue, white, white, 40, 0x66), shown.getPixel(1, 1));
+        assertNear(composite(blue, white, gray, 40, 0x26), shown.getPixel(5, 0));
+        assertNear(composite(blue, white, section, 40, 0x80), shown.getPixel(6, 3));
+        assertNotEquals("the picture shows through", white, shown.getPixel(1, 1));
+        assertEquals("the same color unmarked, as a sheet draws it", DAY_WHITE, shown.getPixel(9, 1));
+        assertEquals("text", Color.BLACK, shown.getPixel(1, 5));
+        assertEquals("a lone marked pixel", white, shown.getPixel(9, 4));
+
+        // A deeper dim lays more of the page color over the picture.
+        RuntimeShader deeper = ListBackground.keyer(picture, width, height, 80);
+        deeper.setInputShader("content", content);
+        paint.setShader(deeper);
+        canvasRunningShaders(shown).drawRect(0, 0, width, height, paint);
+        assertNear(composite(blue, white, white, 80, 0x66), shown.getPixel(1, 1));
+    }
+
+    /**
+     * A canvas on [bitmap] that runs a RuntimeShader on Skia's CPU. Android's own software canvas
+     * turns one down, since on the phone only the hardware canvas a holder draws with gets it.
+     */
+    private static Canvas canvasRunningShaders(Bitmap bitmap) {
+        Canvas canvas = new Canvas(bitmap);
+        ReflectionHelpers.callInstanceMethod(canvas, "setHwFeaturesInSwModeEnabled",
+                ReflectionHelpers.ClassParameter.from(boolean.class, true));
+        return canvas;
+    }
+
+    /** The picture under [page] at [dim] percent, then [marked] over that keeping [keep] out of 255. */
+    private static int composite(int picture, int page, int marked, int dim, int keep) {
+        double d = dim / 100.0, k = keep / 255.0;
+        int result = 0xFF000000;
+        for (int shift = 0; shift < 24; shift += 8) {
+            double under = ((picture >> shift) & 0xFF) * (1 - d) + ((page >> shift) & 0xFF) * d;
+            long channel = Math.round(under * (1 - k) + ((marked >> shift) & 0xFF) * k);
+            result |= (int) channel << shift;
+        }
+        return result;
+    }
+
+    private static void assertNear(int expected, int actual) {
+        for (int shift = 0; shift < 32; shift += 8) {
+            int want = (expected >> shift) & 0xFF, got = (actual >> shift) & 0xFF;
+            assertTrue(String.format("expected %08X, got %08X", expected, actual), Math.abs(want - got) <= 2);
+        }
+    }
+
+    /** A PNG [width] by [height], red over blue. */
+    private static byte[] png(int width, int height) {
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        Paint paint = new Paint();
+        paint.setColor(Color.RED);
+        canvas.drawRect(0, 0, width, height / 2f, paint);
+        paint.setColor(Color.BLUE);
+        canvas.drawRect(0, height / 2f, width, height, paint);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+        return out.toByteArray();
+    }
+
+    private static void settle() throws Exception {
+        for (int i = 0; i < 3; i++) {
+            Utils.awaitBackgroundTasksForTests();
+            shadowOf(Looper.getMainLooper()).idle();
+        }
     }
 }

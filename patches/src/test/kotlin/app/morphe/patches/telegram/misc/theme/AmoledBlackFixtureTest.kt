@@ -61,7 +61,7 @@ class AmoledBlackFixtureTest {
             val wallpaper = key(site.wallpaper)
             val oldWallpaper = ImmutableMethod.of(site.wallpaper)
             val lists = context.resolveListBackground(site.method)
-            val hooked = setOf(reader, wallpaper, key(lists.refresh), key(lists.holders))
+            val hooked = setOf(reader, wallpaper, key(lists.refresh), key(lists.colors), key(lists.holders))
             val untouched = hostState(build, context, hooked)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { amoledBlackPatch.execute(context) })
 
@@ -123,13 +123,14 @@ class AmoledBlackFixtureTest {
         }
     }
 
-    @Test fun `the picture behind the lists hooks the color refresh and the page holders`() {
+    @Test fun `the picture behind the lists hooks the color refresh, getColor and the page holders`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val context = context(build)
             val site = context.resolveBlackTheme()
             val lists = context.resolveListBackground(site.method)
             val refresh = ImmutableMethod.of(lists.refresh)
+            val colors = ImmutableMethod.of(lists.colors)
             val holders = ImmutableMethod.of(lists.holders)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { amoledBlackPatch.execute(context) })
 
@@ -160,15 +161,42 @@ class AmoledBlackFixtureTest {
             }
             assertTrue("$name: a branch reaches the hook", (0 until at).any { at in b0.normal[it] && it != at - 1 })
 
-            // The stubs reach the set, the refresh, the defaults, the two page holders and the rebuild.
+            // getColor's answer from the colors in use goes through the extension with its key, and nothing else changes.
+            val stockColors = colors.controlBody()
+            val answered = lists.colors.controlBody()
+            val ret = lists.colorReturn
+            assertEquals("$name: two instructions before the return", stockColors.size + 2, answered.size)
+            assertEquals(Opcode.INVOKE_STATIC, answered[ret].opcode)
+            assertEquals("$LIST_BACKGROUND->mark(II)I", answered[ret].controlRef())
+            assertEquals("$name: the key, then the answer", listOf(lists.colorKey, lists.colorResult), answered[ret].namedRegisters())
+            assertEquals(Opcode.MOVE_RESULT, answered[ret + 1].opcode)
+            assertEquals(listOf(lists.colorResult), answered[ret + 1].namedRegisters())
+            assertEquals(Opcode.RETURN, answered[ret + 2].opcode)
+            assertEquals(listOf(lists.colorResult), answered[ret + 2].namedRegisters())
+            assertEquals("$name: stock getColor", stockColors.map { it.operand() },
+                (answered.take(ret) + answered.drop(ret + 2)).map { it.operand() })
+            // Read from the stock code: the lookup about the colors in use, asked with getColor's own key.
+            val inUse = stockColors[ret - 3]
+            val asked = stockColors[ret - 2]
+            assertEquals(Opcode.SGET_OBJECT, inUse.opcode)
+            assertEquals("$name: the colors in use, then the key", listOf(inUse.namedRegisters().single(), lists.colorKey),
+                asked.namedRegisters().take(2))
+            assertEquals(listOf(SPARSE_INT_ARRAY, "I", "[Z"), asked.call()!!.parameterTypes.map { it.toString() })
+            assertEquals(listOf(lists.colorResult), stockColors[ret - 1].namedRegisters())
+            assertNotEquals("$name: not the theme's own set", lists.table.toString(), inUse.controlRef())
+            assertTrue("$name: the refresh writes the colors in use", refresh.controlBody()
+                .any { it.opcode == Opcode.SPUT_OBJECT && it.controlRef() == inUse.controlRef() })
+            val parameters = colors.parameterTypes.map { it.toString() }
+            assertEquals("$name: getColor's int parameter", colors.implementation!!.registerCount - parameters.size + parameters.indexOf("I"),
+                lists.colorKey)
+            val c0 = ControlFlow.of(colors)
+            assertTrue("$name: only the lookup's answer reaches the return", c0.normal.withIndex().none { (i, next) -> i != ret - 1 && ret in next })
+
+            // The stubs reach the refresh, the two page holders and the rebuild.
             fun stub(named: String) = context.tgMutableClassDefBy(LIST_BACKGROUND).methods.single { it.origName == named }.controlBody()
-            assertEquals(lists.table.toString(), stub("table")[0].controlRef())
             val recolor = stub("recolor")
             assertEquals(listOf(0L, 1L), recolor.take(2).map { (it as WideLiteralInstruction).wideLiteral })
             assertEquals(key(lists.refresh), recolor[2].controlRef())
-            assertEquals(key(lists.defaultColor), stub("defaultColor")[0].controlRef())
-            assertTrue("$name: Telegram's default answers -65536 for a key it doesn't know", lists.defaultColor.controlBody()
-                .any { (it as? WideLiteralInstruction)?.wideLiteral == -65536L })
             val pages = stub("pages").filter { it.opcode == Opcode.IGET_OBJECT }.map { it.controlRef() }
             assertEquals(lists.pages.map { it.toString() }, pages)
             assertEquals("$name: the two page holders, not the sheet's", 2, pages.distinct().size)
@@ -190,6 +218,7 @@ class AmoledBlackFixtureTest {
                 "holders made another way" to { _, s -> s.holders.replaceInstruction(s.holders.controlBody().indexOfFirst {
                     it.opcode == Opcode.IPUT_OBJECT && it.controlField()?.toString() == s.pages[1].toString() }, "nop") },
                 "refresh no longer copies the theme's set" to { _, s -> s.refresh.replaceInstruction(1, "nop") },
+                "getColor answers another way" to { _, s -> s.colors.replaceInstruction(s.colorReturn - 2, "nop") },
                 "missing build flag" to { c, _ -> c.tgMutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.origName == "listBackground" } },
                 "missing pages stub" to { c, _ -> c.tgMutableClassDefBy(LIST_BACKGROUND).methods.removeAll { it.origName == "pages" } },
             )
@@ -200,12 +229,14 @@ class AmoledBlackFixtureTest {
                 change(c, lists)
                 val refresh = ImmutableMethod.of(lists.refresh).state()
                 val holders = ImmutableMethod.of(lists.holders).state()
+                val colors = ImmutableMethod.of(lists.colors).state()
                 val warnings = PatchLogCapture.warnings { amoledBlackPatch.execute(c) }
                 assertEquals("${build.name}: $case warns once", 1, warnings.size)
                 assertTrue("${build.name}: $case names what's missing: $warnings", warnings.single().startsWith("AMOLED black: ") &&
                     warnings.single().endsWith("The patch goes on without the picture behind the lists."))
                 assertEquals("${build.name}: $case leaves the refresh", refresh, lists.refresh.state())
                 assertEquals("${build.name}: $case leaves the holders", holders, lists.holders.state())
+                assertEquals("${build.name}: $case leaves getColor", colors, lists.colors.state())
                 val status = c.tgMutableClassDefBy(SETTINGS_STATUS).methods
                 assertEquals("${build.name}: $case keeps black themes", 1L,
                     (status.single { it.origName == "amoledBlack" }.controlBody().first() as WideLiteralInstruction).wideLiteral)

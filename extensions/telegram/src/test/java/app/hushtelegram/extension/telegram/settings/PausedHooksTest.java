@@ -275,7 +275,7 @@ public class PausedHooksTest {
                 () -> app.hushtelegram.extension.telegram.misc.SystemFont.built("fonts/rmono_var.ttf",
                         android.graphics.Typeface.DEFAULT) != android.graphics.Typeface.DEFAULT));
         // Night's window color, as Telegram reads it from the theme file, turns black, and with a
-        // picture saved the list pages of a built-in theme turn see-through over it.
+        // picture saved the list pages' color comes back marked for the picture to show through.
         probes.put(PatchFamily.AMOLED_BLACK, Arrays.asList(() -> {
             app.hushtelegram.extension.telegram.misc.BlackThemeForTests.useStandInIds();
             android.util.SparseIntArray night = new android.util.SparseIntArray();
@@ -285,12 +285,10 @@ public class PausedHooksTest {
         }, () -> {
             android.content.Context context = RuntimeEnvironment.getApplication();
             try {
-                android.util.SparseIntArray day = new android.util.SparseIntArray();
-                day.put(1, 0xFFFFFFFF);
                 app.hushtelegram.extension.telegram.misc.ListBackgroundForTests.keepPicture(context);
-                app.hushtelegram.extension.telegram.misc.ListBackgroundForTests.useTable(day);
+                app.hushtelegram.extension.telegram.misc.ListBackgroundForTests.useIds();
                 app.hushtelegram.extension.telegram.misc.ListBackground.refreshing();
-                return day.get(1) != 0xFFFFFFFF;
+                return app.hushtelegram.extension.telegram.misc.ListBackground.mark(1, 0xFFFFFFFF) != 0xFFFFFFFF;
             } finally {
                 app.hushtelegram.extension.telegram.misc.ListBackgroundForTests.forget(context);
             }

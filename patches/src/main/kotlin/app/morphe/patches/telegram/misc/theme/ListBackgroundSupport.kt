@@ -30,8 +30,8 @@ import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
-import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 
 internal const val LIST_BACKGROUND = "$EXTENSION_PACKAGE/misc/ListBackground;"
@@ -40,48 +40,44 @@ private const val CONTEXT = "Landroid/content/Context;"
 private const val FRAME_LAYOUT = "Landroid/widget/FrameLayout;"
 private const val OBJECT = "Ljava/lang/Object;"
 
-/** What Telegram's getDefaultColor answers for a key it has no default for, which it's the one place to write. */
-private const val NO_DEFAULT = -65536L
-
 /**
  * The picture behind the lists (#88): where Telegram works out the colors in use from the theme's
- * own, where a page layout makes the holders it slides its screens in, and what the extension's
- * stubs reach.
+ * own, where getColor answers a key from them, where a page layout makes the holders it slides its
+ * screens in, and what the extension's stubs reach.
  */
 internal class ListBackgroundSite(
     val refresh: MutableMethod,
+    val colors: MutableMethod,
+    val colorReturn: Int,
+    val colorKey: Int,
+    val colorResult: Int,
     val holders: MutableMethod,
     val holderReturn: Int,
     val table: FieldReference,
-    val defaultColor: Method,
     val pages: List<FieldReference>,
     val rebuild: Method,
 ) {
-    /** The two hooks, on a copy of each method first so a refusal leaves the app untouched. */
-    fun rehearse() = insert(MutableMethod(ImmutableMethod.of(refresh)), MutableMethod(ImmutableMethod.of(holders)))
+    /** The three hooks, on a copy of each method first so a refusal leaves the app untouched. */
+    fun rehearse() = insert(MutableMethod(ImmutableMethod.of(refresh)), MutableMethod(ImmutableMethod.of(colors)),
+        MutableMethod(ImmutableMethod.of(holders)))
 
-    fun insert(refreshTarget: MutableMethod = refresh, holdersTarget: MutableMethod = holders) {
+    fun insert(refreshTarget: MutableMethod = refresh, colorsTarget: MutableMethod = colors, holdersTarget: MutableMethod = holders) {
         refreshTarget.addInstructions(0, "invoke-static {}, $LIST_BACKGROUND->refreshing()V")
+        colorsTarget.addInstructionsAtControlFlowLabel(colorReturn, """
+            invoke-static {v$colorKey, v$colorResult}, $LIST_BACKGROUND->mark(II)I
+            move-result v$colorResult
+        """)
         holdersTarget.addInstructionsAtControlFlowLabel(holderReturn, "invoke-static {p0}, $LIST_BACKGROUND->laidOut($OBJECT)V")
     }
 
-    /** Writes the extension's stubs, then the two hooks. */
+    /** Writes the extension's stubs, then the three hooks. */
     fun apply(context: BytecodePatchContext) = with(context) {
-        writeStub(LIST_BACKGROUND, "table", 1, """
-            sget-object v0, $table
-            return-object v0
-        """)
         // Colors only: the chat wallpaper stays loaded, as Telegram's own call with messages true leaves it.
         writeStub(LIST_BACKGROUND, "recolor", 2, """
             const/4 v0, 0x0
             const/4 v1, 0x1
             invoke-static {v0, v1}, ${refresh.reference()}
             return-void
-        """)
-        writeStub(LIST_BACKGROUND, "defaultColor", 1, """
-            invoke-static {p0}, ${defaultColor.reference()}
-            move-result p0
-            return p0
         """)
         writeStub(LIST_BACKGROUND, "pages", 4, """
             instance-of v0, p0, $ACTION_BAR_LAYOUT
@@ -114,26 +110,25 @@ internal class ListBackgroundSite(
     }
 }
 
-private fun Method.reference() = "$definingClass->$name(${parameterTypes.joinToString("")})$returnType"
+private fun MethodReference.reference() ="$definingClass->$name(${parameterTypes.joinToString("")})$returnType"
 
 /**
  * Finds every target, or throws naming the first one missing, before anything is changed.
  *
  * Telegram keeps the theme's own colors in one static set, which its theme file reader's result
  * goes into, and copies them into the colors in use in one method that starts by reading that set:
- * refreshThemeColors(background, messages), the only (ZZ)V that does. Keys the theme leaves out come
- * from getDefaultColor, the one (I)I that answers -65536 and asks itself again for a key that falls
- * back to another. A page layout makes its holders in setFragmentStack: two page holders, then the
- * sheet holder, each the same FrameLayout built from the context and the layout. rebuildAllFragmentViews
- * is its one (ZZ)V that clears each screen's views.
+ * refreshThemeColors(background, messages), the only (ZZ)V that does. getColor(key, flags, ...) ends
+ * by asking the theme's one (SparseIntArray, int, boolean[]) lookup about the colors in use, a set
+ * refreshThemeColors writes, and returning its answer. A page layout makes its holders in
+ * setFragmentStack: two page holders, then the sheet holder, each the same FrameLayout built from
+ * the context and the layout. rebuildAllFragmentViews is its one (ZZ)V that clears each screen's views.
  */
 internal fun BytecodePatchContext.resolveListBackground(reader: Method): ListBackgroundSite {
     requireStatusMethod("listBackground")
     controlHook(LIST_BACKGROUND, "refreshing", emptyList(), "V")
+    controlHook(LIST_BACKGROUND, "mark", listOf("I", "I"), "I")
     controlHook(LIST_BACKGROUND, "laidOut", listOf(OBJECT), "V")
-    controlHook(LIST_BACKGROUND, "table", emptyList(), SPARSE_INT_ARRAY)
     controlHook(LIST_BACKGROUND, "recolor", emptyList(), "V")
-    controlHook(LIST_BACKGROUND, "defaultColor", listOf("I"), "I")
     controlHook(LIST_BACKGROUND, "pages", listOf(OBJECT), "[Landroid/view/View;")
     controlHook(LIST_BACKGROUND, "rebuild", listOf(OBJECT), "V")
 
@@ -166,16 +161,36 @@ internal fun BytecodePatchContext.resolveListBackground(reader: Method): ListBac
         "the theme color refresh can't be called from outside Telegram's theme code")
     controlShape(ControlFlow.of(refresh).normal.none { 0 in it }, "something jumps back to the start of the theme color refresh")
 
-    // getDefaultColor.
-    val defaults = theme.methods.filter { method ->
+    // getColor's last step: the lookup about the colors in use, whose answer it returns.
+    val lookup = theme.methods.filter { method ->
+        AccessFlags.STATIC.isSet(method.accessFlags) && method.returnType == "I" &&
+            method.parameterTypes.map { it.toString() } == listOf(SPARSE_INT_ARRAY, "I", "[Z")
+    }.controlSingle("theme color lookup").reference()
+    val written = refresh.controlBody().filter { it.opcode == Opcode.SPUT_OBJECT }.mapNotNull { it.controlField()?.toString() }.toSet()
+    val answers = theme.methods.filter { method ->
+        AccessFlags.STATIC.isSet(method.accessFlags) && method.returnType == "I" &&
+            method.parameterTypes.map { it.toString() }.sorted() == listOf("I", "Z", "[Z")
+    }.flatMap { method ->
         val body = method.controlBody()
-        AccessFlags.STATIC.isSet(method.accessFlags) && method.parameterTypes.map { it.toString() } == listOf("I") && method.returnType == "I" &&
-            body.any { (it as? WideLiteralInstruction)?.wideLiteral == NO_DEFAULT } &&
-            body.any { it.opcode == Opcode.INVOKE_STATIC && it.call()?.let { c -> c.definingClass == theme.type && c.name == method.name &&
-                c.parameterTypes.map { p -> p.toString() } == listOf("I") && c.returnType == "I" } == true }
+        body.indices.mapNotNull { i ->
+            val inUse = body[i].takeIf { it.opcode == Opcode.SGET_OBJECT }?.controlField() ?: return@mapNotNull null
+            val asked = body.getOrNull(i + 1)?.takeIf { it.opcode == Opcode.INVOKE_STATIC && it.call()?.reference() == lookup }
+                ?.namedRegisters() ?: return@mapNotNull null
+            val result = body.getOrNull(i + 2)?.takeIf { it.opcode == Opcode.MOVE_RESULT }?.namedRegisters()?.single() ?: return@mapNotNull null
+            if (body.getOrNull(i + 3)?.takeIf { it.opcode == Opcode.RETURN }?.namedRegisters() != listOf(result)) return@mapNotNull null
+            if (inUse.toString() !in written || inUse.toString() == table.toString() || asked.first() != body[i].namedRegisters().single()) null
+            else Triple(method, i + 3, asked[1] to result)
+        }
     }
-    val defaultColor = defaults.controlSingle("theme default color")
-    controlShape(AccessFlags.PUBLIC.isSet(defaultColor.accessFlags), "the theme default color can't be called from outside Telegram's theme code")
+    val (colorMethod, colorReturn, colorRegisters) = answers.controlSingle("theme getColor")
+    val (colorKey, colorResult) = colorRegisters
+    val colorParameters = colorMethod.parameterTypes.map { it.toString() }
+    val keyParameter = colorMethod.implementation!!.registerCount - colorParameters.size + colorParameters.indexOf("I")
+    controlShape(colorKey == keyParameter && colorKey != colorResult && colorKey < 16 && colorResult < 16,
+        "the theme getColor no longer asks about its own key")
+    val colorFlow = ControlFlow.of(colorMethod)
+    controlShape(colorFlow.normal.withIndex().none { (at, next) -> at != colorReturn - 1 && colorReturn in next } &&
+        colorFlow.exceptional.none { colorReturn in it }, "something jumps to the theme getColor's return")
 
     // The page layout and the holders it makes.
     val layout = tgMutableClassDefByOrNull(ACTION_BAR_LAYOUT)
@@ -214,5 +229,5 @@ internal fun BytecodePatchContext.resolveListBackground(reader: Method): ListBac
     controlShape(AccessFlags.PUBLIC.isSet(rebuild.accessFlags) && !AccessFlags.ABSTRACT.isSet(rebuild.accessFlags),
         "the page layout rebuild can't be called from outside it")
 
-    return ListBackgroundSite(refresh, holders, holderReturn, table, defaultColor, pages, rebuild)
+    return ListBackgroundSite(refresh, colorMethod, colorReturn, colorKey, colorResult, holders, holderReturn, table, pages, rebuild)
 }

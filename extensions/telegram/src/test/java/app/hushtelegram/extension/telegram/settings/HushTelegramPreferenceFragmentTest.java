@@ -73,6 +73,7 @@ import app.hushtelegram.extension.telegram.misc.HiddenChats;
 import app.hushtelegram.extension.telegram.misc.HiddenChatsForTests;
 import app.hushtelegram.extension.telegram.misc.LaunchFolder;
 import app.hushtelegram.extension.telegram.misc.LaunchFolderForTests;
+import app.hushtelegram.extension.telegram.misc.ListBackground;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslateForTests;
@@ -264,6 +265,8 @@ public class HushTelegramPreferenceFragmentTest {
             }
             // The settings entry's own switches are Pause's to turn off too.
             for (BooleanSetting setting : PatchFamily.ENTRY_SWITCHES) switchKeys.add(setting.key);
+            // The picture behind the lists takes Android 13, so its switch isn't drawn below it.
+            if (!ListBackground.supported()) switchKeys.remove(Settings.LIST_BACKGROUND.key);
             Set<String> shown = new HashSet<>();
             Preference stays = null;
             for (Preference row : rows) {
@@ -321,12 +324,14 @@ public class HushTelegramPreferenceFragmentTest {
                     for (BooleanSetting setting : family.switches) {
                         boolean drawn = page.findPreference(setting.key) != null;
                         // Ghost mode exceptions are picked from Hide picked chats' list and long press menu,
-                        // and Delete for them keeps its copy on Keep deleted messages' list.
+                        // and Delete for them keeps its copy on Keep deleted messages' list. The picture
+                        // behind the lists takes Android 13.
                         boolean expected = build.contains(family)
                                 && (setting != Settings.GHOST_CHATS && setting != Settings.FAKE_TYPING
                                         || build.contains(PatchFamily.HIDE_FOLDER_COUNTERS))
                                 && (setting != Settings.MESSAGE_MENU_DELETE_FOR_THEM
-                                        || build.contains(PatchFamily.KEEP_DELETED_MESSAGES));
+                                        || build.contains(PatchFamily.KEEP_DELETED_MESSAGES))
+                                && (setting != Settings.LIST_BACKGROUND || ListBackground.supported());
                         if (drawn != expected) wrong.add(build + ": " + setting.key + (drawn ? " is drawn" : " isn't drawn"));
                     }
                 }
@@ -630,17 +635,10 @@ public class HushTelegramPreferenceFragmentTest {
             // Telegram's own theme colors stay until someone turns the switch on.
             assertFalse(Settings.AMOLED_BLACK.key,
                     ((SwitchPreference) page.findPreference(Settings.AMOLED_BLACK.key)).isChecked());
-            assertEquals("Picture behind the lists", String.valueOf(page.findPreference(Settings.LIST_BACKGROUND.key).getTitle()));
-            assertEquals("Shows a picture from your gallery behind the chat list, Settings, profiles and the other lists. "
-                    + "Chats keep their wallpaper, and menus and dialogs stay solid. Works with Telegram's built-in themes.",
-                    String.valueOf(page.findPreference(Settings.LIST_BACKGROUND.key).getSummary()));
-            // Telegram's own pages stay until someone turns it on and picks a picture.
-            assertFalse(Settings.LIST_BACKGROUND.key,
-                    ((SwitchPreference) page.findPreference(Settings.LIST_BACKGROUND.key)).isChecked());
-            assertEquals("Background picture",
-                    String.valueOf(page.findPreference(HushTelegramPreferenceFragment.LIST_BACKGROUND_ROW).getTitle()));
-            assertEquals("No picture yet. Tap to pick one.",
-                    String.valueOf(page.findPreference(HushTelegramPreferenceFragment.LIST_BACKGROUND_ROW).getSummary()));
+            // Finding the list pages' colors takes Android 13, so this Android 11 phone gets neither
+            // background row (theBackgroundPictureRowPicksDimsAndRemovesThePicture reads them on 13).
+            assertNull(page.findPreference(Settings.LIST_BACKGROUND.key));
+            assertNull(page.findPreference(HushTelegramPreferenceFragment.LIST_BACKGROUND_ROW));
             assertEquals("Hide translate bar", String.valueOf(page.findPreference(Settings.HIDE_TRANSLATE_BAR.key).getTitle()));
             assertEquals("Chats in another language stop showing the translate bar at the top. Translate moves to the "
                     + "chat's menu, and a chat you're translating keeps its bar.",
@@ -2693,6 +2691,7 @@ public class HushTelegramPreferenceFragmentTest {
      * picture away and turns the switch off at once.
      */
     @Test
+    @Config(sdk = 33)
     @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
     public void theBackgroundPictureRowPicksDimsAndRemovesThePicture() throws Exception {
         PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.AMOLED_BLACK);
@@ -2706,11 +2705,29 @@ public class HushTelegramPreferenceFragmentTest {
             HushTelegramPreferenceFragment page = pageOf(controller);
             Preference row = page.findPreference(HushTelegramPreferenceFragment.LIST_BACKGROUND_ROW);
             SwitchPreference lists = (SwitchPreference) page.findPreference(Settings.LIST_BACKGROUND.key);
+            assertEquals("Picture behind the lists", String.valueOf(lists.getTitle()));
+            assertEquals("Shows a picture from your gallery behind the chat list, Settings, profiles and the other lists. "
+                    + "Chats keep their wallpaper, and menus and dialogs stay solid. Works with Telegram's built-in themes.",
+                    String.valueOf(lists.getSummary()));
+            // Telegram's own pages stay until someone turns it on and picks a picture.
+            assertFalse(lists.isChecked());
+            assertEquals("Background picture", String.valueOf(row.getTitle()));
+            assertEquals("No picture yet. Tap to pick one.", String.valueOf(row.getSummary()));
             assertFalse("it stores nothing itself", row.isPersistent());
+
+            // With the settings locked a tap opens nothing.
+            SettingsLockForTests.handClocks(new long[]{1_800_000_000_000L});
+            try {
+                assertTrue(SettingsLock.lock());
+                assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+                assertNull("the gallery opened while locked", shadowOf(controller.get()).getNextStartedActivityForResult());
+            } finally {
+                SettingsLockForTests.forget();
+            }
 
             assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
             ShadowActivity.IntentForResult picker = shadowOf(controller.get()).getNextStartedActivityForResult();
-            assertEquals(Intent.ACTION_GET_CONTENT, picker.intent.getAction());
+            assertEquals(android.provider.MediaStore.ACTION_PICK_IMAGES, picker.intent.getAction());
             assertEquals("image/*", picker.intent.getType());
 
             // Cancelled: nothing saved and the switch stays off.
