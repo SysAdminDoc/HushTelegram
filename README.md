@@ -1,11 +1,11 @@
 ![HushTelegram. Keep the chat. Cut the noise.](assets/readme-hero.png)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.0.25-7CE6C4" alt="Version 0.0.25">
+  <img src="https://img.shields.io/badge/version-0.0.26-7CE6C4" alt="Version 0.0.26">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License GPL-3.0"></a>
   <img src="https://img.shields.io/badge/platform-Android%209%2B-3DDC84" alt="Platform Android 9+">
-  <img src="https://img.shields.io/badge/Telegram-13.2.1%20Play%20%7C%20telegram.org-2AABEE" alt="Telegram 13.2.1 from Google Play and telegram.org">
-  <img src="https://img.shields.io/badge/for-Morphe%20Manager%202.5.0%2B-8A2BE2" alt="For Morphe Manager 2.5.0 or newer">
+  <img src="https://img.shields.io/badge/Telegram-13.2.2%20Play%20%7C%20telegram.org-2AABEE" alt="Telegram 13.2.2 from Google Play and telegram.org">
+  <img src="https://img.shields.io/badge/for-Morphe%20Manager%202.6.0%2B-8A2BE2" alt="For Morphe Manager 2.6.0 or newer">
 </p>
 
 <p align="center">
@@ -20,32 +20,32 @@
 
 # <img src="assets/icon.png" width="36" alt=""> HushTelegram
 
-HushTelegram is a set of [Morphe](https://morphe.software) patches for Telegram on Android. It takes the sponsored messages and search ads out of Telegram and keeps the app's usage reports on your phone. Everything else is a switch in its own settings screen, so you can hide Stories and the Premium upsells, keep messages other people delete, translate a whole chat, get notifications through UnifiedPush, go AMOLED black and plenty more. It doesn't give away paid Premium features. A second switch under Save downloaded files, off until you turn it on, also saves downloaded files and songs from chats that don't allow saving. Another one under Add Repeat to the message menu, off to start as well, lets screenshots work in those chats. Two more, also off to start, keep view-once and self-destructing media after you open it and save a copy of it. Secret chats always follow Telegram's rules.
+HushTelegram is a set of [Morphe](https://morphe.software) patches for Telegram on Android. It takes the sponsored messages and search ads out of Telegram and keeps the app's usage reports on your phone. Everything else is a switch in its own settings screen, so you can hide Stories and the Premium upsells, keep messages other people delete, translate a whole chat, get notifications through UnifiedPush, go AMOLED black and plenty more. It doesn't give away paid Premium features. The switches that save, screenshot or keep what a chat doesn't allow (view-once media and secret chats included) all start off.
 
-The latest release is [v0.0.25](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.25), with 82 patches for Telegram 13.2.1 from Google Play and telegram.org. It needs Morphe Manager 2.5.0 or newer. The version badge follows the source on main, which can be ahead of the release. What changed in each version is in the [changelog](CHANGELOG.md).
+The latest release is [v0.0.26](https://github.com/SysAdminDoc/HushTelegram/releases/tag/v0.0.26), with 82 patches for Telegram 13.2.2 from Google Play and telegram.org. It needs Morphe Manager 2.6.0 or newer. What changed in each version is in the [changelog](CHANGELOG.md).
 
 **[Add HushTelegram to Morphe Manager](https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram)** | [Download a release](https://github.com/SysAdminDoc/HushTelegram/releases/latest) | [Browse the patches](#patches)
 
 > [!IMPORTANT]
-> Back up your signing key right after your first patch. Android only installs an update over your patched Telegram when it carries the same key, and with that key your chats and settings survive every update. In Morphe Manager open **Settings > System > Import & export > Signing key** and tap **Export**. Keep `Morphe.keystore` private, since anyone who has it can sign an APK your phone will accept. On a new phone, import it before you patch anything.
+> Back up your signing key right after your first patch. Android only installs an update over your patched Telegram when it carries the same key. In Morphe Manager open **Settings > System > Import & export > Signing key** and tap **Export**, then keep `Morphe.keystore` private, since anyone who has it can sign an APK your phone will accept. On a new phone, import it before you patch anything.
 
 ## Install
 
-1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 2.5.0 or newer.
+1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager) 2.6.0 or newer.
 2. Open the [add-source link](https://morphe.software/add-source?github=SysAdminDoc%2FHushTelegram) on your phone to add HushTelegram as a patch source.
-3. Get Telegram 13.2.1 from [Google Play](https://play.google.com/store/apps/details?id=org.telegram.messenger) (version code 72911), or telegram.org's Telegram 13.2.1 (version code 72919). telegram.org's [Download button](https://telegram.org/android) always hands out the newest build and has already moved on to 13.2.2, so get 13.2.1 from Telegram's own [Telegram APKs for Android](https://t.me/TAndroidAPK) channel and check the [checksum](#supported-telegram-builds) before you patch. [APKMirror](https://www.apkmirror.com/apk/telegram-fz-llc/telegram/) carries the Google Play build too.
+3. Get Telegram 13.2.2 from [Google Play](https://play.google.com/store/apps/details?id=org.telegram.messenger) (version code 73031), or from telegram.org's [Download button](https://telegram.org/android) (version code 73039). [APKMirror](https://www.apkmirror.com/apk/telegram-fz-llc/telegram/) carries the Google Play build too. telegram.org always hands out its newest build, so once it moves past 13.2.2, Telegram's own [Telegram APKs for Android](https://t.me/TAndroidAPK) channel still has this one. Check the [checksum](#supported-telegram-builds) before you patch.
 4. Pick the file in Morphe Manager, keep the default selection and patch. It has every patch that comes with a switch.
 5. Four patches start unselected: Use registered Telegram API credentials, Use registered Maps API key, HushTelegram icon and name, and Black and white launch logo. To add one, turn on **Settings > Advanced > Expert mode** in Morphe Manager and fill in its options before you patch.
 
-When you sign in, Telegram often turns down the API ID that ships with a patched build, so no code arrives and you see `API_ID_PUBLISHED_FLOOD`. It happens on other patched Telegram builds too. The one-time fix is in [Your Telegram account](#your-telegram-account): register a free app at my.telegram.org, then patch with Use registered Telegram API credentials so the app signs in as your own.
+When you sign in, Telegram often turns down the API ID that ships with a patched build, so no code arrives and you see `API_ID_PUBLISHED_FLOOD`. Other patched Telegram builds run into it too. The one-time fix is to register a free app at my.telegram.org and patch with Use registered Telegram API credentials, and [Your Telegram account](#your-telegram-account) walks through it.
 
 **Coming from stock Telegram?** The keys differ, so you'll have to uninstall stock Telegram before the patched copy goes on. That deletes this phone's secret chats for good, though cloud chats come back when you sign in. Stay signed in on another device until the patched app is in, because that's usually where the login code shows up.
 
 ## Settings
 
-Open Telegram's Settings and tap **HushTelegram settings**, or press and hold the **Telegram** title at the top of your chat list. Telegram's chat list has no logo to press, so its title stands in. If neither works, long-press Telegram's icon and tap **HushTelegram**, or open Telegram's App info page and tap **Additional settings in the app** (Samsung calls it **Configure in Telegram**).
+Open Telegram's Settings and tap **HushTelegram settings**, or press and hold the **Telegram** title at the top of your chat list. Long-pressing Telegram's icon and tapping **HushTelegram** works too, and so does **Additional settings in the app** on Telegram's App info page (Samsung calls it **Configure in Telegram**).
 
-The home page is search plus one short list of sections. Tap a section to open its switches right there, and tap it again to fold it away. The first seven are grouped the way Morphe Manager groups them, and Links, Updates, Pause, Settings backup, Diagnostics and About come after. The **Pause** button at the top turns HushTelegram's changes off from the next start and keeps your choices for when you resume. In the Pause section, **Lock HushTelegram settings** makes every setting read-only until you start an unlock and wait 24 hours. **Quick setups** in Settings backup turns on the Quiet or Privacy switches in one tap, or puts every switch back the way it started. **Changed switches** lists only what you've changed, and **Report a problem** opens a GitHub bug report with your versions and switches already filled in.
+Tap a section to open its switches in place. The **Pause** button at the top turns HushTelegram's changes off from the next start and keeps your choices for when you resume. **Quick setups** in Settings backup turns on the Quiet or Privacy switches in one tap, or puts every switch back the way it started. **Changed switches** lists only what you've changed, and **Report a problem** opens a GitHub bug report with your versions and switches already filled in.
 
 <p><img src="assets/settings-overview.png" width="320" alt="HushTelegram settings in Telegram blue, with search, Pause and the settings sections"><img src="assets/settings-ads.png" width="320" alt="The Ads section open in place, with Hide ads turned on"></p>
 
@@ -158,15 +158,13 @@ The Maps key is for the location picker. Make one in a Google Cloud project with
 - **Morphe Manager warns about your APK.** It isn't one of the [supported builds](#supported-telegram-builds).
 - **An update won't install.** It has to carry your installed copy's key. Import your `Morphe.keystore` into Morphe Manager and patch again.
 - **No login code, or `API_ID_PUBLISHED_FLOOD`.** See [Your Telegram account](#your-telegram-account).
-- **The Google button at sign-in fails, or a code won't fill itself in.** Google checks that the app is signed by Telegram, and a patched copy is signed with your key. Type your email in the box instead of tapping the Google button and the code comes by email. Android 17 holds SMS codes back from apps they weren't sent for, so on Android 17 you'll probably have to type the code yourself. Passkeys need Telegram's own signature too, which is why HushTelegram hides them.
-- **A contact sees a security note on your profile.** Since April 2026 Telegram can show your contacts a note that your app "may reduce the security of your conversation". Telegram's servers decide who gets it and haven't said how, so a patched copy may or may not be flagged. HushTelegram can't take it off your profile. If that matters to you, use Telegram's own app on that account.
-- **No notifications.** Google's Firebase can refuse a re-signed app (`API_KEY_ANDROID_APP_BLOCKED`), which Repair Firebase push registration works around. If pushes still don't come, install a UnifiedPush app like [ntfy](https://ntfy.sh) and turn on UnifiedPush notifications. Telegram's servers then wake Telegram through that app and Telegram fetches the message itself. Turning it on also turns on Telegram's own connection, described next, unless you've set it yourself. A self-hosted ntfy server needs an https address, because Telegram's servers won't call plain http. Telegram's own fallback is **Keep-Alive Service** and **Background Connection** under **Settings > Notifications and Sounds**, at some cost in battery. Android used to stop that service about a minute after you left Telegram, so messages waited until you opened it again. Now it runs with a quiet notification and keeps going. Tap the notification to hide it, or turn off **Keep the Keep-Alive Service running** in HushTelegram settings > Notifications. Unrestricted battery use for Telegram helps either way.
-
-Delivery also needs Telegram's servers to hold push credentials for the app, which [Telegram documents separately](https://core.telegram.org/api/push-updates), and a new API ID doesn't set that up by itself. The Notifications page shows what this phone knows (permission, saved push token, confirmed accounts), but that can't prove a notification will arrive.
+- **The Google button at sign-in fails, or a code won't fill itself in.** Google checks that the app is signed by Telegram, and a patched copy is signed with your key. Type your email in the box instead and the code comes by email. On Android 17 you'll probably have to type SMS codes yourself. Passkeys need Telegram's own signature too, which is why HushTelegram hides them.
+- **A contact sees a security note on your profile.** Telegram can show your contacts a note that your app "may reduce the security of your conversation". Telegram's servers decide who gets it, and HushTelegram can't take it off your profile. If that matters to you, use Telegram's own app on that account.
+- **No notifications.** When Google's Firebase refuses a re-signed app (`API_KEY_ANDROID_APP_BLOCKED`), Repair Firebase push registration works around it. If pushes still don't come, install a UnifiedPush app like [ntfy](https://ntfy.sh) and turn on UnifiedPush notifications (a self-hosted ntfy server needs an https address). Telegram's own **Keep-Alive Service** and **Background Connection** under **Settings > Notifications and Sounds** work too, at some cost in battery, and HushTelegram keeps that service running behind a quiet notification you can tap to hide. Unrestricted battery use for Telegram helps either way.
 
 ## Your Telegram account
 
-If sign-in fails with `API_ID_PUBLISHED_FLOOD`, Telegram has refused the API ID that ships with the app. Telegram's screen doesn't say so, which is why HushTelegram shows a message there linking to this section. Register your own app, then patch with Use registered Telegram API credentials and fill in `apiId` and `apiHash`. On the Morphe command line, quote the ID as `-O "apiId='12345'"`, since a bare number never reaches the option. The result installs over your current HushTelegram build, and from its first start Telegram sees your app instead of the bundled one. Your own API ID only gets you past that refusal. Telegram still picks which login methods you get (a code in Telegram, SMS, email and so on), so keep any copy that's already signed in. Passkeys only work in Telegram's own signed app, so they can't work in a patched copy signed with your key. HushTelegram hides passkey setup and the passkey step at sign-in on such a copy.
+If sign-in fails with `API_ID_PUBLISHED_FLOOD`, Telegram has refused the API ID that ships with the app, and HushTelegram shows a message on that screen linking here. Register your own app, then patch with Use registered Telegram API credentials and fill in `apiId` and `apiHash`. On the Morphe command line, quote the ID as `-O "apiId='12345'"`, since a bare number never reaches the option. The result installs over your current HushTelegram build. Telegram still picks which login methods you get (a code in Telegram, SMS, email and so on), so keep any copy that's already signed in.
 
 Filling in the form at [my.telegram.org/apps](https://my.telegram.org/apps):
 
@@ -193,15 +191,13 @@ The About and Licenses screens link to `github.com`, `gitlab.com` and `www.gnu.o
 
 ## Supported Telegram builds
 
-The current release patches two Telegram builds, and the patched app needs Android 9 or newer. telegram.org's build is Telegram 13.2.1, `org.telegram.messenger.web` with version code 72919, and its APK carries every phone architecture. The Google Play build is Telegram 13.2.1, `org.telegram.messenger` with version code 72911, the one most people already have on their phone. The two don't always share a version, since telegram.org updates its download on its own schedule. Morphe Manager warns about any other build, the public beta included.
-
-HushTelegram changes Telegram's app code and leaves its native libraries alone, so fixes for those come only with Telegram's own updates. CVE-2026-111105 ([ZDI-26-757](https://www.zerodayinitiative.com/advisories/ZDI-26-757/)) is one of those, a bug in rlottie, the library Telegram used to draw animated stickers. Telegram for Android swapped rlottie for its own renderer in 12.10.0 ([4e1a61e](https://github.com/DrKLO/Telegram/commit/4e1a61eca6)) and 13.2.1 still uses that one ([7be672e](https://github.com/DrKLO/Telegram/commit/7be672ead2)), so neither build above carries rlottie.
+The current release patches two Telegram builds, and the patched app needs Android 9 or newer. telegram.org's build is Telegram 13.2.2, `org.telegram.messenger.web` with version code 73039, and its APK carries every phone architecture. The Google Play build is Telegram 13.2.2, `org.telegram.messenger` with version code 73031. Morphe Manager warns about any other build, the public beta included. HushTelegram leaves Telegram's native libraries alone, so fixes for those come only with Telegram's own updates.
 
 SHA-256 of the stock APKs the release was checked against:
 
 ```text
-web    2b73067f429a5cc20cf060e84c9296a18a04b77f1aa02739fa6457c6b5a508d2
-play   1d444a7ee2579257b4a86530e5014ee066c5690c4ff505e3a43b3658af2aea22
+web    e0ddeb85227f2e482f674f8e6e8f062dfd870484ed6c98282dc5a49918160ac0
+play   84cf619763e25321ebd945d637f1e20709804fcd3b4db9eee74c68f201bfc28f
 ```
 
 On Windows, check yours with `Get-FileHash -Algorithm SHA256 .\Telegram.apk`. Each [release](https://github.com/SysAdminDoc/HushTelegram/releases) also ships `SHA256SUMS.txt` for its `.mpp` bundle, which is a patch bundle and not a Telegram APK.
@@ -219,7 +215,7 @@ export GITHUB_TOKEN=<a token with read:packages>
 ./gradlew :patches:buildAndroid
 ```
 
-Run `generatePatchesList` first, or the bundle loses its Android payload. It lands in `patches/build/release/patches-<version>.mpp` with its SHA-256 and a CycloneDX SBOM. A bundle you build comes out unsigned, so it differs from a release's only in the signature at the end of the file. Tests are `./gradlew :patches:test :extensions:telegram:test`. Before a release push, or one made with `HUSHTELEGRAM_FULL_GATE=1`, point `HUSHTELEGRAM_FIXTURE_DIR` at a folder holding every APK named in `AppCompatibilities.kt` and `patches-list.json`. Keep older catalog inputs while a release is held. The [Telegram app reference](docs/telegram-app-reference.md) covers moving to a new Telegram build and the anchors that hold up across updates.
+Run `generatePatchesList` first, or the bundle loses its Android payload. It lands in `patches/build/release/patches-<version>.mpp` with its SHA-256 and a CycloneDX SBOM. A bundle you build comes out unsigned, so it differs from a release's only in the signature at the end of the file. Tests are `./gradlew :patches:test :extensions:telegram:test`, and the fixture tests read every APK named in `AppCompatibilities.kt` from the folder `HUSHTELEGRAM_FIXTURE_DIR` points at. The [Telegram app reference](docs/telegram-app-reference.md) covers moving to a new Telegram build.
 
 Where things live:
 

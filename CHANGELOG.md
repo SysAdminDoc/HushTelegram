@@ -2,12 +2,12 @@
 
 Every HushTelegram release, newest first.
 
-## Unreleased
+## 0.0.26 (2026-11-17)
 
 ### Changed
 
 * **Telegram:** Both builds move from Telegram 13.2.1 to 13.2.2, code 73031 from Google Play and 73039 from telegram.org.
-* **Telegram:** HushTelegram now builds on Morphe patcher 2.4.0, the one in Morphe Manager 2.6.0 and morphe-desktop 2.2.0. Manager won't load a bundle made with a newer patcher than its own, so update Manager to 2.6.0 or newer before you add the next release.
+* **Telegram:** HushTelegram now builds on Morphe patcher 2.4.0, the one in Morphe Manager 2.6.0 and morphe-desktop 2.2.0. Manager won't load a bundle made with a newer patcher than its own, so update Manager to 2.6.0 or newer before you add this release.
 
 ### Added
 
@@ -33,8 +33,8 @@ Every HushTelegram release, newest first.
 * **Telegram:** **Keep my messages too** sits under **Keep deleted messages**, off by default. When someone deletes a whole chat for both of you, your own messages stay along with theirs instead of only theirs. Messages you delete on another of your devices stay on this phone too. (#82)
 * **Telegram:** **Remove kept messages after** sits under **Clear kept messages**. Pick 1, 7, 30 or 90 days and a kept message goes away on its own that long after it was deleted, the same way Clear kept messages removes it. It's set to **Never** by default, so nothing changes until you pick. Messages kept before this update start counting after it, so none of them disappear the moment you pick. (#91)
 * **Telegram:** **Also save from secret chats** is a new switch under **Save downloaded files**, off by default. Together with **Also save from chats that don't allow saving**, files, photos and videos from secret chats get copied to Download/Telegram as well, and the message menu's **Save to Downloads** shows up there. Their view-once and timed media also need **Also save view-once and timed media**. (#82)
-* **Telegram:** **Also allow screenshots in secret chats** sits under **Allow screenshots in chats that don't allow saving**, off by default. With both on, screenshots and screen recording work in secret chats, their photos and their profiles. Telegram still tells the other person when you take one, unless **Suppress screenshot notification** is on. (#82)
-* **Telegram:** **Keep self-destructing secret chat messages** sits under **Keep deleted messages**, off by default. Messages, photos and videos in a secret chat stay on your phone when their self-destruct timer runs out. The other person's copy still goes on their own timer, and nothing tells them. (#82)
+* **Telegram:** **Also allow screenshots in secret chats** sits under **Allow screenshots in chats that don't allow saving**, off by default. With both on, screenshots and screen recording work in secret chats, their photos and their profiles. Telegram may still tell the other person when you take one. (#82)
+* **Telegram:** **Keep self-destructing secret chat messages** sits under **Keep deleted messages**, off by default. Messages, photos and videos in a secret chat stay on your phone when their self-destruct timer runs out. The other person's copy still goes on their own timer. (#82)
 * **Telegram:** With **Open restricted channels** on, the alert Telegram shows when a public channel has banned you gets an **Open on the web** button. It opens the channel's page at t.me/s/ in your browser, where its posts still show to anyone. The button shows only when HushTelegram knows the channel's public name, from the channel itself or from the link that brought you to it. (#71)
 * **Telegram:** **Keep chats you're removed from** sits under **Keep deleted messages**, off by default. When a group or channel removes or bans you, it stays in your chat list with the messages this phone already saved. Opening it shows a short note instead of Telegram's alert, and you can scroll back through it but not post. Delete it from the chat list when you're done and it's gone for good. Chats you leave yourself work as usual. (#71)
 * **Telegram:** **Message details** lists more about a file. You get its name and MIME type, the resolution of a photo or video, and the length and average bitrate of a song, voice message or video. Telegram doesn't send a bitrate, so it's worked out from the file's size and length. A line with nothing to show is left out. (#87)
