@@ -546,7 +546,7 @@ public class HushTelegramPreferenceFragmentTest {
             assertFalse(Settings.LINK_PREVIEW_RULES.key,
                     ((SwitchPreference) page.findPreference(Settings.LINK_PREVIEW_RULES.key)).isChecked());
             assertEquals("Link preview rules", String.valueOf(page.findPreference(LinkPreviewRulesEditor.KEY).getTitle()));
-            assertEquals("Rules: 6. Fix link previews follows these for the links you send.",
+            assertEquals("Rules: 14. Fix link previews follows these for the links you send.",
                     String.valueOf(page.findPreference(LinkPreviewRulesEditor.KEY).getSummary()));
             assertEquals("Camera only on tap", String.valueOf(page.findPreference(Settings.GALLERY_CAMERA_ON_TAP.key).getTitle()));
             assertEquals("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the "
@@ -3249,7 +3249,7 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("Link preview rules", String.valueOf(shadowOf(editor).getTitle()));
             EditText field = editor.findViewById(android.R.id.edit);
             assertEquals(defaults, field.getText().toString());
-            assertEquals("One rule per line, like x.com -> fixupx.com", String.valueOf(field.getHint()));
+            assertEquals("One rule per line, like x.com/*/status -> fixupx.com", String.valueOf(field.getHint()));
 
             field.setText("X.COM  ->  FixupX.com\nnot a rule\n\n*.Example.org -> *.mirror.example\nx.com -> x.com");
             editor.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
@@ -3280,7 +3280,7 @@ public class HushTelegramPreferenceFragmentTest {
             assertFalse(editor.isShowing());
             assertNull("nothing to say when every line was a rule", ShadowToast.getTextOfLatestToast());
             assertEquals("", Settings.LINK_PREVIEW_RULE_LIST.savedValue());
-            assertEquals("No rules yet. Add one per line, like x.com -> fixupx.com.", String.valueOf(row.getSummary()));
+            assertEquals("No rules yet. Add one per line, like x.com/*/status -> fixupx.com.", String.valueOf(row.getSummary()));
 
             // Rules too long to keep stay in the box, and nothing is saved.
             StringBuilder many = new StringBuilder();

@@ -2130,13 +2130,13 @@ When you send a link to a site in your rules, its preview comes from the other s
 # context: Privacy page row title under the Fix link previews switch, the title of its editor dialog, and a label in the settings import preview line "%1$s: %2$s to %3$s"
 Link preview rules	Regras de prévias de links
 # context: Summary of the Link preview rules row when it holds no rules. x.com -> fixupx.com is a rule as typed and stays as it is
-No rules yet. Add one per line, like x.com -> fixupx.com.	Ainda não há regras. Adicione uma por linha, como x.com -> fixupx.com.
+No rules yet. Add one per line, like x.com/*/status -> fixupx.com.	Ainda não há regras. Adicione uma por linha, como x.com/*/status -> fixupx.com.
 # context: Summary of the Link preview rules row with the number of rules. Fix link previews is the name of the switch above it
 Rules: %1$s. Fix link previews follows these for the links you send.	Regras: %1$s. Corrigir prévias de links segue essas regras nos links que você envia.
 # context: Hint and label of the box in the Link preview rules dialog, where each line is one rule. x.com -> fixupx.com stays as it is
-One rule per line, like x.com -> fixupx.com	Uma regra por linha, como x.com -> fixupx.com
+One rule per line, like x.com/*/status -> fixupx.com	Uma regra por linha, como x.com/*/status -> fixupx.com
 # context: Note in the Link preview rules dialog. The arrow is the -> typed between two sites; *. and the sites stay as they are
-Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. Lines that aren't rules are left out.	Cada linha é um site, uma seta e o site de onde vêm as prévias. Coloque *. na frente dos dois para cobrir também os subdomínios, como *.tiktok.com -> *.kktiktok.com. Linhas que não são regras ficam de fora.
+Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. A path after the first site covers only links that start with it, * standing for any one part, like x.com/*/status -> fixupx.com. Lines that aren't rules are left out.	Cada linha é um site, uma seta e o site de onde vêm as prévias. Coloque *. na frente dos dois para cobrir também os subdomínios, como *.tiktok.com -> *.kktiktok.com. Um caminho depois do primeiro site cobre só os links que começam com ele, com * valendo por qualquer parte, como x.com/*/status -> fixupx.com. Linhas que não são regras ficam de fora.
 # context: Button in the Link preview rules dialog, next to Save and Cancel. It puts the starting rules back in the box. Short
 Default rules	Regras padrão
 # context: Toast when the rules typed in Link preview rules are too long to keep. Two short lines at most.

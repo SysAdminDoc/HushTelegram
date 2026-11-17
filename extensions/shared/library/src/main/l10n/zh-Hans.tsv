@@ -2133,13 +2133,13 @@ When you send a link to a site in your rules, its preview comes from the other s
 # context: Privacy page row title under the Fix link previews switch, the title of its editor dialog, and a label in the settings import preview line "%1$s: %2$s to %3$s"
 Link preview rules	链接预览规则
 # context: Summary of the Link preview rules row when it holds no rules. x.com -> fixupx.com is a rule as typed and stays as it is
-No rules yet. Add one per line, like x.com -> fixupx.com.	还没有规则。每行添加一条，例如 x.com -> fixupx.com.
+No rules yet. Add one per line, like x.com/*/status -> fixupx.com.	还没有规则。每行添加一条，例如 x.com/*/status -> fixupx.com.
 # context: Summary of the Link preview rules row with the number of rules. Fix link previews is the name of the switch above it
 Rules: %1$s. Fix link previews follows these for the links you send.	规则：%1$s。“修复链接预览”会对你发送的链接使用这些规则.
 # context: Hint and label of the box in the Link preview rules dialog, where each line is one rule. x.com -> fixupx.com stays as it is
-One rule per line, like x.com -> fixupx.com	每行一条规则，例如 x.com -> fixupx.com
+One rule per line, like x.com/*/status -> fixupx.com	每行一条规则，例如 x.com/*/status -> fixupx.com
 # context: Note in the Link preview rules dialog. The arrow is the -> typed between two sites; *. and the sites stay as they are
-Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. Lines that aren't rules are left out.	每行是一个网站、一个箭头和提供其预览的网站。在两者前面都加上 *. 即可同时涵盖子域名，例如 *.tiktok.com -> *.kktiktok.com。不是规则的行会被略过.
+Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. A path after the first site covers only links that start with it, * standing for any one part, like x.com/*/status -> fixupx.com. Lines that aren't rules are left out.	每行是一个网站、一个箭头和提供其预览的网站。在两者前面都加上 *. 即可同时涵盖子域名，例如 *.tiktok.com -> *.kktiktok.com。在第一个网站后加上路径，则只涵盖以该路径开头的链接，* 代表任意一段，例如 x.com/*/status -> fixupx.com。不是规则的行会被略过.
 # context: Button in the Link preview rules dialog, next to Save and Cancel. It puts the starting rules back in the box. Short
 Default rules	默认规则
 # context: Toast when the rules typed in Link preview rules are too long to keep. Two short lines at most.

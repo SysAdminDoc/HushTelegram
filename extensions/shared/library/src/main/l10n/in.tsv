@@ -2133,13 +2133,13 @@ When you send a link to a site in your rules, its preview comes from the other s
 # context: Privacy page row title under the Fix link previews switch, the title of its editor dialog, and a label in the settings import preview line "%1$s: %2$s to %3$s"
 Link preview rules	Aturan pratinjau tautan
 # context: Summary of the Link preview rules row when it holds no rules. x.com -> fixupx.com is a rule as typed and stays as it is
-No rules yet. Add one per line, like x.com -> fixupx.com.	Belum ada aturan. Tambahkan satu per baris, misalnya x.com -> fixupx.com.
+No rules yet. Add one per line, like x.com/*/status -> fixupx.com.	Belum ada aturan. Tambahkan satu per baris, misalnya x.com/*/status -> fixupx.com.
 # context: Summary of the Link preview rules row with the number of rules. Fix link previews is the name of the switch above it
 Rules: %1$s. Fix link previews follows these for the links you send.	Aturan: %1$s. Perbaiki pratinjau tautan mengikutinya untuk tautan yang Anda kirim.
 # context: Hint and label of the box in the Link preview rules dialog, where each line is one rule. x.com -> fixupx.com stays as it is
-One rule per line, like x.com -> fixupx.com	Satu aturan per baris, misalnya x.com -> fixupx.com
+One rule per line, like x.com/*/status -> fixupx.com	Satu aturan per baris, misalnya x.com/*/status -> fixupx.com
 # context: Note in the Link preview rules dialog. The arrow is the -> typed between two sites; *. and the sites stay as they are
-Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. Lines that aren't rules are left out.	Setiap baris berisi situs, tanda panah, dan situs asal pratinjaunya. Tambahkan *. di depan keduanya untuk mencakup subdomain juga, misalnya *.tiktok.com -> *.kktiktok.com. Baris yang bukan aturan dilewati.
+Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. A path after the first site covers only links that start with it, * standing for any one part, like x.com/*/status -> fixupx.com. Lines that aren't rules are left out.	Setiap baris berisi situs, tanda panah, dan situs asal pratinjaunya. Tambahkan *. di depan keduanya untuk mencakup subdomain juga, misalnya *.tiktok.com -> *.kktiktok.com. Jalur setelah situs pertama hanya mencakup tautan yang diawali dengannya, dengan * untuk satu bagian apa pun, misalnya x.com/*/status -> fixupx.com. Baris yang bukan aturan dilewati.
 # context: Button in the Link preview rules dialog, next to Save and Cancel. It puts the starting rules back in the box. Short
 Default rules	Aturan bawaan
 # context: Toast when the rules typed in Link preview rules are too long to keep. Two short lines at most.

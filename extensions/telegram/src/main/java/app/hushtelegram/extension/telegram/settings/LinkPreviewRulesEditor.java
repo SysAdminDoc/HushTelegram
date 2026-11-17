@@ -29,7 +29,7 @@ final class LinkPreviewRulesEditor {
     /** What the row says under its title: how many rules there are, or how to add one. */
     static String summary() {
         int count = LinkPreviewRules.saved().rules.size();
-        if (count == 0) return L10n.t("No rules yet. Add one per line, like x.com -> fixupx.com.");
+        if (count == 0) return L10n.t("No rules yet. Add one per line, like x.com/*/status -> fixupx.com.");
         return L10n.f("Rules: %1$s. Fix link previews follows these for the links you send.", count);
     }
 
@@ -43,12 +43,13 @@ final class LinkPreviewRulesEditor {
         field.setMinLines(3);
         field.setMaxLines(6);
         field.setHorizontallyScrolling(false);
-        field.setHint(L10n.t("One rule per line, like x.com -> fixupx.com"));
+        field.setHint(L10n.t("One rule per line, like x.com/*/status -> fixupx.com"));
         field.setText(LinkPreviewRules.saved().text());
         field.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
         EditorForm form = new EditorForm(field.getContext(), L10n.t("Each line is a site, an arrow and the site its "
                 + "previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> "
-                + "*.kktiktok.com. Lines that aren't rules are left out."));
+                + "*.kktiktok.com. A path after the first site covers only links that start with it, * standing "
+                + "for any one part, like x.com/*/status -> fixupx.com. Lines that aren't rules are left out."));
         form.add(field, field.getHint().toString());
 
         AlertDialog dialog = new AlertDialog.Builder(HushTelegramPreferenceFragment.themed(activity))

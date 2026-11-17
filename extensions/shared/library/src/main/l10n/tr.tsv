@@ -2133,13 +2133,13 @@ When you send a link to a site in your rules, its preview comes from the other s
 # context: Privacy page row title under the Fix link previews switch, the title of its editor dialog, and a label in the settings import preview line "%1$s: %2$s to %3$s"
 Link preview rules	Bağlantı önizleme kuralları
 # context: Summary of the Link preview rules row when it holds no rules. x.com -> fixupx.com is a rule as typed and stays as it is
-No rules yet. Add one per line, like x.com -> fixupx.com.	Henüz kural yok. Her satıra bir tane ekleyin, örneğin x.com -> fixupx.com.
+No rules yet. Add one per line, like x.com/*/status -> fixupx.com.	Henüz kural yok. Her satıra bir tane ekleyin, örneğin x.com/*/status -> fixupx.com.
 # context: Summary of the Link preview rules row with the number of rules. Fix link previews is the name of the switch above it
 Rules: %1$s. Fix link previews follows these for the links you send.	Kurallar: %1$s. Bağlantı önizlemelerini düzelt, gönderdiğiniz bağlantılarda bunları izler.
 # context: Hint and label of the box in the Link preview rules dialog, where each line is one rule. x.com -> fixupx.com stays as it is
-One rule per line, like x.com -> fixupx.com	Her satıra bir kural, örneğin x.com -> fixupx.com
+One rule per line, like x.com/*/status -> fixupx.com	Her satıra bir kural, örneğin x.com/*/status -> fixupx.com
 # context: Note in the Link preview rules dialog. The arrow is the -> typed between two sites; *. and the sites stay as they are
-Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. Lines that aren't rules are left out.	Her satır bir site, bir ok ve önizlemelerin geldiği sitedir. Alt alan adlarını da kapsamak için ikisinin de önüne *. koyun, örneğin *.tiktok.com -> *.kktiktok.com. Kural olmayan satırlar atlanır.
+Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. A path after the first site covers only links that start with it, * standing for any one part, like x.com/*/status -> fixupx.com. Lines that aren't rules are left out.	Her satır bir site, bir ok ve önizlemelerin geldiği sitedir. Alt alan adlarını da kapsamak için ikisinin de önüne *. koyun, örneğin *.tiktok.com -> *.kktiktok.com. İlk sitenin ardından gelen bir yol yalnızca onunla başlayan bağlantıları kapsar, * herhangi bir parçanın yerini tutar, örneğin x.com/*/status -> fixupx.com. Kural olmayan satırlar atlanır.
 # context: Button in the Link preview rules dialog, next to Save and Cancel. It puts the starting rules back in the box. Short
 Default rules	Varsayılan kurallar
 # context: Toast when the rules typed in Link preview rules are too long to keep. Two short lines at most.

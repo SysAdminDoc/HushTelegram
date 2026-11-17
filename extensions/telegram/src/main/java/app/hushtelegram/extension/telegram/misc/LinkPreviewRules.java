@@ -27,7 +27,11 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * Telegram's send of a message and hands the send a link preview of the other address, which
  * Telegram already sends as an InputMediaWebPage next to the text. A rule is one line,
  * {@code original -> alternative}, with {@code *.} in front of the original to cover its
- * subdomains too; {@code *.} in front of the alternative as well carries the subdomain over.
+ * subdomains too; {@code *.} in front of the alternative as well carries the subdomain over. A
+ * path after the original, such as {@code x.com/*}{@code /status}, covers only links whose path
+ * starts that way, {@code *} standing for any one part. The sites the rules start with make
+ * previews of posts only (a profile link to fixupx.com previews its code page, kktiktok.com and
+ * kkclip.com answer 404), so those rules name their sites' post paths.
  *
  * <p>Only the preview Telegram would show is changed: the one picked in the message bar, or else
  * the message's first link. Secret chats, retries, messages with their preview turned off and
@@ -35,11 +39,19 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  */
 public final class LinkPreviewRules {
     /** The rules the row starts with. */
-    public static final String DEFAULT_RULES = "twitter.com -> fixupx.com\n"
-            + "x.com -> fixupx.com\n"
-            + "*.tiktok.com -> *.kktiktok.com\n"
-            + "reddit.com -> vxreddit.com\n"
-            + "instagram.com -> kkclip.com\n"
+    public static final String DEFAULT_RULES = "twitter.com/*/status -> fixupx.com\n"
+            + "x.com/*/status -> fixupx.com\n"
+            + "*.tiktok.com/*/video -> *.kktiktok.com\n"
+            + "*.tiktok.com/*/photo -> *.kktiktok.com\n"
+            + "*.tiktok.com/t -> *.kktiktok.com\n"
+            + "vm.tiktok.com -> vm.kktiktok.com\n"
+            + "vt.tiktok.com -> vt.kktiktok.com\n"
+            + "reddit.com/r/*/comments -> vxreddit.com\n"
+            + "reddit.com/r/*/s -> vxreddit.com\n"
+            + "instagram.com/p -> kkclip.com\n"
+            + "instagram.com/reel -> kkclip.com\n"
+            + "instagram.com/reels -> kkclip.com\n"
+            + "instagram.com/tv -> kkclip.com\n"
             + "pixiv.net -> phixiv.net";
     /** How long the rules may be as they're kept, so they always fit in a settings file. */
     public static final int MAX_TEXT = 1000;
@@ -50,19 +62,27 @@ public final class LinkPreviewRules {
     private static final Pattern LABEL = Pattern.compile("[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?");
     private static final Pattern SCHEME = Pattern.compile("^([A-Za-z][A-Za-z0-9+.-]*)://");
     private static final Pattern PORT = Pattern.compile("[0-9]{1,5}");
+    private static final String ANY_PART = "*";
+    private static final Pattern PART = Pattern.compile("\\*|[a-z0-9._~@%+-]{1,64}");
+    private static final int MAX_PARTS = 8;
 
     private LinkPreviewRules() {}
 
-    /** One rule: [from] and its subdomains when [anySubdomain], and the site its previews come from. */
+    /**
+     * One rule: [from] and its subdomains when [anySubdomain], for links whose path starts with
+     * [path] ({@code *} for any one part), and the site its previews come from.
+     */
     public static final class Rule {
         final String from;
         final boolean anySubdomain;
+        final List<String> path;
         final String to;
         final boolean keepSubdomain;
 
-        Rule(String from, boolean anySubdomain, String to, boolean keepSubdomain) {
+        Rule(String from, boolean anySubdomain, List<String> path, String to, boolean keepSubdomain) {
             this.from = from;
             this.anySubdomain = anySubdomain;
+            this.path = Collections.unmodifiableList(new ArrayList<>(path));
             this.to = to;
             this.keepSubdomain = keepSubdomain;
         }
@@ -70,7 +90,9 @@ public final class LinkPreviewRules {
         /** The rule as the editor shows it. */
         @Override
         public String toString() {
-            return (anySubdomain ? ANY : "") + from + " " + ARROW + " " + (keepSubdomain ? ANY : "") + to;
+            StringBuilder written = new StringBuilder(anySubdomain ? ANY : "").append(from);
+            for (String part : path) written.append('/').append(part);
+            return written.append(' ').append(ARROW).append(' ').append(keepSubdomain ? ANY : "").append(to).toString();
         }
     }
 
@@ -135,8 +157,23 @@ public final class LinkPreviewRules {
         if (keepSubdomain) to = to.substring(ANY.length());
         // A subdomain can only be carried over from a rule that covers subdomains.
         if (keepSubdomain && !anySubdomain) return null;
+        List<String> path = new ArrayList<>();
+        int slash = from.indexOf('/');
+        if (slash >= 0) {
+            String written = from.substring(slash + 1);
+            from = from.substring(0, slash);
+            // One slash at the end is the same path without it.
+            if (written.endsWith("/")) written = written.substring(0, written.length() - 1);
+            if (!written.isEmpty()) {
+                for (String part : written.split("/", -1)) {
+                    if (!PART.matcher(part).matches()) return null;
+                    path.add(part);
+                }
+            }
+            if (path.size() > MAX_PARTS) return null;
+        }
         if (!host(from) || !host(to) || from.equals(to)) return null;
-        return new Rule(from, anySubdomain, to, keepSubdomain);
+        return new Rule(from, anySubdomain, path, to, keepSubdomain);
     }
 
     /** Whether [name] is a lowercase host name with at least two labels and a last one that isn't a number. */
@@ -153,7 +190,8 @@ public final class LinkPreviewRules {
     /**
      * [link] with its host swapped for that of the first of [rules] that covers it, its scheme,
      * port, path, query and fragment kept as they are, or null when no rule covers it. A link
-     * without a scheme gets https. A {@code www.} in front of a host counts as the host itself.
+     * without a scheme gets https. A {@code www.} in front of a host counts as the host itself,
+     * and a rule's path is matched part by part whatever the link's letter case.
      */
     @Nullable
     public static String rewrite(@Nullable String link, List<Rule> rules) {
@@ -187,11 +225,36 @@ public final class LinkPreviewRules {
         if (host.endsWith(".")) host = host.substring(0, host.length() - 1);
         if (!host(host)) return null;
         String bare = host.startsWith("www.") ? host.substring("www.".length()) : host;
+        List<String> parts = parts(tail);
         for (Rule rule : rules) {
+            if (!starts(parts, rule.path)) continue;
             String swapped = swap(rule, host, bare);
             if (swapped != null) return scheme + "://" + swapped + (port != null ? ":" + port : "") + tail;
         }
         return null;
+    }
+
+    /** The parts of the path that starts [tail], lowercase, empty ones left out. */
+    private static List<String> parts(String tail) {
+        int end = tail.length();
+        for (char stop : new char[] {'?', '#'}) {
+            int at = tail.indexOf(stop);
+            if (at >= 0 && at < end) end = at;
+        }
+        List<String> parts = new ArrayList<>();
+        for (String part : tail.substring(0, end).split("/")) {
+            if (!part.isEmpty()) parts.add(part.toLowerCase(Locale.ROOT));
+        }
+        return parts;
+    }
+
+    /** Whether [parts] begin with [path], where {@code *} is any one part. */
+    private static boolean starts(List<String> parts, List<String> path) {
+        if (parts.size() < path.size()) return false;
+        for (int i = 0; i < path.size(); i++) {
+            if (!path.get(i).equals(ANY_PART) && !path.get(i).equals(parts.get(i))) return false;
+        }
+        return true;
     }
 
     /** The host [rule] gives [host], or null when it doesn't cover it. */

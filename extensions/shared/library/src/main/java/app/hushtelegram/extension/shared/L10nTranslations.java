@@ -962,8 +962,8 @@ public final class L10nTranslations {
                 "\u0417\u0434\u0440\u0430\u0447");
         table.put("Each file or song you download also goes to Download/Telegram on your phone, where file managers and other apps can open it. Files from secret chats and chats that don't allow saving stay in Telegram.",
                 "\u0412\u0441\u0435\u043a\u0438 \u0438\u0437\u0442\u0435\u0433\u043b\u0435\u043d \u0444\u0430\u0439\u043b \u0438\u043b\u0438 \u043f\u0435\u0441\u0435\u043d \u0441\u0435 \u043a\u043e\u043f\u0438\u0440\u0430 \u0438 \u0432 Download/Telegram \u043d\u0430 \u0442\u0435\u043b\u0435\u0444\u043e\u043d\u0430, \u043e\u0442\u043a\u044a\u0434\u0435\u0442\u043e \u0444\u0430\u0439\u043b\u043e\u0432\u0438\u0442\u0435 \u043c\u0435\u043d\u0438\u0434\u0436\u044a\u0440\u0438 \u0438 \u0434\u0440\u0443\u0433\u0438 \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u044f \u043c\u043e\u0433\u0430\u0442 \u0434\u0430 \u0433\u043e \u043e\u0442\u0432\u043e\u0440\u044f\u0442. \u0424\u0430\u0439\u043b\u043e\u0432\u0435\u0442\u0435 \u043e\u0442 \u0442\u0430\u0439\u043d\u0438 \u0447\u0430\u0442\u043e\u0432\u0435 \u0438 \u043e\u0442 \u0447\u0430\u0442\u043e\u0432\u0435, \u043a\u043e\u0438\u0442\u043e \u043d\u0435 \u043f\u043e\u0437\u0432\u043e\u043b\u044f\u0432\u0430\u0442 \u0437\u0430\u043f\u0430\u0437\u0432\u0430\u043d\u0435, \u043e\u0441\u0442\u0430\u0432\u0430\u0442 \u0432 Telegram.");
-        table.put("Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. Lines that aren't rules are left out.",
-                "\u0412\u0441\u0435\u043a\u0438 \u0440\u0435\u0434 \u0435 \u0441\u0430\u0439\u0442, \u0441\u0442\u0440\u0435\u043b\u043a\u0430 \u0438 \u0441\u0430\u0439\u0442\u044a\u0442, \u043e\u0442 \u043a\u043e\u0439\u0442\u043e \u0438\u0434\u0432\u0430\u0442 \u0432\u0438\u0437\u0443\u0430\u043b\u0438\u0437\u0430\u0446\u0438\u0438\u0442\u0435 \u043c\u0443. \u0421\u043b\u043e\u0436\u0438 *. \u043f\u0440\u0435\u0434 \u0434\u0432\u0430\u0442\u0430, \u0437\u0430 \u0434\u0430 \u043e\u0431\u0445\u0432\u0430\u043d\u0435\u0448 \u0438 \u043f\u043e\u0434\u0434\u043e\u043c\u0435\u0439\u043d\u0438\u0442\u0435, \u043d\u0430\u043f\u0440\u0438\u043c\u0435\u0440 *.tiktok.com -> *.kktiktok.com. \u0420\u0435\u0434\u043e\u0432\u0435\u0442\u0435, \u043a\u043e\u0438\u0442\u043e \u043d\u0435 \u0441\u0430 \u043f\u0440\u0430\u0432\u0438\u043b\u0430, \u0441\u0435 \u043f\u0440\u043e\u043f\u0443\u0441\u043a\u0430\u0442.");
+        table.put("Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. A path after the first site covers only links that start with it, * standing for any one part, like x.com/*/status -> fixupx.com. Lines that aren't rules are left out.",
+                "\u0412\u0441\u0435\u043a\u0438 \u0440\u0435\u0434 \u0435 \u0441\u0430\u0439\u0442, \u0441\u0442\u0440\u0435\u043b\u043a\u0430 \u0438 \u0441\u0430\u0439\u0442\u044a\u0442, \u043e\u0442 \u043a\u043e\u0439\u0442\u043e \u0438\u0434\u0432\u0430\u0442 \u0432\u0438\u0437\u0443\u0430\u043b\u0438\u0437\u0430\u0446\u0438\u0438\u0442\u0435 \u043c\u0443. \u0421\u043b\u043e\u0436\u0438 *. \u043f\u0440\u0435\u0434 \u0434\u0432\u0430\u0442\u0430, \u0437\u0430 \u0434\u0430 \u043e\u0431\u0445\u0432\u0430\u043d\u0435\u0448 \u0438 \u043f\u043e\u0434\u0434\u043e\u043c\u0435\u0439\u043d\u0438\u0442\u0435, \u043d\u0430\u043f\u0440\u0438\u043c\u0435\u0440 *.tiktok.com -> *.kktiktok.com. \u041f\u044a\u0442 \u0441\u043b\u0435\u0434 \u043f\u044a\u0440\u0432\u0438\u044f \u0441\u0430\u0439\u0442 \u043e\u0431\u0445\u0432\u0430\u0449\u0430 \u0441\u0430\u043c\u043e \u0432\u0440\u044a\u0437\u043a\u0438\u0442\u0435, \u043a\u043e\u0438\u0442\u043e \u0437\u0430\u043f\u043e\u0447\u0432\u0430\u0442 \u0441 \u043d\u0435\u0433\u043e, \u043a\u0430\u0442\u043e * \u0437\u0430\u043c\u0435\u0441\u0442\u0432\u0430 \u043a\u043e\u044f\u0442\u043e \u0438 \u0434\u0430 \u0435 \u0435\u0434\u043d\u0430 \u0447\u0430\u0441\u0442, \u043d\u0430\u043f\u0440\u0438\u043c\u0435\u0440 x.com/*/status -> fixupx.com. \u0420\u0435\u0434\u043e\u0432\u0435\u0442\u0435, \u043a\u043e\u0438\u0442\u043e \u043d\u0435 \u0441\u0430 \u043f\u0440\u0430\u0432\u0438\u043b\u0430, \u0441\u0435 \u043f\u0440\u043e\u043f\u0443\u0441\u043a\u0430\u0442.");
         table.put("Each line needs an https address",
                 "\u0412\u0441\u0435\u043a\u0438 \u0440\u0435\u0434 \u0442\u0440\u044f\u0431\u0432\u0430 \u0434\u0430 \u0435 https \u0430\u0434\u0440\u0435\u0441");
         table.put("Each list is a page of t.me/proxy or tg://proxy links. Free proxies times them and adds the 10 fastest. Leave it empty to use the public lists again.",
@@ -1591,8 +1591,8 @@ public final class L10nTranslations {
                 "\u041d\u044f\u043c\u0430 \u043e\u0442\u0433\u043e\u0432\u043e\u0440, \u043e\u0442\u043a\u0430\u043a\u0442\u043e Telegram \u0441\u0442\u0430\u0440\u0442\u0438\u0440\u0430");
         table.put("No rules yet.",
                 "\u041e\u0449\u0435 \u043d\u044f\u043c\u0430 \u043f\u0440\u0430\u0432\u0438\u043b\u0430.");
-        table.put("No rules yet. Add one per line, like x.com -> fixupx.com.",
-                "\u041e\u0449\u0435 \u043d\u044f\u043c\u0430 \u043f\u0440\u0430\u0432\u0438\u043b\u0430. \u0414\u043e\u0431\u0430\u0432\u0438 \u043f\u043e \u0435\u0434\u043d\u043e \u043d\u0430 \u0440\u0435\u0434, \u043d\u0430\u043f\u0440\u0438\u043c\u0435\u0440 x.com -> fixupx.com.");
+        table.put("No rules yet. Add one per line, like x.com/*/status -> fixupx.com.",
+                "\u041e\u0449\u0435 \u043d\u044f\u043c\u0430 \u043f\u0440\u0430\u0432\u0438\u043b\u0430. \u0414\u043e\u0431\u0430\u0432\u0438 \u043f\u043e \u0435\u0434\u043d\u043e \u043d\u0430 \u0440\u0435\u0434, \u043d\u0430\u043f\u0440\u0438\u043c\u0435\u0440 x.com/*/status -> fixupx.com.");
         table.put("No swipe actions on chats",
                 "\u0411\u0435\u0437 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044f \u0441 \u043f\u043b\u044a\u0437\u0433\u0430\u043d\u0435 \u0432 \u0447\u0430\u0442\u043e\u0432\u0435\u0442\u0435");
         table.put("Nobody tracked yet",
@@ -1643,8 +1643,8 @@ public final class L10nTranslations {
                 "\u041f\u043e \u0435\u0434\u0438\u043d \u0444\u0438\u043b\u0442\u044a\u0440 \u043d\u0430 \u0440\u0435\u0434");
         table.put("One https address a line",
                 "\u041f\u043e \u0435\u0434\u0438\u043d https \u0430\u0434\u0440\u0435\u0441 \u043d\u0430 \u0440\u0435\u0434");
-        table.put("One rule per line, like x.com -> fixupx.com",
-                "\u041f\u043e \u0435\u0434\u043d\u043e \u043f\u0440\u0430\u0432\u0438\u043b\u043e \u043d\u0430 \u0440\u0435\u0434, \u043d\u0430\u043f\u0440\u0438\u043c\u0435\u0440 x.com -> fixupx.com");
+        table.put("One rule per line, like x.com/*/status -> fixupx.com",
+                "\u041f\u043e \u0435\u0434\u043d\u043e \u043f\u0440\u0430\u0432\u0438\u043b\u043e \u043d\u0430 \u0440\u0435\u0434, \u043d\u0430\u043f\u0440\u0438\u043c\u0435\u0440 x.com/*/status -> fixupx.com");
         table.put("One way always stays on, so you can always get back here.",
                 "\u041f\u043e\u043d\u0435 \u0435\u0434\u0438\u043d \u043d\u0430\u0447\u0438\u043d \u043e\u0441\u0442\u0430\u0432\u0430 \u0432\u043a\u043b\u044e\u0447\u0435\u043d, \u0437\u0430 \u0434\u0430 \u043c\u043e\u0436\u0435\u0442\u0435 \u0432\u0438\u043d\u0430\u0433\u0438 \u0434\u0430 \u0441\u0435 \u0432\u044a\u0440\u043d\u0435\u0442\u0435 \u0442\u0443\u043a.");
         table.put("Only %1$s. The rest stay in Telegram.",
@@ -4135,8 +4135,8 @@ public final class L10nTranslations {
                 "D\u00e4mmerung");
         table.put("Each file or song you download also goes to Download/Telegram on your phone, where file managers and other apps can open it. Files from secret chats and chats that don't allow saving stay in Telegram.",
                 "Jede Datei und jeder Song, den du herunterl\u00e4dst, landet zus\u00e4tzlich in Download/Telegram auf deinem Handy, wo Dateimanager und andere Apps sie \u00f6ffnen k\u00f6nnen. Dateien aus geheimen Chats und aus Chats, die das Speichern nicht erlauben, bleiben in Telegram.");
-        table.put("Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. Lines that aren't rules are left out.",
-                "Jede Zeile ist eine Seite, ein Pfeil und die Seite, von der ihre Vorschauen kommen. Setze *. vor beide, um auch Subdomains abzudecken, etwa *.tiktok.com -> *.kktiktok.com. Zeilen, die keine Regeln sind, werden ausgelassen.");
+        table.put("Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. A path after the first site covers only links that start with it, * standing for any one part, like x.com/*/status -> fixupx.com. Lines that aren't rules are left out.",
+                "Jede Zeile ist eine Seite, ein Pfeil und die Seite, von der ihre Vorschauen kommen. Setze *. vor beide, um auch Subdomains abzudecken, etwa *.tiktok.com -> *.kktiktok.com. Ein Pfad nach der ersten Seite deckt nur Links ab, die so beginnen, wobei * f\u00fcr einen beliebigen Teil steht, etwa x.com/*/status -> fixupx.com. Zeilen, die keine Regeln sind, werden ausgelassen.");
         table.put("Each line needs an https address",
                 "Jede Zeile braucht eine https-Adresse");
         table.put("Each list is a page of t.me/proxy or tg://proxy links. Free proxies times them and adds the 10 fastest. Leave it empty to use the public lists again.",
@@ -4764,8 +4764,8 @@ public final class L10nTranslations {
                 "Keine Antwort seit dem Start von Telegram");
         table.put("No rules yet.",
                 "Noch keine Regeln.");
-        table.put("No rules yet. Add one per line, like x.com -> fixupx.com.",
-                "Noch keine Regeln. F\u00fcge eine pro Zeile hinzu, etwa x.com -> fixupx.com.");
+        table.put("No rules yet. Add one per line, like x.com/*/status -> fixupx.com.",
+                "Noch keine Regeln. F\u00fcge eine pro Zeile hinzu, etwa x.com/*/status -> fixupx.com.");
         table.put("No swipe actions on chats",
                 "Keine Wischaktionen bei Chats");
         table.put("Nobody tracked yet",
@@ -4816,8 +4816,8 @@ public final class L10nTranslations {
                 "Ein Filter pro Zeile");
         table.put("One https address a line",
                 "Eine https-Adresse pro Zeile");
-        table.put("One rule per line, like x.com -> fixupx.com",
-                "Eine Regel pro Zeile, etwa x.com -> fixupx.com");
+        table.put("One rule per line, like x.com/*/status -> fixupx.com",
+                "Eine Regel pro Zeile, etwa x.com/*/status -> fixupx.com");
         table.put("One way always stays on, so you can always get back here.",
                 "Ein Weg bleibt immer an, damit du jederzeit hierher zur\u00fcckfindest.");
         table.put("Only %1$s. The rest stay in Telegram.",
@@ -7308,8 +7308,8 @@ public final class L10nTranslations {
                 "Atardecer");
         table.put("Each file or song you download also goes to Download/Telegram on your phone, where file managers and other apps can open it. Files from secret chats and chats that don't allow saving stay in Telegram.",
                 "Cada archivo o canci\u00f3n que descargues tambi\u00e9n va a Download/Telegram en tu tel\u00e9fono, donde los gestores de archivos y otras apps pueden abrirlo. Los archivos de chats secretos y de chats que no permiten guardar se quedan en Telegram.");
-        table.put("Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. Lines that aren't rules are left out.",
-                "Cada l\u00ednea es un sitio, una flecha y el sitio del que vienen sus vistas previas. Pon *. delante de ambos para cubrir tambi\u00e9n los subdominios, como *.tiktok.com -> *.kktiktok.com. Las l\u00edneas que no son reglas se omiten.");
+        table.put("Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. A path after the first site covers only links that start with it, * standing for any one part, like x.com/*/status -> fixupx.com. Lines that aren't rules are left out.",
+                "Cada l\u00ednea es un sitio, una flecha y el sitio del que vienen sus vistas previas. Pon *. delante de ambos para cubrir tambi\u00e9n los subdominios, como *.tiktok.com -> *.kktiktok.com. Una ruta despu\u00e9s del primer sitio cubre solo los enlaces que empiezan as\u00ed, con * en lugar de cualquier parte, como x.com/*/status -> fixupx.com. Las l\u00edneas que no son reglas se omiten.");
         table.put("Each line needs an https address",
                 "Cada l\u00ednea necesita una direcci\u00f3n https");
         table.put("Each list is a page of t.me/proxy or tg://proxy links. Free proxies times them and adds the 10 fastest. Leave it empty to use the public lists again.",
@@ -7937,8 +7937,8 @@ public final class L10nTranslations {
                 "Sin respuesta desde que se abri\u00f3 Telegram");
         table.put("No rules yet.",
                 "A\u00fan no hay reglas.");
-        table.put("No rules yet. Add one per line, like x.com -> fixupx.com.",
-                "A\u00fan no hay reglas. A\u00f1ade una por l\u00ednea, como x.com -> fixupx.com.");
+        table.put("No rules yet. Add one per line, like x.com/*/status -> fixupx.com.",
+                "A\u00fan no hay reglas. A\u00f1ade una por l\u00ednea, como x.com/*/status -> fixupx.com.");
         table.put("No swipe actions on chats",
                 "Sin acciones al deslizar los chats");
         table.put("Nobody tracked yet",
@@ -7989,8 +7989,8 @@ public final class L10nTranslations {
                 "Un filtro por l\u00ednea");
         table.put("One https address a line",
                 "Una direcci\u00f3n https por l\u00ednea");
-        table.put("One rule per line, like x.com -> fixupx.com",
-                "Una regla por l\u00ednea, como x.com -> fixupx.com");
+        table.put("One rule per line, like x.com/*/status -> fixupx.com",
+                "Una regla por l\u00ednea, como x.com/*/status -> fixupx.com");
         table.put("One way always stays on, so you can always get back here.",
                 "Siempre queda una forma activada, para que puedas volver aqu\u00ed cuando quieras.");
         table.put("Only %1$s. The rest stay in Telegram.",
@@ -10481,8 +10481,8 @@ public final class L10nTranslations {
                 "Senja");
         table.put("Each file or song you download also goes to Download/Telegram on your phone, where file managers and other apps can open it. Files from secret chats and chats that don't allow saving stay in Telegram.",
                 "Setiap file atau lagu yang kamu unduh juga masuk ke Download/Telegram di ponselmu, tempat pengelola file dan aplikasi lain bisa membukanya. File dari obrolan rahasia dan obrolan yang tidak mengizinkan penyimpanan tetap di Telegram.");
-        table.put("Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. Lines that aren't rules are left out.",
-                "Setiap baris berisi situs, tanda panah, dan situs asal pratinjaunya. Tambahkan *. di depan keduanya untuk mencakup subdomain juga, misalnya *.tiktok.com -> *.kktiktok.com. Baris yang bukan aturan dilewati.");
+        table.put("Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. A path after the first site covers only links that start with it, * standing for any one part, like x.com/*/status -> fixupx.com. Lines that aren't rules are left out.",
+                "Setiap baris berisi situs, tanda panah, dan situs asal pratinjaunya. Tambahkan *. di depan keduanya untuk mencakup subdomain juga, misalnya *.tiktok.com -> *.kktiktok.com. Jalur setelah situs pertama hanya mencakup tautan yang diawali dengannya, dengan * untuk satu bagian apa pun, misalnya x.com/*/status -> fixupx.com. Baris yang bukan aturan dilewati.");
         table.put("Each line needs an https address",
                 "Setiap baris perlu alamat https");
         table.put("Each list is a page of t.me/proxy or tg://proxy links. Free proxies times them and adds the 10 fastest. Leave it empty to use the public lists again.",
@@ -11110,8 +11110,8 @@ public final class L10nTranslations {
                 "Belum ada balasan sejak Telegram dibuka");
         table.put("No rules yet.",
                 "Belum ada aturan.");
-        table.put("No rules yet. Add one per line, like x.com -> fixupx.com.",
-                "Belum ada aturan. Tambahkan satu per baris, misalnya x.com -> fixupx.com.");
+        table.put("No rules yet. Add one per line, like x.com/*/status -> fixupx.com.",
+                "Belum ada aturan. Tambahkan satu per baris, misalnya x.com/*/status -> fixupx.com.");
         table.put("No swipe actions on chats",
                 "Tanpa aksi geser pada chat");
         table.put("Nobody tracked yet",
@@ -11162,8 +11162,8 @@ public final class L10nTranslations {
                 "Satu filter per baris");
         table.put("One https address a line",
                 "Satu alamat https per baris");
-        table.put("One rule per line, like x.com -> fixupx.com",
-                "Satu aturan per baris, misalnya x.com -> fixupx.com");
+        table.put("One rule per line, like x.com/*/status -> fixupx.com",
+                "Satu aturan per baris, misalnya x.com/*/status -> fixupx.com");
         table.put("One way always stays on, so you can always get back here.",
                 "Satu cara selalu tetap aktif, jadi Anda selalu bisa kembali ke sini.");
         table.put("Only %1$s. The rest stay in Telegram.",
@@ -13654,8 +13654,8 @@ public final class L10nTranslations {
                 "Crep\u00fasculo");
         table.put("Each file or song you download also goes to Download/Telegram on your phone, where file managers and other apps can open it. Files from secret chats and chats that don't allow saving stay in Telegram.",
                 "Cada arquivo ou m\u00fasica que voc\u00ea baixar tamb\u00e9m vai para Download/Telegram no seu celular, onde gerenciadores de arquivos e outros apps podem abri-lo. Arquivos de chats secretos e de chats que n\u00e3o permitem salvar ficam no Telegram.");
-        table.put("Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. Lines that aren't rules are left out.",
-                "Cada linha \u00e9 um site, uma seta e o site de onde v\u00eam as pr\u00e9vias. Coloque *. na frente dos dois para cobrir tamb\u00e9m os subdom\u00ednios, como *.tiktok.com -> *.kktiktok.com. Linhas que n\u00e3o s\u00e3o regras ficam de fora.");
+        table.put("Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. A path after the first site covers only links that start with it, * standing for any one part, like x.com/*/status -> fixupx.com. Lines that aren't rules are left out.",
+                "Cada linha \u00e9 um site, uma seta e o site de onde v\u00eam as pr\u00e9vias. Coloque *. na frente dos dois para cobrir tamb\u00e9m os subdom\u00ednios, como *.tiktok.com -> *.kktiktok.com. Um caminho depois do primeiro site cobre s\u00f3 os links que come\u00e7am com ele, com * valendo por qualquer parte, como x.com/*/status -> fixupx.com. Linhas que n\u00e3o s\u00e3o regras ficam de fora.");
         table.put("Each line needs an https address",
                 "Cada linha precisa de um endere\u00e7o https");
         table.put("Each list is a page of t.me/proxy or tg://proxy links. Free proxies times them and adds the 10 fastest. Leave it empty to use the public lists again.",
@@ -14283,8 +14283,8 @@ public final class L10nTranslations {
                 "Sem resposta desde que o Telegram abriu");
         table.put("No rules yet.",
                 "Nenhuma regra ainda.");
-        table.put("No rules yet. Add one per line, like x.com -> fixupx.com.",
-                "Ainda n\u00e3o h\u00e1 regras. Adicione uma por linha, como x.com -> fixupx.com.");
+        table.put("No rules yet. Add one per line, like x.com/*/status -> fixupx.com.",
+                "Ainda n\u00e3o h\u00e1 regras. Adicione uma por linha, como x.com/*/status -> fixupx.com.");
         table.put("No swipe actions on chats",
                 "Sem a\u00e7\u00f5es ao deslizar chats");
         table.put("Nobody tracked yet",
@@ -14335,8 +14335,8 @@ public final class L10nTranslations {
                 "Um filtro por linha");
         table.put("One https address a line",
                 "Um endere\u00e7o https por linha");
-        table.put("One rule per line, like x.com -> fixupx.com",
-                "Uma regra por linha, como x.com -> fixupx.com");
+        table.put("One rule per line, like x.com/*/status -> fixupx.com",
+                "Uma regra por linha, como x.com/*/status -> fixupx.com");
         table.put("One way always stays on, so you can always get back here.",
                 "Uma forma sempre fica ativa, para voc\u00ea poder voltar aqui quando quiser.");
         table.put("Only %1$s. The rest stay in Telegram.",
@@ -16827,8 +16827,8 @@ public final class L10nTranslations {
                 "Alacakaranl\u0131k");
         table.put("Each file or song you download also goes to Download/Telegram on your phone, where file managers and other apps can open it. Files from secret chats and chats that don't allow saving stay in Telegram.",
                 "\u0130ndirdi\u011fin her dosya ve \u015fark\u0131 telefonundaki Download/Telegram klas\u00f6r\u00fcne de kopyalan\u0131r. Dosya y\u00f6neticileri ve di\u011fer uygulamalar onu orada a\u00e7abilir. Gizli sohbetlerden ve kaydetmeye izin vermeyen sohbetlerden gelen dosyalar Telegram'da kal\u0131r.");
-        table.put("Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. Lines that aren't rules are left out.",
-                "Her sat\u0131r bir site, bir ok ve \u00f6nizlemelerin geldi\u011fi sitedir. Alt alan adlar\u0131n\u0131 da kapsamak i\u00e7in ikisinin de \u00f6n\u00fcne *. koyun, \u00f6rne\u011fin *.tiktok.com -> *.kktiktok.com. Kural olmayan sat\u0131rlar atlan\u0131r.");
+        table.put("Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. A path after the first site covers only links that start with it, * standing for any one part, like x.com/*/status -> fixupx.com. Lines that aren't rules are left out.",
+                "Her sat\u0131r bir site, bir ok ve \u00f6nizlemelerin geldi\u011fi sitedir. Alt alan adlar\u0131n\u0131 da kapsamak i\u00e7in ikisinin de \u00f6n\u00fcne *. koyun, \u00f6rne\u011fin *.tiktok.com -> *.kktiktok.com. \u0130lk sitenin ard\u0131ndan gelen bir yol yaln\u0131zca onunla ba\u015flayan ba\u011flant\u0131lar\u0131 kapsar, * herhangi bir par\u00e7an\u0131n yerini tutar, \u00f6rne\u011fin x.com/*/status -> fixupx.com. Kural olmayan sat\u0131rlar atlan\u0131r.");
         table.put("Each line needs an https address",
                 "Her sat\u0131rda bir https adresi olmal\u0131");
         table.put("Each list is a page of t.me/proxy or tg://proxy links. Free proxies times them and adds the 10 fastest. Leave it empty to use the public lists again.",
@@ -17456,8 +17456,8 @@ public final class L10nTranslations {
                 "Telegram a\u00e7\u0131ld\u0131\u011f\u0131ndan beri yan\u0131t yok");
         table.put("No rules yet.",
                 "Hen\u00fcz kural yok.");
-        table.put("No rules yet. Add one per line, like x.com -> fixupx.com.",
-                "Hen\u00fcz kural yok. Her sat\u0131ra bir tane ekleyin, \u00f6rne\u011fin x.com -> fixupx.com.");
+        table.put("No rules yet. Add one per line, like x.com/*/status -> fixupx.com.",
+                "Hen\u00fcz kural yok. Her sat\u0131ra bir tane ekleyin, \u00f6rne\u011fin x.com/*/status -> fixupx.com.");
         table.put("No swipe actions on chats",
                 "Sohbetlerde kayd\u0131rma eylemi yok");
         table.put("Nobody tracked yet",
@@ -17508,8 +17508,8 @@ public final class L10nTranslations {
                 "Her sat\u0131ra bir filtre");
         table.put("One https address a line",
                 "Her sat\u0131ra bir https adresi");
-        table.put("One rule per line, like x.com -> fixupx.com",
-                "Her sat\u0131ra bir kural, \u00f6rne\u011fin x.com -> fixupx.com");
+        table.put("One rule per line, like x.com/*/status -> fixupx.com",
+                "Her sat\u0131ra bir kural, \u00f6rne\u011fin x.com/*/status -> fixupx.com");
         table.put("One way always stays on, so you can always get back here.",
                 "Bir yol her zaman a\u00e7\u0131k kal\u0131r, b\u00f6ylece buraya her zaman d\u00f6nebilirsiniz.");
         table.put("Only %1$s. The rest stay in Telegram.",
@@ -20000,8 +20000,8 @@ public final class L10nTranslations {
                 "\u9ec4\u660f");
         table.put("Each file or song you download also goes to Download/Telegram on your phone, where file managers and other apps can open it. Files from secret chats and chats that don't allow saving stay in Telegram.",
                 "\u4f60\u4e0b\u8f7d\u7684\u6bcf\u4e2a\u6587\u4ef6\u6216\u6b4c\u66f2\u4e5f\u4f1a\u4fdd\u5b58\u5230\u624b\u673a\u4e0a\u7684 Download/Telegram\uff0c\u6587\u4ef6\u7ba1\u7406\u5668\u548c\u5176\u4ed6\u5e94\u7528\u90fd\u80fd\u6253\u5f00\u3002\u6765\u81ea\u79c1\u5bc6\u804a\u5929\u548c\u4e0d\u5141\u8bb8\u4fdd\u5b58\u7684\u804a\u5929\u7684\u6587\u4ef6\u53ea\u7559\u5728 Telegram \u4e2d.");
-        table.put("Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. Lines that aren't rules are left out.",
-                "\u6bcf\u884c\u662f\u4e00\u4e2a\u7f51\u7ad9\u3001\u4e00\u4e2a\u7bad\u5934\u548c\u63d0\u4f9b\u5176\u9884\u89c8\u7684\u7f51\u7ad9\u3002\u5728\u4e24\u8005\u524d\u9762\u90fd\u52a0\u4e0a *. \u5373\u53ef\u540c\u65f6\u6db5\u76d6\u5b50\u57df\u540d\uff0c\u4f8b\u5982 *.tiktok.com -> *.kktiktok.com\u3002\u4e0d\u662f\u89c4\u5219\u7684\u884c\u4f1a\u88ab\u7565\u8fc7.");
+        table.put("Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. A path after the first site covers only links that start with it, * standing for any one part, like x.com/*/status -> fixupx.com. Lines that aren't rules are left out.",
+                "\u6bcf\u884c\u662f\u4e00\u4e2a\u7f51\u7ad9\u3001\u4e00\u4e2a\u7bad\u5934\u548c\u63d0\u4f9b\u5176\u9884\u89c8\u7684\u7f51\u7ad9\u3002\u5728\u4e24\u8005\u524d\u9762\u90fd\u52a0\u4e0a *. \u5373\u53ef\u540c\u65f6\u6db5\u76d6\u5b50\u57df\u540d\uff0c\u4f8b\u5982 *.tiktok.com -> *.kktiktok.com\u3002\u5728\u7b2c\u4e00\u4e2a\u7f51\u7ad9\u540e\u52a0\u4e0a\u8def\u5f84\uff0c\u5219\u53ea\u6db5\u76d6\u4ee5\u8be5\u8def\u5f84\u5f00\u5934\u7684\u94fe\u63a5\uff0c* \u4ee3\u8868\u4efb\u610f\u4e00\u6bb5\uff0c\u4f8b\u5982 x.com/*/status -> fixupx.com\u3002\u4e0d\u662f\u89c4\u5219\u7684\u884c\u4f1a\u88ab\u7565\u8fc7.");
         table.put("Each line needs an https address",
                 "\u6bcf\u884c\u90fd\u9700\u8981\u4e00\u4e2a https \u5730\u5740");
         table.put("Each list is a page of t.me/proxy or tg://proxy links. Free proxies times them and adds the 10 fastest. Leave it empty to use the public lists again.",
@@ -20629,8 +20629,8 @@ public final class L10nTranslations {
                 "\u81ea Telegram \u542f\u52a8\u4ee5\u6765\u6ca1\u6709\u56de\u590d");
         table.put("No rules yet.",
                 "\u8fd8\u6ca1\u6709\u89c4\u5219.");
-        table.put("No rules yet. Add one per line, like x.com -> fixupx.com.",
-                "\u8fd8\u6ca1\u6709\u89c4\u5219\u3002\u6bcf\u884c\u6dfb\u52a0\u4e00\u6761\uff0c\u4f8b\u5982 x.com -> fixupx.com.");
+        table.put("No rules yet. Add one per line, like x.com/*/status -> fixupx.com.",
+                "\u8fd8\u6ca1\u6709\u89c4\u5219\u3002\u6bcf\u884c\u6dfb\u52a0\u4e00\u6761\uff0c\u4f8b\u5982 x.com/*/status -> fixupx.com.");
         table.put("No swipe actions on chats",
                 "\u5173\u95ed\u804a\u5929\u6ed1\u52a8\u64cd\u4f5c");
         table.put("Nobody tracked yet",
@@ -20681,8 +20681,8 @@ public final class L10nTranslations {
                 "\u6bcf\u884c\u4e00\u4e2a\u8fc7\u6ee4\u6761\u4ef6");
         table.put("One https address a line",
                 "\u6bcf\u884c\u4e00\u4e2a https \u5730\u5740");
-        table.put("One rule per line, like x.com -> fixupx.com",
-                "\u6bcf\u884c\u4e00\u6761\u89c4\u5219\uff0c\u4f8b\u5982 x.com -> fixupx.com");
+        table.put("One rule per line, like x.com/*/status -> fixupx.com",
+                "\u6bcf\u884c\u4e00\u6761\u89c4\u5219\uff0c\u4f8b\u5982 x.com/*/status -> fixupx.com");
         table.put("One way always stays on, so you can always get back here.",
                 "\u81f3\u5c11\u4f1a\u4fdd\u7559\u4e00\u79cd\u65b9\u5f0f\uff0c\u786e\u4fdd\u4f60\u968f\u65f6\u90fd\u80fd\u56de\u5230\u8fd9\u91cc.");
         table.put("Only %1$s. The rest stay in Telegram.",

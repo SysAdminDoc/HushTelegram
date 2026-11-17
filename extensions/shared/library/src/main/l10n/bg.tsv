@@ -2129,13 +2129,13 @@ When you send a link to a site in your rules, its preview comes from the other s
 # context: Privacy page row title under the Fix link previews switch, the title of its editor dialog, and a label in the settings import preview line "%1$s: %2$s to %3$s"
 Link preview rules	Правила за визуализации на връзки
 # context: Summary of the Link preview rules row when it holds no rules. x.com -> fixupx.com is a rule as typed and stays as it is
-No rules yet. Add one per line, like x.com -> fixupx.com.	Още няма правила. Добави по едно на ред, например x.com -> fixupx.com.
+No rules yet. Add one per line, like x.com/*/status -> fixupx.com.	Още няма правила. Добави по едно на ред, например x.com/*/status -> fixupx.com.
 # context: Summary of the Link preview rules row with the number of rules. Fix link previews is the name of the switch above it
 Rules: %1$s. Fix link previews follows these for the links you send.	Правила: %1$s. Поправяне на визуализациите на връзки ги следва за връзките, които изпращаш.
 # context: Hint and label of the box in the Link preview rules dialog, where each line is one rule. x.com -> fixupx.com stays as it is
-One rule per line, like x.com -> fixupx.com	По едно правило на ред, например x.com -> fixupx.com
+One rule per line, like x.com/*/status -> fixupx.com	По едно правило на ред, например x.com/*/status -> fixupx.com
 # context: Note in the Link preview rules dialog. The arrow is the -> typed between two sites; *. and the sites stay as they are
-Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. Lines that aren't rules are left out.	Всеки ред е сайт, стрелка и сайтът, от който идват визуализациите му. Сложи *. пред двата, за да обхванеш и поддомейните, например *.tiktok.com -> *.kktiktok.com. Редовете, които не са правила, се пропускат.
+Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. A path after the first site covers only links that start with it, * standing for any one part, like x.com/*/status -> fixupx.com. Lines that aren't rules are left out.	Всеки ред е сайт, стрелка и сайтът, от който идват визуализациите му. Сложи *. пред двата, за да обхванеш и поддомейните, например *.tiktok.com -> *.kktiktok.com. Път след първия сайт обхваща само връзките, които започват с него, като * замества която и да е една част, например x.com/*/status -> fixupx.com. Редовете, които не са правила, се пропускат.
 # context: Button in the Link preview rules dialog, next to Save and Cancel. It puts the starting rules back in the box. Short
 Default rules	Правила по подразбиране
 # context: Toast when the rules typed in Link preview rules are too long to keep. Two short lines at most.
