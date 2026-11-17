@@ -210,6 +210,7 @@ class LocalControlsFixtureTest {
                 val after = method.controlBody()
                 val extras = when {
                     method == page -> mapOf(at.single() to 2)
+                    method == plan.loader -> mapOf(at.single() to 1)
                     method in plan.binders -> at.associateWith { 1 }
                     else -> mapOf(at[0] to 1, at[1] to 2, at[2] to 2)
                 }
@@ -228,6 +229,25 @@ class LocalControlsFixtureTest {
                             (before[it] as ReferenceInstruction).reference.toString().startsWith("Lorg/telegram/ui/Cells/") }
                         assertEquals(case, listOf(before[cast].namedRegisters().first()), after[bound + 1].namedRegisters())
                         assertTrue(case, plan.cells.any { it.definingClass == (before[cast] as ReferenceInstruction).reference.toString() })
+                    }
+                    method == plan.loader -> {
+                        // Right before the saved list writes cu.date, the time it saved the row, over the member's own date.
+                        val overwrite = at.single()
+                        assertTrue(case, before.any { it.controlString() == JD_SAVED_MEMBERS })
+                        assertEquals(case, Opcode.IPUT, before[overwrite].opcode)
+                        assertEquals(case, JD_CHANNEL_DATE, before[overwrite].controlRef())
+                        val (saved, held) = before[overwrite].namedRegisters()
+                        val result = (overwrite - 1 downTo 0).first { before[it].opcode.setsRegister() && before[it].namedRegisters().first() == saved }
+                        assertEquals(case, Opcode.MOVE_RESULT, before[result].opcode)
+                        assertEquals(case, JD_CURSOR_INT, before[result - 1].controlRef())
+                        // Column 3 of the query is cu.date.
+                        val column = before[result - 1].namedRegisters()[1]
+                        val loaded = (result - 2 downTo 0).first { before[it].opcode.setsRegister() && before[it].namedRegisters().first() == column }
+                        assertEquals(case, 3L, (before[loaded] as WideLiteralInstruction).wideLiteral)
+                        assertEquals(case, JD_STORED_HOOK, after[overwrite].controlRef())
+                        assertEquals(case, listOf(held), after[overwrite].namedRegisters())
+                        assertEquals(case, before[overwrite].controlRef(), after[overwrite + 1].controlRef())
+                        assertEquals(case, before[overwrite].namedRegisters(), after[overwrite + 1].namedRegisters())
                     }
                     method in plan.binders -> {
                         // Before the one read of the member's user ID, and before the role call on the row it binds.
@@ -267,6 +287,11 @@ class LocalControlsFixtureTest {
             assertEquals(listOf("$JD_WRAPPED_PARTICIPANT->channelParticipant:$JD_CHANNEL_PARTICIPANT", "$JD_CHANNEL_PARTICIPANT->date:I",
                 "$JD_CHANNEL_PARTICIPANT->date:I", JD_MEMBER_DATE), listOf(date[4], date[6], date[12], date[17]).map { it.controlRef() })
             assertFalse(date.any { it.call() != null })
+            // A wrapped channel member's own record, where a date kept from the saved list is found; anything else is null.
+            val inner = context.tgMutableClassDefBy(JOIN_DATES).methods.single { it.origName == "channelMember" }.controlBody()
+            assertEquals(listOf(Opcode.INSTANCE_OF, Opcode.IF_EQZ, Opcode.CHECK_CAST, Opcode.IGET_OBJECT, Opcode.RETURN_OBJECT,
+                Opcode.CONST_4, Opcode.RETURN_OBJECT), inner.map { it.opcode })
+            assertEquals("$JD_WRAPPED_PARTICIPANT->channelParticipant:$JD_CHANNEL_PARTICIPANT", inner[3].controlRef())
             assertEquals("${build.name}: every other list, row and host method keeps its code", untouched, hostState(build, context, hooked))
             flags(context, ID_FLAGS + "specialContacts", true)
         }
@@ -281,6 +306,9 @@ class LocalControlsFixtureTest {
             "a row's online text gone" to { _, p -> val cell = p.cells.last(); val body = cell.controlBody()
                 val at = body.indexOfFirst { it.loadsInt() && it.controlRef() == JD_ONLINE }
                 cell.replaceInstruction(at, "const v${body[at].namedRegisters().single()}, 0x0") },
+            // Then the date it reads back can't be told from the time the list was saved.
+            "the saved member list's date write gone" to { _, p -> val body = p.loader.controlBody()
+                p.loader.replaceInstruction(body.indexOfFirst { it.opcode == Opcode.IPUT && it.controlRef() == JD_CHANNEL_DATE }, "nop") },
         )
         for (build in Fixtures.declaredBuilds()) for ((name, change) in mutations) {
             val c = context(build)
@@ -293,6 +321,8 @@ class LocalControlsFixtureTest {
             assertEquals("${build.name} $name: every member list and row keeps its code", stock, plan.methods.associate { key(it) to it.state() })
             val date = c.tgMutableClassDefBy(JOIN_DATES).methods.single { it.origName == "participantDate" }.controlBody()
             assertEquals("${build.name} $name: the stub keeps answering 0", listOf(Opcode.CONST_4, Opcode.RETURN), date.map { it.opcode })
+            val inner = c.tgMutableClassDefBy(JOIN_DATES).methods.single { it.origName == "channelMember" }.controlBody()
+            assertEquals("${build.name} $name: the stub keeps answering null", listOf(Opcode.CONST_4, Opcode.RETURN_OBJECT), inner.map { it.opcode })
             flags(c, ID_FLAGS - "memberJoinDates" + "specialContacts", true)
             flags(c, listOf("memberJoinDates"), false)
         }
@@ -602,10 +632,11 @@ class LocalControlsFixtureTest {
         return result.values.map(ImmutableClassDef::of)
     }
 
-    /** Member join dates' hosts: the Members page, the profile's member lists and the rows that write last seen. */
+    /** Member join dates' hosts: the Members page, the profile's member lists, the rows that write last seen and the saved list's reader. */
     private fun joinDateHost(body: List<Instruction>): Boolean {
         val refs = body.mapNotNullTo(HashSet()) { it.controlRef() }
         return (JD_KICKED_BY in refs && JD_MEMBER_DATE in refs) || (JD_USER_STATUS in refs && JD_ONLINE in refs) ||
+            body.any { it.controlString() == JD_SAVED_MEMBERS } ||
             (JD_MEMBER_USER in refs && body.any { it.call()?.parameterTypes?.map { p -> p.toString() } == JD_ROLE_PARAMETERS })
     }
 

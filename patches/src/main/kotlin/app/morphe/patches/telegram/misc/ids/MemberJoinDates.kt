@@ -16,6 +16,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlMembers
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
+import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.call
@@ -46,6 +47,12 @@ internal const val JD_MEMBER_HOOK = "$JOIN_DATES->member(Ljava/lang/Object;)V"
 internal const val JD_CELL_HOOK = "$JOIN_DATES->cell(Ljava/lang/Object;)V"
 internal const val JD_UPDATING_HOOK = "$JOIN_DATES->updating(Ljava/lang/Object;)V"
 internal const val JD_STATUS_HOOK = "$JOIN_DATES->status(Ljava/lang/String;)Ljava/lang/String;"
+internal const val JD_STORED_HOOK = "$JOIN_DATES->stored(Ljava/lang/Object;)V"
+internal const val JD_CHANNEL_DATE = "$JD_CHANNEL_PARTICIPANT->date:I"
+internal const val JD_CURSOR_INT = "Lorg/telegram/SQLite/SQLiteCursor;->intValue(I)I"
+/** The query a group's saved member list is read back with. */
+internal const val JD_SAVED_MEMBERS =
+    "SELECT us.data, us.status, cu.data, cu.date FROM channel_users_v2 as cu LEFT JOIN users as us ON us.uid = cu.uid WHERE cu.did = "
 
 /** setAdminRole(role, ...): the call a member list makes on each member's row. */
 internal val JD_ROLE_PARAMETERS = listOf("Ljava/lang/String;", "Z", "Z", "Z", "Landroid/view/View\$OnClickListener;")
@@ -60,12 +67,14 @@ private val JD_UNSAFE_SITES = setOf(Opcode.MOVE_EXCEPTION, Opcode.MOVE_RESULT, O
 
 /**
  * Where each hook goes: the lists that bind a member to a row ([binders], each with the member
- * hook and the row hook), and the rows that write a member's last seen line ([cells], each with
- * the hook at its start and one after each place the line's text is made).
+ * hook and the row hook), the rows that write a member's last seen line ([cells], each with the
+ * hook at its start and one after each place the line's text is made), and the saved member
+ * list's reader ([loader], with the hook right before it writes over a member's join date).
  */
 internal class MemberJoinDatesPlan(
     val binders: List<MutableMethod>,
     val cells: List<MutableMethod>,
+    val loader: MutableMethod,
     private val edits: Map<MutableMethod, List<Pair<Int, String>>>,
 ) {
     val methods: Set<MutableMethod> get() = edits.keys
@@ -97,8 +106,10 @@ private fun joinNeeded(ok: Boolean, why: String) {
  * and then set that row's role). Each gets a hook naming the member it binds and the row it binds
  * it to. The rows themselves get a hook at the start of the method that writes their second line
  * and one after each of the two places that line's last seen text is made, so a row showing a role,
- * a restriction or its own status keeps it. A build where any of it can't be found keeps the rest
- * of the patch.
+ * a restriction or its own status keeps it. Telegram also saves a group's members with the time it
+ * saved them and, reading them back, writes that time over each member's own date, so a hook just
+ * before that write keeps the date the member came with. A build where any of it can't be found
+ * keeps the rest of the patch.
  *
  * @return the plan, and null; or null and why there's none
  */
@@ -138,6 +149,8 @@ private fun BytecodePatchContext.memberJoinDatesPlan(): MemberJoinDatesPlan {
     controlHook(JOIN_DATES, "updating", listOf("Ljava/lang/Object;"), "V")
     controlHook(JOIN_DATES, "status", listOf("Ljava/lang/String;"), "Ljava/lang/String;")
     controlHook(JOIN_DATES, "participantDate", listOf("Ljava/lang/Object;"), "I")
+    controlHook(JOIN_DATES, "stored", listOf("Ljava/lang/Object;"), "V")
+    controlHook(JOIN_DATES, "channelMember", listOf("Ljava/lang/Object;"), "Ljava/lang/Object;")
     controlMembers(JD_CHAT_PARTICIPANT, "date:I", "user_id:J")
     controlMembers(JD_CHANNEL_PARTICIPANT, "date:I")
     controlMembers(JD_WRAPPED_PARTICIPANT, "channelParticipant:$JD_CHANNEL_PARTICIPANT")
@@ -239,11 +252,32 @@ private fun BytecodePatchContext.memberJoinDatesPlan(): MemberJoinDatesPlan {
         writer
     }
 
+    // The saved member list: reading a member back, Telegram writes the time it saved the list over the member's
+    // own join date (and leaves the owner, who has none, joined "now"). The date it came with is kept just before.
+    val loaders = classDefsMentioning(Mention.string(JD_SAVED_MEMBERS))
+        .filter { it.outsideExtension() }
+        .flatMap { owner -> owner.methods.filter { method -> method.controlBody().any { it.controlString() == JD_SAVED_MEMBERS } } }
+    joinNeeded(loaders.size == 1, "the saved member list is missing or ambiguous")
+    val loader = loaders.single()
+    val loaderBody = loader.controlBody()
+    val overwrites = loaderBody.indices.filter { loaderBody[it].opcode == Opcode.IPUT && loaderBody[it].controlRef() == JD_CHANNEL_DATE }
+    joinNeeded(overwrites.size == 1, "the saved member list no longer sets one member date")
+    val overwrite = overwrites.single()
+    val (saved, held) = loaderBody[overwrite].namedRegisters()
+    val loaderFlow = ControlFlow.of(loader)
+    val reads = loaderBody.indices.filter { at ->
+        loaderBody[at].controlRef() == JD_CURSOR_INT && loaderBody.getOrNull(at + 1)?.opcode == Opcode.MOVE_RESULT &&
+            loaderBody[at + 1].namedRegisters().single() == saved && loaderFlow.definitionReaches(at + 1, overwrite, saved)
+    }
+    joinNeeded(reads.size == 1, "the saved member list's date no longer comes from the saved row")
+    edit(loader, overwrite, "invoke-static/range {v$held .. v$held}, $JD_STORED_HOOK")
+
     val mutableEdits = edits.entries.associate { (method, code) -> mutable(method) to code.toList() }
     val byMethod = mutableEdits.keys.associateBy { it.toString() }
     return MemberJoinDatesPlan(
         binders = (listOf(page) + binders.map { it.first }).map { byMethod.getValue(it.toString()) },
         cells = cells.map { byMethod.getValue(it.toString()) },
+        loader = byMethod.getValue(loader.toString()),
         edits = mutableEdits,
     ).also { it.rehearse() }
 }
@@ -251,6 +285,7 @@ private fun BytecodePatchContext.memberJoinDatesPlan(): MemberJoinDatesPlan {
 /**
  * When a member joined: a channel member's own date, the one inside a group member that wraps a
  * channel member, or a plain group member's. Anything else, a user from search included, is 0.
+ * Also the channel member a group member wraps, so a date kept from the saved list is found by either.
  */
 internal fun BytecodePatchContext.writeJoinDates() {
     writeStub(JOIN_DATES, "participantDate", 2, """
@@ -278,5 +313,15 @@ internal fun BytecodePatchContext.writeJoinDates() {
         :hush_none
         const/4 v0, 0x0
         return v0
+    """)
+    writeStub(JOIN_DATES, "channelMember", 2, """
+        instance-of v0, p0, $JD_WRAPPED_PARTICIPANT
+        if-eqz v0, :hush_none
+        check-cast p0, $JD_WRAPPED_PARTICIPANT
+        iget-object v0, p0, $JD_WRAPPED_PARTICIPANT->channelParticipant:$JD_CHANNEL_PARTICIPANT
+        return-object v0
+        :hush_none
+        const/4 v0, 0x0
+        return-object v0
     """)
 }

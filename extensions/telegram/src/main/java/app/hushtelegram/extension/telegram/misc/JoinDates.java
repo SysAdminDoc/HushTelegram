@@ -9,6 +9,7 @@ import android.text.format.DateUtils;
 import android.view.View;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -25,12 +26,18 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * afterwards, so the patch tells this class which member each row shows and the date goes after
  * the last seen text that line carries. A row showing its own text instead, such as an admin's
  * role or who removed someone, keeps it, and a member without a date gets nothing added.
+ *
+ * <p>Telegram saves a group's members with the time it saved them, and reading them back it writes
+ * that time over each member's own date. The patch calls {@link #stored} just before, so a member
+ * read from the saved list shows the date it came with, and the owner, who has none, shows nothing.
  */
 public final class JoinDates {
     private JoinDates() {}
 
     /** When the member each bound row shows joined, in seconds since 1970. A dropped row drops out. */
     private static final Map<Object, Integer> JOINED = new WeakHashMap<>();
+    /** Each member read back from a saved list, with the date it had before Telegram wrote the save time over it. */
+    private static final Map<Object, Integer> STORED = Collections.synchronizedMap(new WeakHashMap<>());
     /** The date of the member being bound, until the patch names its row. */
     private static int pending;
     /** The row writing its second line right now. */
@@ -39,11 +46,34 @@ public final class JoinDates {
     /** Called with the member a list is about to bind to a row. */
     public static void member(Object participant) {
         try {
-            pending = participant != null && on() ? participantDate(participant) : 0;
+            pending = participant != null && on() ? joined(participant) : 0;
         } catch (Throwable failure) {
             pending = 0;
             HookStatus.threw(FamilyNames.SHOW_LOCAL_IDS, "member join date", failure);
         }
+    }
+
+    /**
+     * Called as Telegram reads a member back from its saved list, right before it writes the time it
+     * saved the list over that member's join date. Kept with the switch off too, so turning it on later
+     * doesn't show save times for lists already read.
+     */
+    public static void stored(Object participant) {
+        try {
+            if (participant != null) STORED.put(participant, participantDate(participant));
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.SHOW_LOCAL_IDS, "saved member join date", failure);
+        }
+    }
+
+    /** When [participant] joined: the date it had before a saved list's time went over it, else its own. */
+    private static int joined(Object participant) {
+        Integer kept = STORED.get(participant);
+        if (kept == null) {
+            Object inner = channelMember(participant);
+            if (inner != null) kept = STORED.get(inner);
+        }
+        return kept != null ? kept : participantDate(participant);
     }
 
     /** Called with the row the member from {@link #member} is bound to. */
@@ -105,10 +135,14 @@ public final class JoinDates {
     /** Forgets every row, for tests. */
     static void clearForTests() {
         JOINED.clear();
+        STORED.clear();
         pending = 0;
         current = new WeakReference<>(null);
     }
 
     /** Replaced when patching: when [participant], one of Telegram's group or channel members, joined; 0 when it doesn't say. */
     public static int participantDate(Object participant) { return 0; }
+
+    /** Replaced when patching: the channel member a group member wraps, or null. */
+    public static Object channelMember(Object participant) { return null; }
 }
