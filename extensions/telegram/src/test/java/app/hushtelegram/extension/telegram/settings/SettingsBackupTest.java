@@ -131,6 +131,10 @@ public class SettingsBackupTest {
         out.put("hushtelegram_free_proxies",
                 "It downloads proxy lists and connects Telegram through strangers' proxies, so like the "
                         + "release check it's turned on from the phone's own screen, never by a file someone shared.");
+        out.put("hushtelegram_duress_wipe",
+                "On, a second passcode logs out every account on the phone. A file someone shared could turn "
+                        + "it on unseen, and a file that carries it says a duress passcode is set, so it's only "
+                        + "switched on from the phone's own screen.");
         return Collections.unmodifiableMap(out);
     }
 

@@ -1208,6 +1208,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_instant_lock", FALSE);
 
     /**
+     * Duress passcode: a second passcode, typed where Telegram asks for its own, logs out every
+     * account on the phone and clears what HushTelegram kept (#25). Only a salted hash of it is
+     * kept, by {@link app.hushtelegram.extension.telegram.misc.DuressWipe}, outside settings files.
+     */
+    public static final BooleanSetting DURESS_WIPE =
+            new BooleanSetting("hushtelegram_duress_wipe", FALSE);
+
+    /**
      * Don't notify contacts: a sign-up for a phone number new to Telegram asks the server not to tell
      * the people who have that number saved (#71). Existing accounts never send this request.
      */

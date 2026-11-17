@@ -2370,3 +2370,29 @@ Edit a copy	编辑副本
 Add Edit a copy to the message menu	在消息菜单中添加“编辑副本”
 # context: Summary under the Edit a copy switch in HushTelegram settings
 Opens a photo from a chat in Telegram's photo editor, where you can draw, add text or blur parts. Sending it sends the edited copy to the chat. The photo in the chat stays as it was.	在 Telegram 的照片编辑器中打开聊天里的照片，你可以在上面画画、添加文字或模糊部分区域。发送时会把编辑后的副本发到聊天中。聊天里的原照片保持不变.
+# context: Title of the Duress passcode switch (#25) on HushTelegram's Privacy page, also the first field's hint in its dialog. A duress passcode is a second passcode someone types when forced to unlock; typing it logs every account out
+Duress passcode	胁迫锁定码
+# context: Summary of the Duress passcode switch. It must say plainly that every account on the phone is logged out, that HushTelegram's kept data is cleared, and that the switch starts off
+Typing the duress passcode on Telegram's lock screen logs out every account on this phone and clears what HushTelegram kept, like deleted messages, edit history and call recordings. It needs a Telegram passcode and starts off.	在 Telegram 锁屏上输入胁迫锁定码会退出此手机上的所有账号，并清除 HushTelegram 保留的内容，例如已删除的消息、编辑记录和通话录音。需要先设置 Telegram 锁定码，默认关闭.
+# context: Title of the row under the Duress passcode switch that opens a dialog to pick the code, also that dialog's title
+Set duress passcode	设置胁迫锁定码
+# context: Summary of the Set duress passcode row while no duress passcode is saved
+No duress passcode yet. Tap to pick one.	尚未设置胁迫锁定码。点按以设置.
+# context: Summary of the Set duress passcode row once a duress passcode is saved. The code itself is never shown
+A duress passcode is set. Tap to change it.	已设置胁迫锁定码。点按以更改.
+# context: Message at the top of the Set duress passcode dialog, above its two fields
+Typing this on Telegram's lock screen logs out every account on this phone. Pick one that's different from your Telegram passcode.	在 Telegram 锁屏上输入它会退出此手机上的所有账号。请选择一个与 Telegram 锁定码不同的锁定码.
+# context: Hint of the second field in the Set duress passcode dialog, where the code is typed again to confirm it
+Type it again	再次输入
+# context: Refusal in the Set duress passcode dialog when the two fields differ
+The two passcodes don't match.	两次输入的锁定码不一致.
+# context: Toast once a duress passcode is saved
+Duress passcode saved.	胁迫锁定码已保存.
+# context: Refusal in the Set duress passcode dialog when the first field is empty
+Type a duress passcode.	请输入胁迫锁定码.
+# context: Refusal in the Set duress passcode dialog when Telegram's passcode is a 4-digit PIN and the code isn't 4 digits. Telegram's lock screen takes exactly 4 digits
+Use 4 digits, the same length as your Telegram passcode.	请使用 4 位数字，与 Telegram 锁定码的长度相同.
+# context: Refusal in the Set duress passcode dialog when the code typed is the user's real Telegram passcode
+That's your Telegram passcode. Pick a different one.	这是你的 Telegram 锁定码。请换一个.
+# context: Lowercase noun phrase naming the Duress passcode switch (#25) in the patch status list
+duress passcode	胁迫锁定码

@@ -146,6 +146,17 @@ public final class AccountGuard {
         }
     }
 
+    /**
+     * Duress passcode (#25): every account is ordinary again before it's logged out, since a
+     * powered-off or receive-only one would refuse its own log-out, and both lists empty.
+     */
+    static void releaseAll() {
+        Set<Integer> off = Accounts.parse(Settings.POWERED_OFF_ACCOUNTS.get());
+        Settings.RECEIVE_ONLY_ACCOUNTS.save("");
+        Settings.POWERED_OFF_ACCOUNTS.save("");
+        if (Settings.POWER_OFF_ACCOUNTS.get()) for (int account : off) followNative(account, false);
+    }
+
     /** Makes an account receive-only or ordinary again. */
     public static void setReceiveOnly(int account, boolean on) {
         Settings.RECEIVE_ONLY_ACCOUNTS.save(withMember(Settings.RECEIVE_ONLY_ACCOUNTS.get(), account, on));

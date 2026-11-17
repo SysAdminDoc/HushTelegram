@@ -465,6 +465,8 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/HiddenMessages.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/DeleteForThem.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/DeleteAccount.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/DuressWipe.java",
+        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/analytics/DuressWipeSupport.kt",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/messagemenu/HideForMeSupport.kt",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FreeProxies.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FreeProxyTransport.java",

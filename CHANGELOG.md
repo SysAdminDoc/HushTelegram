@@ -2,6 +2,12 @@
 
 Every HushTelegram release, newest first.
 
+## Unreleased
+
+### Added
+
+* **Telegram:** **Duress passcode** is a new switch in HushTelegram settings > Privacy, off by default. It needs a Telegram passcode. Pick a second code in **Set duress passcode**, and if someone ever makes you unlock Telegram, type that code instead of your real one. Every account on the phone logs out, HushTelegram clears what it kept, like deleted messages, edit history, hidden chats and call recordings, and Telegram's downloaded media goes too. Telegram then opens on its sign-in screen. Your real passcode still unlocks as usual, and only a salted hash of the duress code is stored, never the code itself. (#25)
+
 ## 0.0.26 (2026-11-17)
 
 ### Changed

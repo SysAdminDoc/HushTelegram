@@ -97,6 +97,7 @@ import app.hushtelegram.extension.telegram.misc.ChatTypeFolders;
 import app.hushtelegram.extension.telegram.misc.CustomFont;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.DeleteAccount;
+import app.hushtelegram.extension.telegram.misc.DuressWipe;
 import app.hushtelegram.extension.telegram.misc.DoNotDisturb;
 import app.hushtelegram.extension.telegram.misc.FirebasePush;
 import app.hushtelegram.extension.telegram.misc.FolderIcons;
@@ -199,6 +200,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String HIDDEN_ACCOUNTS_ROW = "action_hidden_accounts";
     /** The Delete account row's key. Nothing is saved: a tap asks, then sends the deletion. */
     static final String DELETE_ACCOUNT_ROW = "action_delete_account";
+    /** The Set duress passcode row's key. The code itself is kept only as a salted hash, by {@link DuressWipe}. */
+    static final String DURESS_PASSCODE_ROW = "action_duress_passcode";
     /** The Forwarding rules row's key. The rules themselves are saved under {@link Settings#AUTO_FORWARDING_RULES}. */
     static final String FORWARDING_RULES_ROW = "action_forwarding_rules";
     /** The Tracked people row's key. The people themselves are kept by {@link SpecialContacts}, one list for each account. */
@@ -1762,6 +1765,25 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                             L10n.t("With a Telegram passcode set, Telegram locks a second or two after you leave it instead "
                                     + "of waiting for Auto-lock. Turning this off brings your Auto-lock time back.")));
                 }
+                if (PatchFamily.Capability.DURESS_WIPE.installed()) {
+                    SwitchPreference duress = toggle(context, Settings.DURESS_WIPE, L10n.t("Duress passcode"),
+                            L10n.t("Typing the duress passcode on Telegram's lock screen logs out every account on this phone "
+                                    + "and clears what HushTelegram kept, like deleted messages, edit history and call "
+                                    + "recordings. It needs a Telegram passcode and starts off."));
+                    duress.setOnPreferenceChangeListener((row, value) -> {
+                        if (!Boolean.TRUE.equals(value)) return true;
+                        if (!AppPasscode.isSet()) {
+                            Utils.showToastLong(L10n.t("Set a Telegram passcode first."));
+                            return false;
+                        }
+                        if (DuressWipe.isSet()) return true;
+                        // Nothing to type yet: the switch goes on once a code is saved.
+                        askDuressPasscode(() -> ((SwitchPreference) row).setChecked(true));
+                        return false;
+                    });
+                    privacy.addPreference(duress);
+                    privacy.addPreference(duressPasscodeRow(context));
+                }
                 if (PatchFamily.Capability.QUIET_SIGN_UP.installed()) {
                     privacy.addPreference(toggle(context, Settings.QUIET_SIGN_UP, L10n.t("Don't notify contacts"),
                             L10n.t("When you sign up a phone number that's new to Telegram, people who have it saved aren't "
@@ -2018,6 +2040,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (build.contains(PatchFamily.CHAT_TYPE_FOLDERS)) leftOut.add(L10n.t("Folders by chat type"));
         if (build.contains(PatchFamily.CHAT_TYPE_FOLDERS) && PatchFamily.Capability.ADMIN_FOLDER.installed()) {
             leftOut.add(L10n.t("Admin folder"));
+        }
+        if (build.contains(PatchFamily.DISABLE_ANALYTICS) && PatchFamily.Capability.DURESS_WIPE.installed()) {
+            leftOut.add(L10n.t("Duress passcode"));
         }
         if (build.contains(PatchFamily.FREE_PROXIES)) leftOut.add(L10n.t("Free proxies"));
         if (build.contains(PatchFamily.FREE_PROXIES) && PatchFamily.Capability.PROXY_ORDER.installed()) {
@@ -3591,6 +3616,44 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static String recordCallsSummary() {
         return L10n.f("Saves both sides of each call to %1$s on this phone. The other person isn't told.",
                 L10n.isolate(CallRecorder.folder()));
+    }
+
+    /** Set duress passcode (#25): a tap asks for the code twice and keeps only its salted hash. */
+    private Preference duressPasscodeRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(DURESS_PASSCODE_ROW);
+        row.setTitle(L10n.t("Set duress passcode"));
+        row.setPersistent(false);
+        row.setSummary(duressPasscodeSummary());
+        row.setOnPreferenceClickListener(p -> {
+            askDuressPasscode(null);
+            return true;
+        });
+        return row;
+    }
+
+    /** What the Set duress passcode row says: whether a code is saved, or that Telegram's passcode comes first. */
+    static String duressPasscodeSummary() {
+        if (!AppPasscode.isSet()) return L10n.t("Set a Telegram passcode first.");
+        return DuressWipe.isSet() ? L10n.t("A duress passcode is set. Tap to change it.")
+                : L10n.t("No duress passcode yet. Tap to pick one.");
+    }
+
+    /** Opens the duress passcode dialog. [saved] runs once a code is saved, after the row's summary is redrawn. */
+    void askDuressPasscode(@Nullable Runnable saved) {
+        if (SettingsLock.refuses()) return;
+        Activity activity = getActivity();
+        if (getView() == null || activity == null || activity.isFinishing() || activity.isDestroyed()) return;
+        if (!AppPasscode.isSet()) {
+            Utils.showToastLong(L10n.t("Set a Telegram passcode first."));
+            return;
+        }
+        Dialog prompt = PasscodePrompt.chooseDuress(activity, () -> {
+            Preference row = findPreference(DURESS_PASSCODE_ROW);
+            if (row != null) row.setSummary(duressPasscodeSummary());
+            if (saved != null) saved.run();
+        });
+        own(prompt);
     }
 
     /** Delete account (#71): a tap asks about the account in use, then deletes it. */

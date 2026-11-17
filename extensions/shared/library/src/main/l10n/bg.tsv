@@ -2366,3 +2366,29 @@ Edit a copy	Редактиране на копие
 Add Edit a copy to the message menu	Добавяне на Редактиране на копие в менюто на съобщението
 # context: Summary under the Edit a copy switch in HushTelegram settings
 Opens a photo from a chat in Telegram's photo editor, where you can draw, add text or blur parts. Sending it sends the edited copy to the chat. The photo in the chat stays as it was.	Отваря снимка от чат в редактора на снимки на Telegram, където можете да рисувате, да добавяте текст или да замъглявате части. При изпращане в чата отива редактираното копие. Снимката в чата остава непроменена.
+# context: Title of the Duress passcode switch (#25) on HushTelegram's Privacy page, also the first field's hint in its dialog. A duress passcode is a second passcode someone types when forced to unlock; typing it logs every account out
+Duress passcode	Парола при принуда
+# context: Summary of the Duress passcode switch. It must say plainly that every account on the phone is logged out, that HushTelegram's kept data is cleared, and that the switch starts off
+Typing the duress passcode on Telegram's lock screen logs out every account on this phone and clears what HushTelegram kept, like deleted messages, edit history and call recordings. It needs a Telegram passcode and starts off.	Въвеждането на паролата при принуда на заключения екран на Telegram излиза от всички акаунти на този телефон и изчиства запазеното от HushTelegram, като изтрити съобщения, история на редакциите и записи на разговори. Нужна е парола за Telegram и започва изключено.
+# context: Title of the row under the Duress passcode switch that opens a dialog to pick the code, also that dialog's title
+Set duress passcode	Задаване на парола при принуда
+# context: Summary of the Set duress passcode row while no duress passcode is saved
+No duress passcode yet. Tap to pick one.	Още няма парола при принуда. Докосни, за да избереш.
+# context: Summary of the Set duress passcode row once a duress passcode is saved. The code itself is never shown
+A duress passcode is set. Tap to change it.	Има зададена парола при принуда. Докосни, за да я смениш.
+# context: Message at the top of the Set duress passcode dialog, above its two fields
+Typing this on Telegram's lock screen logs out every account on this phone. Pick one that's different from your Telegram passcode.	Въвеждането ѝ на заключения екран на Telegram излиза от всички акаунти на този телефон. Избери различна от паролата си за Telegram.
+# context: Hint of the second field in the Set duress passcode dialog, where the code is typed again to confirm it
+Type it again	Въведи я отново
+# context: Refusal in the Set duress passcode dialog when the two fields differ
+The two passcodes don't match.	Двете пароли не съвпадат.
+# context: Toast once a duress passcode is saved
+Duress passcode saved.	Паролата при принуда е запазена.
+# context: Refusal in the Set duress passcode dialog when the first field is empty
+Type a duress passcode.	Въведи парола при принуда.
+# context: Refusal in the Set duress passcode dialog when Telegram's passcode is a 4-digit PIN and the code isn't 4 digits. Telegram's lock screen takes exactly 4 digits
+Use 4 digits, the same length as your Telegram passcode.	Използвай 4 цифри, колкото е и паролата ти за Telegram.
+# context: Refusal in the Set duress passcode dialog when the code typed is the user's real Telegram passcode
+That's your Telegram passcode. Pick a different one.	Това е паролата ти за Telegram. Избери друга.
+# context: Lowercase noun phrase naming the Duress passcode switch (#25) in the patch status list
+duress passcode	парола при принуда

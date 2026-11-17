@@ -2367,3 +2367,29 @@ Edit a copy	Editar uma cópia
 Add Edit a copy to the message menu	Adicionar Editar uma cópia ao menu da mensagem
 # context: Summary under the Edit a copy switch in HushTelegram settings
 Opens a photo from a chat in Telegram's photo editor, where you can draw, add text or blur parts. Sending it sends the edited copy to the chat. The photo in the chat stays as it was.	Abre uma foto de uma conversa no editor de fotos do Telegram, onde você pode desenhar, adicionar texto ou desfocar partes. Ao enviar, a cópia editada vai para a conversa. A foto na conversa continua como estava.
+# context: Title of the Duress passcode switch (#25) on HushTelegram's Privacy page, also the first field's hint in its dialog. A duress passcode is a second passcode someone types when forced to unlock; typing it logs every account out
+Duress passcode	Senha de coação
+# context: Summary of the Duress passcode switch. It must say plainly that every account on the phone is logged out, that HushTelegram's kept data is cleared, and that the switch starts off
+Typing the duress passcode on Telegram's lock screen logs out every account on this phone and clears what HushTelegram kept, like deleted messages, edit history and call recordings. It needs a Telegram passcode and starts off.	Digitar a senha de coação na tela de bloqueio do Telegram sai de todas as contas deste telefone e apaga o que o HushTelegram guardou, como mensagens apagadas, histórico de edições e gravações de chamadas. Precisa de uma senha no Telegram e começa desligado.
+# context: Title of the row under the Duress passcode switch that opens a dialog to pick the code, also that dialog's title
+Set duress passcode	Definir senha de coação
+# context: Summary of the Set duress passcode row while no duress passcode is saved
+No duress passcode yet. Tap to pick one.	Ainda não há senha de coação. Toque para escolher uma.
+# context: Summary of the Set duress passcode row once a duress passcode is saved. The code itself is never shown
+A duress passcode is set. Tap to change it.	Uma senha de coação está definida. Toque para mudá-la.
+# context: Message at the top of the Set duress passcode dialog, above its two fields
+Typing this on Telegram's lock screen logs out every account on this phone. Pick one that's different from your Telegram passcode.	Digitar esta senha na tela de bloqueio do Telegram sai de todas as contas deste telefone. Escolha uma diferente da sua senha do Telegram.
+# context: Hint of the second field in the Set duress passcode dialog, where the code is typed again to confirm it
+Type it again	Digite de novo
+# context: Refusal in the Set duress passcode dialog when the two fields differ
+The two passcodes don't match.	As duas senhas não coincidem.
+# context: Toast once a duress passcode is saved
+Duress passcode saved.	Senha de coação salva.
+# context: Refusal in the Set duress passcode dialog when the first field is empty
+Type a duress passcode.	Digite uma senha de coação.
+# context: Refusal in the Set duress passcode dialog when Telegram's passcode is a 4-digit PIN and the code isn't 4 digits. Telegram's lock screen takes exactly 4 digits
+Use 4 digits, the same length as your Telegram passcode.	Use 4 dígitos, o mesmo tamanho da sua senha do Telegram.
+# context: Refusal in the Set duress passcode dialog when the code typed is the user's real Telegram passcode
+That's your Telegram passcode. Pick a different one.	Essa é a sua senha do Telegram. Escolha outra.
+# context: Lowercase noun phrase naming the Duress passcode switch (#25) in the patch status list
+duress passcode	senha de coação

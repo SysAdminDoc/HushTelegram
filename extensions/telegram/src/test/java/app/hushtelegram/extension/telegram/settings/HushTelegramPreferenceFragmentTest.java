@@ -68,6 +68,7 @@ import app.hushtelegram.extension.telegram.misc.HiddenAccountsForTests;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloads;
 import app.hushtelegram.extension.telegram.misc.DataSaverDownloadsForTests;
 import app.hushtelegram.extension.telegram.misc.DeleteAccountForTests;
+import app.hushtelegram.extension.telegram.misc.DuressWipe;
 import app.hushtelegram.extension.telegram.misc.GhostChats;
 import app.hushtelegram.extension.telegram.misc.HiddenChats;
 import app.hushtelegram.extension.telegram.misc.HiddenChatsForTests;
@@ -2924,6 +2925,100 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals(Collections.singletonList(1), DeleteAccountForTests.signedOut());
         } finally {
             DeleteAccountForTests.restore();
+        }
+    }
+
+    /**
+     * Duress passcode (#25) is on the Privacy page of a build with it and starts off. Without a
+     * Telegram passcode both rows only say so. With one, the switch asks for a code before it goes
+     * on, and the dialog takes the code twice, on the number pad for a PIN, refusing Telegram's own
+     * passcode and a mismatch. Only a salted hash is saved.
+     */
+    @Test
+    public void duressPasscodeAsksTwiceAndRefusesTelegramsOwnPasscode() {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.DISABLE_ANALYTICS);
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.READ_METRICS);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            assertNull("a build without it has no switch", page.findPreference(Settings.DURESS_WIPE.key));
+            assertNull(page.findPreference(HushTelegramPreferenceFragment.DURESS_PASSCODE_ROW));
+        }
+        PatchFamily.capabilitiesForTests = null;
+        AppPasscodeForTests.use(null);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            SwitchPreference duress = (SwitchPreference) page.findPreference(Settings.DURESS_WIPE.key);
+            assertEquals("Duress passcode", String.valueOf(duress.getTitle()));
+            assertEquals("Typing the duress passcode on Telegram's lock screen logs out every account on this phone and "
+                    + "clears what HushTelegram kept, like deleted messages, edit history and call recordings. It needs "
+                    + "a Telegram passcode and starts off.", String.valueOf(duress.getSummary()));
+            assertFalse("starts off", duress.isChecked());
+            Preference row = page.findPreference(HushTelegramPreferenceFragment.DURESS_PASSCODE_ROW);
+            assertEquals("Set duress passcode", String.valueOf(row.getTitle()));
+            assertFalse(row.isPersistent());
+            assertEquals("Set a Telegram passcode first.", String.valueOf(row.getSummary()));
+
+            ShadowToast.reset();
+            assertFalse(duress.getOnPreferenceChangeListener().onPreferenceChange(duress, true));
+            assertEquals("Set a Telegram passcode first.", ShadowToast.getTextOfLatestToast());
+            AlertDialog before = ShadowAlertDialog.getLatestAlertDialog();
+            assertTrue(row.getOnPreferenceClickListener().onPreferenceClick(row));
+            ShadowLooper.idleMainLooper();
+            assertSame("no dialog without Telegram's passcode", before, ShadowAlertDialog.getLatestAlertDialog());
+        } finally {
+            AppPasscodeForTests.restore();
+        }
+
+        AppPasscodeForTests.use("2468");
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            SwitchPreference duress = (SwitchPreference) page.findPreference(Settings.DURESS_WIPE.key);
+            Preference row = page.findPreference(HushTelegramPreferenceFragment.DURESS_PASSCODE_ROW);
+            assertEquals("No duress passcode yet. Tap to pick one.", String.valueOf(row.getSummary()));
+
+            assertFalse("with no code yet the switch asks for one", duress.getOnPreferenceChangeListener().onPreferenceChange(duress, true));
+            ShadowLooper.idleMainLooper();
+            AlertDialog ask = ShadowAlertDialog.getLatestAlertDialog();
+            assertTrue(ask.isShowing());
+            assertEquals("Set duress passcode", String.valueOf(shadowOf(ask).getTitle()));
+            android.widget.EditText code = ask.findViewById(android.R.id.edit);
+            android.widget.EditText again = ask.findViewById(android.R.id.text2);
+            assertEquals("a PIN gets the number pad", android.text.InputType.TYPE_CLASS_NUMBER
+                    | android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD, code.getInputType());
+            code.setText("135799");
+            assertEquals("a PIN's length", "1357", code.getText().toString());
+
+            code.setText("2468");
+            again.setText("2468");
+            ask.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertTrue("Telegram's own passcode is refused", ask.isShowing());
+            assertEquals("That's your Telegram passcode. Pick a different one.", ShadowToast.getTextOfLatestToast());
+
+            code.setText("1357");
+            again.setText("1358");
+            ask.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertTrue("a mismatch keeps the dialog", ask.isShowing());
+            assertEquals("The two passcodes don't match.", ShadowToast.getTextOfLatestToast());
+            assertFalse(DuressWipe.isSet());
+            assertFalse(duress.isChecked());
+
+            again.setText("1357");
+            ask.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            ShadowLooper.idleMainLooper();
+            assertFalse(ask.isShowing());
+            assertEquals("Duress passcode saved.", ShadowToast.getTextOfLatestToast());
+            assertTrue(DuressWipe.isSet());
+            assertTrue("a saved code turns the switch on", duress.isChecked());
+            assertEquals("A duress passcode is set. Tap to change it.", String.valueOf(row.getSummary()));
+            assertFalse("the code itself isn't kept", controller.get().getSharedPreferences("hushtelegram_duress",
+                    android.content.Context.MODE_PRIVATE).getAll().toString().contains("1357"));
+            assertTrue("with a code saved the switch just turns on",
+                    duress.getOnPreferenceChangeListener().onPreferenceChange(duress, true));
+        } finally {
+            AppPasscodeForTests.restore();
+            Settings.DURESS_WIPE.resetToDefault();
         }
     }
 

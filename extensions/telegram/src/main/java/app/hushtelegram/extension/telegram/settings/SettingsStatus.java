@@ -268,6 +268,7 @@ public final class SettingsStatus {
     public static boolean quietSignUp() { return false; }
     public static boolean sessionDevice() { return false; }
     public static boolean deleteAccount() { return false; }
+    public static boolean duressWipe() { return false; }
     public static boolean suppressScreenshotNotification() { return false; }
     public static boolean unlockPremium() { return false; }
     public static boolean bypassChannelRestrictions() { return false; }
