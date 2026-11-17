@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
@@ -53,18 +54,33 @@ public class VideoTracksTest {
     private static final int HANDLED = 4;
     private static final int UNSUPPORTED_SUBTYPE = 3;
 
-    /** A track's format: the label and language the player read from the file. */
+    /** A track's format: the label and language the player read from the file. Equal by value, like media3's. */
     static final class Format {
         final String label;
         final String language;
         Format(String label, String language) { this.label = label; this.language = language; }
+
+        @java.lang.Override public boolean equals(Object other) {
+            return other instanceof Format && Objects.equals(label, ((Format) other).label)
+                    && Objects.equals(language, ((Format) other).language);
+        }
+
+        @java.lang.Override public int hashCode() { return Objects.hash(label, language); }
     }
 
-    /** A track group: one type, its tracks. */
+    /** A track group: its id, one type, its tracks. Equal by id and formats, like media3's TrackGroup. */
     static final class Group {
+        final String id;
         final int type;
         final Format[] formats;
-        Group(int type, Format... formats) { this.type = type; this.formats = formats; }
+        Group(String id, int type, Format... formats) { this.id = id; this.type = type; this.formats = formats; }
+
+        @java.lang.Override public boolean equals(Object other) {
+            return other instanceof Group && id.equals(((Group) other).id)
+                    && Arrays.equals(formats, ((Group) other).formats);
+        }
+
+        @java.lang.Override public int hashCode() { return 31 * id.hashCode() + Arrays.hashCode(formats); }
     }
 
     /** What the selector mapped: each renderer's groups and how well it plays each track. */
@@ -180,10 +196,18 @@ public class VideoTracksTest {
         activity.setContentView(screen);
         videoFrame = new FrameLayout(activity);
         screen.addView(videoFrame);
-        video = new Group(2, new Format(null, null));
-        english = new Group(VideoTracks.AUDIO, new Format(null, "en"));
-        spanish = new Group(VideoTracks.AUDIO, new Format(null, "es"));
-        subtitles = new Group(VideoTracks.TEXT, new Format("Director's notes", "en"), new Format(null, "und"));
+        video = video();
+        english = english();
+        spanish = spanish();
+        subtitles = subtitles();
+    }
+
+    // Each call makes new groups, equal to the last ones, the way the player maps them again on every loop.
+    private static Group video() { return new Group("0", 2, new Format(null, null)); }
+    private static Group english() { return new Group("1", VideoTracks.AUDIO, new Format(null, "en")); }
+    private static Group spanish() { return new Group("2", VideoTracks.AUDIO, new Format(null, "es")); }
+    private static Group subtitles() {
+        return new Group("3", VideoTracks.TEXT, new Format("Director's notes", "en"), new Format(null, "und"));
     }
 
     @After public void restore() {
@@ -353,6 +377,39 @@ public class VideoTracksTest {
         idle();
         assertTrue("Automatic gives the choice back to the player", player.params.overrides.isEmpty());
         assertEquals(3, player.applied);
+    }
+
+    @Test public void aPickStaysCheckedWhenTheVideoLoops() {
+        VideoPlayer player = player(twoAudioTracksAndSubtitles());
+        Viewer viewer = viewer(player);
+        open(viewer);
+        Shadows.shadowOf(choose(VideoTracks.AUDIO_ID)).clickOnItem(2);
+        idle();
+        Shadows.shadowOf(choose(VideoTracks.SUBTITLES_ID)).clickOnItem(2);
+        idle();
+
+        // Telegram loops with the player's repeat mode, and each pass maps new groups equal to the old ones.
+        Group englishAgain = english();
+        Group subtitlesAgain = subtitles();
+        player.mapped = new Mapped()
+                .renderer(new int[][] {{HANDLED}}, video())
+                .renderer(new int[][] {{HANDLED}, {HANDLED}}, englishAgain, spanish())
+                .renderer(new int[][] {{HANDLED, HANDLED}}, subtitlesAgain);
+        assertNotSame(subtitles, subtitlesAgain);
+        open(viewer);
+        AlertDialog audio = choose(VideoTracks.AUDIO_ID);
+        assertEquals("Spanish is still ticked", 2, audio.getListView().getCheckedItemPosition());
+        audio.dismiss();
+        AlertDialog text = choose(VideoTracks.SUBTITLES_ID);
+        assertEquals("so is the second subtitle track", 2, text.getListView().getCheckedItemPosition());
+        text.dismiss();
+
+        Shadows.shadowOf(choose(VideoTracks.AUDIO_ID)).clickOnItem(1);
+        idle();
+        assertEquals("one pick per type after a loop too", 2, player.params.overrides.size());
+        assertSame(englishAgain, ((Override) player.params.overrides.get(english)).group);
+        assertEquals(1, ((Override) player.params.overrides.get(subtitlesAgain)).track);
+        assertEquals(1, choose(VideoTracks.AUDIO_ID).getListView().getCheckedItemPosition());
     }
 
     @Test public void aPickKeepsWhatTelegramAlreadySet() {

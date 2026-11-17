@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -223,8 +224,12 @@ public final class VideoTracks {
             this.name = name;
         }
 
+        /**
+         * Groups compare by value, the way the selector keys its overrides: each loop and the
+         * preloaded next pass map new groups equal to the ones picked from.
+         */
         boolean same(@Nullable Track other) {
-            return other != null && other.group == group && other.index == index;
+            return other != null && other.index == index && Objects.equals(other.group, group);
         }
     }
 
