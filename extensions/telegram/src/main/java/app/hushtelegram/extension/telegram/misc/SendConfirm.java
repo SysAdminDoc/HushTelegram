@@ -25,6 +25,7 @@ import app.hushtelegram.extension.shared.ui.CustomDialog;
 import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
 import java.lang.ref.WeakReference;
+import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -164,7 +165,7 @@ public final class SendConfirm {
         if (!videoSend(state, notify, scheduleDate, stars) || !on(Settings.ASK_BEFORE_ROUND_VIDEO)) return true;
         if (asking()) return false;
         Activity window = current();
-        if (window == null || !mainThread() || !holdVideo(chat)) return true;
+        if (window == null || !mainThread() || !holdVideo(chat, state)) return true;
         askOnClip(() -> previewBar(usable(window, false) ? window : current(), VIDEO),
                 () -> fromPreview(VIDEO, window, () -> resumeVideo(chat, VIDEO_PREVIEW, notify, scheduleDate, ttl, effect, stars), PREVIEW_TRIES));
         return false;
@@ -176,7 +177,7 @@ public final class SendConfirm {
         if (!videoSend(state, notify, scheduleDate, stars) || !on(Settings.ASK_BEFORE_ROUND_VIDEO)) return true;
         if (asking()) return false;
         Activity window = current();
-        if (window == null || !mainThread() || !holdVideo(chat)) return true;
+        if (window == null || !mainThread() || !holdVideo(chat, state)) return true;
         askOnClip(() -> previewBar(usable(window, false) ? window : current(), VIDEO),
                 () -> fromPreview(VIDEO, window, () -> resumeVideoReordered(chat, VIDEO_PREVIEW, scheduleDate, ttl, effect, stars, notify), PREVIEW_TRIES));
         return false;
@@ -313,16 +314,42 @@ public final class SendConfirm {
     /**
      * Pauses the round video recorder unless it's paused already, and Send then sends from its
      * preview, since the older of Telegram's two round video recorders sends a paused clip only
-     * from there. False when it couldn't pause, and then Telegram sends at once.
+     * from there. See {@link #holdRecorder}.
      */
-    static boolean holdVideo(Object chat) {
+    static boolean holdVideo(Object chat, int state) {
+        return holdRecorder(state, () -> videoPaused(chat), () -> pauseVideo(chat));
+    }
+
+    /**
+     * Holds a round video send in [state] by [pause] unless [paused] says it's paused already.
+     * False when there's nothing to hold (see {@link #holdable}), when the recorder still isn't
+     * paused after [pause], or when it couldn't pause, and then Telegram goes on with the send at
+     * once. Telegram's newer recorder reads as not paused from the moment its camera opens and
+     * ignores a pause until the camera records, so a quick release before then finds nothing to
+     * hold; Telegram drops that one as too short and closes the camera, which holding it back
+     * would leave open with no bar.
+     */
+    static boolean holdRecorder(int state, BooleanSupplier paused, Runnable pause) {
         try {
-            if (!videoPaused(chat)) pauseVideo(chat);
-            return true;
+            boolean already = paused.getAsBoolean();
+            if (!holdable(state, already)) return false;
+            if (already) return true;
+            pause.run();
+            return paused.getAsBoolean();
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.ASK_BEFORE_STICKER, "video pause", failure);
             return false;
         }
+    }
+
+    /**
+     * Whether a round video send in [state] may find a recording to hold. The older of Telegram's
+     * two recorders counts a recording only from the camera's first frame and reads as paused
+     * until then, so a quick release (1) that finds it paused has nothing recorded yet. The
+     * preview's send (4) finds the clip paused on purpose.
+     */
+    static boolean holdable(int state, boolean paused) {
+        return state != 1 || !paused;
     }
 
     /**

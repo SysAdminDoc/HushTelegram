@@ -221,10 +221,69 @@ public class SendConfirmTest {
         assertTrue(SendConfirm.video(new Object(), 1, true, 0, 0, 0L, 0L));
         assertTrue(SendConfirm.videoReordered(new Object(), 1, 0, 0, 0L, 0L, true));
         assertNull(ShadowDialog.getLatestDialog());
-        // Unpatched, the pauses do nothing and nothing reads as paused, so the hold goes on to the question.
+        // Unpatched, the pauses do nothing and nothing reads as paused. The voice hold goes on to the
+        // question; a round video recorder that still isn't paused after the pause holds nothing.
         assertTrue(SendConfirm.holdVoice(new Object(), false));
-        assertTrue(SendConfirm.holdVideo(new Object()));
+        assertFalse(SendConfirm.holdVideo(new Object(), 1));
+        assertFalse(SendConfirm.holdVideo(new Object(), SendConfirm.VIDEO_PREVIEW));
         assertEquals("the state Telegram's chat bar sends a paused round video in", 4, SendConfirm.VIDEO_PREVIEW);
+    }
+
+    @Test public void aQuickReleaseBeforeTheCameraRecordsGoesOnToTelegram() {
+        // Telegram's older recorder reads as paused until the camera's first frame is recorded.
+        assertFalse("a release that finds nothing recorded yet is Telegram's to drop, camera and all",
+                SendConfirm.holdable(1, true));
+        assertTrue("a release while recording may be held", SendConfirm.holdable(1, false));
+        assertTrue("the preview's send finds its clip paused on purpose", SendConfirm.holdable(SendConfirm.VIDEO_PREVIEW, true));
+        assertTrue(SendConfirm.holdable(SendConfirm.VIDEO_PREVIEW, false));
+
+        // The older recorder before its first frame: paused, so the release goes on untouched.
+        Recorder older = new Recorder(true, true);
+        assertFalse(SendConfirm.holdRecorder(1, older::paused, older::pause));
+        assertEquals("nothing paused", 0, older.pauses);
+
+        // The newer recorder with its camera open but not recording yet: not paused, and its pause
+        // does nothing until the camera records, so there's nothing to hold.
+        Recorder opening = new Recorder(false, false);
+        assertFalse("Telegram's own send drops it and closes the camera",
+                SendConfirm.holdRecorder(1, opening::paused, opening::pause));
+        assertEquals(1, opening.pauses);
+
+        // Either recorder while recording: paused, then held for the question.
+        Recorder recording = new Recorder(false, true);
+        assertTrue(SendConfirm.holdRecorder(1, recording::paused, recording::pause));
+        assertTrue(recording.paused());
+        assertEquals(1, recording.pauses);
+
+        // The preview's send finds its clip paused and holds it without pausing again.
+        Recorder preview = new Recorder(true, true);
+        assertTrue(SendConfirm.holdRecorder(SendConfirm.VIDEO_PREVIEW, preview::paused, preview::pause));
+        assertEquals(0, preview.pauses);
+
+        assertFalse("a recorder that throws holds nothing", SendConfirm.holdRecorder(1, () -> {
+            throw new IllegalStateException("gone");
+        }, () -> {}));
+    }
+
+    /** A round video recorder whose pause takes only when [pausable]. */
+    private static final class Recorder {
+        private boolean paused;
+        private final boolean pausable;
+        int pauses;
+
+        Recorder(boolean paused, boolean pausable) {
+            this.paused = paused;
+            this.pausable = pausable;
+        }
+
+        boolean paused() {
+            return paused;
+        }
+
+        void pause() {
+            pauses++;
+            if (pausable) paused = true;
+        }
     }
 
     @Test public void aClipSentFromItsPreviewAsksAndItsAnsweredSendGoesThroughOnce() {
