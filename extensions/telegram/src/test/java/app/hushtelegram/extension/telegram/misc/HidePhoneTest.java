@@ -55,6 +55,32 @@ public class HidePhoneTest {
         assertEquals("+• ••• ••• ••••", HidePhone.mask("+1 555 123 4567"));
     }
 
+    @Test public void theStillYourNumberCardGetsTheNumberItAsksAbout() throws InterruptedException {
+        String card = HidePhone.cover("+1 555 123 4567");
+        assertEquals("+• ••• ••• ••••", card);
+        assertEquals("+1 555 123 4567", HidePhone.asked(card));
+        // Once only: anything else covered later stays covered.
+        assertEquals(card, HidePhone.asked(card));
+
+        // A second account's number covers the same way; the card gets the one just formatted.
+        HidePhone.cover("+1 555 123 4567");
+        String other = HidePhone.cover("+1 999 888 7777");
+        assertEquals(card, other);
+        assertEquals("+1 999 888 7777", HidePhone.asked(other));
+
+        // Something other than the number just covered, or nothing covered, comes back as it is.
+        HidePhone.cover("+1 555 123 4567");
+        assertEquals("+• ••• ••••", HidePhone.asked("+• ••• ••••"));
+        assertEquals("+1 555 123 4567", HidePhone.asked("+1 555 123 4567"));
+        assertNull(HidePhone.asked(null));
+
+        // Another thread's covered number never reaches this one.
+        Thread elsewhere = new Thread(() -> HidePhone.cover("+1 555 123 4567"));
+        elsewhere.start();
+        elsewhere.join();
+        assertEquals(card, HidePhone.asked(card));
+    }
+
     @Test public void pausingOrAnEarlyStartLeavesNumbersAlone() {
         Settings.HIDE_PHONE_NUMBER.save(true);
         assertTrue(HidePhone.on());

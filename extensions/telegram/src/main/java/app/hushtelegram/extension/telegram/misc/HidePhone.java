@@ -28,7 +28,30 @@ public final class HidePhone {
      */
     public static String shown(Object formatter, String raw) {
         String formatted = stockFormat(formatter, raw);
-        return formatted != null && hides(raw) ? mask(formatted) : formatted;
+        return formatted != null && hides(raw) ? cover(formatted) : formatted;
+    }
+
+    /**
+     * Asked with the number Telegram's "Is this still your number?" card is about to put in its
+     * question, right after formatting it. The card asks you to check the number, so it gets the
+     * digits back: the number this thread just covered, when [shown] is that number covered. Two
+     * accounts' numbers can cover the same way, which is why it's the one just formatted.
+     */
+    public static String asked(String shown) {
+        String real = COVERED.get();
+        COVERED.remove();
+        if (real == null || shown == null || !mask(real).equals(shown)) return shown;
+        HookStatus.counted(FamilyNames.HIDE_PHONE_NUMBER, "number shown in the card asking about it");
+        return real;
+    }
+
+    /** The last number each thread covered, kept for [asked]. */
+    private static final ThreadLocal<String> COVERED = new ThreadLocal<>();
+
+    /** [formatted] with its digits covered, remembered on this thread until [asked]. */
+    static String cover(String formatted) {
+        COVERED.set(formatted);
+        return mask(formatted);
     }
 
     static boolean hides(String raw) {
