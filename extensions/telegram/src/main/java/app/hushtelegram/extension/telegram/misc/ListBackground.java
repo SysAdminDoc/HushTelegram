@@ -13,6 +13,7 @@ import android.graphics.Matrix;
 import android.graphics.RenderEffect;
 import android.graphics.RuntimeShader;
 import android.graphics.Shader;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.view.View;
 import android.view.Window;
@@ -41,13 +42,19 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  *
  * <p>Telegram paints its page colors fully opaque whatever the theme says, so they can't simply go
  * see-through. Instead, while the picture shows, the three page colors Telegram's getColor hands
- * out come back one step off in the lowest bit of two channels, a different pair for each, which
- * no eye tells apart. The two holders the main screen slides its screens in each get a GPU effect
- * that finds exactly those colors in what the screens drew and lays the picture under them. Text,
+ * out come back three steps off in one channel, a different channel for each, which no eye tells
+ * apart. The two holders the main screen slides its screens in each get a GPU effect that finds
+ * those colors in what the screens drew and lays the picture under them. A step either way still
+ * counts, since Telegram's glass bars fade a page color over itself and rounding leaves rows a step
+ * off, and three steps apart keeps the pages from being taken for each other through that. Text,
  * icons, bars and anything else keep their pixels, and sheets, dialogs, menus and other windows,
  * which have no effect, draw the marked colors as the solid colors they look like. A chat paints
  * its own wallpaper, so it stays as it was. The effect needs Android 13's runtime shaders, so older
  * phones don't offer the switch.
+ *
+ * <p>The solid fades Telegram draws by its bars, in a page color or a blend of two, would fade a
+ * card into the color beside it, which matches no page and stays a dark band over the picture. In
+ * the holders that show it they draw nothing ({@link #fade(Object, int)}).
  */
 public final class ListBackground {
     private ListBackground() {}
@@ -56,10 +63,17 @@ public final class ListBackground {
     static final String[] PAGES = {"windowBackgroundWhite", "windowBackgroundGray", "graySection"};
 
     /**
-     * What each of {@link #PAGES} is XORed with while the picture shows: one step in the lowest bit of
-     * two channels, a different pair for each page, so each is found on its own.
+     * The channel each of {@link #PAGES} moves in while the picture shows, as a bit shift: blue,
+     * the one the eye is least sure of, for the rows and cards that cover most of a page, then red
+     * and green.
      */
-    static final int[] CODES = {0x010001, 0x000101, 0x010100};
+    static final int[] CHANNELS = {0, 16, 8};
+
+    /**
+     * How far a page color moves in its channel, toward the middle so it never clips: far enough that
+     * a step of rounding either way never reaches another page's marker or the color unmarked.
+     */
+    static final int STEP = 3;
 
     /**
      * How much of its own color each of {@link #PAGES} keeps over the picture, out of 255: rows and
@@ -78,10 +92,11 @@ public final class ListBackground {
 
     /**
      * Finds the marked page colors in what a holder drew and lays the picture under them. A pixel
-     * counts only with at least two of its four neighbors the same color, so a stray pixel of that
-     * color in a photo stays as it is. Under it goes the picture, then the plain page color at the
-     * dim, then the page color itself at what it keeps. The page colors are plain uniforms, the
-     * bytes the window draws them as, since not every shader compiler takes layout(color).
+     * counts within a step of a marker in every channel, and only with at least two of its four
+     * neighbors the same, so a stray pixel of that color in a photo stays as it is. Under it goes the
+     * picture, then the plain page color at the dim, then the page color itself at what it keeps.
+     * The page colors are plain uniforms, the bytes the window draws them as, since not every shader
+     * compiler takes layout(color).
      */
     static final String KEYER = ""
             + "uniform shader content;\n"
@@ -93,7 +108,7 @@ public final class ListBackground {
             + "uniform half3 keep;\n"
             + "bool near(half4 a, half4 b) {\n"
             + "    half4 d = abs(a - b);\n"
-            + "    return max(max(d.r, d.g), max(d.b, d.a)) < 0.00196;\n"
+            + "    return max(max(d.r, d.g), max(d.b, d.a)) < 0.0059;\n"
             + "}\n"
             + "bool keyed(half4 c, half4 e, half4 w, half4 s, half4 n, half4 page) {\n"
             + "    if (!near(c, page)) { return false; }\n"
@@ -135,6 +150,9 @@ public final class ListBackground {
     private static final Set<View> DRESSED = Collections.newSetFromMap(new WeakHashMap<>());
     private static final Set<View> WATCHED = Collections.newSetFromMap(new WeakHashMap<>());
 
+    /** The bar fades left out so far, each counted once. Main thread only. */
+    private static final Set<Drawable> FADES = Collections.newSetFromMap(new WeakHashMap<>());
+
     /** The picture as the holders show it. Main thread only. */
     private static final SavedPicture.Shown SHOWN = new SavedPicture.Shown(SavedPicture.LIST_BACKGROUND,
             ListBackground::refitAll, ListBackground::changed);
@@ -156,9 +174,62 @@ public final class ListBackground {
         for (int i = 0; i < pages.length; i++) {
             if (pages[i] != key) continue;
             if (SEEN[i] != color) seen(i, color);
-            return color ^ CODES[i];
+            return moved(color, i);
         }
         return color;
+    }
+
+    /** [color] as page [page] of {@link #PAGES} carries it while the picture shows. */
+    static int moved(int color, int page) {
+        int shift = CHANNELS[page];
+        int value = (color >> shift) & 0xFF;
+        int to = value < 0x80 ? value + STEP : value - STEP;
+        return (color & ~(0xFF << shift)) | (to << shift);
+    }
+
+    /**
+     * Asked for the color of each solid fade Telegram's glass bars draw, as it draws. In a holder
+     * showing the picture, a fade in a page color, or in a blend of two the way the main tabs fade
+     * while sliding between them, comes back see-through, so it draws nothing.
+     *
+     * @param drawable the fade, drawn by the view it's set on
+     * @param color the color it fades to
+     * @return [color], or [color] with no alpha
+     */
+    public static int fade(Object drawable, int color) {
+        if (marking == null) return color;
+        try {
+            if (!pageBlend(color) || !(drawable instanceof Drawable)) return color;
+            Drawable fade = (Drawable) drawable;
+            if (!inDressed(fade.getCallback())) return color;
+            if (FADES.add(fade)) HookStatus.counted(FamilyNames.AMOLED_BLACK, "bar fades left out over the picture");
+            return color & 0x00FFFFFF;
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.AMOLED_BLACK, "list background bar fade", failure);
+            return color;
+        }
+    }
+
+    /** Whether [color] lies within the marked page colors, channel by channel, a step of rounding either way. */
+    static boolean pageBlend(int color) {
+        for (int shift = 0; shift < 24; shift += 8) {
+            int value = (color >> shift) & 0xFF, low = 0xFF, high = 0;
+            for (int page = 0; page < PAGES.length; page++) {
+                int marker = (marked(page) >> shift) & 0xFF;
+                low = Math.min(low, marker);
+                high = Math.max(high, marker);
+            }
+            if (value < low - 1 || value > high + 1) return false;
+        }
+        return true;
+    }
+
+    /** Whether [view] is a holder showing the picture or sits inside one. Main thread only. */
+    private static boolean inDressed(@Nullable Object view) {
+        for (Object at = view; at instanceof View; at = ((View) at).getParent()) {
+            if (DRESSED.contains(at)) return true;
+        }
+        return false;
     }
 
     /** A page color Telegram answers differently now, after a theme change: the effects take it on. */
@@ -176,7 +247,7 @@ public final class ListBackground {
 
     /** The color [page] of {@link #PAGES} carries while the picture shows, from the last one Telegram answered. */
     static int marked(int page) {
-        return SEEN[page] ^ CODES[page];
+        return moved(SEEN[page], page);
     }
 
     /** Called as Telegram works out the colors in use again: the markers go on or off with the switch. */

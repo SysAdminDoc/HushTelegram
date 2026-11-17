@@ -11,11 +11,13 @@ import app.morphe.patches.telegram.misc.extension.EXTENSION_PACKAGE
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.writeStub
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlShape
 import app.morphe.patches.telegram.misc.localcontrols.controlSingle
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.patches.telegram.misc.localcontrols.requireReachable
 import app.morphe.util.ControlFlow
 import app.morphe.util.addInstructionsAtControlFlowLabel
@@ -29,7 +31,10 @@ import app.morphe.util.names.tgMutableClassDefByOrNull
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
@@ -39,6 +44,8 @@ internal const val ACTION_BAR_LAYOUT = "Lorg/telegram/ui/ActionBar/ActionBarLayo
 private const val CONTEXT = "Landroid/content/Context;"
 private const val FRAME_LAYOUT = "Landroid/widget/FrameLayout;"
 private const val OBJECT = "Ljava/lang/Object;"
+private const val DRAWABLE = "Landroid/graphics/drawable/Drawable;"
+private const val LINEAR_GRADIENT = "Landroid/graphics/LinearGradient;"
 
 /**
  * The picture behind the lists (#88): where Telegram works out the colors in use from the theme's
@@ -111,6 +118,76 @@ internal class ListBackgroundSite(
 }
 
 private fun MethodReference.reference() ="$definingClass->$name(${parameterTypes.joinToString("")})$returnType"
+
+/** A solid bar fade's draw, where it has read its color source's color, and the register holding it. */
+internal class BarFadeSite(val draw: MutableMethod, val at: Int, val color: Int) {
+    /** The hook, on a copy first so a refusal leaves the app untouched. */
+    fun rehearse() = insert(MutableMethod(ImmutableMethod.of(draw)))
+
+    fun insert(target: MutableMethod = draw) {
+        val self = target.implementation!!.registerCount - 2
+        target.addInstructions(at, """
+            invoke-static {v$self, v$color}, $LIST_BACKGROUND->fade(${OBJECT}I)I
+            move-result v$color
+        """)
+    }
+}
+
+/**
+ * Telegram's solid bar fade (BlurredBackgroundWithFadeDrawable): a Drawable with one static
+ * (int, boolean) gradient builder whose alpha steps divide by 285. Its draw takes a fast way for a
+ * plain color source: the first instance-of in it checks for one, then casts it and reads its color
+ * into the register the builder is handed.
+ */
+internal fun BytecodePatchContext.resolveBarFade(): BarFadeSite {
+    controlHook(LIST_BACKGROUND, "fade", listOf(OBJECT, "I"), "I")
+    val found = mutableListOf<Pair<MutableMethod, MethodReference>>()
+    forEachClassMentioning(Mention.literal(FADE_DIVISOR) and Mention.reference(LINEAR_GRADIENT)) { cls ->
+        if (cls.superclass != DRAWABLE) return@forEachClassMentioning
+        val builders = cls.methods.filter { method ->
+            AccessFlags.STATIC.isSet(method.accessFlags) && method.returnType == LINEAR_GRADIENT &&
+                method.parameterTypes.map { it.toString() } == listOf("I", "Z") &&
+                method.controlBody().any { it.opcode == Opcode.DIV_INT_LIT16 && (it as WideLiteralInstruction).wideLiteral == FADE_DIVISOR.toLong() }
+        }
+        if (builders.size != 1) return@forEachClassMentioning
+        tgMutableClassDefBy(cls.type).methods.filter { method ->
+            method.name == "draw" && !AccessFlags.STATIC.isSet(method.accessFlags) && method.returnType == "V" &&
+                method.parameterTypes.map { it.toString() } == listOf("Landroid/graphics/Canvas;")
+        }.forEach { found += it to builders.single() }
+    }
+    val (draw, builder) = found.controlSingle("bar fade")
+    val body = draw.controlBody()
+    val check = body.indexOfFirst { it.opcode == Opcode.INSTANCE_OF }
+    controlShape(check >= 0 && check + 4 < body.size, "the bar fade no longer checks for a plain color source")
+    val tested = (body[check] as TwoRegisterInstruction)
+    val source = tested.registerB
+    val sourceType = (body[check] as ReferenceInstruction).reference.toString()
+    val read = body[check + 3]
+    val readField = read.controlField()
+    controlShape(body[check + 1].opcode == Opcode.IF_EQZ && body[check + 1].namedRegisters() == listOf(tested.registerA) &&
+        body[check + 2].opcode == Opcode.CHECK_CAST && body[check + 2].namedRegisters() == listOf(source) &&
+        (body[check + 2] as ReferenceInstruction).reference.toString() == sourceType &&
+        read.opcode == Opcode.IGET && (read as TwoRegisterInstruction).registerB == source &&
+        readField != null && readField.definingClass == sourceType && readField.type == "I",
+        "the bar fade no longer reads its plain color source's color")
+    val color = (read as TwoRegisterInstruction).registerA
+    val at = check + 4
+    // The color goes to the gradient builder as it was read.
+    val built = (at until body.size).firstOrNull { body[it].call()?.reference() == builder.reference() }
+    controlShape(built != null && body[built].opcode == Opcode.INVOKE_STATIC && body[built].namedRegisters().first() == color &&
+        (at until built).none { i -> body[i].opcode.setsRegister() && (body[i] as? OneRegisterInstruction)?.registerA == color },
+        "the bar fade no longer builds its gradient from its source's color")
+    val self = draw.implementation!!.registerCount - 2
+    controlShape(color < 16 && self < 16 && color != self, "the bar fade's registers don't fit the hook")
+    val flow = ControlFlow.of(draw)
+    controlShape(flow.normal.withIndex().none { (i, next) -> i != at - 1 && at in next } && flow.exceptional.none { at in it },
+        "something jumps into the bar fade's color read")
+    draw.requireThisIntact("AMOLED black", listOf(at))
+    return BarFadeSite(draw, at, color)
+}
+
+/** What the bar fade's gradient builder divides each alpha step by. */
+private const val FADE_DIVISOR = 285
 
 /**
  * Finds every target, or throws naming the first one missing, before anything is changed.

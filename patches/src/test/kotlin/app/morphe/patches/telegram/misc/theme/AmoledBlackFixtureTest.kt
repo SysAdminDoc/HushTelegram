@@ -61,7 +61,8 @@ class AmoledBlackFixtureTest {
             val wallpaper = key(site.wallpaper)
             val oldWallpaper = ImmutableMethod.of(site.wallpaper)
             val lists = context.resolveListBackground(site.method)
-            val hooked = setOf(reader, wallpaper, key(lists.refresh), key(lists.colors), key(lists.holders))
+            val fade = context.resolveBarFade()
+            val hooked = setOf(reader, wallpaper, key(lists.refresh), key(lists.colors), key(lists.holders), key(fade.draw))
             val untouched = hostState(build, context, hooked)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { amoledBlackPatch.execute(context) })
 
@@ -132,7 +133,31 @@ class AmoledBlackFixtureTest {
             val refresh = ImmutableMethod.of(lists.refresh)
             val colors = ImmutableMethod.of(lists.colors)
             val holders = ImmutableMethod.of(lists.holders)
+            val fade = context.resolveBarFade()
+            val draw = ImmutableMethod.of(fade.draw)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { amoledBlackPatch.execute(context) })
+
+            // The bar fade's plain color goes through the extension with the fade, before anything reads it.
+            val stockDraw = draw.controlBody()
+            val drawn = fade.draw.controlBody()
+            val f = fade.at
+            assertEquals("$name: two instructions after the color read", stockDraw.size + 2, drawn.size)
+            assertEquals(Opcode.IGET, stockDraw[f - 1].opcode)
+            assertEquals("$name: the color is an int of the source the fade checked for", "I", stockDraw[f - 1].controlField()!!.type)
+            assertEquals((stockDraw.first { it.opcode == Opcode.INSTANCE_OF } as ReferenceInstruction).reference.toString(),
+                stockDraw[f - 1].controlField()!!.definingClass)
+            assertEquals(listOf(fade.color), stockDraw[f - 1].namedRegisters().take(1))
+            assertEquals(Opcode.INVOKE_STATIC, drawn[f].opcode)
+            assertEquals("$LIST_BACKGROUND->fade(Ljava/lang/Object;I)I", drawn[f].controlRef())
+            assertEquals("$name: the fade, then its color", listOf(draw.implementation!!.registerCount - 2, fade.color), drawn[f].namedRegisters())
+            assertEquals(Opcode.MOVE_RESULT, drawn[f + 1].opcode)
+            assertEquals(listOf(fade.color), drawn[f + 1].namedRegisters())
+            assertEquals("$name: stock draw", stockDraw.map { it.operand() }, (drawn.take(f) + drawn.drop(f + 2)).map { it.operand() })
+            val builder = stockDraw.drop(f).first { it.opcode == Opcode.INVOKE_STATIC }
+            assertEquals("$name: the gradient is built from the answer", "Landroid/graphics/LinearGradient;", builder.call()!!.returnType)
+            assertEquals(fade.color, builder.namedRegisters().first())
+            val d0 = ControlFlow.of(draw)
+            assertTrue("$name: only the color read reaches the hook", d0.normal.withIndex().none { (i, next) -> i != f - 1 && f in next })
 
             // The colors in use are worked out after the extension has had the theme's own set.
             val refreshed = lists.refresh.controlBody()
@@ -247,6 +272,32 @@ class AmoledBlackFixtureTest {
         }
     }
 
+    @Test fun `a build without the bar fade still shows the picture and says so`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val mutations: List<Pair<String, (BytecodePatchContext, BarFadeSite) -> Unit>> = listOf(
+                "fade reads its color another way" to { _, s -> s.draw.replaceInstruction(s.at - 1, "const/4 v${s.color}, 0x0") },
+                "missing fade hook" to { c, _ -> c.tgMutableClassDefBy(LIST_BACKGROUND).methods.removeAll { it.origName == "fade" } },
+            )
+            for ((case, change) in mutations) {
+                val c = context(build)
+                val site = c.resolveBlackTheme()
+                val lists = c.resolveListBackground(site.method)
+                val fade = c.resolveBarFade()
+                change(c, fade)
+                val draw = ImmutableMethod.of(fade.draw).state()
+                val refresh = ImmutableMethod.of(lists.refresh).controlBody().size
+                val warnings = PatchLogCapture.warnings { amoledBlackPatch.execute(c) }
+                assertEquals("${build.name}: $case warns once", 1, warnings.size)
+                assertTrue("${build.name}: $case names what's missing: $warnings", warnings.single().startsWith("AMOLED black: ") &&
+                    warnings.single().endsWith("The picture behind the lists shows with Telegram's bar fades."))
+                assertEquals("${build.name}: $case leaves the fade", draw, fade.draw.state())
+                assertEquals("${build.name}: $case still hooks the refresh", refresh + 1, lists.refresh.controlBody().size)
+                val status = c.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == "listBackground" }
+                assertEquals("${build.name}: $case keeps the picture", 1L, (status.controlBody().first() as WideLiteralInstruction).wideLiteral)
+            }
+        }
+    }
+
     @Test fun `Night and Dark carry every surface and the light themes stay light`() {
         val surfaces = ExtensionDex.classes().single { it.origType == BLACK_THEME }.methods.single { it.origName == "<clinit>" }
             .controlBody().mapNotNull { it.controlString() }.toSet()
@@ -330,10 +381,15 @@ class AmoledBlackFixtureTest {
 
     /**
      * Every class with a method that parses theme text, the owner of each String-to-int lookup the
-     * reader calls, and the page layout with the classes its holder setup makes.
+     * reader calls, the page layout with the classes its holder setup makes, and the bar fade.
      */
     private fun loadHosts(build: File): List<ClassDef> {
-        val parsers = FixtureDex.classesWhere(build, { true }) { method -> method.controlBody().any { it.controlString() == "WLS=" } }
+        fun Instruction.fadeStep() = opcode == Opcode.DIV_INT_LIT16 && (this as WideLiteralInstruction).wideLiteral == 285L
+        val found = FixtureDex.classesWhere(build, { true }) { method ->
+            method.controlBody().any { it.controlString() == "WLS=" || it.fadeStep() }
+        }
+        val fades = found.filter { cls -> cls.methods.any { m -> m.controlBody().any { it.fadeStep() } } }
+        val parsers = found - fades.toSet()
         val lookups = parsers.flatMap { it.methods }.filter { it.origReturnType == SPARSE_INT_ARRAY }.flatMap { it.controlBody() }
             .mapNotNull { it.call() }.filter { it.origReturnType == "I" && it.parameterTypes.map { p -> p.toString() } == listOf("Ljava/lang/String;") }
             .map { it.definingClass }.filter { it.startsWith("Lorg/telegram/") }.toSet()
@@ -341,7 +397,7 @@ class AmoledBlackFixtureTest {
         val holders = layout.flatMap { it.methods }.filter { it.name == "setFragmentStack" }.flatMap { it.controlBody() }
             .filter { it.opcode == Opcode.NEW_INSTANCE }.map { (it as ReferenceInstruction).reference.toString() }
             .filter { it.startsWith("Lorg/telegram/") }.toSet()
-        return (parsers + FixtureDex.classes(build, lookups).values + layout + FixtureDex.classes(build, holders).values)
+        return (parsers + FixtureDex.classes(build, lookups).values + layout + FixtureDex.classes(build, holders).values + fades)
             .associateBy { it.type }.values.map(ImmutableClassDef::of)
     }
 

@@ -90,6 +90,13 @@ val amoledBlackPatch = bytecodePatch(
             patchLog.warning("AMOLED black: ${unfit.message}. The patch goes on without the picture behind the lists.")
             null
         }
+        // Without the bar fade the picture still shows, with a band where a fade crosses a card.
+        val fade = if (lists == null) null else try {
+            resolveBarFade().also { it.rehearse() }
+        } catch (unfit: PatchException) {
+            patchLog.warning("AMOLED black: ${unfit.message}. The picture behind the lists shows with Telegram's bar fades.")
+            null
+        }
         // Assembled on a copy first, so a refusal leaves the app untouched.
         site.insert(MutableMethod(ImmutableMethod.of(site.method)))
         site.insertPattern(MutableMethod(ImmutableMethod.of(site.wallpaper)))
@@ -102,6 +109,7 @@ val amoledBlackPatch = bytecodePatch(
         site.insertPattern(site.wallpaper)
         if (lists != null) {
             lists.apply(this)
+            fade?.insert()
             enableCapability("listBackground")
         }
         enableStatus("amoledBlack")

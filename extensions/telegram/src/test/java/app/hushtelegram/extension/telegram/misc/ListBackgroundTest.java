@@ -16,8 +16,10 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RuntimeShader;
 import android.graphics.Shader;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Looper;
+import android.view.View;
 import android.widget.FrameLayout;
 
 import java.io.ByteArrayInputStream;
@@ -108,35 +110,49 @@ public class ListBackgroundTest {
     @Test public void onWithAPictureOnlyThePageColorsComeBackMarked() {
         on();
         ListBackground.refreshing();
-        assertEquals(0xFFFEFFFE, ListBackground.mark(WHITE, DAY_WHITE));
-        assertEquals(0xFFF0F1F1, ListBackground.mark(GRAY, DAY_GRAY));
-        assertEquals(0xFFF3F2F5, ListBackground.mark(SECTION, DAY_SECTION));
+        // Three steps toward the middle: blue for the rows, red for the gray, green for sections.
+        assertEquals(0xFFFFFFFC, ListBackground.mark(WHITE, DAY_WHITE));
+        assertEquals(0xFFEDF0F0, ListBackground.mark(GRAY, DAY_GRAY));
+        assertEquals(0xFFF2F0F5, ListBackground.mark(SECTION, DAY_SECTION));
         assertEquals(DAY_BAR, ListBackground.mark(ACTION_BAR, DAY_BAR));
         // What the keyer looks for is what getColor handed out.
-        assertEquals(0xFFFEFFFE, ListBackground.marked(0));
-        assertEquals(0xFFF0F1F1, ListBackground.marked(1));
-        assertEquals(0xFFF3F2F5, ListBackground.marked(2));
+        assertEquals(0xFFFFFFFC, ListBackground.marked(0));
+        assertEquals(0xFFEDF0F0, ListBackground.marked(1));
+        assertEquals(0xFFF2F0F5, ListBackground.marked(2));
         // Asked again, the same answer, and a new theme's page color is taken on.
-        assertEquals(0xFFFEFFFE, ListBackground.mark(WHITE, DAY_WHITE));
-        assertEquals(0xFF1E1F1F, ListBackground.mark(WHITE, 0xFF1F1F1E));
-        assertEquals(0xFF1E1F1F, ListBackground.marked(0));
+        assertEquals(0xFFFFFFFC, ListBackground.mark(WHITE, DAY_WHITE));
+        assertEquals(0xFF1F1F21, ListBackground.mark(WHITE, 0xFF1F1F1E));
+        assertEquals(0xFF1F1F21, ListBackground.marked(0));
         assertTrue(String.join("\n", HookStatus.report()).contains("page colors marked for the picture"));
     }
 
-    /** One step in two channels, never the alpha, and each page its own pair so none is taken for another. */
-    @Test public void theMarkersAreOneStepOffAndTellThePagesApart() {
-        assertEquals(ListBackground.PAGES.length, ListBackground.CODES.length);
+    /**
+     * Three steps in one channel, never the alpha and never clipped, each page its own channel. A step
+     * of rounding either way on two of them, or on one and the color unmarked, never meets.
+     */
+    @Test public void theMarkersAreThreeStepsOffAndStayApartThroughRounding() {
+        assertEquals(ListBackground.PAGES.length, ListBackground.CHANNELS.length);
         assertEquals(ListBackground.PAGES.length, ListBackground.KEEP.length);
-        for (int i = 0; i < ListBackground.CODES.length; i++) {
-            int code = ListBackground.CODES[i];
-            assertEquals("two channels", 2, Integer.bitCount(code));
-            assertEquals("lowest bits only", 0, code & ~0x010101);
-            for (int j = i + 1; j < ListBackground.CODES.length; j++) assertNotEquals(code, ListBackground.CODES[j]);
-            for (int color : new int[]{DAY_WHITE, DAY_GRAY, 0xFF000000, 0xFF1F1F1E, 0x80123456}) {
-                int marked = color ^ code;
+        assertEquals(3, ListBackground.STEP);
+        for (int color : new int[]{DAY_WHITE, DAY_GRAY, 0xFF000000, 0xFF1F1F1E, 0x80123456, 0xFF7F8081}) {
+            int[] seen = new int[ListBackground.PAGES.length + 1];
+            seen[ListBackground.PAGES.length] = color;
+            for (int page = 0; page < ListBackground.PAGES.length; page++) {
+                int marked = ListBackground.moved(color, page);
+                seen[page] = marked;
                 assertEquals(color >>> 24, marked >>> 24);
                 for (int shift = 0; shift < 24; shift += 8) {
-                    assertTrue(Math.abs(((color >> shift) & 0xFF) - ((marked >> shift) & 0xFF)) <= 1);
+                    int apart = Math.abs(((color >> shift) & 0xFF) - ((marked >> shift) & 0xFF));
+                    assertEquals(shift == ListBackground.CHANNELS[page] ? 3 : 0, apart);
+                }
+            }
+            for (int i = 0; i < seen.length; i++) {
+                for (int j = i + 1; j < seen.length; j++) {
+                    int widest = 0;
+                    for (int shift = 0; shift < 24; shift += 8) {
+                        widest = Math.max(widest, Math.abs(((seen[i] >> shift) & 0xFF) - ((seen[j] >> shift) & 0xFF)));
+                    }
+                    assertTrue(String.format("%08X and %08X", seen[i], seen[j]), widest >= 3);
                 }
             }
         }
@@ -179,7 +195,7 @@ public class ListBackgroundTest {
         on();
         ListBackground.ids = new int[]{WHITE, -1, SECTION};
         ListBackground.refreshing();
-        assertEquals(0xFFFEFFFE, ListBackground.mark(WHITE, DAY_WHITE));
+        assertEquals(0xFFFFFFFC, ListBackground.mark(WHITE, DAY_WHITE));
         assertEquals(DAY_GRAY, ListBackground.mark(GRAY, DAY_GRAY));
         assertFalse(String.join("\n", HookStatus.report()).contains("threw"));
     }
@@ -252,9 +268,32 @@ public class ListBackgroundTest {
             assertFalse("a sheet's or dialog's holder stays as it is", ListBackground.dressed(elsewhere));
             assertTrue(String.join("\n", HookStatus.report()).contains("list holders showing the picture 1"));
 
+            // A bar fade in a page color, or a blend of two, draws nothing inside the holder only.
+            int white = ListBackground.marked(0), gray = ListBackground.marked(1);
+            int between = Color.rgb((Color.red(white) + Color.red(gray)) / 2, (Color.green(white) + Color.green(gray)) / 2,
+                    (Color.blue(white) + Color.blue(gray)) / 2);
+            View bar = new View(controller.get());
+            holder.addView(bar);
+            ColorDrawable fade = new ColorDrawable(0);
+            bar.setBackground(fade);
+            assertEquals(white & 0x00FFFFFF, ListBackground.fade(fade, white));
+            assertEquals(between & 0x00FFFFFF, ListBackground.fade(fade, between));
+            assertEquals("a step of rounding", (gray + 1) & 0x00FFFFFF, ListBackground.fade(fade, gray + 1));
+            assertEquals("not a page color", DAY_BAR, ListBackground.fade(fade, DAY_BAR));
+            assertEquals("the color unmarked", DAY_WHITE, ListBackground.fade(fade, DAY_WHITE));
+            assertTrue(String.join("\n", HookStatus.report()).contains("bar fades left out over the picture 1"));
+            View sheet = new View(controller.get());
+            elsewhere.addView(sheet);
+            ColorDrawable sheetFade = new ColorDrawable(0);
+            sheet.setBackground(sheetFade);
+            assertEquals("outside the holder", white, ListBackground.fade(sheetFade, white));
+            assertEquals("drawn by no view", white, ListBackground.fade(new ColorDrawable(0), white));
+            assertEquals("not a drawable", white, ListBackground.fade(new Object(), white));
+
             Settings.LIST_BACKGROUND.save(false);
             ListBackground.changed();
             assertFalse(marked());
+            assertEquals("off", white, ListBackground.fade(fade, white));
             ListBackground.dress(holder);
             assertFalse(ListBackground.dressed(holder));
         }
@@ -304,6 +343,28 @@ public class ListBackgroundTest {
         assertEquals("text", Color.BLACK, shown.getPixel(1, 5));
         assertEquals("a lone marked pixel", white, shown.getPixel(9, 4));
 
+        // A glass bar's fade of a page color over itself leaves rows a step off in one channel or another.
+        Bitmap faded = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        faded.eraseColor(Color.BLACK);
+        int[] whiteRows = {white, white - 0x10000, white + 1, white - 0x100, white - 1, white};
+        int[] grayRows = {gray, gray + 0x100, gray - 1, gray + 0x10000, gray, gray};
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < 4; x++) faded.setPixel(x, y, whiteRows[y]);
+            for (int x = 4; x < 8; x++) faded.setPixel(x, y, grayRows[y]);
+            // Two steps off is something else drawn there.
+            for (int x = 8; x < 12; x++) faded.setPixel(x, y, white - 2);
+        }
+        BitmapShader fadedContent = new BitmapShader(faded, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+        fadedContent.setFilterMode(BitmapShader.FILTER_MODE_NEAREST);
+        keyer.setInputShader("content", fadedContent);
+        paint.setShader(keyer);
+        canvasRunningShaders(shown).drawRect(0, 0, width, height, paint);
+        for (int y = 0; y < height; y++) {
+            assertNear("white row " + y, composite(blue, white, whiteRows[y], 40, 0x66), shown.getPixel(1, y));
+            assertNear("gray row " + y, composite(blue, white, grayRows[y], 40, 0x26), shown.getPixel(5, y));
+            assertEquals("two steps off, row " + y, white - 2, shown.getPixel(9, y));
+        }
+
         // A deeper dim lays more of the page color over the picture.
         RuntimeShader deeper = ListBackground.keyer(picture, width, height, 80);
         deeper.setInputShader("content", content);
@@ -336,9 +397,13 @@ public class ListBackgroundTest {
     }
 
     private static void assertNear(int expected, int actual) {
+        assertNear("", expected, actual);
+    }
+
+    private static void assertNear(String what, int expected, int actual) {
         for (int shift = 0; shift < 32; shift += 8) {
             int want = (expected >> shift) & 0xFF, got = (actual >> shift) & 0xFF;
-            assertTrue(String.format("expected %08X, got %08X", expected, actual), Math.abs(want - got) <= 2);
+            assertTrue(String.format("%s expected %08X, got %08X", what, expected, actual), Math.abs(want - got) <= 2);
         }
     }
 
