@@ -44,9 +44,6 @@ public class ChatListAvatarTest {
     private final Object avatar = new Object();
     private final Map<Object, int[]> radii = new HashMap<>();
     private final List<Integer> set = new ArrayList<>();
-    /** The rows relayout ran, and the square each one's layout ended with. */
-    private final List<Object> relaidOut = new ArrayList<>();
-    private final Map<Object, RectF> squares = new HashMap<>();
 
     @Before public void setUp() {
         restore();
@@ -57,13 +54,6 @@ public class ChatListAvatarTest {
             @Override public void setRadius(Object image, int radius) {
                 set.add(radius);
                 radii.put(image, new int[] {radius, radius, radius, radius});
-            }
-            @Override public void relayout(Object row) {
-                // Telegram's layout sets the square again and calls resize, as the patch injects it.
-                relaidOut.add(row);
-                RectF rect = square();
-                ChatListAvatar.resize(rect, row);
-                squares.put(row, rect);
             }
         };
         PatchFamilyForTests.installed(PatchFamily.Capability.CHAT_LIST_AVATAR);
@@ -86,10 +76,15 @@ public class ChatListAvatarTest {
     }
 
     private static void assertSquare(float left, float top, float right, float bottom, RectF rect) {
-        assertEquals(rect.toString(), left, rect.left, 0.001f);
-        assertEquals(rect.toString(), top, rect.top, 0.001f);
-        assertEquals(rect.toString(), right, rect.right, 0.001f);
-        assertEquals(rect.toString(), bottom, rect.bottom, 0.001f);
+        assertSquare("", left, top, right, bottom, rect);
+    }
+
+    private static void assertSquare(String why, float left, float top, float right, float bottom, RectF rect) {
+        String what = why + " " + rect;
+        assertEquals(what, left, rect.left, 0.001f);
+        assertEquals(what, top, rect.top, 0.001f);
+        assertEquals(what, right, rect.right, 0.001f);
+        assertEquals(what, bottom, rect.bottom, 0.001f);
     }
 
     private int radius() {
@@ -214,7 +209,6 @@ public class ChatListAvatarTest {
             @Override public Object avatarOf(Object row) { throw new IllegalStateException("changed"); }
             @Override public int[] radii(Object image) { return null; }
             @Override public void setRadius(Object image, int radius) {}
-            @Override public void relayout(Object row) {}
         };
         RectF rect = square();
         ChatListAvatar.resize(rect, cell);
@@ -222,51 +216,62 @@ public class ChatListAvatarTest {
         assertTrue(String.join("\n", HookStatus.report()), String.join("\n", HookStatus.report()).contains("chat list avatar"));
     }
 
-    @Test public void aChangeLaysOutTheRowsAlreadyOnScreenAgain() {
-        // #89: rows laid out before the switch went on kept Telegram's size until a restart.
+    @Test public void aChangeResizesTheRowsAlreadyOnScreen() {
+        // #89: Telegram skips the layout of a row whose chat hasn't changed, so the rows on screen
+        // kept the old size until a restart. Each square here is the row's own, as the hook gets it.
         View row = new View(RuntimeEnvironment.getApplication());
-        ChatListAvatar.resize(square(), cell);
-        ChatListAvatar.resize(square(), row);
-        assertTrue(relaidOut.isEmpty());
+        RectF cellSquare = square();
+        RectF rowSquare = square();
+        ChatListAvatar.resize(cellSquare, cell);
+        ChatListAvatar.resize(rowSquare, row);
+        assertSquare(33, 27, 189, 183, cellSquare);
 
         Settings.CHAT_LIST_AVATAR.save(true);
-        ChatListAvatar.relayoutAll();
-        assertEquals(2, relaidOut.size());
-        assertTrue(relaidOut.containsAll(List.of(cell, row)));
-        assertSquare(48.6f, 42.6f, 173.4f, 167.4f, squares.get(cell));
-        assertSquare(48.6f, 42.6f, 173.4f, 167.4f, squares.get(row));
+        ChatListAvatar.resizeAll();
+        assertSquare(48.6f, 42.6f, 173.4f, 167.4f, cellSquare);
+        assertSquare(48.6f, 42.6f, 173.4f, 167.4f, rowSquare);
         assertEquals(67, radius());
         assertTrue("the row is drawn again", Shadows.shadowOf(row).wasInvalidated());
 
         Settings.CHAT_LIST_AVATAR_SIZE.save(120);
-        ChatListAvatar.relayoutAll();
-        assertSquare(17.4f, 11.4f, 204.6f, 198.6f, squares.get(cell));
+        ChatListAvatar.resizeAll();
+        assertSquare("from Telegram's square, not the 80% one", 17.4f, 11.4f, 204.6f, 198.6f, cellSquare);
         assertEquals(101, radius());
 
+        // A layout in between sets Telegram's square again, and the next change starts from that.
+        cellSquare.set(square());
+        ChatListAvatar.resize(cellSquare, cell);
+        ChatListAvatar.resizeAll();
+        assertSquare("not grown twice", 17.4f, 11.4f, 204.6f, 198.6f, cellSquare);
+        // A three-line row's square is 56 dp somewhere else, and that is what it goes back to.
+        cellSquare.set(30, 30, 198, 198);
+        ChatListAvatar.resize(cellSquare, cell);
         Settings.CHAT_LIST_AVATAR.save(false);
-        ChatListAvatar.relayoutAll();
-        assertSquare(33, 27, 189, 183, squares.get(cell));
+        ChatListAvatar.resizeAll();
+        assertSquare(30, 30, 198, 198, cellSquare);
+        assertSquare(33, 27, 189, 183, rowSquare);
         assertEquals("Telegram's corners are back", ROUND, radius());
     }
 
-    @Test public void aRowWhoseLayoutFailsDoesntStopTheOthers() {
+    @Test public void aRowWhoseAvatarFailsKeepsTelegramsSquareAndTheOthersStillChange() {
         Object broken = new Object();
         ChatListAvatar.Telegram fake = ChatListAvatar.telegram;
         ChatListAvatar.telegram = new ChatListAvatar.Telegram() {
-            @Override public Object avatarOf(Object row) { return fake.avatarOf(row); }
+            @Override public Object avatarOf(Object row) {
+                if (row == broken) throw new IllegalStateException("changed");
+                return fake.avatarOf(row);
+            }
             @Override public int[] radii(Object image) { return fake.radii(image); }
             @Override public void setRadius(Object image, int radius) { fake.setRadius(image, radius); }
-            @Override public void relayout(Object row) {
-                if (row == broken) throw new IllegalStateException("changed");
-                fake.relayout(row);
-            }
         };
-        ChatListAvatar.resize(square(), broken);
-        ChatListAvatar.resize(square(), cell);
+        RectF brokenSquare = square();
+        RectF cellSquare = square();
+        ChatListAvatar.resize(brokenSquare, broken);
+        ChatListAvatar.resize(cellSquare, cell);
         Settings.CHAT_LIST_AVATAR.save(true);
-        ChatListAvatar.relayoutAll();
-        assertEquals(List.of(cell), relaidOut);
-        assertSquare(48.6f, 42.6f, 173.4f, 167.4f, squares.get(cell));
-        assertTrue(String.join("\n", HookStatus.report()).contains("chat list avatar relayout"));
+        ChatListAvatar.resizeAll();
+        assertSquare(33, 27, 189, 183, brokenSquare);
+        assertSquare(48.6f, 42.6f, 173.4f, 167.4f, cellSquare);
+        assertTrue(String.join("\n", HookStatus.report()).contains("chat list avatar"));
     }
 }

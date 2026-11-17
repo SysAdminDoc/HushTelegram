@@ -746,8 +746,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("Chat pictures in the chat list show at the size you pick below. Each row keeps its height, "
                                 + "and the picture stays centered where Telegram puts it."));
                 avatars.setOnPreferenceChangeListener((row, value) -> {
-                    // Once the switch is saved, so the chat list lays its rows out again.
-                    Utils.runOnMainThreadDelayed(ChatListAvatar::relayoutAll, 0);
+                    // Once the switch is saved, so the rows on screen take the new size.
+                    Utils.runOnMainThreadDelayed(ChatListAvatar::resizeAll, 0);
                     return true;
                 });
                 folderTabs.addPreference(avatars);
@@ -2680,8 +2680,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 if (landed) {
                                     row.setSummary(avatarSizeSummary());
                                     dialog.dismiss();
-                                    // The chat list lays its rows out again at the new size.
-                                    Utils.runOnMainThreadDelayed(ChatListAvatar::relayoutAll, 0);
+                                    // The rows on screen take the new size.
+                                    Utils.runOnMainThreadDelayed(ChatListAvatar::resizeAll, 0);
                                 } else {
                                     checkSavedAvatarSize((AlertDialog) dialog);
                                     Utils.showToastLong(L10n.t("Couldn't save the size. Try again in a moment."));

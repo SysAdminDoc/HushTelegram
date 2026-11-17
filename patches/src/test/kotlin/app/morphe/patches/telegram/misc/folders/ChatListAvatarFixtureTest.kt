@@ -80,8 +80,6 @@ class ChatListAvatarFixtureTest {
                 .any { it.origRef() == "Lorg/telegram/messenger/ImageReceiver;->getRoundRadius()[I" })
             assertTrue("$name: setRadius tells it", stubs.getValue("setRadius").controlBody()
                 .any { it.origRef() == "Lorg/telegram/messenger/ImageReceiver;->setRoundRadius(I)V" })
-            assertTrue("$name: relayout runs the row's layout, where resize is injected", stubs.getValue("relayout").controlBody()
-                .any { it.opcode == Opcode.INVOKE_VIRTUAL && it.controlRef() == "${plan.cellType}->${plan.method.name}()V" })
         }
     }
 
