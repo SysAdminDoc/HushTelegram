@@ -52,7 +52,7 @@ class SendConfirmFixtureTest {
     private val textLength = "Ljava/lang/CharSequence;->length()I"
     private val fixed = setOf(
         "Lorg/telegram/ui/Components/ChatActivityEnterView;", "Lorg/telegram/messenger/MediaController;", "Lorg/telegram/ui/LaunchActivity;",
-        CALLBACK, chat, voip,
+        CALLBACK, chat, voip, "Lorg/telegram/messenger/VideoEditedInfo;",
     )
 
     /** Telegram's join of a voice chat: the chat, its invite hash, whether it starts one, a join-as flag, the window, the screen and the account. */
@@ -349,6 +349,18 @@ class SendConfirmFixtureTest {
                     listOf(declared.origType, AccessFlags.PUBLIC.isSet(declared.accessFlags), AccessFlags.PRIVATE.isSet(declared.accessFlags),
                         AccessFlags.STATIC.isSet(declared.accessFlags)))
             }
+            // The paused round video's length: the field the chat bar takes its recorded time from
+            // when the clip reaches its preview.
+            val lengthRef = "Lorg/telegram/messenger/VideoEditedInfo;->estimatedDuration:J"
+            val length = stub("videoLength")
+            assertEquals("$name videoLength", listOf(Opcode.CHECK_CAST, Opcode.IGET_WIDE, Opcode.RETURN_WIDE), length.map { it.opcode })
+            assertEquals("$name videoLength: the clip's own length", listOf(lengthRef, listOf(0, 2)),
+                listOf(length[1].controlRef(), length[1].namedRegisters()))
+            assertTrue("$name: the chat bar reads its paused clip's length there", bar.methods.any { m ->
+                m.implementation != null && m.controlBody().zipWithNext().any { (clip, read) ->
+                    clip.opcode == Opcode.IGET_OBJECT && clip.controlRef() == site.videoClip && read.opcode == Opcode.IGET_WIDE && read.controlRef() == lengthRef
+                }
+            })
 
             // The pauses before a question: the media controller's for a voice recording, and the
             // recorder's for a round video, each one the chat really implements.

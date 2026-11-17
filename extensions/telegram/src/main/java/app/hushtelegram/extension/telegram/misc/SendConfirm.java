@@ -28,6 +28,7 @@ import java.lang.ref.WeakReference;
 import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.function.ToLongFunction;
 
 /**
  * Questions Telegram doesn't ask: send this sticker, this GIF, this voice message, this round video
@@ -65,6 +66,9 @@ public final class SendConfirm {
 
     /** The state Telegram's chat bar sends a paused round video in, the one its paid-message question sends with. */
     static final int VIDEO_PREVIEW = 4;
+
+    /** Telegram's shortest round video: its send drops a shorter clip, says so and closes the camera. */
+    static final long SHORTEST_VIDEO_MS = 800L;
 
     /** How many times, {@link #PREVIEW_STEP_MS} apart, Send looks for the preview of a paused clip: five seconds. */
     static final int PREVIEW_TRIES = 50;
@@ -166,7 +170,7 @@ public final class SendConfirm {
         if (asking()) return false;
         Activity window = current();
         if (window == null || !mainThread() || !holdVideo(chat, state)) return true;
-        askOnClip(() -> previewBar(usable(window, false) ? window : current(), VIDEO),
+        askOnClip(() -> previewBar(usable(window, false) ? window : current(), VIDEO), SendConfirm::videoLengthIn,
                 () -> fromPreview(VIDEO, window, () -> resumeVideo(chat, VIDEO_PREVIEW, notify, scheduleDate, ttl, effect, stars), PREVIEW_TRIES));
         return false;
     }
@@ -178,7 +182,7 @@ public final class SendConfirm {
         if (asking()) return false;
         Activity window = current();
         if (window == null || !mainThread() || !holdVideo(chat, state)) return true;
-        askOnClip(() -> previewBar(usable(window, false) ? window : current(), VIDEO),
+        askOnClip(() -> previewBar(usable(window, false) ? window : current(), VIDEO), SendConfirm::videoLengthIn,
                 () -> fromPreview(VIDEO, window, () -> resumeVideoReordered(chat, VIDEO_PREVIEW, scheduleDate, ttl, effect, stars, notify), PREVIEW_TRIES));
         return false;
     }
@@ -186,22 +190,43 @@ public final class SendConfirm {
     /**
      * Asks about a paused round video once [clip] finds the chat bar showing it in its preview,
      * at once when it's there already and otherwise a moment after the pause, when the clip is
-     * written. Telegram drops a clip shorter than it keeps, and says so itself; that one never
-     * shows, so nothing is asked. A later send's wait replaces this one, so a new recording's
-     * release always reaches its own question. Send runs [send]. On the main thread.
+     * written. Telegram drops a clip shorter than it keeps, and says so itself. The older recorder
+     * drops it at the pause, so it never shows and nothing is asked. The newer one shows it and
+     * drops it at the send, so a clip [length] reads as too short goes straight to [send], whose
+     * send Telegram turns down, closing the camera as it does without the question. A later send's
+     * wait replaces this one, so a new recording's release always reaches its own question. Send
+     * runs [send]. On the main thread.
      */
-    static void askOnClip(Supplier<Object> clip, Runnable send) {
-        waitForClip(++clipWait, clip, send, PREVIEW_TRIES);
+    static void askOnClip(Supplier<Object> clip, ToLongFunction<Object> length, Runnable send) {
+        waitForClip(++clipWait, clip, length, send, PREVIEW_TRIES);
     }
 
-    private static void waitForClip(int wait, Supplier<Object> clip, Runnable send, int tries) {
+    private static void waitForClip(int wait, Supplier<Object> clip, ToLongFunction<Object> length, Runnable send, int tries) {
         if (wait != clipWait || asking()) return;
         Object bar = clip.get();
         Activity window = bar == null ? null : activity(bar);
-        if (window != null) {
+        if (window != null && tooShort(length.applyAsLong(bar))) {
+            send.run();
+        } else if (window != null) {
             askHeld(VIDEO, window, L10n.t(window, "Send video message"), L10n.t(window, "Send this video message to this chat?"), send);
         } else if (tries > 0) {
-            new Handler(Looper.getMainLooper()).postDelayed(() -> waitForClip(wait, clip, send, tries - 1), PREVIEW_STEP_MS);
+            new Handler(Looper.getMainLooper()).postDelayed(() -> waitForClip(wait, clip, length, send, tries - 1), PREVIEW_STEP_MS);
+        }
+    }
+
+    /** Whether Telegram drops a round video [lengthMs] long at its send; a length below 0 is unknown and isn't. */
+    static boolean tooShort(long lengthMs) {
+        return lengthMs >= 0 && lengthMs < SHORTEST_VIDEO_MS;
+    }
+
+    /** How long the round video in [bar]'s preview is, in milliseconds, or -1 when there's none or it can't be read. */
+    static long videoLengthIn(Object bar) {
+        try {
+            Object clip = videoClip(bar);
+            return clip == null ? -1L : videoLength(clip);
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.ASK_BEFORE_STICKER, "video length", failure);
+            return -1L;
         }
     }
 
@@ -217,13 +242,13 @@ public final class SendConfirm {
      */
     public static boolean previewVideo(Object bar, int scheduleDate, int notify, int repeat, int confirm, long stars) {
         if (passing == VIDEO) return true;
-        return preview(VIDEO, bar, scheduleDate, notify, repeat, stars, () -> sendFromBar(bar));
+        return preview(VIDEO, bar, videoLengthIn(bar), scheduleDate, notify, repeat, stars, () -> sendFromBar(bar));
     }
 
     /** {@link #previewVideo} for the voice clip, whose send never reaches {@link #voice}, so this one takes the flag. */
     public static boolean previewVoice(Object bar, int scheduleDate, int notify, int repeat, int confirm, long stars) {
         if (passed(VOICE)) return true;
-        return preview(VOICE, bar, scheduleDate, notify, repeat, stars, () -> sendFromBar(bar));
+        return preview(VOICE, bar, -1L, scheduleDate, notify, repeat, stars, () -> sendFromBar(bar));
     }
 
     /** {@link #previewVideo} for the build whose send takes the sound flag first and the stars before the question. */
@@ -259,11 +284,12 @@ public final class SendConfirm {
 
     /**
      * Asks about the clip waiting in [bar]'s preview; Send runs [send], the bar's send again. A tap
-     * while a question is up keeps the preview and asks nothing more.
+     * while a question is up keeps the preview and asks nothing more. A round video [length]
+     * milliseconds long that Telegram drops at its send as too short goes on to that send unasked.
      */
-    static boolean preview(int kind, Object bar, int scheduleDate, int notify, int repeat, long stars, Runnable send) {
+    static boolean preview(int kind, Object bar, long length, int scheduleDate, int notify, int repeat, long stars, Runnable send) {
         BooleanSetting setting = kind == VIDEO ? Settings.ASK_BEFORE_ROUND_VIDEO : Settings.ASK_BEFORE_VOICE_VIDEO;
-        if (!previewSend(scheduleDate, notify, repeat, stars) || !on(setting)) return true;
+        if (!previewSend(scheduleDate, notify, repeat, stars) || !on(setting) || kind == VIDEO && tooShort(length)) return true;
         Activity window = activity(bar);
         if (window == null) return true;
         if (asking()) return false;
@@ -612,6 +638,9 @@ public final class SendConfirm {
 
     /** The paused round video in the chat bar's preview, or null. Replaced when patching. */
     public static Object videoClip(Object bar) { return null; }
+
+    /** How long a paused round video clip is, in milliseconds, as Telegram reckons it at its send. Replaced when patching. */
+    public static long videoLength(Object clip) { return -1L; }
 
     /** The chat bar's send, as its send button runs it: now, with sound. Replaced when patching. */
     public static void sendFromBar(Object bar) {}

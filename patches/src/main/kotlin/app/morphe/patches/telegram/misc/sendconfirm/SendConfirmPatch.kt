@@ -74,6 +74,7 @@ internal const val SEND_HELPER = "Lorg/telegram/messenger/SendMessagesHelper;"
 internal const val CALLBACK = "Lorg/telegram/messenger/Utilities\$Callback;"
 private const val TL_DOCUMENT = "Lorg/telegram/tgnet/TLRPC\$TL_document;"
 private const val VIDEO_INFO = "Lorg/telegram/messenger/VideoEditedInfo;"
+private const val VIDEO_LENGTH = "estimatedDuration"
 private const val LONG = "Ljava/lang/Long;"
 private const val SET_FIELD_TEXT = "$ENTER_VIEW->setFieldText(Ljava/lang/CharSequence;)V"
 private const val CHAR_SEQUENCE = "Ljava/lang/CharSequence;"
@@ -370,6 +371,7 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
     controlHook(SEND_CONFIRM, "chatBar", listOf(OBJECT), "Z")
     controlHook(SEND_CONFIRM, "voiceClip", listOf(OBJECT), OBJECT)
     controlHook(SEND_CONFIRM, "videoClip", listOf(OBJECT), OBJECT)
+    controlHook(SEND_CONFIRM, "videoLength", listOf(OBJECT), "J")
     controlHook(SEND_CONFIRM, "sendFromBar", listOf(OBJECT), "V")
     controlHook(SEND_CONFIRM, "previewVoice", PREVIEW_HOOK, "Z")
     controlHook(SEND_CONFIRM, "previewVideo", PREVIEW_HOOK, "Z")
@@ -542,6 +544,12 @@ internal fun BytecodePatchContext.resolveSendConfirm(): SendConfirmSite {
             "the chat bar's send no longer sends its paused $what")
         ref
     }
+    // How long the paused round video is: the newer recorder writes its recorded length there, and
+    // its send drops a clip shorter than it keeps, so that clip's question would send nothing.
+    val videoInfo = tgMutableClassDefBy(VIDEO_INFO)
+    controlShape(AccessFlags.PUBLIC.isSet(videoInfo.accessFlags) && videoInfo.fields.any {
+        it.origName == VIDEO_LENGTH && it.origType == "J" && AccessFlags.PUBLIC.isSet(it.accessFlags) && !AccessFlags.STATIC.isSet(it.accessFlags)
+    }, "a round video clip no longer says how long it is")
 
     // Where that send starts sending each clip: right after it tests the field it just read for
     // null. Its own send button runs it there too, which never reaches the end of a recording.
@@ -830,6 +838,11 @@ internal fun BytecodePatchContext.writeSendConfirmStubs(site: SendConfirmSite) {
             return-object v0
         """)
     }
+    writeStub(SEND_CONFIRM, "videoLength", 3, """
+        check-cast p0, $VIDEO_INFO
+        iget-wide v0, p0, $VIDEO_INFO->$VIDEO_LENGTH:J
+        return-wide v0
+    """)
     // Now, with sound, and with Telegram's own paid-message question free to ask, as the send button sends.
     // 13.2 takes the same five as sound, date, flag, stars and the question.
     val words = if (site.barSendMethod.origParameterTypes == BAR_SEND_R8) """
