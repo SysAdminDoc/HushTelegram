@@ -233,6 +233,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/SendConfirm.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/SignInHelp.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/OutsideTranslate.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/TranslateMarkup.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/GoogleTranslate.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ChannelButtons.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ChannelMute.java",
