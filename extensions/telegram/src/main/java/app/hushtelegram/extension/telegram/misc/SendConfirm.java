@@ -26,6 +26,7 @@ import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
 import java.lang.ref.WeakReference;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * Questions Telegram doesn't ask: send this sticker, this GIF, this voice message, this round video
@@ -80,6 +81,9 @@ public final class SendConfirm {
 
     /** The last question shown, so a second send while it's up asks nothing more. */
     private static WeakReference<Dialog> asked = new WeakReference<>(null);
+
+    /** Counts the round video sends that wait for their clip's preview; only the latest one asks. */
+    private static int clipWait;
 
     /**
      * In front of the chat bar's sticker send.
@@ -148,15 +152,22 @@ public final class SendConfirm {
                 () -> fromPreview(VOICE, window, () -> resumeVoice(media, send, notify, scheduleDate, once, stars), PREVIEW_TRIES));
     }
 
-    /** In front of the chat's handling of the round video recorder, in the order one build gives its arguments. */
+    /**
+     * In front of the chat's handling of the round video recorder, in the order one build gives its
+     * arguments, and in front of the record button's two calls of it that send, its locked send
+     * button and its release. There false makes the button keep the recording, as Telegram's own
+     * paid-message question does, so Cancel leaves the paused clip in the chat bar's preview. The
+     * question waits for the paused clip to show there, see {@link #askOnClip}.
+     */
     public static boolean video(Object chat, int state, boolean notify, int scheduleDate, int ttl, long effect, long stars) {
         if (passed(VIDEO)) return true;
         if (!videoSend(state, notify, scheduleDate, stars) || !on(Settings.ASK_BEFORE_ROUND_VIDEO)) return true;
         if (asking()) return false;
         Activity window = current();
         if (window == null || !mainThread() || !holdVideo(chat)) return true;
-        return askHeld(VIDEO, window, L10n.t(window, "Send video message"), L10n.t(window, "Send this video message to this chat?"),
+        askOnClip(() -> previewBar(usable(window, false) ? window : current(), VIDEO),
                 () -> fromPreview(VIDEO, window, () -> resumeVideo(chat, VIDEO_PREVIEW, notify, scheduleDate, ttl, effect, stars), PREVIEW_TRIES));
+        return false;
     }
 
     /** {@link #video} for the build that gives the date, the timer and the effect before the sound flag. */
@@ -166,8 +177,31 @@ public final class SendConfirm {
         if (asking()) return false;
         Activity window = current();
         if (window == null || !mainThread() || !holdVideo(chat)) return true;
-        return askHeld(VIDEO, window, L10n.t(window, "Send video message"), L10n.t(window, "Send this video message to this chat?"),
+        askOnClip(() -> previewBar(usable(window, false) ? window : current(), VIDEO),
                 () -> fromPreview(VIDEO, window, () -> resumeVideoReordered(chat, VIDEO_PREVIEW, scheduleDate, ttl, effect, stars, notify), PREVIEW_TRIES));
+        return false;
+    }
+
+    /**
+     * Asks about a paused round video once [clip] finds the chat bar showing it in its preview,
+     * at once when it's there already and otherwise a moment after the pause, when the clip is
+     * written. Telegram drops a clip shorter than it keeps, and says so itself; that one never
+     * shows, so nothing is asked. A later send's wait replaces this one, so a new recording's
+     * release always reaches its own question. Send runs [send]. On the main thread.
+     */
+    static void askOnClip(Supplier<Object> clip, Runnable send) {
+        waitForClip(++clipWait, clip, send, PREVIEW_TRIES);
+    }
+
+    private static void waitForClip(int wait, Supplier<Object> clip, Runnable send, int tries) {
+        if (wait != clipWait || asking()) return;
+        Object bar = clip.get();
+        Activity window = bar == null ? null : activity(bar);
+        if (window != null) {
+            askHeld(VIDEO, window, L10n.t(window, "Send video message"), L10n.t(window, "Send this video message to this chat?"), send);
+        } else if (tries > 0) {
+            new Handler(Looper.getMainLooper()).postDelayed(() -> waitForClip(wait, clip, send, tries - 1), PREVIEW_STEP_MS);
+        }
     }
 
     /**

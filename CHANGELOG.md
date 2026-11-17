@@ -61,6 +61,7 @@ Every HushTelegram release, newest first.
 
 ### Fixed
 
+* **Telegram:** With **Ask before sending a round video message** on, Cancel keeps the video you just recorded in the chat bar, paused, so you can still send it or delete it. The question used to come up only after Telegram had let go of the recording, which left an empty bar. Sending from a locked recording's send button asks too, and a clip too short for Telegram to keep no longer gets a question. (#79)
 * **Telegram:** A suggestion card in Settings, like "Is this still your number?", goes away as soon as you answer it. Telegram 13.2's new Settings page listened for those changes in a place Telegram never sends them, so the card stayed until you left Settings and came back. Changes to your name or photo show there right away now too. (#76)
 * **Telegram:** With `Hide phone number` on, the "Is this still your number?" card shows your real number, since you can't answer it about a row of dots. Your profile and the rest of Settings keep it covered. (#76)
 * **Telegram:** Turning `Hide phone number` on or off changes the number at the top of Settings and on the Profile tab right away. Telegram 13.2 keeps its Settings tab built, so the number up there kept its old look until Telegram restarted.

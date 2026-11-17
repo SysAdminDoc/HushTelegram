@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -432,6 +433,61 @@ public class SendConfirmTest {
         assertEquals(1, stopped.get());
         ShadowLooper.idleMainLooper();
         assertEquals(2, stopped.get());
+    }
+
+    @Test public void aRoundVideoAsksOnceItsPausedClipShowsAndNeverForOneTelegramDropped() {
+        Activity window = window();
+        View bar = new View(window);
+        AtomicReference<Object> shown = new AtomicReference<>();
+        AtomicInteger sent = new AtomicInteger();
+        long wait = SendConfirm.PREVIEW_TRIES * SendConfirm.PREVIEW_STEP_MS;
+
+        // Paused, the clip shows in the preview a moment later, and the question waits for it.
+        SendConfirm.askOnClip(shown::get, sent::incrementAndGet);
+        ShadowLooper.idleMainLooper(3 * SendConfirm.PREVIEW_STEP_MS, TimeUnit.MILLISECONDS);
+        assertNull("nothing asked before the clip is there", ShadowDialog.getLatestDialog());
+        shown.set(bar);
+        ShadowLooper.idleMainLooper(SendConfirm.PREVIEW_STEP_MS, TimeUnit.MILLISECONDS);
+        Dialog dialog = ShadowDialog.getLatestDialog();
+        assertNotNull(dialog);
+        assertTrue(dialog.isShowing());
+        button(dialog.getWindow().getDecorView(), "Cancel").performClick();
+        ShadowLooper.idleMainLooper(wait, TimeUnit.MILLISECONDS);
+        assertEquals("Cancel sends nothing", 0, sent.get());
+        assertEquals("and the wait asked once", 1, ShadowDialog.getShownDialogs().size());
+
+        // A clip already in the preview, as when its own Send is tapped, is asked about at once.
+        SendConfirm.askOnClip(shown::get, sent::incrementAndGet);
+        Dialog now = ShadowDialog.getLatestDialog();
+        assertNotSame(dialog, now);
+        assertTrue(now.isShowing());
+        button(now.getWindow().getDecorView(), "Send").performClick();
+        ShadowLooper.idleMainLooper();
+        assertEquals(1, sent.get());
+
+        // Telegram drops a clip too short to keep: it never shows, so no question comes, even later.
+        shown.set(null);
+        SendConfirm.askOnClip(shown::get, sent::incrementAndGet);
+        ShadowLooper.idleMainLooper(wait, TimeUnit.MILLISECONDS);
+        shown.set(bar);
+        ShadowLooper.idleMainLooper(wait, TimeUnit.MILLISECONDS);
+        assertSame("no question for the dropped clip", now, ShadowDialog.getLatestDialog());
+
+        // A new recording's release while an older one still waits: only the new one asks, and its Send runs its own send.
+        shown.set(null);
+        AtomicInteger older = new AtomicInteger();
+        SendConfirm.askOnClip(shown::get, older::incrementAndGet);
+        SendConfirm.askOnClip(shown::get, sent::incrementAndGet);
+        shown.set(bar);
+        ShadowLooper.idleMainLooper(SendConfirm.PREVIEW_STEP_MS, TimeUnit.MILLISECONDS);
+        Dialog newer = ShadowDialog.getLatestDialog();
+        assertNotSame(now, newer);
+        ShadowLooper.idleMainLooper(wait, TimeUnit.MILLISECONDS);
+        assertSame("one question", newer, ShadowDialog.getLatestDialog());
+        button(newer.getWindow().getDecorView(), "Send").performClick();
+        ShadowLooper.idleMainLooper();
+        assertEquals(2, sent.get());
+        assertEquals(0, older.get());
     }
 
     @Test public void aCallAsksOnlyWithAWindowAndTheSwitchOn() {
