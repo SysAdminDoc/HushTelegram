@@ -58,6 +58,8 @@ val hideTranslateBarPatch = bytecodePatch(
         // Assembled on copies first, so a refusal leaves the app untouched.
         sites.forEach { it.replace(MutableMethod(ImmutableMethod.of(it.method))) }
         val pinnedMissing = pinned.rehearse()
+        val resume = if (pinnedMissing == null) resolvePinnedResume(pinned.method!!) else null
+        val resumeMissing = resume?.rehearse()
         writeStub(TRANSLATE_BAR, "stockHidden", 3, bridge(BAR_HIDDEN))
         writeStub(TRANSLATE_BAR, "translating", 3, bridge(TRANSLATING))
         sites.forEach { it.replace(it.method) }
@@ -66,6 +68,12 @@ val hideTranslateBarPatch = bytecodePatch(
         // bar and the translate bar switch still works.
         if (pinnedMissing == null) {
             pinned.apply(pinned.method!!)
+            // Without it the switch still works, from the next time a chat is opened.
+            if (resumeMissing == null) {
+                resume!!.apply(resume.method!!)
+            } else {
+                patchLog.warning("Hide translate bar: $resumeMissing. A chat left open keeps its pinned message bar until it's opened again.")
+            }
             enableCapability("hidePinnedBar")
         } else {
             patchLog.warning("Hide translate bar: $pinnedMissing. The patch goes on without the pinned message bar switch.")

@@ -20,6 +20,7 @@ import app.morphe.patches.telegram.misc.localcontrols.controlField
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.util.ControlFlow
+import app.morphe.util.RegisterLiveness
 import app.morphe.util.namedRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -55,7 +56,8 @@ class HideTranslateBarFixtureTest {
             val context = context(build)
             val sites = context.resolveTranslateBar()
             assertEquals("$name: the top bar and the menu", 2, sites.size)
-            val changed = sites.map { key(it.method) }.toSet() + key(pinnedDecision(context, sites.first().method.definingClass))
+            val screen = sites.first().method.definingClass
+            val changed = sites.map { key(it.method) }.toSet() + key(pinnedDecision(context, screen)) + key(resumeOf(context, screen))
             val old = sites.associate { key(it.method) to ImmutableMethod.of(it.method) }
             val untouched = hostState(build, context, changed)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { hideTranslateBarPatch.execute(context) })
@@ -102,6 +104,7 @@ class HideTranslateBarFixtureTest {
                     h.accessFlags = h.accessFlags and AccessFlags.PUBLIC.value.inv() or AccessFlags.PRIVATE.value },
                 "missing stock stub" to { c, _ -> c.tgMutableClassDefBy(TRANSLATE_BAR).methods.removeAll { it.origName == "stockHidden" } },
                 "missing pinned bar hook" to { c, _ -> c.tgMutableClassDefBy(TRANSLATE_BAR).methods.removeAll { it.origName == "pinnedBarHidden" } },
+                "missing pinned bar return hook" to { c, _ -> c.tgMutableClassDefBy(TRANSLATE_BAR).methods.removeAll { it.origName == "pinnedBarChanged" } },
                 "missing pinned bar flag" to { c, _ -> c.tgMutableClassDefBy(SETTINGS_STATUS).methods.removeAll { it.origName == "hidePinnedBar" } },
             )
             for ((case, change) in mutations) {
@@ -181,6 +184,75 @@ class HideTranslateBarFixtureTest {
         }
     }
 
+    @Test fun `a chat coming back to the front decides on its pinned bar again when the answer changed`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = context(build)
+            val screen = context.resolveTranslateBar().first().method.definingClass
+            val decision = pinnedDecision(context, screen)
+            val decisionRef = "${decision.definingClass}->${decision.name}(${decision.parameterTypes.joinToString("")})V"
+            val stock = ImmutableMethod.of(resumeOf(context, screen))
+            val stockBody = stock.controlBody()
+            val at = stockBody.indices.single { stockBody[it].opcode == Opcode.INVOKE_SUPER &&
+                stockBody[it].controlRef()?.endsWith("->onResume()V") == true } + 1
+            val live = RegisterLiveness.of(stock).liveInto(at)
+
+            assertEquals(emptyList<String>(), PatchLogCapture.warnings { hideTranslateBarPatch.execute(context) })
+            val changed = resumeOf(context, screen)
+            val body = changed.controlBody()
+            assertEquals("$name: asked once, right after the super call", listOf(at + 1), body.indices.filter { body[it].controlRef() == CHANGED_HOOK })
+            assertEquals(listOf(Opcode.MOVE_OBJECT_FROM16, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT, Opcode.IF_EQZ, Opcode.CONST_4, Opcode.CONST_4,
+                Opcode.INVOKE_VIRTUAL), (at until at + 7).map { body[it].opcode })
+            val (copy, from) = body[at].namedRegisters()
+            assertEquals("$name: the screen itself", stock.implementation!!.registerCount - 1, from)
+            assertEquals(listOf(copy), body[at + 1].namedRegisters())
+            val answer = body[at + 2].namedRegisters().single()
+            assertEquals(listOf(answer), body[at + 3].namedRegisters())
+            assertEquals(listOf(answer), body[at + 4].namedRegisters())
+            assertEquals("$name: animated", 1L, (body[at + 4] as WideLiteralInstruction).wideLiteral)
+            val zero = body[at + 5].namedRegisters().single()
+            assertEquals("$name: from its first step", 0L, (body[at + 5] as WideLiteralInstruction).wideLiteral)
+            assertEquals("$name: three registers nothing reads", 3, setOf(copy, answer, zero).size)
+            assertTrue("$name: nothing Telegram reads is overwritten ($live)", listOf(copy, answer, zero).none { it in live })
+            assertEquals("$name: the decision", decisionRef, (body[at + 6] as ReferenceInstruction).reference.toString())
+            assertEquals(listOf(copy) + decision.parameterTypes.map { if (it.toString() == "Z") answer else zero }, body[at + 6].namedRegisters())
+            val flow = ControlFlow.of(changed)
+            assertEquals("$name: an unchanged answer goes straight on", setOf(at + 4, at + 7), flow.normal[at + 3].toSet())
+            assertEquals(listOf(at + 7), flow.normal[at + 6])
+            assertTrue("$name: no handler", (at until at + 7).all { flow.exceptional[it].isEmpty() })
+            assertEquals("$name: every stock instruction, branch and handler", shape(stock, IntRange.EMPTY, at), shape(changed, at until at + 7, at))
+            assertEquals(1L, flag(context, "hidePinnedBar"))
+        }
+    }
+
+    @Test fun `a chat screen that resumes another way keeps the switch for the next chat opened`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val cases: List<Pair<String, (List<Instruction>, MutableMethod) -> Unit>> = listOf(
+                "no super call" to { body, m -> m.replaceInstruction(body.indices.single { body[it].opcode == Opcode.INVOKE_SUPER &&
+                    body[it].controlRef()?.endsWith("->onResume()V") == true }, "nop") },
+                "the screen's register written first" to { _, m -> m.replaceInstruction(0, "const/16 v${m.implementation!!.registerCount - 1}, 0x0") },
+            )
+            for ((case, change) in cases) {
+                val c = context(build)
+                val screen = c.resolveTranslateBar().first().method.definingClass
+                val resume = resumeOf(c, screen)
+                change(resume.controlBody(), resume)
+                val before = resume.state()
+                val warnings = PatchLogCapture.warnings { hideTranslateBarPatch.execute(c) }
+                assertEquals("${build.name}: $case: $warnings", 1, warnings.size)
+                assertTrue(warnings.single(), warnings.single().startsWith("Hide translate bar: ") &&
+                    warnings.single().endsWith("A chat left open keeps its pinned message bar until it's opened again."))
+                assertEquals("${build.name}: $case keeps onResume", before, resume.state())
+                assertTrue("${build.name}: $case still hides", pinnedDecision(c, screen).controlBody().any { it.controlRef() == PINNED_HOOK })
+                assertEquals("${build.name}: $case", 1L, flag(c, "hidePinnedBar"))
+            }
+        }
+    }
+
+    private fun resumeOf(c: BytecodePatchContext, screen: String) = c.tgMutableClassDefBy(screen).methods.single {
+        it.origName == "onResume" && it.parameterTypes.isEmpty() && it.returnType == "V"
+    }
+
     /** The screen method that reads the closed pin and checks the chat's and user's info: where the pinned bar is decided. */
     private fun pinnedDecision(c: BytecodePatchContext, screen: String) = c.tgMutableClassDefBy(screen).methods.single { m ->
         val body = m.controlBody()
@@ -255,6 +327,7 @@ class HideTranslateBarFixtureTest {
     companion object {
         /** Spelled out, so the test reads the same on a tree that doesn't have the hook yet. */
         private const val PINNED_HOOK = "$TRANSLATE_BAR->pinnedBarHidden()Z"
+        private const val CHANGED_HOOK = "$TRANSLATE_BAR->pinnedBarChanged(Ljava/lang/Object;)Z"
         private const val CHAT_FULL = "Lorg/telegram/tgnet/TLRPC\$ChatFull;"
         private const val USER_FULL = "Lorg/telegram/tgnet/TLRPC\$UserFull;"
         private val HOSTS = mutableMapOf<String, SoftReference<List<ClassDef>>>()
