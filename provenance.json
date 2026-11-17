@@ -471,6 +471,13 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FreeProxies.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FreeProxyTransport.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/TelegramProxies.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/V2RayCrypto.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/V2RayDialer.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/V2RayLinks.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/V2RayProxies.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/V2RayServer.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/V2RayTunnels.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/V2RayEditor.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/freeproxies/**"
       ],
       "origin": "original",

@@ -54,6 +54,7 @@ import app.hushtelegram.extension.telegram.misc.FreeProxies;
 import app.hushtelegram.extension.telegram.misc.GhostButton;
 import app.hushtelegram.extension.telegram.misc.ReadsButton;
 import app.hushtelegram.extension.telegram.misc.UnifiedPush;
+import app.hushtelegram.extension.telegram.misc.V2RayProxies;
 
 /**
  * How the HushTelegram screen is reached.
@@ -138,6 +139,7 @@ public final class SettingsEntry {
         }
         ReleaseCheck.onTelegramStart();
         FreeProxies.onTelegramStart();
+        V2RayProxies.onTelegramStart();
         UnifiedPush.onTelegramStart(context);
         DuressWipe.onTelegramStart(context);
         publishShortcut(context);

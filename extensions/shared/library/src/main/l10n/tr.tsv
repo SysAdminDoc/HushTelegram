@@ -2396,3 +2396,59 @@ Use 4 digits, the same length as your Telegram passcode.	Telegram parolanla ayn�
 That's your Telegram passcode. Pick a different one.	Bu senin Telegram parolan. Başka bir tane seç.
 # context: Lowercase noun phrase naming the Duress passcode switch (#25) in the patch status list
 duress passcode	acil durum parolası
+# context: Title of a switch under Free proxies on the Chat list page, and the feature's name in Export settings and the patch status list. V2Ray is a proxy tool; VMess, VLESS, Trojan and Shadowsocks are its kinds of servers
+V2Ray-style servers	V2Ray tarzı sunucular
+# context: Summary under the V2Ray-style servers switch. The proxy runs inside the app on the phone; Telegram's proxy list is Telegram's own Proxy Settings list
+Telegram connects through your own VMess, VLESS, Trojan and Shadowsocks servers by way of a proxy that runs inside Telegram, with one entry for it in Telegram's proxy list. It's used unless you use a proxy of your own. Calls don't go through it.	Telegram, Telegram'ın içinde çalışan bir proxy aracılığıyla kendi VMess, VLESS, Trojan ve Shadowsocks sunucularınız üzerinden bağlanır ve bu proxy için Telegram'ın proxy listesinde bir kayıt bulunur. Kendi proxy'nizi kullanmıyorsanız bu kullanılır. Aramalar bunun üzerinden geçmez.
+# context: Title of a row under V2Ray-style servers and of its dialog, where the person pastes links to their own servers
+Your V2Ray links	V2Ray bağlantılarınız
+# context: Summary of the Your V2Ray links row when nothing is pasted yet. Your proxy lists is another row on the same page, use its translated title
+Paste vmess://, vless://, trojan:// and ss:// links here. Links in Your proxy lists are read too.	vmess://, vless://, trojan:// ve ss:// bağlantılarını buraya yapıştırın. Proxy listeleriniz içindeki bağlantılar da okunur.
+# context: Summary of the Your V2Ray links row: how many links are saved. Your proxy lists is another row on the same page
+Links saved: %1$s. Links in Your proxy lists are read too.	Kaydedilen bağlantılar: %1$s. Proxy listeleriniz içindeki bağlantılar da okunur.
+# context: Hint in the empty box of the Your V2Ray links dialog
+One link a line	Her satıra bir bağlantı
+# context: Note under the box in the Your V2Ray links dialog. TCP, WebSocket and TLS are network protocol names
+VMess, VLESS, Trojan and Shadowsocks links work, over TCP or WebSocket, with or without TLS. They stay on this phone and out of settings files.	VMess, VLESS, Trojan ve Shadowsocks bağlantıları TCP veya WebSocket üzerinden, TLS ile ya da TLS olmadan çalışır. Bu telefonda kalırlar ve ayar dosyalarına girmezler.
+# context: Short toast and note in the Your V2Ray links dialog when a line isn't a link it reads; the number is the line's number
+Line %1$s isn't a link this can use	%1$s. satır kullanılabilecek bir bağlantı değil
+# context: Short toast and note in the Your V2Ray links dialog when too many links are pasted
+Up to %1$s links	En fazla %1$s bağlantı
+# context: Short toast when the pasted V2Ray links couldn't be saved, at most two short lines
+Couldn't save the links. Try again in a moment.	Bağlantılar kaydedilemedi. Birazdan tekrar deneyin.
+# context: Title of a row under V2Ray-style servers and of its picker, which picks the server Telegram goes through
+V2Ray server	V2Ray sunucusu
+# context: First choice in the V2Ray server picker: no fixed server, the fastest one that answered the last test
+The fastest that answers	Yanıt veren en hızlısı
+# context: A server in the V2Ray server picker: its name, then how many milliseconds it took to answer
+%1$s, %2$s ms	%1$s, %2$s ms
+# context: A server in the V2Ray server picker that didn't answer the last test: its name, then that
+%1$s, no answer	%1$s, yanıt yok
+# context: Name in the V2Ray server picker for a server whose link has no name, with its place in the list
+Server %1$s	Sunucu %1$s
+# context: Button in the V2Ray server picker that times every server again
+Test again	Yeniden test et
+# context: Summary of the V2Ray server row when the proxy inside Telegram couldn't start. The switch is V2Ray-style servers, just above
+The local proxy couldn't start. Turn the switch off and on again.	Yerel proxy başlatılamadı. Anahtarı kapatıp yeniden açın.
+# context: Summary of the V2Ray server row while every server is being timed
+Testing your V2Ray-style servers now.	V2Ray tarzı sunucularınız şimdi test ediliyor.
+# context: Summary of the V2Ray server row before the first test
+Not tested yet. Tap to pick a server or test them now.	Henüz test edilmedi. Bir sunucu seçmek veya şimdi test etmek için dokunun.
+# context: Summary of the V2Ray server row when the last test found no link it can use in the pasted links or the person's own proxy lists
+No V2Ray-style links found in your links or proxy lists.	Bağlantılarınızda veya proxy listelerinizde V2Ray tarzı bağlantı bulunamadı.
+# context: Summary of the V2Ray server row when no server answered the last test
+None of your servers answered last time.	Geçen sefer sunucularınızın hiçbiri yanıt vermedi.
+# context: Summary of the V2Ray server row: how many servers answered the last test, of how many it timed
+Servers that answered last time: %1$s of %2$s.	Geçen sefer yanıt veren sunucular: %2$s sunucudan %1$s.
+# context: Added to the V2Ray server row's summary: the kinds of links that were left out, as a list of names such as REALITY or gRPC
+Skipped, not supported yet: %1$s.	Atlandı, henüz desteklenmiyor: %1$s.
+# context: Added to the V2Ray server row's summary: the server the person picked, by its name
+Using %1$s.	%1$s kullanılıyor.
+# context: Item in the list of skipped link kinds on the V2Ray server row: links that send fake HTTP headers over TCP
+TCP with HTTP headers	HTTP başlıklı TCP
+# context: Item in the list of skipped link kinds on the V2Ray server row: Shadowsocks links that need a plugin
+Shadowsocks plugins	Shadowsocks eklentileri
+# context: Item in the list of skipped link kinds on the V2Ray server row: Shadowsocks links with a cipher it can't use
+other Shadowsocks ciphers	diğer Shadowsocks şifreleri
+# context: Item in the list of skipped link kinds on the V2Ray server row: VLESS links that ask for VLESS's own encryption
+VLESS encryption	VLESS şifrelemesi

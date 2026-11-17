@@ -751,6 +751,16 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_free_proxies", FALSE);
 
     /**
+     * Telegram connects through your own VMess, VLESS, Trojan and Shadowsocks servers, from links
+     * you paste and your own proxy lists, by way of a SOCKS5 proxy that runs inside Telegram on
+     * 127.0.0.1 and one entry for it in Telegram's proxy list (#71). Off by default, and it stays
+     * out of settings files: the links don't go in one, so an import would turn on a proxy with no
+     * servers behind it.
+     */
+    public static final BooleanSetting V2RAY_PROXIES =
+            new BooleanSetting("hushtelegram_v2ray_proxies", FALSE, false, false);
+
+    /**
      * A group's menu at the top has My messages, which searches the group for the messages you
      * sent the way Telegram's search does once you pick yourself as the sender. Off by default.
      */

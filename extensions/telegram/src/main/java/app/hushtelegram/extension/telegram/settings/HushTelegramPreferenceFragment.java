@@ -123,6 +123,7 @@ import app.hushtelegram.extension.telegram.misc.StickerSize;
 import app.hushtelegram.extension.telegram.misc.StorageFolder;
 import app.hushtelegram.extension.telegram.misc.TabFit;
 import app.hushtelegram.extension.telegram.misc.UnifiedPush;
+import app.hushtelegram.extension.telegram.misc.V2RayProxies;
 
 /**
  * The preference list, built in code rather than from an XML resource so the bundle adds no
@@ -135,7 +136,7 @@ import app.hushtelegram.extension.telegram.misc.UnifiedPush;
  */
 @SuppressWarnings("deprecation")
 public final class HushTelegramPreferenceFragment extends AbstractPreferenceFragment
-        implements ReleaseCheck.Listener, FreeProxies.Listener {
+        implements ReleaseCheck.Listener, FreeProxies.Listener, V2RayProxies.Listener {
     /** The repository as a link, and as a person reads it. ExtensionHostsTest reads the link. */
     static final String SOURCE_URL = "https://github.com/SysAdminDoc/HushTelegram";
     static final String SOURCE_ADDRESS = SOURCE_URL.substring(SOURCE_URL.indexOf("://") + 3);
@@ -221,6 +222,10 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     /** The row that looks for free proxies now, and says what the last try found. */
     @Nullable
     private Preference findProxiesRow;
+
+    /** The row that picks the V2Ray-style server, and says what the last test found. */
+    @Nullable
+    private Preference v2rayServerRow;
 
     @Nullable
     private Preference localNotificationStatus;
@@ -325,6 +330,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         shownDialogs.clear();
         ReleaseCheck.unwatch(this);
         FreeProxies.unwatch(this);
+        V2RayProxies.unwatch(this);
         if (navigation != null) navigation.close();
         navigation = null;
         super.onDestroyView();
@@ -344,6 +350,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     public void freeProxiesFinished() {
         if (getContext() == null) return;
         if (findProxiesRow != null) findProxiesRow.setSummary(FreeProxies.summary());
+    }
+
+    /** A V2Ray-style server test ended, or the local proxy started or stopped: the V2Ray server row says so. */
+    @Override
+    public void v2rayProxiesChanged() {
+        if (getContext() == null) return;
+        if (v2rayServerRow != null) v2rayServerRow.setSummary(V2RayProxies.serverSummary());
     }
 
     /**
@@ -851,6 +864,22 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             proxies.addPreference(findProxiesRow(context));
             proxies.addPreference(proxyListsRow(context));
             if (PatchFamily.Capability.PROXY_ORDER.installed()) proxies.addPreference(proxyOrderRow(context));
+            if (PatchFamily.Capability.V2RAY_PROXIES.installed()) {
+                SwitchPreference v2ray = toggle(context, Settings.V2RAY_PROXIES, L10n.t("V2Ray-style servers"),
+                        PatchFamily.FREE_PROXIES.coverageSummary(L10n.t("Telegram connects through your own VMess, VLESS, "
+                                + "Trojan and Shadowsocks servers by way of a proxy that runs inside Telegram, with one entry "
+                                + "for it in Telegram's proxy list. It's used unless you use a proxy of your own. Calls don't "
+                                + "go through it.")));
+                v2ray.setOnPreferenceChangeListener((row, value) -> {
+                    // Once the switch is saved, so the proxy reads what it says.
+                    Utils.runOnMainThreadDelayed(V2RayProxies::switched, 0);
+                    return true;
+                });
+                proxies.addPreference(v2ray);
+                proxies.addPreference(v2rayLinksRow(context));
+                proxies.addPreference(v2rayServerRow(context));
+                V2RayProxies.watch(this);
+            }
             proxies.addPreference(toggle(context, Settings.SIGN_IN_PROXY, L10n.t("Proxy button when signing in"),
                     PatchFamily.FREE_PROXIES.coverageSummary(L10n.t("The phone number screen always has the proxy "
                             + "button, so you can add a proxy before you sign in."))));
@@ -2048,6 +2077,9 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (build.contains(PatchFamily.FREE_PROXIES) && PatchFamily.Capability.PROXY_ORDER.installed()) {
             leftOut.add(L10n.t("Proxy order"));
         }
+        if (build.contains(PatchFamily.FREE_PROXIES) && PatchFamily.Capability.V2RAY_PROXIES.installed()) {
+            leftOut.add(L10n.t("V2Ray-style servers"));
+        }
         if (build.contains(PatchFamily.OUTSIDE_TRANSLATE)) {
             leftOut.add(L10n.t("the translation service, its key and the chats you turned translation on for"));
         }
@@ -2439,6 +2471,43 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             }
             return true;
         });
+        return row;
+    }
+
+    /** The links V2Ray-style servers goes through: the row says how many are saved, and a tap opens the box. */
+    private Preference v2rayLinksRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(V2RayEditor.LINKS_KEY);
+        row.setTitle(L10n.t("Your V2Ray links"));
+        row.setPersistent(false);
+        row.setSummary(V2RayProxies.linksSummary());
+        row.setOnPreferenceClickListener(p -> {
+            Activity activity = getActivity();
+            if (SettingsLock.refuses()) return true;
+            if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
+                own(V2RayEditor.openLinks(activity, p));
+            }
+            return true;
+        });
+        return row;
+    }
+
+    /** Which V2Ray-style server Telegram goes through: the row says what the last test found, and a tap opens the picker. */
+    private Preference v2rayServerRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(V2RayEditor.SERVER_KEY);
+        row.setTitle(L10n.t("V2Ray server"));
+        row.setPersistent(false);
+        row.setSummary(V2RayProxies.serverSummary());
+        row.setOnPreferenceClickListener(p -> {
+            Activity activity = getActivity();
+            if (SettingsLock.refuses()) return true;
+            if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
+                own(V2RayEditor.openServers(activity, p));
+            }
+            return true;
+        });
+        v2rayServerRow = row;
         return row;
     }
 

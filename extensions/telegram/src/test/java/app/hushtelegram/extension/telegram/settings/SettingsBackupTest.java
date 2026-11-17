@@ -135,6 +135,10 @@ public class SettingsBackupTest {
                 "On, a second passcode logs out every account on the phone. A file someone shared could turn "
                         + "it on unseen, and a file that carries it says a duress passcode is set, so it's only "
                         + "switched on from the phone's own screen.");
+        out.put("hushtelegram_v2ray_proxies",
+                "On, it starts a proxy inside Telegram and connects through the servers in the links pasted on "
+                        + "this phone, and the links themselves never go in a file. A file someone shared could "
+                        + "otherwise turn it on with no servers, or send Telegram through servers the file named.");
         return Collections.unmodifiableMap(out);
     }
 

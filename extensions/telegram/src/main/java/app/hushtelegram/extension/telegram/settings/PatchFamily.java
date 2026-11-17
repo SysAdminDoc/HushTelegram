@@ -159,7 +159,8 @@ public enum PatchFamily {
     CROP_GUARD(FamilyNames.CROP_GUARD, "cropGuard", null, Settings.CROP_GUARD),
     CAPTION_ORDER(FamilyNames.CAPTION_ORDER, "captionOrder", null, Settings.CAPTION_ORDER),
     PROXY_MENU(FamilyNames.PROXY_MENU, "proxyMenu", null, Settings.PROXY_MENU, Settings.DND_MENU),
-    FREE_PROXIES(FamilyNames.FREE_PROXIES, "freeProxies", null, Settings.FREE_PROXIES, Settings.SIGN_IN_PROXY),
+    FREE_PROXIES(FamilyNames.FREE_PROXIES, "freeProxies", null, Settings.FREE_PROXIES, Settings.SIGN_IN_PROXY,
+            Settings.V2RAY_PROXIES),
     MY_MESSAGES(FamilyNames.MY_MESSAGES, "myMessages", null, Settings.MY_MESSAGES, Settings.ADMIN_TOOLS),
     TEXT_DIRECTION(FamilyNames.TEXT_DIRECTION, "textDirection", null, Settings.TEXT_DIRECTION),
     LYRICS(FamilyNames.LYRICS, "lyrics", null, Settings.LYRICS, Settings.SONG_DATES),
@@ -496,6 +497,7 @@ public enum PatchFamily {
         REACTION_SOUND(UNIFIED_PUSH, "reactionSound", "sound for reaction notifications", true),
         DO_NOT_DISTURB(PROXY_MENU, "doNotDisturb", "Do Not Disturb menu item", true),
         PROXY_ORDER(FREE_PROXIES, "proxyOrder", "proxy order", true),
+        V2RAY_PROXIES(FREE_PROXIES, "v2rayProxies", "V2Ray-style servers", true),
         SONG_DATES(LYRICS, "songDates", "dates on your profile songs", true),
         ASK_TEXT(ASK_BEFORE_STICKER, "askBeforeText", "asking before a typed message goes out", true),
         ASK_JOIN(ASK_BEFORE_STICKER, "askBeforeJoin", "asking before you join a voice chat", true);

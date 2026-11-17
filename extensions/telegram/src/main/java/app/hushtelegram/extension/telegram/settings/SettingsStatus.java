@@ -282,6 +282,7 @@ public final class SettingsStatus {
     public static boolean doNotDisturb() { return false; }
     public static boolean freeProxies() { return false; }
     public static boolean proxyOrder() { return false; }
+    public static boolean v2rayProxies() { return false; }
     public static boolean myMessages() { return false; }
     public static boolean adminTools() { return false; }
     public static boolean textDirection() { return false; }

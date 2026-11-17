@@ -644,15 +644,21 @@ public class PatchFamilyTest {
         PatchFamily family = PatchFamily.FREE_PROXIES;
         assertEquals("Free proxies", family.patchName);
         assertEquals("freeProxies", family.statusMethod);
-        assertEquals(Arrays.asList(Settings.FREE_PROXIES, Settings.SIGN_IN_PROXY), family.switches);
+        assertEquals(Arrays.asList(Settings.FREE_PROXIES, Settings.SIGN_IN_PROXY, Settings.V2RAY_PROXIES), family.switches);
         // Going online through strangers' proxies is the person's choice; the button only offers it.
         assertFalse(Settings.FREE_PROXIES.defaultValue);
         assertTrue(Settings.SIGN_IN_PROXY.defaultValue);
+        // Running a proxy inside Telegram and going through servers from links is the person's choice too.
+        assertFalse(Settings.V2RAY_PROXIES.defaultValue);
         assertFalse(Settings.FREE_PROXIES.rebootApp);
         assertFalse(Settings.SIGN_IN_PROXY.rebootApp);
+        assertFalse(Settings.V2RAY_PROXIES.rebootApp);
+        assertFalse("the switch stays on this phone", Settings.V2RAY_PROXIES.includeWithImportExport);
         // The proxy order has no switch of its own: the order saved is the setting.
-        assertEquals(EnumSet.of(PatchFamily.Capability.PROXY_ORDER), family.expectedCapabilities());
+        assertEquals(EnumSet.of(PatchFamily.Capability.PROXY_ORDER, PatchFamily.Capability.V2RAY_PROXIES),
+                family.expectedCapabilities());
         assertEquals("proxyOrder", PatchFamily.Capability.PROXY_ORDER.statusMethod);
+        assertEquals("v2rayProxies", PatchFamily.Capability.V2RAY_PROXIES.statusMethod);
         assertEquals(PatchFamily.Page.CHAT_LIST, PatchFamily.Page.of(family));
         assertOnItsPage(family);
     }
