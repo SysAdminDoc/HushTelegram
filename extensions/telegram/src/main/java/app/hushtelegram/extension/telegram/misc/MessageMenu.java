@@ -362,13 +362,17 @@ public final class MessageMenu {
         HookStatus.counted(FamilyNames.MESSAGE_MENU_REPEAT, what);
     }
 
-    /** A copy of the file under the document's own name in the app's cache, in a folder of its own, older ones cleared. */
+    /** A copy of the file under the document's own name in the app's shared cache, in a folder of its own, older ones cleared. */
     static File renamed(Context context, File file, String name) throws java.io.IOException {
-        File folder = new File(context.getCacheDir(), "hushtelegram_forward_copy");
+        // In the cache on shared storage, where Telegram keeps its own downloads: its file send
+        // refuses any path inside the app's private folder (#94), the cache there included.
+        File inside = new File(context.getCacheDir(), COPY_FOLDER);
+        File shared = context.getExternalCacheDir();
+        File folder = shared != null ? new File(shared, COPY_FOLDER) : inside;
         if (!folder.mkdirs() && !folder.isDirectory()) throw new java.io.IOException("no cache folder");
-        File[] old = folder.listFiles();
         long cutoff = System.currentTimeMillis() - COPY_KEEP_MS;
-        if (old != null) for (File each : old) if (each.lastModified() < cutoff) deleteTree(each);
+        clearOlder(folder, cutoff);
+        if (!inside.equals(folder)) clearOlder(inside, cutoff);
         File own = new File(folder, Long.toString(System.nanoTime()));
         if (!own.mkdirs() && !own.isDirectory()) throw new java.io.IOException("no cache folder");
         File target = new File(own, name.replace('/', '_'));
@@ -377,6 +381,14 @@ public final class MessageMenu {
             for (int read; (read = in.read(buffer)) != -1; ) out.write(buffer, 0, read);
         }
         return target;
+    }
+
+    private static final String COPY_FOLDER = "hushtelegram_forward_copy";
+
+    /** Deletes the copies in [folder] made before [cutoff]. */
+    private static void clearOlder(File folder, long cutoff) {
+        File[] old = folder.listFiles();
+        if (old != null) for (File each : old) if (each.lastModified() < cutoff) deleteTree(each);
     }
 
     private static void deleteTree(File file) {
