@@ -352,6 +352,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_video_tracks", FALSE);
 
     /**
+     * Tapping a video in a chat opens it in a player app instead of Telegram's viewer, streaming it
+     * from the phone when it isn't downloaded (#99).
+     */
+    public static final BooleanSetting EXTERNAL_PLAYER =
+            new BooleanSetting("hushtelegram_external_player", FALSE);
+
+    /**
      * A swipe to the right on a profile's photos or media tabs goes back instead of to the previous
      * photo or tab.
      */

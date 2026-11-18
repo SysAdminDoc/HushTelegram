@@ -1512,8 +1512,26 @@ videos starting without sound	Starten von Videos ohne Ton
 Audio track and subtitles	Tonspur und Untertitel
 # context: that switch's summary. Audio track and Subtitles are the names of the two rows it adds to the menu that opens from the three dots in Telegram's video viewer.
 A video's settings menu gets Audio track when the video has more than one, and Subtitles when it has any. The subtitles you pick show over the video.	Das Einstellungsmenü eines Videos bekommt „Tonspur“, wenn das Video mehr als eine hat, und „Untertitel“, wenn es welche hat. Die gewählten Untertitel erscheinen über dem Video.
+# context: a switch under Keep videos muted on volume keys (#99). With it on, tapping a video in a chat opens it in another app, such as VLC, instead of Telegram's video viewer.
+Play videos in another app	Videos in einer anderen App abspielen
+# context: that switch's summary. Secret, view-once and protected (no forwarding) are Telegram's kinds of restricted media. VLC and MX Player are app names, keep them.
+Tapping a video in a chat opens it in a player app like VLC or MX Player. Videos that aren't downloaded stream as they play. Secret, view-once and protected videos stay in Telegram's player.	Tippst du in einem Chat auf ein Video, öffnet es sich in einer Player-App wie VLC oder MX Player. Nicht heruntergeladene Videos werden beim Abspielen gestreamt. Geheime, einmal sichtbare und geschützte Videos bleiben im Player von Telegram.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep videos muted on volume keys that lets you pick a video's audio track and subtitles.
 audio track and subtitle choice	Auswahl von Tonspur und Untertiteln
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep videos muted on volume keys that opens videos in a player app
+opening videos in another app	das Öffnen von Videos in einer anderen App
+# context: a short toast. The phone has no app that can open the video, so it opens in Telegram's own viewer instead.
+No app can play this video	Keine App kann dieses Video abspielen
+# context: a short toast. The video couldn't be sent to the player app while it downloads, so it opens in Telegram's own viewer instead.
+Couldn't stream this video	Video konnte nicht gestreamt werden
+# context: title of the notification shown while a player app streams a video from Telegram.
+Playing video in another app	Video läuft in einer anderen App
+# context: text of that notification. The stream ends by itself once the player app is closed.
+Stops on its own when the player closes.	Endet von selbst, wenn der Player geschlossen wird.
+# context: button on that notification. It ends the video stream.
+Stop	Stopp
+# context: name of that notification's channel in Android's notification settings.
+Video streaming	Video-Streaming
 # context: a row in the menu of Telegram's video viewer, and the title of the list it opens. Picks which audio track (language) of a video plays.
 Audio track	Tonspur
 # context: a row in the menu of Telegram's video viewer, and the title of the list it opens. Picks which subtitles show over a video.

@@ -727,6 +727,12 @@ public class HushTelegramPreferenceFragmentTest {
                     String.valueOf(page.findPreference(Settings.VIDEO_TRACKS.key).getSummary()));
             // The video menu stays as Telegram has it until the switch is turned on.
             assertFalse(Settings.VIDEO_TRACKS.key, ((SwitchPreference) page.findPreference(Settings.VIDEO_TRACKS.key)).isChecked());
+            assertEquals("Play videos in another app", String.valueOf(page.findPreference(Settings.EXTERNAL_PLAYER.key).getTitle()));
+            assertEquals("Tapping a video in a chat opens it in a player app like VLC or MX Player. Videos that aren't "
+                    + "downloaded stream as they play. Secret, view-once and protected videos stay in Telegram's player.",
+                    String.valueOf(page.findPreference(Settings.EXTERNAL_PLAYER.key).getSummary()));
+            // Videos open in Telegram's own viewer until the switch is turned on.
+            assertFalse(Settings.EXTERNAL_PLAYER.key, ((SwitchPreference) page.findPreference(Settings.EXTERNAL_PLAYER.key)).isChecked());
             assertEquals("Swipe back on profiles", String.valueOf(page.findPreference(Settings.SWIPE_BACK_ON_PROFILES.key).getTitle()));
             assertEquals("Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, "
                     + "instead of showing the previous photo or tab.",

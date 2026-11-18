@@ -1486,8 +1486,26 @@ videos starting without sound	静音开始播放的视频
 Audio track and subtitles	音轨和字幕
 # context: that switch's summary. Audio track and Subtitles are the names of the two rows it adds to the menu that opens from the three dots in Telegram's video viewer.
 A video's settings menu gets Audio track when the video has more than one, and Subtitles when it has any. The subtitles you pick show over the video.	视频有多个音轨时，其设置菜单会出现“音轨”，有字幕时会出现“字幕”。你选的字幕会显示在视频上.
+# context: a switch under Keep videos muted on volume keys (#99). With it on, tapping a video in a chat opens it in another app, such as VLC, instead of Telegram's video viewer.
+Play videos in another app	在其他应用中播放视频
+# context: that switch's summary. Secret, view-once and protected (no forwarding) are Telegram's kinds of restricted media. VLC and MX Player are app names, keep them.
+Tapping a video in a chat opens it in a player app like VLC or MX Player. Videos that aren't downloaded stream as they play. Secret, view-once and protected videos stay in Telegram's player.	点按聊天中的视频，会在 VLC 或 MX Player 等播放器应用中打开。尚未下载的视频会边播放边串流。私密、仅看一次和受保护的视频仍在 Telegram 的播放器中播放.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep videos muted on volume keys that lets you pick a video's audio track and subtitles.
 audio track and subtitle choice	选择音轨和字幕
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep videos muted on volume keys that opens videos in a player app
+opening videos in another app	在其他应用中打开视频
+# context: a short toast. The phone has no app that can open the video, so it opens in Telegram's own viewer instead.
+No app can play this video	没有应用可以播放此视频
+# context: a short toast. The video couldn't be sent to the player app while it downloads, so it opens in Telegram's own viewer instead.
+Couldn't stream this video	无法串流此视频
+# context: title of the notification shown while a player app streams a video from Telegram.
+Playing video in another app	正在其他应用中播放视频
+# context: text of that notification. The stream ends by itself once the player app is closed.
+Stops on its own when the player closes.	播放器关闭后会自动停止.
+# context: button on that notification. It ends the video stream.
+Stop	停止
+# context: name of that notification's channel in Android's notification settings.
+Video streaming	视频串流
 # context: a row in the menu of Telegram's video viewer, and the title of the list it opens. Picks which audio track (language) of a video plays.
 Audio track	音轨
 # context: a row in the menu of Telegram's video viewer, and the title of the list it opens. Picks which subtitles show over a video.

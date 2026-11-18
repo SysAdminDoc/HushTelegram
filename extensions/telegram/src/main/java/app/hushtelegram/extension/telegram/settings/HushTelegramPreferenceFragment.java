@@ -1257,6 +1257,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + " video has more than one, and Subtitles when it has any. The subtitles you pick show over"
                                 + " the video.")));
             }
+            if (PatchFamily.Capability.EXTERNAL_PLAYER.installed()) {
+                on(pages, PatchFamily.KEEP_VIDEOS_MUTED).addPreference(toggle(context, Settings.EXTERNAL_PLAYER,
+                        L10n.t("Play videos in another app"), L10n.t("Tapping a video in a chat opens it in a player"
+                                + " app like VLC or MX Player. Videos that aren't downloaded stream as they play. Secret,"
+                                + " view-once and protected videos stay in Telegram's player.")));
+            }
             if (PatchFamily.Capability.VIDEO_EITHER_LANDSCAPE.installed()) {
                 on(pages, PatchFamily.KEEP_VIDEOS_MUTED).addPreference(toggle(context, Settings.VIDEO_EITHER_LANDSCAPE,
                         L10n.t("Full screen videos turn either way"), L10n.t("After you tap full screen, a video follows"

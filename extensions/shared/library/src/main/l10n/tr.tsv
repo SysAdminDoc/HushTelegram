@@ -1512,8 +1512,26 @@ videos starting without sound	videoları sessiz başlatma
 Audio track and subtitles	Ses parçası ve altyazılar
 # context: that switch's summary. Audio track and Subtitles are the names of the two rows it adds to the menu that opens from the three dots in Telegram's video viewer.
 A video's settings menu gets Audio track when the video has more than one, and Subtitles when it has any. The subtitles you pick show over the video.	Bir videonun ayarlar menüsüne, birden fazla ses parçası varsa Ses parçası, altyazısı varsa Altyazılar eklenir. Seçtiğin altyazılar videonun üzerinde görünür.
+# context: a switch under Keep videos muted on volume keys (#99). With it on, tapping a video in a chat opens it in another app, such as VLC, instead of Telegram's video viewer.
+Play videos in another app	Videoları başka bir uygulamada oynat
+# context: that switch's summary. Secret, view-once and protected (no forwarding) are Telegram's kinds of restricted media. VLC and MX Player are app names, keep them.
+Tapping a video in a chat opens it in a player app like VLC or MX Player. Videos that aren't downloaded stream as they play. Secret, view-once and protected videos stay in Telegram's player.	Sohbetteki bir videoya dokunmak onu VLC veya MX Player gibi bir oynatıcı uygulamasında açar. İndirilmemiş videolar oynatılırken akışla aktarılır. Gizli, tek seferlik ve korumalı videolar Telegram'ın oynatıcısında kalır.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep videos muted on volume keys that lets you pick a video's audio track and subtitles.
 audio track and subtitle choice	ses parçası ve altyazı seçme
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Keep videos muted on volume keys that opens videos in a player app
+opening videos in another app	videoları başka bir uygulamada açma
+# context: a short toast. The phone has no app that can open the video, so it opens in Telegram's own viewer instead.
+No app can play this video	Bu videoyu oynatabilecek uygulama yok
+# context: a short toast. The video couldn't be sent to the player app while it downloads, so it opens in Telegram's own viewer instead.
+Couldn't stream this video	Bu video akışla aktarılamadı
+# context: title of the notification shown while a player app streams a video from Telegram.
+Playing video in another app	Video başka bir uygulamada oynatılıyor
+# context: text of that notification. The stream ends by itself once the player app is closed.
+Stops on its own when the player closes.	Oynatıcı kapanınca kendiliğinden durur.
+# context: button on that notification. It ends the video stream.
+Stop	Durdur
+# context: name of that notification's channel in Android's notification settings.
+Video streaming	Video akışı
 # context: a row in the menu of Telegram's video viewer, and the title of the list it opens. Picks which audio track (language) of a video plays.
 Audio track	Ses parçası
 # context: a row in the menu of Telegram's video viewer, and the title of the list it opens. Picks which subtitles show over a video.
