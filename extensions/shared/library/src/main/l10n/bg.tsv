@@ -2500,3 +2500,8 @@ other Shadowsocks ciphers	други шифри на Shadowsocks
 VLESS encryption	шифроване на VLESS
 # context: read aloud after a settings row's name when a dot marks it as added since the settings were last opened
 New	Ново
+
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names one part of a patch that couldn't go in on this Telegram version.
+view-once and timed media shown unblurred	показването без размазване на медията за еднократно гледане и със самоунищожение
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names one part of a patch that couldn't go in on this Telegram version.
+screenshots of view-once and timed media	екранните снимки на медията за еднократно гледане и със самоунищожение

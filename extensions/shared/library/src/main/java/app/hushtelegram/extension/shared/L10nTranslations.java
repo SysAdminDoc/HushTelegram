@@ -64,7 +64,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildBg() {
-        Map<String, String> table = new HashMap<>(3204);
+        Map<String, String> table = new HashMap<>(3208);
         fillBg0(table);
         fillBg1(table);
         fillBg2(table);
@@ -3283,17 +3283,19 @@ public final class L10nTranslations {
                 "\u0435\u043a\u0440\u0430\u043d\u043d\u0438\u0442\u0435 \u0441\u043d\u0438\u043c\u043a\u0438 \u0432 \u0447\u0430\u0442\u043e\u0432\u0435, \u043a\u043e\u0438\u0442\u043e \u043d\u0435 \u043f\u043e\u0437\u0432\u043e\u043b\u044f\u0432\u0430\u0442 \u0437\u0430\u043f\u0430\u0437\u0432\u0430\u043d\u0435");
         table.put("screenshots of selected messages",
                 "\u0435\u043a\u0440\u0430\u043d\u043d\u0438\u0442\u0435 \u0441\u043d\u0438\u043c\u043a\u0438 \u043d\u0430 \u0438\u0437\u0431\u0440\u0430\u043d\u0438 \u0441\u044a\u043e\u0431\u0449\u0435\u043d\u0438\u044f");
+        table.put("screenshots of view-once and timed media",
+                "\u0435\u043a\u0440\u0430\u043d\u043d\u0438\u0442\u0435 \u0441\u043d\u0438\u043c\u043a\u0438 \u043d\u0430 \u043c\u0435\u0434\u0438\u044f\u0442\u0430 \u0437\u0430 \u0435\u0434\u043d\u043e\u043a\u0440\u0430\u0442\u043d\u043e \u0433\u043b\u0435\u0434\u0430\u043d\u0435 \u0438 \u0441\u044a\u0441 \u0441\u0430\u043c\u043e\u0443\u043d\u0438\u0449\u043e\u0436\u0435\u043d\u0438\u0435");
         table.put("search ads",
                 "\u0440\u0435\u043a\u043b\u0430\u043c\u0438 \u0432 \u0442\u044a\u0440\u0441\u0435\u043d\u0435\u0442\u043e");
         table.put("search lookups",
                 "\u0442\u044a\u0440\u0441\u0435\u043d\u0438\u044f\u0442\u0430 \u043a\u044a\u043c \u0441\u044a\u0440\u0432\u044a\u0440\u0430");
         table.put("secret chat requests",
                 "\u0437\u0430\u044f\u0432\u043a\u0438 \u0437\u0430 \u0442\u0430\u0435\u043d \u0447\u0430\u0442");
-        table.put("selecting every loaded message in a chat",
-                "\u0438\u0437\u0431\u0438\u0440\u0430\u043d\u0435\u0442\u043e \u043d\u0430 \u0432\u0441\u0438\u0447\u043a\u0438 \u0437\u0430\u0440\u0435\u0434\u0435\u043d\u0438 \u0441\u044a\u043e\u0431\u0449\u0435\u043d\u0438\u044f \u0432 \u0447\u0430\u0442");
     }
 
     private static void fillBg26(Map<String, String> table) {
+        table.put("selecting every loaded message in a chat",
+                "\u0438\u0437\u0431\u0438\u0440\u0430\u043d\u0435\u0442\u043e \u043d\u0430 \u0432\u0441\u0438\u0447\u043a\u0438 \u0437\u0430\u0440\u0435\u0434\u0435\u043d\u0438 \u0441\u044a\u043e\u0431\u0449\u0435\u043d\u0438\u044f \u0432 \u0447\u0430\u0442");
         table.put("selecting everything between two messages",
                 "\u0438\u0437\u0431\u0438\u0440\u0430\u043d\u0435\u0442\u043e \u043d\u0430 \u0432\u0441\u0438\u0447\u043a\u043e \u043c\u0435\u0436\u0434\u0443 \u0434\u0432\u0435 \u0441\u044a\u043e\u0431\u0449\u0435\u043d\u0438\u044f");
         table.put("selecting everything in shared media",
@@ -3366,6 +3368,8 @@ public final class L10nTranslations {
                 "\u043f\u0443\u0441\u043a\u0430\u043d\u0435 \u043d\u0430 \u0432\u0438\u0434\u0435\u043e\u043a\u043b\u0438\u043f\u043e\u0432\u0435\u0442\u0435 \u0431\u0435\u0437 \u0437\u0432\u0443\u043a");
         table.put("view-once and timed media",
                 "\u043c\u0435\u0434\u0438\u044f\u0442\u0430 \u0437\u0430 \u0435\u0434\u043d\u043e\u043a\u0440\u0430\u0442\u043d\u043e \u0433\u043b\u0435\u0434\u0430\u043d\u0435 \u0438 \u0441\u044a\u0441 \u0441\u0430\u043c\u043e\u0443\u043d\u0438\u0449\u043e\u0436\u0435\u043d\u0438\u0435");
+        table.put("view-once and timed media shown unblurred",
+                "\u043f\u043e\u043a\u0430\u0437\u0432\u0430\u043d\u0435\u0442\u043e \u0431\u0435\u0437 \u0440\u0430\u0437\u043c\u0430\u0437\u0432\u0430\u043d\u0435 \u043d\u0430 \u043c\u0435\u0434\u0438\u044f\u0442\u0430 \u0437\u0430 \u0435\u0434\u043d\u043e\u043a\u0440\u0430\u0442\u043d\u043e \u0433\u043b\u0435\u0434\u0430\u043d\u0435 \u0438 \u0441\u044a\u0441 \u0441\u0430\u043c\u043e\u0443\u043d\u0438\u0449\u043e\u0436\u0435\u043d\u0438\u0435");
         table.put("voice playback while locked",
                 "\u0433\u043b\u0430\u0441\u043e\u0432\u043e \u0432\u044a\u0437\u043f\u0440\u043e\u0438\u0437\u0432\u0435\u0436\u0434\u0430\u043d\u0435 \u043f\u0440\u0438 \u0437\u0430\u043a\u043b\u044e\u0447\u0435\u043d \u0435\u043a\u0440\u0430\u043d");
         table.put("website sign-in tokens",
@@ -3381,7 +3385,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(3204);
+        Map<String, String> table = new HashMap<>(3208);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -6600,17 +6604,19 @@ public final class L10nTranslations {
                 "Screenshots in Chats, die das Speichern nicht erlauben");
         table.put("screenshots of selected messages",
                 "Screenshots ausgew\u00e4hlter Nachrichten");
+        table.put("screenshots of view-once and timed media",
+                "Screenshots von einmaligen und selbstzerst\u00f6renden Medien");
         table.put("search ads",
                 "Suchwerbung");
         table.put("search lookups",
                 "Suchanfragen");
         table.put("secret chat requests",
                 "Anfragen f\u00fcr geheime Chats");
-        table.put("selecting every loaded message in a chat",
-                "das Ausw\u00e4hlen aller geladenen Nachrichten in einem Chat");
     }
 
     private static void fillDe26(Map<String, String> table) {
+        table.put("selecting every loaded message in a chat",
+                "das Ausw\u00e4hlen aller geladenen Nachrichten in einem Chat");
         table.put("selecting everything between two messages",
                 "das Ausw\u00e4hlen aller Nachrichten dazwischen");
         table.put("selecting everything in shared media",
@@ -6683,6 +6689,8 @@ public final class L10nTranslations {
                 "Starten von Videos ohne Ton");
         table.put("view-once and timed media",
                 "einmalige und selbstzerst\u00f6rende Medien");
+        table.put("view-once and timed media shown unblurred",
+                "das Anzeigen einmaliger und selbstzerst\u00f6render Medien ohne Unsch\u00e4rfe");
         table.put("voice playback while locked",
                 "Sprachwiedergabe bei gesperrtem Handy");
         table.put("website sign-in tokens",
@@ -6698,7 +6706,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(3204);
+        Map<String, String> table = new HashMap<>(3208);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -9917,17 +9925,19 @@ public final class L10nTranslations {
                 "las capturas de pantalla en chats que no permiten guardar");
         table.put("screenshots of selected messages",
                 "capturas de mensajes seleccionados");
+        table.put("screenshots of view-once and timed media",
+                "las capturas de pantalla de medios de una sola vista y temporales");
         table.put("search ads",
                 "anuncios en b\u00fasquedas");
         table.put("search lookups",
                 "consultas de b\u00fasqueda");
         table.put("secret chat requests",
                 "solicitudes de chat secreto");
-        table.put("selecting every loaded message in a chat",
-                "seleccionar todos los mensajes cargados de un chat");
     }
 
     private static void fillEs26(Map<String, String> table) {
+        table.put("selecting every loaded message in a chat",
+                "seleccionar todos los mensajes cargados de un chat");
         table.put("selecting everything between two messages",
                 "seleccionar todo entre dos mensajes");
         table.put("selecting everything in shared media",
@@ -10000,6 +10010,8 @@ public final class L10nTranslations {
                 "iniciar los videos sin sonido");
         table.put("view-once and timed media",
                 "los medios de una sola vista y temporales");
+        table.put("view-once and timed media shown unblurred",
+                "los medios de una sola vista y temporales sin desenfoque");
         table.put("voice playback while locked",
                 "reproducci\u00f3n de voz con el tel\u00e9fono bloqueado");
         table.put("website sign-in tokens",
@@ -10015,7 +10027,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(3204);
+        Map<String, String> table = new HashMap<>(3208);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -13234,17 +13246,19 @@ public final class L10nTranslations {
                 "tangkapan layar di obrolan yang tidak mengizinkan penyimpanan");
         table.put("screenshots of selected messages",
                 "tangkapan layar pesan terpilih");
+        table.put("screenshots of view-once and timed media",
+                "tangkapan layar media sekali lihat dan berwaktu");
         table.put("search ads",
                 "iklan pencarian");
         table.put("search lookups",
                 "permintaan pencarian");
         table.put("secret chat requests",
                 "permintaan obrolan rahasia");
-        table.put("selecting every loaded message in a chat",
-                "memilih semua pesan yang dimuat di chat");
     }
 
     private static void fillIn26(Map<String, String> table) {
+        table.put("selecting every loaded message in a chat",
+                "memilih semua pesan yang dimuat di chat");
         table.put("selecting everything between two messages",
                 "memilih semua pesan di antara dua pesan");
         table.put("selecting everything in shared media",
@@ -13317,6 +13331,8 @@ public final class L10nTranslations {
                 "memulai video tanpa suara");
         table.put("view-once and timed media",
                 "media sekali lihat dan berwaktu");
+        table.put("view-once and timed media shown unblurred",
+                "media sekali lihat dan berwaktu tanpa buram");
         table.put("voice playback while locked",
                 "pemutaran suara saat ponsel terkunci");
         table.put("website sign-in tokens",
@@ -13332,7 +13348,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(3204);
+        Map<String, String> table = new HashMap<>(3208);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -16551,17 +16567,19 @@ public final class L10nTranslations {
                 "as capturas de tela em chats que n\u00e3o permitem salvar");
         table.put("screenshots of selected messages",
                 "capturas de mensagens selecionadas");
+        table.put("screenshots of view-once and timed media",
+                "as capturas de tela de m\u00eddias de visualiza\u00e7\u00e3o \u00fanica e tempor\u00e1rias");
         table.put("search ads",
                 "an\u00fancios na busca");
         table.put("search lookups",
                 "consultas de busca");
         table.put("secret chat requests",
                 "pedidos de chat secreto");
-        table.put("selecting every loaded message in a chat",
-                "selecionar todas as mensagens carregadas de uma conversa");
     }
 
     private static void fillPt_rBR26(Map<String, String> table) {
+        table.put("selecting every loaded message in a chat",
+                "selecionar todas as mensagens carregadas de uma conversa");
         table.put("selecting everything between two messages",
                 "selecionar tudo entre duas mensagens");
         table.put("selecting everything in shared media",
@@ -16634,6 +16652,8 @@ public final class L10nTranslations {
                 "iniciar v\u00eddeos sem som");
         table.put("view-once and timed media",
                 "as m\u00eddias de visualiza\u00e7\u00e3o \u00fanica e tempor\u00e1rias");
+        table.put("view-once and timed media shown unblurred",
+                "as m\u00eddias de visualiza\u00e7\u00e3o \u00fanica e tempor\u00e1rias sem desfoque");
         table.put("voice playback while locked",
                 "reprodu\u00e7\u00e3o de voz com o celular bloqueado");
         table.put("website sign-in tokens",
@@ -16649,7 +16669,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(3204);
+        Map<String, String> table = new HashMap<>(3208);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -19868,17 +19888,19 @@ public final class L10nTranslations {
                 "kaydetmeye izin vermeyen sohbetlerdeki ekran g\u00f6r\u00fcnt\u00fclerini");
         table.put("screenshots of selected messages",
                 "se\u00e7ili mesajlar\u0131n ekran g\u00f6r\u00fcnt\u00fcleri");
+        table.put("screenshots of view-once and timed media",
+                "tek g\u00f6r\u00fcnt\u00fclemelik ve s\u00fcreli medyalar\u0131n ekran g\u00f6r\u00fcnt\u00fclerini");
         table.put("search ads",
                 "arama reklamlar\u0131");
         table.put("search lookups",
                 "arama sorgular\u0131");
         table.put("secret chat requests",
                 "gizli sohbet istekleri");
-        table.put("selecting every loaded message in a chat",
-                "bir sohbette y\u00fcklenen t\u00fcm mesajlar\u0131 se\u00e7me");
     }
 
     private static void fillTr26(Map<String, String> table) {
+        table.put("selecting every loaded message in a chat",
+                "bir sohbette y\u00fcklenen t\u00fcm mesajlar\u0131 se\u00e7me");
         table.put("selecting everything between two messages",
                 "iki mesaj\u0131n aras\u0131ndakileri se\u00e7me");
         table.put("selecting everything in shared media",
@@ -19951,6 +19973,8 @@ public final class L10nTranslations {
                 "videolar\u0131 sessiz ba\u015flatma");
         table.put("view-once and timed media",
                 "tek g\u00f6r\u00fcnt\u00fclemelik ve s\u00fcreli medyalar\u0131");
+        table.put("view-once and timed media shown unblurred",
+                "tek g\u00f6r\u00fcnt\u00fclemelik ve s\u00fcreli medyalar\u0131n bulan\u0131kla\u015ft\u0131r\u0131lmadan g\u00f6sterilmesini");
         table.put("voice playback while locked",
                 "telefon kilitliyken ses oynatma");
         table.put("website sign-in tokens",
@@ -19966,7 +19990,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildZh_Hans() {
-        Map<String, String> table = new HashMap<>(3204);
+        Map<String, String> table = new HashMap<>(3208);
         fillZh_Hans0(table);
         fillZh_Hans1(table);
         fillZh_Hans2(table);
@@ -23185,17 +23209,19 @@ public final class L10nTranslations {
                 "\u5728\u4e0d\u5141\u8bb8\u4fdd\u5b58\u7684\u804a\u5929\u4e2d\u622a\u5c4f");
         table.put("screenshots of selected messages",
                 "\u9009\u4e2d\u6d88\u606f\u7684\u622a\u56fe");
+        table.put("screenshots of view-once and timed media",
+                "\u4ec5\u67e5\u770b\u4e00\u6b21\u548c\u9605\u540e\u5373\u711a\u5a92\u4f53\u7684\u622a\u5c4f");
         table.put("search ads",
                 "\u641c\u7d22\u5e7f\u544a");
         table.put("search lookups",
                 "\u641c\u7d22\u67e5\u8be2");
         table.put("secret chat requests",
                 "\u79c1\u5bc6\u804a\u5929\u8bf7\u6c42");
-        table.put("selecting every loaded message in a chat",
-                "\u9009\u4e2d\u804a\u5929\u4e2d\u6240\u6709\u5df2\u52a0\u8f7d\u7684\u6d88\u606f");
     }
 
     private static void fillZh_Hans26(Map<String, String> table) {
+        table.put("selecting every loaded message in a chat",
+                "\u9009\u4e2d\u804a\u5929\u4e2d\u6240\u6709\u5df2\u52a0\u8f7d\u7684\u6d88\u606f");
         table.put("selecting everything between two messages",
                 "\u9009\u62e9\u4e24\u6761\u6d88\u606f\u4e4b\u95f4\u7684\u6240\u6709\u6d88\u606f");
         table.put("selecting everything in shared media",
@@ -23268,6 +23294,8 @@ public final class L10nTranslations {
                 "\u9759\u97f3\u5f00\u59cb\u64ad\u653e\u7684\u89c6\u9891");
         table.put("view-once and timed media",
                 "\u4ec5\u67e5\u770b\u4e00\u6b21\u548c\u9605\u540e\u5373\u711a\u7684\u5a92\u4f53");
+        table.put("view-once and timed media shown unblurred",
+                "\u4e0d\u6a21\u7cca\u663e\u793a\u4ec5\u67e5\u770b\u4e00\u6b21\u548c\u9605\u540e\u5373\u711a\u7684\u5a92\u4f53");
         table.put("voice playback while locked",
                 "\u9501\u5c4f\u65f6\u7684\u8bed\u97f3\u64ad\u653e");
         table.put("website sign-in tokens",
