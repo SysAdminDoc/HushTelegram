@@ -1187,7 +1187,7 @@ public final class OutsideTranslate {
     }
 
     /**
-     * Duress passcode (#25): forgets the chats turned on and every translation held, on disk too.
+     * Duress passcode (#79): forgets the chats turned on and every translation held, on disk too.
      * The translation service and its settings stay.
      */
     static void forgetAll() {

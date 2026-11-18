@@ -963,7 +963,7 @@ public final class KeepDeleted {
         return newer;
     }
 
-    /** What a duress passcode forgets in memory once it has cleared [PREFS] (#25). */
+    /** What a duress passcode forgets in memory once it has cleared [PREFS] (#79). */
     static synchronized void forgetAll() {
         KEPT.clear();
         HANDING.clear();

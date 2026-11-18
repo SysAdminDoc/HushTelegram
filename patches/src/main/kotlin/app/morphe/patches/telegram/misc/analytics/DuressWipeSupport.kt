@@ -52,7 +52,7 @@ internal class DuressWipeSite(val method: MutableMethod, val returns: List<Pair<
 }
 
 /**
- * Duress passcode's target (#25): SharedConfig.checkPasscode, which every place Telegram asks for
+ * Duress passcode's target (#79): SharedConfig.checkPasscode, which every place Telegram asks for
  * its passcode goes through, the lock screen included. The settings row reads Telegram's passcode
  * through the hidden chats' stubs, and the wipe calls Telegram's own log-out and folders by
  * reflection, so those are checked here as well; any of them missing leaves the switch out.

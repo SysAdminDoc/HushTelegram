@@ -203,6 +203,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String DELETE_ACCOUNT_ROW = "action_delete_account";
     /** The Set duress passcode row's key. The code itself is kept only as a salted hash, by {@link DuressWipe}. */
     static final String DURESS_PASSCODE_ROW = "action_duress_passcode";
+    /** The What the duress passcode does row's key. The choice itself is saved under {@link Settings#DURESS_ACTION}. */
+    static final String DURESS_ACTION_ROW = "action_duress_action";
     /** The Forwarding rules row's key. The rules themselves are saved under {@link Settings#AUTO_FORWARDING_RULES}. */
     static final String FORWARDING_RULES_ROW = "action_forwarding_rules";
     /** The Tracked people row's key. The people themselves are kept by {@link SpecialContacts}, one list for each account. */
@@ -1796,22 +1798,29 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 }
                 if (PatchFamily.Capability.DURESS_WIPE.installed()) {
                     SwitchPreference duress = toggle(context, Settings.DURESS_WIPE, L10n.t("Duress passcode"),
-                            L10n.t("Typing the duress passcode on Telegram's lock screen logs out every account on this phone "
-                                    + "and clears what HushTelegram kept, like deleted messages, edit history and call "
-                                    + "recordings. It needs a Telegram passcode and starts off."));
+                            L10n.t("Typing the duress passcode on Telegram's lock screen logs out or deletes accounts, as "
+                                    + "picked below, and clears what HushTelegram kept, like deleted messages, edit history "
+                                    + "and call recordings. It needs a Telegram passcode and starts off."));
                     duress.setOnPreferenceChangeListener((row, value) -> {
                         if (!Boolean.TRUE.equals(value)) return true;
                         if (!AppPasscode.isSet()) {
                             Utils.showToastLong(L10n.t("Set a Telegram passcode first."));
                             return false;
                         }
-                        if (DuressWipe.isSet()) return true;
+                        if (DuressWipe.isSet()) {
+                            warnIfDuressDeletes();
+                            return true;
+                        }
                         // Nothing to type yet: the switch goes on once a code is saved.
-                        askDuressPasscode(() -> ((SwitchPreference) row).setChecked(true));
+                        askDuressPasscode(() -> {
+                            ((SwitchPreference) row).setChecked(true);
+                            warnIfDuressDeletes();
+                        });
                         return false;
                     });
                     privacy.addPreference(duress);
                     privacy.addPreference(duressPasscodeRow(context));
+                    privacy.addPreference(duressActionRow(context));
                 }
                 if (PatchFamily.Capability.QUIET_SIGN_UP.installed()) {
                     privacy.addPreference(toggle(context, Settings.QUIET_SIGN_UP, L10n.t("Don't notify contacts"),
@@ -3687,7 +3696,66 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 L10n.isolate(CallRecorder.folder()));
     }
 
-    /** Set duress passcode (#25): a tap asks for the code twice and keeps only its salted hash. */
+    /** What the duress passcode does (#79): the row names the choice, and a tap lists them. */
+    private Preference duressActionRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(DURESS_ACTION_ROW);
+        row.setTitle(L10n.t("What the duress passcode does"));
+        row.setPersistent(false);
+        row.setSummary(duressActionSummary(DuressWipe.action()));
+        row.setOnPreferenceClickListener(p -> {
+            showDuressAction(context, p);
+            return true;
+        });
+        return row;
+    }
+
+    /** The choices with the saved one checked, saved the way Calls to record is, with the warning for a deletion. */
+    void showDuressAction(Context context, Preference row) {
+        if (SettingsLock.refuses()) return;
+        List<String> choices = DuressWipe.ACTIONS;
+        CharSequence[] labels = new CharSequence[choices.size()];
+        for (int i = 0; i < labels.length; i++) labels[i] = duressActionLabel(choices.get(i));
+        show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("What the duress passcode does"))
+                .setSingleChoiceItems(labels, choices.indexOf(DuressWipe.action()), (dialog, which) -> {
+                    boolean started = save((AlertDialog) dialog,
+                            () -> Settings.DURESS_ACTION.saveCommitted(choices.get(which)), landed -> {
+                                if (landed) {
+                                    row.setSummary(duressActionSummary(DuressWipe.action()));
+                                    dialog.dismiss();
+                                    warnIfDuressDeletes();
+                                } else {
+                                    checkSaved((AlertDialog) dialog, choices.indexOf(DuressWipe.action()));
+                                    Utils.showToastLong(L10n.t("Couldn't save the choice. Try again in a moment."));
+                                }
+                            });
+                    if (!started) checkSaved((AlertDialog) dialog, choices.indexOf(DuressWipe.action()));
+                })
+                .setNegativeButton(L10n.t("Cancel"), null));
+    }
+
+    static String duressActionLabel(String action) {
+        if (DuressWipe.LOG_OUT_OPEN.equals(action)) return L10n.t("Log out the open account");
+        if (DuressWipe.DELETE_ALL.equals(action)) return L10n.t("Delete every account");
+        if (DuressWipe.DELETE_OPEN.equals(action)) return L10n.t("Delete the open account");
+        return L10n.t("Log out every account");
+    }
+
+    /** The row's summary: the choice, and for a deletion the warning, which stays in sight under it. */
+    static String duressActionSummary(String action) {
+        if (!DuressWipe.deletes(action)) return duressActionLabel(action);
+        return duressActionLabel(action) + "\n" + L10n.t("Typed once, the duress passcode looks wrong. Typed again, it "
+                + "deletes for good. If an account has a cloud password, Telegram waits a week first.");
+    }
+
+    /** The short warning a deletion gets each time it's picked or the switch goes on with it. */
+    static void warnIfDuressDeletes() {
+        if (!DuressWipe.deletes(DuressWipe.action())) return;
+        Utils.showToastLong(L10n.t("Typed twice, the duress passcode deletes for good."));
+    }
+
+    /** Set duress passcode (#79): a tap asks for the code twice and keeps only its salted hash. */
     private Preference duressPasscodeRow(Context context) {
         Row row = new Row(context);
         row.setKey(DURESS_PASSCODE_ROW);

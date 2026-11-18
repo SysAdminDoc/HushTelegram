@@ -229,7 +229,9 @@ public class SettingsBackupTest {
                     // Bookmarks travel as a list of their own, added to the phone's rather than in place of them.
                     && setting != Settings.BOOKMARKS
                     // The font file stays on this phone, so its name doesn't travel either.
-                    && setting != Settings.CUSTOM_FONT)
+                    && setting != Settings.CUSTOM_FONT
+                    // A file can't make the duress passcode delete accounts on a phone where nobody picked that.
+                    && setting != Settings.DURESS_ACTION)
                 notSwitches.add(setting.key);
         }
         assertEquals("a setting in Settings isn't a switch, and a settings file has no format for it",

@@ -2370,10 +2370,10 @@ Edit a copy	Editar una copia
 Add Edit a copy to the message menu	Añadir Editar una copia al menú del mensaje
 # context: Summary under the Edit a copy switch in HushTelegram settings
 Opens a photo from a chat in Telegram's photo editor, where you can draw, add text or blur parts. Sending it sends the edited copy to the chat. The photo in the chat stays as it was.	Abre una foto de un chat en el editor de fotos de Telegram, donde puedes dibujar, añadir texto o difuminar partes. Al enviarla, se envía la copia editada al chat. La foto del chat queda como estaba.
-# context: Title of the Duress passcode switch (#25) on HushTelegram's Privacy page, also the first field's hint in its dialog. A duress passcode is a second passcode someone types when forced to unlock; typing it logs every account out
+# context: Title of the Duress passcode switch (#79) on HushTelegram's Privacy page, also the first field's hint in its dialog. A duress passcode is a second passcode someone types when forced to unlock; typing it logs every account out
 Duress passcode	Código de coacción
-# context: Summary of the Duress passcode switch. It must say plainly that every account on the phone is logged out, that HushTelegram's kept data is cleared, and that the switch starts off
-Typing the duress passcode on Telegram's lock screen logs out every account on this phone and clears what HushTelegram kept, like deleted messages, edit history and call recordings. It needs a Telegram passcode and starts off.	Escribir el código de coacción en la pantalla de bloqueo de Telegram cierra la sesión de todas las cuentas de este teléfono y borra lo que guardó HushTelegram, como mensajes eliminados, historial de ediciones y grabaciones de llamadas. Necesita un código de Telegram y empieza desactivado.
+# context: Summary of the Duress passcode switch. It must say plainly that typing the code logs out or deletes accounts, as picked in the row below it, that HushTelegram's kept data is cleared, and that the switch starts off
+Typing the duress passcode on Telegram's lock screen logs out or deletes accounts, as picked below, and clears what HushTelegram kept, like deleted messages, edit history and call recordings. It needs a Telegram passcode and starts off.	Escribir el código de coacción en la pantalla de bloqueo de Telegram cierra la sesión de las cuentas o las elimina, según lo elegido abajo, y borra lo que guardó HushTelegram, como mensajes eliminados, historial de ediciones y grabaciones de llamadas. Necesita un código de Telegram y empieza desactivado.
 # context: Title of the row under the Duress passcode switch that opens a dialog to pick the code, also that dialog's title
 Set duress passcode	Configurar código de coacción
 # context: Summary of the Set duress passcode row while no duress passcode is saved
@@ -2394,7 +2394,21 @@ Type a duress passcode.	Escribe un código de coacción.
 Use 4 digits, the same length as your Telegram passcode.	Usa 4 dígitos, la misma longitud que tu código de Telegram.
 # context: Refusal in the Set duress passcode dialog when the code typed is the user's real Telegram passcode
 That's your Telegram passcode. Pick a different one.	Ese es tu código de Telegram. Elige otro.
-# context: Lowercase noun phrase naming the Duress passcode switch (#25) in the patch status list
+# context: Title of the row under Set duress passcode (#79) that opens a single-choice dialog of what typing the duress passcode does, also that dialog's title
+What the duress passcode does	Qué hace el código de coacción
+# context: Choice in the What the duress passcode does dialog, also the row's summary: logs out every account on the phone. The default
+Log out every account	Cerrar sesión en todas las cuentas
+# context: Choice in the What the duress passcode does dialog, also the row's summary: logs out only the account open in Telegram right now, the other accounts stay signed in
+Log out the open account	Cerrar sesión en la cuenta abierta
+# context: Choice in the What the duress passcode does dialog, also the row's summary: permanently deletes every Telegram account on the phone
+Delete every account	Eliminar todas las cuentas
+# context: Choice in the What the duress passcode does dialog, also the row's summary: permanently deletes only the account open in Telegram right now
+Delete the open account	Eliminar la cuenta abierta
+# context: Second line of the summary of the What the duress passcode does row (#79), shown while a deleting choice is picked. The first time the code is typed the lock screen acts as if it was wrong, the second time the accounts are deleted for good. Telegram waits a week before deleting an account that has a cloud password (two-step verification)
+Typed once, the duress passcode looks wrong. Typed again, it deletes for good. If an account has a cloud password, Telegram waits a week first.	Escrito una vez, el código de coacción parece incorrecto. Escrito otra vez, elimina para siempre. Si una cuenta tiene contraseña en la nube, Telegram espera una semana antes.
+# context: Short warning toast (#79) when a deleting choice is picked, or the Duress passcode switch turns on with one picked: typing the duress passcode twice deletes the accounts for good. Must fit two toast lines of 28 characters
+Typed twice, the duress passcode deletes for good.	Escrito dos veces, elimina para siempre.
+# context: Lowercase noun phrase naming the Duress passcode switch (#79) in the patch status list
 duress passcode	código de coacción
 # context: Title of a switch under Free proxies on the Chat list page, and the feature's name in Export settings and the patch status list. V2Ray is a proxy tool; VMess, VLESS, Trojan and Shadowsocks are its kinds of servers
 V2Ray-style servers	Servidores tipo V2Ray

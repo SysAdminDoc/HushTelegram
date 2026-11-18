@@ -80,7 +80,7 @@ public final class PasscodePrompt {
     }
 
     /**
-     * Asks for a duress passcode (#25) twice, with the keyboard Telegram's own passcode uses. A code
+     * Asks for a duress passcode (#79) twice, with the keyboard Telegram's own passcode uses. A code
      * that's empty, the wrong length for a PIN or Telegram's own passcode is refused and the dialog
      * stays, as it does when the two don't match. Only a salted hash of the code is saved, by
      * {@link DuressWipe}, and [saved] runs on the main thread once it is.

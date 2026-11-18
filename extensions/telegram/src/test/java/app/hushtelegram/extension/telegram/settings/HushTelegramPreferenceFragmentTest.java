@@ -2929,7 +2929,7 @@ public class HushTelegramPreferenceFragmentTest {
     }
 
     /**
-     * Duress passcode (#25) is on the Privacy page of a build with it and starts off. Without a
+     * Duress passcode (#79) is on the Privacy page of a build with it and starts off. Without a
      * Telegram passcode both rows only say so. With one, the switch asks for a code before it goes
      * on, and the dialog takes the code twice, on the number pad for a PIN, refusing Telegram's own
      * passcode and a mismatch. Only a salted hash is saved.
@@ -2949,9 +2949,9 @@ public class HushTelegramPreferenceFragmentTest {
             HushTelegramPreferenceFragment page = pageOf(controller);
             SwitchPreference duress = (SwitchPreference) page.findPreference(Settings.DURESS_WIPE.key);
             assertEquals("Duress passcode", String.valueOf(duress.getTitle()));
-            assertEquals("Typing the duress passcode on Telegram's lock screen logs out every account on this phone and "
-                    + "clears what HushTelegram kept, like deleted messages, edit history and call recordings. It needs "
-                    + "a Telegram passcode and starts off.", String.valueOf(duress.getSummary()));
+            assertEquals("Typing the duress passcode on Telegram's lock screen logs out or deletes accounts, as picked "
+                    + "below, and clears what HushTelegram kept, like deleted messages, edit history and call recordings. "
+                    + "It needs a Telegram passcode and starts off.", String.valueOf(duress.getSummary()));
             assertFalse("starts off", duress.isChecked());
             Preference row = page.findPreference(HushTelegramPreferenceFragment.DURESS_PASSCODE_ROW);
             assertEquals("Set duress passcode", String.valueOf(row.getTitle()));
@@ -3020,6 +3020,91 @@ public class HushTelegramPreferenceFragmentTest {
             AppPasscodeForTests.restore();
             Settings.DURESS_WIPE.resetToDefault();
         }
+    }
+
+    /**
+     * What the duress passcode does (#79) sits under Set duress passcode and starts on logging out
+     * every account. Picking a deletion saves it and warns that the code looks wrong once and
+     * deletes the second time, and turning the switch on with a deletion picked warns again.
+     */
+    @Test
+    public void theDuressActionRowPicksLogOutOrDeleteAndWarnsAboutDeleting() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.DISABLE_ANALYTICS);
+        AppPasscodeForTests.use("2468");
+        String note = "Typed once, the duress passcode looks wrong. Typed again, it deletes for good. "
+                + "If an account has a cloud password, Telegram waits a week first.";
+        String warning = "Typed twice, the duress passcode deletes for good.";
+        assertFitsATwoLineToast("en", warning);
+        for (String language : new String[]{"bg", "de", "es", "in", "pt-rbr", "tr", "zh-hans"}) {
+            String row = app.hushtelegram.extension.shared.L10nTablesForTests.of(language).get(warning);
+            assertNotNull(language, row);
+            assertFitsATwoLineToast(language, row);
+        }
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            List<Preference> rows = new ArrayList<>();
+            collect(page.getPreferenceScreen(), rows);
+            Preference row = rows.get(indexOfKey(rows, HushTelegramPreferenceFragment.DURESS_PASSCODE_ROW) + 1);
+            assertEquals(HushTelegramPreferenceFragment.DURESS_ACTION_ROW, row.getKey());
+            assertEquals("What the duress passcode does", String.valueOf(row.getTitle()));
+            assertFalse(row.isPersistent());
+            assertEquals("Log out every account", String.valueOf(row.getSummary()));
+
+            AlertDialog list = dialogOf(row);
+            assertEquals("What the duress passcode does", String.valueOf(shadowOf(list).getTitle()));
+            List<String> labels = new ArrayList<>();
+            for (int i = 0; i < list.getListView().getCount(); i++) {
+                labels.add(String.valueOf(list.getListView().getAdapter().getItem(i)));
+            }
+            assertEquals(Arrays.asList("Log out every account", "Log out the open account", "Delete every account",
+                    "Delete the open account"), labels);
+            assertEquals(0, list.getListView().getCheckedItemPosition());
+
+            ShadowToast.reset();
+            shadowOf(list).clickOnItem(1);
+            settle();
+            assertFalse(list.isShowing());
+            assertEquals(DuressWipe.LOG_OUT_OPEN, Settings.DURESS_ACTION.get());
+            assertEquals("Log out the open account", String.valueOf(row.getSummary()));
+            assertNull("a log-out gets no warning", ShadowToast.getTextOfLatestToast());
+
+            list = dialogOf(row);
+            assertEquals(1, list.getListView().getCheckedItemPosition());
+            shadowOf(list).clickOnItem(3);
+            settle();
+            assertEquals(DuressWipe.DELETE_OPEN, Settings.DURESS_ACTION.get());
+            assertEquals("the warning stays in sight under a deletion", "Delete the open account\n" + note,
+                    String.valueOf(row.getSummary()));
+            assertEquals(warning, ShadowToast.getTextOfLatestToast());
+
+            // The switch going on with a deletion picked warns again.
+            assertTrue(DuressWipe.save("1357"));
+            ShadowToast.reset();
+            SwitchPreference duress = (SwitchPreference) page.findPreference(Settings.DURESS_WIPE.key);
+            assertTrue(duress.getOnPreferenceChangeListener().onPreferenceChange(duress, true));
+            assertEquals(warning, ShadowToast.getTextOfLatestToast());
+        } finally {
+            AppPasscodeForTests.restore();
+            Settings.DURESS_WIPE.resetToDefault();
+            Settings.DURESS_ACTION.resetToDefault();
+        }
+    }
+
+    /** A toast line holds about 34 characters on a small phone; 28 leaves room for wider letters. */
+    private static void assertFitsATwoLineToast(String language, String text) {
+        List<String> lines = new ArrayList<>();
+        StringBuilder line = new StringBuilder();
+        for (String word : text.split(" ")) {
+            if (line.length() > 0 && line.length() + 1 + word.length() > 28) {
+                lines.add(line.toString());
+                line.setLength(0);
+            }
+            if (line.length() > 0) line.append(' ');
+            line.append(word);
+        }
+        if (line.length() > 0) lines.add(line.toString());
+        assertTrue(language + ": " + text, lines.size() <= 2);
+        for (String each : lines) assertTrue(language + ": " + each, each.length() <= 28);
     }
 
     /**

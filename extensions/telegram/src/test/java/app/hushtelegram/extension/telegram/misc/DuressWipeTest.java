@@ -17,8 +17,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -39,8 +41,9 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
 /**
- * Duress passcode (#25): a second passcode that, typed where Telegram asks for its own, logs out
- * every account on the phone and clears what HushTelegram kept. Telegram's real passcode always
+ * Duress passcode (#79): a second passcode that, typed where Telegram asks for its own, logs out or
+ * deletes every account on the phone, or only the open one, and clears what HushTelegram kept. A
+ * deletion looks wrong the first time and deletes the second. Telegram's real passcode always
  * wins, a wrong code does nothing, and the switch, Pause and any failure leave Telegram's answer.
  */
 @RunWith(RobolectricTestRunner.class)
@@ -69,13 +72,17 @@ public class DuressWipeTest {
         }
     }
 
-    /** The accounts, their log-out and Telegram's folders. */
+    /** The accounts, their log-out and deletion, Telegram's folders and its start-over. */
     private static final class FakeTelegram implements DuressWipe.Telegram {
         final List<Integer> signedIn = new ArrayList<>();
         final List<Integer> loggedOut = new ArrayList<>();
         final Map<Integer, File> folders = new HashMap<>();
+        /** The deletions sent, by account, each with the answer Telegram would give it. */
+        final Map<Integer, DeleteAccount.Answer> deletions = new HashMap<>();
         int selected;
         int refuses = -1;
+        int unsent = -1;
+        int restarts;
 
         @Override public List<Integer> signedIn() { return new ArrayList<>(signedIn); }
         @Override public int selected() { return selected; }
@@ -85,6 +92,18 @@ public class DuressWipeTest {
             signedIn.remove(Integer.valueOf(account));
         }
         @Override public File directory(int type) { return folders.get(type); }
+        @Override public String delete(int account, DeleteAccount.Answer answer) {
+            if (account == unsent) return "Telegram didn't delete the account.";
+            deletions.put(account, answer);
+            return null;
+        }
+        @Override public void restart() { restarts++; }
+
+        /** Telegram deleted [account]: DeleteAccount tells the answer, then signs it out. */
+        void deleted(int account) {
+            deletions.get(account).done("Account deleted.");
+            signedIn.remove(Integer.valueOf(account));
+        }
     }
 
     /** Every file of HushTelegram's own that the wipe clears, by name. */
@@ -116,6 +135,7 @@ public class DuressWipeTest {
         DuressWipe.forgetForTests();
         AppPasscodeForTests.restore();
         Settings.DURESS_WIPE.resetToDefault();
+        Settings.DURESS_ACTION.resetToDefault();
         Settings.GHOST_MODE.resetToDefault();
         Settings.BOOKMARKS.resetToDefault();
         Settings.KEPT_REMOVED_CHATS.resetToDefault();
@@ -281,6 +301,125 @@ public class DuressWipeTest {
         assertTrue(String.join("\n", HookStatus.report()).contains("duress"));
         // And Telegram's yes stays a yes whatever happens.
         assertTrue(hooked.passcodeMatches(REAL));
+    }
+
+    @Test public void aDeletionLooksWrongTheFirstTimeAndDeletesTheSecond() throws Exception {
+        fill();
+        Settings.DURESS_ACTION.save(DuressWipe.DELETE_ALL);
+        File photo = file(telegram.folders.get(0), "Telegram Images/photo.jpg");
+
+        assertFalse("the first time looks like a wrong passcode", hooked.passcodeMatches(DURESS));
+        assertTrue(DuressWipe.armed());
+        assertTrue(telegram.deletions.isEmpty());
+        assertTrue(telegram.loggedOut.isEmpty());
+        assertEquals("kept", prefs("hushtelegram_hidden_chats").getString("kept", ""));
+        assertTrue(photo.exists());
+
+        assertFalse("the second time still looks wrong", hooked.passcodeMatches(DURESS));
+        assertFalse(DuressWipe.armed());
+        assertEquals(new HashSet<>(Arrays.asList(0, 2)), telegram.deletions.keySet());
+        assertEquals("a powered-off or receive-only account is ordinary again first", "", Settings.POWERED_OFF_ACCOUNTS.savedValue());
+        assertEquals("", Settings.RECEIVE_ONLY_ACCOUNTS.savedValue());
+        // Typed again while Telegram answers, it starts nothing more and arms nothing.
+        assertFalse(hooked.passcodeMatches(DURESS));
+        assertFalse(DuressWipe.armed());
+        assertEquals(2, telegram.deletions.size());
+
+        // Account 2 goes on the spot. Account 0 has a cloud password, so Telegram waits a week and it's logged out now.
+        telegram.deleted(2);
+        telegram.deletions.get(0).done("Telegram deletes the account in 7 days.");
+        ShadowLooper.idleMainLooper();
+        assertEquals(Collections.singletonList(0), telegram.loggedOut);
+        assertTrue(telegram.signedIn.isEmpty());
+        for (String name : KEPT) assertTrue(name + " is cleared", prefs(name).getAll().isEmpty());
+        assertTrue(prefs(DuressWipe.TOKENS).getAll().isEmpty());
+        assertEquals("", Settings.BOOKMARKS.savedValue());
+        assertFalse(photo.exists());
+        assertEquals("Telegram starts over once the log-outs have had time to leave", 0, telegram.restarts);
+        ShadowLooper.idleMainLooper(DuressWipe.RESTART_DELAY_MS, TimeUnit.MILLISECONDS);
+        assertEquals(1, telegram.restarts);
+
+        // The time limit passing later changes nothing, and the switch and the code stay.
+        ShadowLooper.idleMainLooper(DuressWipe.DELETE_WAIT_MS, TimeUnit.MILLISECONDS);
+        assertEquals(Collections.singletonList(0), telegram.loggedOut);
+        assertEquals(1, telegram.restarts);
+        assertTrue(Settings.DURESS_WIPE.get());
+        assertTrue(DuressWipe.matches(DURESS));
+    }
+
+    @Test public void telegramsPasscodeCallsOffAnArmedDeletion() {
+        Settings.DURESS_ACTION.save(DuressWipe.DELETE_ALL);
+        assertFalse(hooked.passcodeMatches(DURESS));
+        assertTrue(DuressWipe.armed());
+        assertTrue(hooked.passcodeMatches(REAL));
+        assertFalse(DuressWipe.armed());
+        assertFalse("armed again, not deleted", hooked.passcodeMatches(DURESS));
+        assertTrue(telegram.deletions.isEmpty());
+
+        // The arm outlives the process, so Telegram starting again between the two doesn't call it off.
+        DuressWipe.forgetForTests();
+        assertFalse(hooked.passcodeMatches(DURESS));
+        assertEquals(2, telegram.deletions.size());
+    }
+
+    @Test public void anAccountNotDeletedInTimeIsLoggedOutInstead() {
+        Settings.DURESS_ACTION.save(DuressWipe.DELETE_ALL);
+        telegram.unsent = 2;
+        assertFalse(hooked.passcodeMatches(DURESS));
+        assertFalse(hooked.passcodeMatches(DURESS));
+        assertEquals(Collections.singleton(0), telegram.deletions.keySet());
+        ShadowLooper.idleMainLooper();
+        assertTrue("it waits for Telegram's answer", telegram.loggedOut.isEmpty());
+
+        ShadowLooper.idleMainLooper(DuressWipe.DELETE_WAIT_MS, TimeUnit.MILLISECONDS);
+        assertEquals(Arrays.asList(2, 0), telegram.loggedOut);
+        // An answer after that changes nothing.
+        telegram.deletions.get(0).refused("Wait 30 seconds, then try again.");
+        ShadowLooper.idleMainLooper(DuressWipe.RESTART_DELAY_MS, TimeUnit.MILLISECONDS);
+        assertEquals(Arrays.asList(2, 0), telegram.loggedOut);
+        assertEquals(1, telegram.restarts);
+    }
+
+    @Test public void theOpenAccountOnlyLeavesTheOthersAndWhatHidesTheirChats() throws IOException {
+        fill();
+        telegram.selected = 2;
+        Settings.DURESS_ACTION.save(DuressWipe.LOG_OUT_OPEN);
+        assertTrue("the lock screen opens on the account left", hooked.passcodeMatches(DURESS));
+        assertEquals(Collections.singletonList(2), telegram.loggedOut);
+        assertEquals(Collections.singletonList(0), telegram.signedIn);
+
+        // What holds messages goes.
+        for (String name : new String[]{"hushtelegram_kept_deleted", "hushtelegram_edit_history", "hushtelegram_saved_downloads"}) {
+            assertTrue(name + " is cleared", prefs(name).getAll().isEmpty());
+        }
+        assertEquals("", Settings.BOOKMARKS.savedValue());
+        assertFalse(prefs("hushtelegram_outside_translate").contains("owner_chats"));
+        // The lists that hide or arrange the other account's chats stay, and it stays receive-only.
+        for (String name : new String[]{"hushtelegram_hidden_chats", "hushtelegram_hidden_messages", "hushtelegram_hidden_accounts",
+                "hushtelegram_ghost_exceptions", "hushtelegram_record_chats", "hushtelegram_launch_folders"}) {
+            assertEquals(name + " stays", "kept", prefs(name).getString("kept", ""));
+        }
+        assertEquals(Collections.singleton(42L), GhostChats.chats());
+        assertEquals("42", Settings.LOCAL_PINNED_CHATS.savedValue());
+        assertEquals("1 2 3", Settings.AUTO_FORWARDING_RULES.savedValue());
+        assertEquals("0", Settings.RECEIVE_ONLY_ACCOUNTS.savedValue());
+        assertEquals("the open account was powered off and isn't now", "", Settings.POWERED_OFF_ACCOUNTS.savedValue());
+
+        // Deleting only the open one, with another account left, doesn't start Telegram over.
+        telegram.signedIn.addAll(Arrays.asList(1, 2));
+        telegram.selected = 1;
+        Settings.DURESS_ACTION.save(DuressWipe.DELETE_OPEN);
+        assertFalse(hooked.passcodeMatches(DURESS));
+        assertFalse(hooked.passcodeMatches(DURESS));
+        assertEquals(Collections.singleton(1), telegram.deletions.keySet());
+        telegram.deleted(1);
+        ShadowLooper.idleMainLooper(DuressWipe.DELETE_WAIT_MS, TimeUnit.MILLISECONDS);
+        assertEquals(Arrays.asList(0, 2), telegram.signedIn);
+        assertEquals(Collections.singletonList(2), telegram.loggedOut);
+        assertEquals(0, telegram.restarts);
+        // The deletion is over, so the code arms again for the account now open.
+        assertFalse(hooked.passcodeMatches(DURESS));
+        assertTrue(DuressWipe.armed());
     }
 
     /** Something in every store the wipe clears, and in the ones it keeps. */

@@ -13,6 +13,8 @@ import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,9 +32,9 @@ import app.hushtelegram.extension.telegram.settings.FamilyNames;
 import app.hushtelegram.extension.telegram.settings.Settings;
 
 /**
- * Duress passcode (#25): a second passcode, typed where Telegram asks for its own, logs out every
- * account on the phone and clears what HushTelegram kept, and the lock screen opens into a
- * logged-out app.
+ * Duress passcode (#79): a second passcode, typed where Telegram asks for its own, logs out or
+ * deletes the accounts on the phone, every one or only the open one as {@link #ACTIONS} picks, and
+ * clears what HushTelegram kept.
  *
  * <p>The patch wraps Telegram's {@code SharedConfig.checkPasscode}: {@link #enter} gets what was
  * typed before Telegram looks at it, and {@link #afterCheck} gets Telegram's answer before each
@@ -40,11 +42,17 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * duress one. Only a salted PBKDF2-HMAC-SHA256 hash of the duress code is kept, in a file of its
  * own that no settings file or report reads.
  *
- * <p>The log-out is Telegram's own, the one its Log out row runs, for every signed-in account,
- * the one in use last. Telegram clears its own passcode when its last account logs out, which
- * this leaves as it is, so the app looks the way any logged-out Telegram does. Telegram's answer
- * to a log-out saves a log-in for the next sign-in on this phone; those are cleared now, again
- * whenever an answer lands later in this process, and once more at the next start.
+ * <p>The log-out is Telegram's own, the one its Log out row runs, the account in use last, and the
+ * lock screen opens. Telegram clears its own passcode when its last account logs out, which this
+ * leaves as it is, so the app looks the way any logged-out Telegram does. Telegram's answer to a
+ * log-out saves a log-in for the next sign-in on this phone; those are cleared now, again whenever
+ * an answer lands later in this process, and once more at the next start.
+ *
+ * <p>A deletion can't be taken back, so the code looks wrong the first time and only arms it; the
+ * next time deletes, through {@link DeleteAccount}, and still looks wrong. Telegram's real
+ * passcode disarms it. An account Telegram doesn't delete on the spot (one with a cloud password
+ * waits a week) or that gets no answer is logged out instead, and with no account left Telegram
+ * starts over on its sign-in screen.
  */
 public final class DuressWipe {
     private DuressWipe() {}
@@ -56,6 +64,21 @@ public final class DuressWipe {
     static final String ROUNDS = "rounds";
     /** Set by a wipe and cleared by the next start, which clears Telegram's saved log-ins once more. */
     static final String TOKENS_PENDING = "tokens_pending";
+    /** Set when the code was typed once and deletes; the next time deletes. Telegram's passcode clears it. */
+    static final String ARMED = "armed";
+
+    /** What the code does, saved in {@link Settings#DURESS_ACTION}. The first is the default. */
+    public static final String LOG_OUT_ALL = "";
+    public static final String LOG_OUT_OPEN = "log_out_open";
+    public static final String DELETE_ALL = "delete_all";
+    public static final String DELETE_OPEN = "delete_open";
+    public static final List<String> ACTIONS =
+            Collections.unmodifiableList(Arrays.asList(LOG_OUT_ALL, LOG_OUT_OPEN, DELETE_ALL, DELETE_OPEN));
+
+    /** How long a deletion waits for Telegram's answers before it logs out what's left. */
+    static final long DELETE_WAIT_MS = 15_000;
+    /** How long the start-over after a deletion waits, so the log-outs it sent can leave first. */
+    static final long RESTART_DELAY_MS = 2_000;
 
     /** Telegram's saved log-ins: the ones its log-out answers bring, and the ones a sign-in keeps. */
     static final String TOKENS = "saved_tokens";
@@ -91,6 +114,12 @@ public final class DuressWipe {
 
         /** One of Telegram's folders by its number, or null. */
         File directory(int type);
+
+        /** Sends Telegram's deletion of [account]: null once it's sent, else why it wasn't. */
+        String delete(int account, DeleteAccount.Answer answer);
+
+        /** Starts Telegram over, on the screen it opens with. */
+        void restart();
     }
 
     static Telegram telegram = new Reflected();
@@ -118,6 +147,9 @@ public final class DuressWipe {
     /** The files [TOKEN_WATCH] watches. SharedPreferences holds a listener weakly, so this holds them. */
     private static final List<SharedPreferences> WATCHED = new ArrayList<>();
 
+    /** The deletion under way, or null. Main thread only. */
+    private static Deletion deletion;
+
     // ---- The hook ------------------------------------------------------------------------------
 
     /** Injected at the start of SharedConfig.checkPasscode, with what was typed. */
@@ -129,63 +161,217 @@ public final class DuressWipe {
      * Injected before each return of SharedConfig.checkPasscode, with Telegram's answer as an int
      * (non-zero is yes), so the register Telegram returns passes whatever the verifier typed it as.
      *
-     * @return Telegram's answer, or true when the duress code was typed and every account logged out
+     * @return Telegram's answer, or true when the duress code logged out what it logs out
      */
     public static boolean afterCheck(int telegramAnswer) {
         boolean telegramSaid = telegramAnswer != 0;
         String typed = TYPED.get();
         TYPED.remove();
-        if (telegramSaid || typed == null || typed.isEmpty() || Boolean.TRUE.equals(CHOOSING.get())) return telegramSaid;
+        if (typed == null || typed.isEmpty() || Boolean.TRUE.equals(CHOOSING.get())) return telegramSaid;
         try {
-            if (!Utils.settingsReady() || !Settings.DURESS_WIPE.get()) return telegramSaid;
-            HookStatus.invoked(FamilyNames.DISABLE_ANALYTICS);
-            if (!matches(typed)) return telegramSaid;
-            if (Looper.myLooper() != Looper.getMainLooper()) {
-                Utils.runOnMainThread(DuressWipe::wipe);
+            if (telegramSaid) {
+                // Telegram's own passcode calls off a deletion the duress code armed.
+                if (Utils.settingsReady()) disarm();
                 return true;
             }
-            return wipe();
+            if (!Utils.settingsReady() || !Settings.DURESS_WIPE.get()) return false;
+            HookStatus.invoked(FamilyNames.DISABLE_ANALYTICS);
+            if (!matches(typed)) return false;
+            String action = action();
+            if (Looper.myLooper() != Looper.getMainLooper()) {
+                Utils.runOnMainThread(() -> step("duress passcode", () -> used(action)));
+                return !deletes(action);
+            }
+            return used(action);
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "duress passcode", failure);
             return telegramSaid;
         }
     }
 
+    /** The saved choice of what the code does, the default for anything else. */
+    public static String action() {
+        String saved = Settings.DURESS_ACTION.get();
+        return ACTIONS.contains(saved) ? saved : LOG_OUT_ALL;
+    }
+
+    /** Whether [action] deletes accounts rather than logging them out. */
+    public static boolean deletes(String action) {
+        return DELETE_ALL.equals(action) || DELETE_OPEN.equals(action);
+    }
+
+    private static boolean openOnly(String action) {
+        return LOG_OUT_OPEN.equals(action) || DELETE_OPEN.equals(action);
+    }
+
+    /**
+     * The duress code was typed with the switch on. Main thread.
+     *
+     * @return what the lock screen hears: yes once the log-out ran, no while a deletion arms or runs
+     */
+    static boolean used(String action) {
+        if (!deletes(action)) return wipe(openOnly(action));
+        // A deletion is under way: the code keeps looking wrong and starts nothing more.
+        if (deletion != null) return false;
+        SharedPreferences prefs = Utils.getContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        if (!prefs.getBoolean(ARMED, false)) {
+            if (!prefs.edit().putBoolean(ARMED, true).commit()) throw new IllegalStateException("Couldn't arm the deletion");
+            HookStatus.counted(FamilyNames.DISABLE_ANALYTICS, "duress deletion armed");
+            return false;
+        }
+        disarm();
+        delete(openOnly(action));
+        return false;
+    }
+
+    private static void disarm() {
+        SharedPreferences prefs = Utils.getContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        if (prefs.contains(ARMED)) prefs.edit().remove(ARMED).commit();
+    }
+
+    /** Whether the code was typed once and the next time deletes. */
+    static boolean armed() {
+        return Utils.getContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(ARMED, false);
+    }
+
     // ---- The wipe ------------------------------------------------------------------------------
 
     /**
-     * Logs out every account and clears what was kept. Main thread.
+     * Logs out every account, or only the open one, and clears what was kept. Main thread.
      *
-     * @return whether every account logged out; the lock stays shut when one didn't
+     * @return whether each of those accounts logged out; the lock stays shut when one didn't
      */
-    static boolean wipe() {
+    static boolean wipe(boolean openOnly) {
         Context context = Utils.getContext();
         HookStatus.counted(FamilyNames.DISABLE_ANALYTICS, "duress passcode used");
+        List<Integer> accounts = accounts(openOnly);
+        if (accounts == null) return false;
+        prepare(context, accounts, openOnly);
+        boolean allOut = logOut(accounts);
+        clean(context, openOnly, null);
+        return allOut;
+    }
+
+    /** Deletes every account, or only the open one, then logs out whatever wasn't deleted. Main thread. */
+    private static void delete(boolean openOnly) {
+        Context context = Utils.getContext();
+        HookStatus.counted(FamilyNames.DISABLE_ANALYTICS, "duress deletion sent");
+        List<Integer> accounts = accounts(openOnly);
+        if (accounts == null) return;
+        prepare(context, accounts, openOnly);
+        Deletion run = new Deletion(context, accounts, openOnly);
+        deletion = run;
+        for (int account : accounts) run.send(account);
+        Utils.runOnMainThreadDelayed(run::finish, DELETE_WAIT_MS);
+        run.finishIfAnswered();
+    }
+
+    /** One deletion: each account's request and Telegram's answers, then the log-out of what's left. */
+    private static final class Deletion {
+        private final Context context;
+        private final List<Integer> accounts;
+        private final boolean openOnly;
+        private final Set<Integer> waiting = new LinkedHashSet<>();
+        private boolean finished;
+
+        Deletion(Context context, List<Integer> accounts, boolean openOnly) {
+            this.context = context;
+            this.accounts = accounts;
+            this.openOnly = openOnly;
+        }
+
+        void send(int account) {
+            waiting.add(account);
+            String refused;
+            try {
+                refused = telegram.delete(account, new DeleteAccount.Answer() {
+                    @Override public void done(String said) { answered(account); }
+                    @Override public void refused(String refusal) { answered(account); }
+                });
+            } catch (Throwable failure) {
+                HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "duress deletion", failure);
+                refused = "threw";
+            }
+            // Not sent: it's logged out with the rest at the end.
+            if (refused != null) waiting.remove(account);
+        }
+
+        /** DeleteAccount signs out a deleted account right after its answer, so this looks a turn later. */
+        private void answered(int account) {
+            Utils.runOnMainThread(() -> {
+                waiting.remove(account);
+                finishIfAnswered();
+            });
+        }
+
+        void finishIfAnswered() {
+            if (waiting.isEmpty()) finish();
+        }
+
+        /** Logs out what's still signed in, an account with a cloud password included, and clears the rest. */
+        void finish() {
+            if (finished) return;
+            finished = true;
+            List<Integer> left = new ArrayList<>();
+            try {
+                List<Integer> signedIn = telegram.signedIn();
+                for (int account : accounts) if (signedIn.contains(account)) left.add(account);
+            } catch (Throwable failure) {
+                HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "duress log-out", failure);
+                left.addAll(accounts);
+            }
+            logOut(left);
+            boolean noneLeft;
+            try {
+                noneLeft = telegram.signedIn().isEmpty();
+            } catch (Throwable failure) {
+                HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "duress log-out", failure);
+                noneLeft = false;
+            }
+            if (!noneLeft) {
+                deletion = null;
+                clean(context, openOnly, null);
+                return;
+            }
+            // Telegram cleared its passcode with its last account, but the lock screen it's showing
+            // stays up until Telegram starts again. The code stays inert until then.
+            clean(context, openOnly, () -> Utils.runOnMainThreadDelayed(
+                    () -> step("duress start over", telegram::restart), RESTART_DELAY_MS));
+        }
+    }
+
+    /** The accounts the code acts on, the one in use last so Telegram ends on its log-in screen; null when Telegram can't say. */
+    private static List<Integer> accounts(boolean openOnly) {
+        try {
+            List<Integer> accounts = new ArrayList<>(telegram.signedIn());
+            int selected = telegram.selected();
+            if (openOnly) {
+                List<Integer> open = new ArrayList<>();
+                if (accounts.contains(selected)) open.add(selected);
+                return open;
+            }
+            if (accounts.remove(Integer.valueOf(selected))) accounts.add(selected);
+            return accounts;
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "duress log-out", failure);
+            return null;
+        }
+    }
+
+    /** Before a log-out or deletion: Telegram's saved log-ins are watched, and the accounts are ordinary again. */
+    private static void prepare(Context context, List<Integer> accounts, boolean openOnly) {
         step("duress saved log-ins", () -> {
             context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(TOKENS_PENDING, true).commit();
             watchTokens(context);
         });
-        // A powered-off or receive-only account would refuse its own log-out.
-        step("duress account lists", AccountGuard::releaseAll);
-        boolean allOut = logOutAll();
-        step("duress saved log-ins", () -> clearTokens(context));
-        forgetKept(context);
-        work.execute(() -> deleteFiles(context));
-        return allOut;
+        // A powered-off or receive-only account would refuse its own log-out or deletion.
+        step("duress account lists", () -> {
+            if (!openOnly) AccountGuard.releaseAll();
+            else for (int account : accounts) AccountGuard.release(account);
+        });
     }
 
-    /** Every signed-in account, the one in use last so Telegram ends on its log-in screen. */
-    private static boolean logOutAll() {
-        List<Integer> accounts;
-        int selected;
-        try {
-            accounts = telegram.signedIn();
-            selected = telegram.selected();
-        } catch (Throwable failure) {
-            HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "duress log-out", failure);
-            return false;
-        }
-        if (accounts.remove(Integer.valueOf(selected))) accounts.add(selected);
+    private static boolean logOut(List<Integer> accounts) {
         boolean allOut = true;
         for (int account : accounts) {
             try {
@@ -196,6 +382,16 @@ public final class DuressWipe {
             }
         }
         return allOut;
+    }
+
+    /** After: the saved log-ins, what was kept and Telegram's media go. [then] runs once the files are gone. */
+    private static void clean(Context context, boolean openOnly, Runnable then) {
+        step("duress saved log-ins", () -> clearTokens(context));
+        forgetKept(context, openOnly);
+        work.execute(() -> {
+            deleteFiles(context);
+            if (then != null) then.run();
+        });
     }
 
     private static void watchTokens(Context context) {
@@ -232,14 +428,28 @@ public final class DuressWipe {
 
     /**
      * What HushTelegram kept about the accounts and their chats. The switches, the look, the
-     * connection settings and the translation service stay, and so does the duress passcode.
+     * connection settings and the translation service stay, and so does the duress passcode. With
+     * only the open account gone, the lists that hide or arrange the other accounts' chats stay too,
+     * since clearing them would show what those accounts keep hidden; what holds messages still goes.
      */
-    private static void forgetKept(Context context) {
+    private static void forgetKept(Context context, boolean openOnly) {
         step("duress kept messages", () -> {
             clearPrefs(context, KeepDeleted.PREFS);
             KeepDeleted.forgetAll();
         });
         step("duress edit history", KeepEdits::clear);
+        step("duress bookmarks", Settings.BOOKMARKS::resetToDefault);
+        step("duress download receipts", () -> {
+            clearPrefs(context, SaveDownloads.RECEIPTS);
+            SaveDownloads.forgetFound();
+        });
+        step("duress translations", OutsideTranslate::forgetAll);
+        step("duress tracked people", () -> {
+            synchronized (SpecialContacts.class) {
+                SpecialContacts.store = null;
+            }
+        });
+        if (openOnly) return;
         step("duress hidden lists", () -> {
             clearPrefs(context, HiddenChats.PREFS);
             clearPrefs(context, HiddenMessages.PREFS);
@@ -252,10 +462,6 @@ public final class DuressWipe {
             clearPrefs(context, RecordChats.PREFS);
             RecordChats.forget();
         });
-        step("duress download receipts", () -> {
-            clearPrefs(context, SaveDownloads.RECEIPTS);
-            SaveDownloads.forgetFound();
-        });
         // Each of these is kept per account by its user id, so it shows which accounts used this phone.
         step("duress account picks", () -> {
             for (String name : new String[]{SongDates.PREFS, LocalEmojiStatus.PREFS, LaunchFolder.PREFS,
@@ -263,16 +469,10 @@ public final class DuressWipe {
                 clearPrefs(context, name);
             }
         });
-        step("duress translations", OutsideTranslate::forgetAll);
         step("duress saved lists", () -> {
-            for (Setting<?> list : new Setting<?>[]{Settings.BOOKMARKS, Settings.KEPT_REMOVED_CHATS,
+            for (Setting<?> list : new Setting<?>[]{Settings.KEPT_REMOVED_CHATS,
                     Settings.LOCAL_PINNED_CHATS, Settings.AUTO_FORWARDING_RULES}) {
                 list.resetToDefault();
-            }
-        });
-        step("duress tracked people", () -> {
-            synchronized (SpecialContacts.class) {
-                SpecialContacts.store = null;
             }
         });
     }
@@ -451,6 +651,7 @@ public final class DuressWipe {
         }
         TYPED.remove();
         CHOOSING.remove();
+        deletion = null;
     }
 
     /** Telegram's side, by reflection through the names the patch gives this build. */
@@ -480,6 +681,14 @@ public final class DuressWipe {
                 HookStatus.threw(FamilyNames.DISABLE_ANALYTICS, "duress folders", failure);
                 return null;
             }
+        }
+
+        @Override public String delete(int account, DeleteAccount.Answer answer) {
+            return DeleteAccount.send(account, answer);
+        }
+
+        @Override public void restart() {
+            Utils.restartApp(Utils.getContext());
         }
     }
 }
