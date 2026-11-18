@@ -61,6 +61,11 @@ private const val SEND_SPOILER = "$SEND_PARAMS->hasMediaSpoilers:Z"
 private const val BLURRED = "$MESSAGE_OBJECT->needDrawBluredPreview()Z"
 private const val SENSITIVE = "$MESSAGE_OBJECT->isHiddenSensitive()Z"
 private const val PAID_PREVIEW = "$MESSAGE_OBJECT->hasExtendedMediaPreview()Z"
+private const val FORCE_PREVIEW = "Lorg/telegram/messenger/ImageReceiver;->setForcePreview(Z)V"
+private const val MEDIA_EXISTS = "$MESSAGE_OBJECT->mediaExists:Z"
+private const val DOWNLOADS = "Lorg/telegram/messenger/DownloadController;"
+private const val CAN_DOWNLOAD = "$DOWNLOADS->canDownloadMedia($MESSAGE_OBJECT)Z"
+private const val IS_LOADING = "Lorg/telegram/messenger/FileLoader;->isLoadingFile(Ljava/lang/String;)Z"
 private val ASKS_BLURRED = setOf(Opcode.INVOKE_VIRTUAL, Opcode.INVOKE_VIRTUAL_RANGE)
 private val JUMPS = setOf(Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32)
 internal val ADD = listOf("Landroid/view/View;", "Landroid/text/Layout;", "I", "I", "Ljava/util/Stack;", "Ljava/util/List;")
@@ -131,6 +136,13 @@ val revealSpoilersPatch = bytecodePatch(
         """)
         // Without its checks timedPreview keeps answering false, so the switch can do nothing.
         if (timed.missing == null) {
+            writeStub(SPOILERS, "stockLoadsPhoto", 3, """
+                check-cast p0, $DOWNLOADS
+                check-cast p1, $MESSAGE_OBJECT
+                invoke-virtual {p0, p1}, $CAN_DOWNLOAD
+                move-result v0
+                return v0
+            """)
             writeStub(SPOILERS, "stockBlurred", 1, """
                 check-cast p0, $MESSAGE_OBJECT
                 invoke-virtual {p0}, $BLURRED
@@ -177,12 +189,17 @@ internal fun BytecodePatchContext.applyChatReveal() {
 }
 
 /** One media check at instruction [index] of [method], a place that draws a message, answered by the runtime's [asks]. */
-internal class MediaSpoilerSite(val method: MutableMethod, val index: Int, private val asks: String = "mediaCovered") {
+internal class MediaSpoilerSite(
+    val method: MutableMethod,
+    val index: Int,
+    private val asks: String = "mediaCovered",
+    private val params: String = "Ljava/lang/Object;",
+) {
     /** The same register, the message, goes to the extension instead. */
     fun replace(target: MutableMethod) {
         val call = target.getInstruction(index)
         val registers = call.namedRegisters()
-        val hook = "$SPOILERS->$asks(Ljava/lang/Object;)Z"
+        val hook = "$SPOILERS->$asks($params)Z"
         target.replaceInstruction(index, if (call.opcode == Opcode.INVOKE_VIRTUAL_RANGE) {
             "invoke-static/range {v${registers.first()} .. v${registers.last()}}, $hook"
         } else {
@@ -231,6 +248,8 @@ internal fun BytecodePatchContext.resolveRevealSpoilers(): RevealSpoilersSite {
     controlHook(SPOILERS, "blurred", listOf("Ljava/lang/Object;"), "Z")
     controlHook(SPOILERS, "stockBlurred", listOf("Ljava/lang/Object;"), "Z")
     controlHook(SPOILERS, "timedPreview", listOf("Ljava/lang/Object;"), "Z")
+    controlHook(SPOILERS, "loadsPhoto", listOf("Ljava/lang/Object;", "Ljava/lang/Object;"), "Z")
+    controlHook(SPOILERS, "stockLoadsPhoto", listOf("Ljava/lang/Object;", "Ljava/lang/Object;"), "Z")
 
     // Text.
     val blocks = tgMutableClassDefByOrNull(TEXT_BLOCKS)
@@ -300,13 +319,15 @@ internal fun BytecodePatchContext.resolveRevealSpoilers(): RevealSpoilersSite {
     return RevealSpoilersSite(textCovers, span, media)
 }
 
-/** The chat bubble's checks that pick the dark blur for view-once and timed media, or why this build has none. */
+/** The chat bubble's checks that keep view-once and timed media blurred, or why this build has none. */
 internal class TimedBlurPlan(val missing: String?, val sites: List<MediaSpoilerSite>)
 
 /**
- * The chat bubble decides on the dark blur with three needDrawBluredPreview checks in a row. Only
- * those are answered by the runtime: the same check also makes a tap open the timed viewer, which
- * refuses a message it answers false for.
+ * The chat bubble decides on the dark blur with three needDrawBluredPreview checks in a row, and a
+ * fourth tells its image to stay on the thumbnail. A photo also only loads in full when it's on the
+ * device or the download rules allow it, which they don't for timed media, so that check is answered
+ * too. Only these go to the runtime: needDrawBluredPreview also makes a tap open the timed viewer,
+ * which refuses a message it answers false for.
  */
 internal fun BytecodePatchContext.resolveTimedBlur(): TimedBlurPlan {
     fun missing(why: String) = TimedBlurPlan(why, emptyList())
@@ -318,13 +339,16 @@ internal fun BytecodePatchContext.resolveTimedBlur(): TimedBlurPlan {
         cls.methods.mapNotNull { method -> method.timedBlurIndexes()?.let { method to it } }
     }
     val (method, indexes) = found.singleOrNull() ?: return missing("the chat bubble's blur check moved (found ${found.size})")
+    val gate = method.fullPhotoGate() ?: return missing("the chat bubble's full photo check moved")
     val target = tgMutableClassDefBy(method.definingClass).methods.single { it.toString() == method.toString() }
-    return TimedBlurPlan(null, indexes.map { MediaSpoilerSite(target, it, "blurred") })
+    return TimedBlurPlan(null, listOf(MediaSpoilerSite(target, gate, "loadsPhoto", "Ljava/lang/Object;Ljava/lang/Object;")) +
+        indexes.map { MediaSpoilerSite(target, it, "blurred") })
 }
 
 /**
- * Two checks jump straight to getFancyBlurFilter when the answer is true, and one in front of them
- * leads to the first. Their indexes, the leading one first, or null when this isn't that method.
+ * Two checks jump straight to getFancyBlurFilter when the answer is true, one in front of them leads
+ * to the first, and one goes straight into ImageReceiver.setForcePreview. Their indexes, the leading
+ * one first and the preview last, or null when this isn't that method.
  */
 private fun Method.timedBlurIndexes(): List<Int>? {
     val code = controlBody()
@@ -341,7 +365,21 @@ private fun Method.timedBlurIndexes(): List<Int>? {
         tests(at, Opcode.IF_NEZ) && code.landingOf(at + 2) == guards[0] ||
             tests(at, Opcode.IF_EQZ) && code.getOrNull(at + 3)?.opcode in JUMPS && code.landingOf(at + 3) == guards[0]
     }
-    return listOf(leads.singleOrNull() ?: return null) + guards
+    val preview = checks.singleOrNull { at ->
+        code.getOrNull(at + 2)?.controlRef() == FORCE_PREVIEW &&
+            code[at + 2].namedRegisters().last() == (code[at + 1] as OneRegisterInstruction).registerA
+    } ?: return null
+    return listOf(leads.singleOrNull() ?: return null) + guards + preview
+}
+
+/** The download check of the plain photo branch: after the check for the file, before the one for a running download. */
+private fun Method.fullPhotoGate(): Int? {
+    val code = controlBody()
+    return code.indices.filter { at ->
+        code[at].controlRef() == CAN_DOWNLOAD && code.getOrNull(at + 1)?.opcode == Opcode.MOVE_RESULT &&
+            (maxOf(0, at - 12) until at).any { code[it].controlRef() == MEDIA_EXISTS && code[it + 1].opcode == Opcode.IF_NEZ } &&
+            (at + 2..minOf(at + 12, code.lastIndex)).any { code[it].controlRef() == IS_LOADING }
+    }.singleOrNull()
 }
 
 private fun Instruction.picksBlurFilter() = call()?.let {

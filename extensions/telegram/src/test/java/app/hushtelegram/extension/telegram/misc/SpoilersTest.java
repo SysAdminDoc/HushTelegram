@@ -191,6 +191,28 @@ public class SpoilersTest {
         assertFalse(Spoilers.covered(false, MESSAGE, message -> false, message -> { throw new AssertionError("not asked"); }));
     }
 
+    @Test public void aTimedPhotoLoadsInFullOnlyWithItsSwitchOn() {
+        assertFalse(Spoilers.loadsFullPhoto(false, MESSAGE, message -> true));
+        Settings.REVEAL_TIMED_MEDIA.save(true);
+        assertTrue(Spoilers.loadsFullPhoto(false, MESSAGE, message -> true));
+        assertTrue(String.join("\n", HookStatus.report()).contains("timed photo loaded 1"));
+    }
+
+    @Test public void otherPhotosKeepTelegramsDownloadRules() {
+        Settings.REVEAL_TIMED_MEDIA.save(true);
+        assertFalse(Spoilers.loadsFullPhoto(false, MESSAGE, message -> false));
+        assertTrue(Spoilers.loadsFullPhoto(true, MESSAGE, message -> { throw new AssertionError("not asked"); }));
+    }
+
+    @Test public void aTimedPhotoStaysUnloadedWhenPausedOrBroken() {
+        Settings.REVEAL_TIMED_MEDIA.save(true);
+        PauseForTests.pause(HushTelegramPause.Reason.SWITCH);
+        assertFalse(Spoilers.loadsFullPhoto(false, MESSAGE, message -> true));
+        PauseForTests.resume();
+        assertFalse(Spoilers.loadsFullPhoto(false, MESSAGE, message -> { throw new IllegalStateException("message gone"); }));
+        assertFalse(HookStatus.missing(FamilyNames.REVEAL_SPOILERS).isEmpty());
+    }
+
     @Test public void timedMediaKeepsItsBlurWhenPausedOrBroken() {
         Settings.REVEAL_TIMED_MEDIA.save(true);
         PauseForTests.pause(HushTelegramPause.Reason.SWITCH);

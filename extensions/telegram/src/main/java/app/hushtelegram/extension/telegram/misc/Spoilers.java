@@ -24,9 +24,9 @@ import java.util.regex.Pattern;
  *
  * <p>Some covers stay. The blur on view-once media and on sensitive content shares Telegram's media
  * check, so those messages keep it. View-once and timed media lose it only through a switch of their
- * own, which also answers the bubble's blur check (#82). That check alone decides the dark blur, and
- * everything else that asks Telegram about it, the tap that opens the timed viewer included, still
- * gets Telegram's answer. Telegram also covers login codes itself, so a shared screen
+ * own, which also answers the bubble's blur checks and lets it load the full photo (#82). Everything
+ * else that asks Telegram about it, the tap that opens the timed viewer included, still gets
+ * Telegram's answer. Telegram also covers login codes itself, so a shared screen
  * doesn't leak one, and a spoiler over text shaped like a code keeps its cover. Text being typed
  * keeps its spoiler preview, and sending, notifications and retries ask Telegram directly.
  */
@@ -121,8 +121,8 @@ public final class Spoilers {
     }
 
     /**
-     * Answers MessageObject.needDrawBluredPreview for the three checks in the chat bubble that pick
-     * the dark blur for a message's photo or video (#82).
+     * Answers MessageObject.needDrawBluredPreview for the chat bubble's checks that pick the dark blur
+     * for a message's photo or video and keep its image on the thumbnail (#82).
      *
      * @param message the message
      * @return whether the bubble blurs it
@@ -141,6 +141,32 @@ public final class Spoilers {
             return false;
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.REVEAL_SPOILERS, "timed media", failure);
+            return stock;
+        }
+    }
+
+    /**
+     * Answers DownloadController.canDownloadMedia for the chat bubble's photo. Telegram never fetches
+     * a timed photo on its own, so without this the bubble would have nothing but the thumbnail (#82).
+     *
+     * @param downloads Telegram's download controller
+     * @param message the message
+     * @return whether the bubble loads the full photo
+     */
+    public static boolean loadsPhoto(Object downloads, Object message) {
+        return loadsFullPhoto(stockLoadsPhoto(downloads, message), message, Spoilers::timedPreview);
+    }
+
+    /** Telegram's answer, or true for view-once and timed photos with the switch on. */
+    static boolean loadsFullPhoto(boolean stock, Object message, Predicate<Object> timed) {
+        HookStatus.invoked(FamilyNames.REVEAL_SPOILERS);
+        try {
+            if (stock) return true;
+            if (!Utils.settingsReady() || HushTelegramPause.isPaused() || !Settings.REVEAL_TIMED_MEDIA.get() || !timed.test(message)) return false;
+            HookStatus.counted(FamilyNames.REVEAL_SPOILERS, "timed photo loaded");
+            return true;
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.REVEAL_SPOILERS, "timed photo", failure);
             return stock;
         }
     }
@@ -169,6 +195,9 @@ public final class Spoilers {
 
     /** Telegram's own answer. Replaced with MessageObject.needDrawBluredPreview when patching. */
     public static boolean stockBlurred(Object message) { return false; }
+
+    /** Telegram's own answer. Replaced with DownloadController.canDownloadMedia when patching. */
+    public static boolean stockLoadsPhoto(Object downloads, Object message) { return false; }
 
     /** Blurred for being view-once or timed, not paid or sensitive. Replaced when patching, and false without the hook. */
     public static boolean timedPreview(Object message) { return false; }

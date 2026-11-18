@@ -524,7 +524,7 @@ public final class SelectionCheck {
         hook(calls, flags, "chatPreviewButtons", "misc/ChatPreview", "menu");
         hook(calls, flags, "chatRevealMenu", "misc/ChatReveal", "headerMenu", "headerClick");
         hook(calls, flags, "searchHitQuotes", "misc/ChatReveal", "searchHit");
-        hook(calls, flags, "revealTimedMedia", "misc/Spoilers", "blurred");
+        hook(calls, flags, "revealTimedMedia", "misc/Spoilers", "blurred", "loadsPhoto");
         for (String[] bridge : List.of(
                 new String[]{"nativeTokenPresence", names.method("Lorg/telegram/messenger/SharedConfig;->hushTelegramTokenPresence()I")},
                 new String[]{"nativeAccountCounts", names.method("Lorg/telegram/messenger/UserConfig;->hushTelegramAccountCounts()I")})) {
