@@ -191,6 +191,10 @@ class MessageMenuFixtureTest {
                 assertEquals("$name: the stub's authority", site.authority, stub("uri").first().controlString())
             }
             assertTrue("$name: Telegram's downloaded copy", stub("photoFile").any { it.controlRef() == "Lorg/telegram/messenger/FileLoader;->getPathToMessage(Lorg/telegram/tgnet/TLRPC\$Message;)Ljava/io/File;" })
+            val photoFile = stub("photoFile").mapNotNull { it.controlRef() }
+            assertTrue("$name: a video's chosen quality is looked for first: $photoFile",
+                photoFile.indexOf("Lorg/telegram/messenger/FileLoader;->getPathToAttach(Lorg/telegram/tgnet/TLObject;Z)Ljava/io/File;") in
+                    0 until photoFile.indexOf("Lorg/telegram/messenger/FileLoader;->getPathToMessage(Lorg/telegram/tgnet/TLRPC\$Message;)Ljava/io/File;"))
             assertTrue("$name: no photo behind the age filter", stub("photo").any { it.controlRef() == "Lorg/telegram/messenger/MessageObject;->isHiddenSensitive()Z" })
             // Message details: the file's type, name, picture size and length, each from Telegram's own field.
             val document = "Lorg/telegram/tgnet/TLRPC\$Document;"

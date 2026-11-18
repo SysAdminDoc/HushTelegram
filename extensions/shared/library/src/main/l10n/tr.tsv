@@ -1210,6 +1210,8 @@ Add Forward as copy to the message menu	Mesaj menüsüne Kopya olarak ilet ekle
 Adds Forward as copy to a message in a chat that doesn't allow forwarding. Pick a chat and the message's text, or its downloaded photo or file, is sent there as a new message.	İletmeye izin vermeyen bir sohbetteki mesaja Kopya olarak ilet ekler. Bir sohbet seçin; mesajın metni ya da indirilmiş fotoğrafı veya dosyası oraya yeni bir mesaj olarak gönderilir.
 Forward as copy	Kopya olarak ilet
 Open it first to download it	İndirmek için önce açın
+Downloading it first. It'll send when it's done.	Önce indiriliyor. Bitince gönderilecek.
+Couldn't download that. Try again.	İndirilemedi. Tekrar dene.
 # context: Ways in section (#29): four switches for the ways that open the HushTelegram settings. 'Settings' in the Telegram row is Telegram's own applied Settings label (translations.telegram.org key Settings).
 Ways in	Giriş yolları
 Ways to open these settings	Bu ayarları açma yolları

@@ -1210,6 +1210,8 @@ Add Forward as copy to the message menu	Añadir Reenviar como copia al menú del
 Adds Forward as copy to a message in a chat that doesn't allow forwarding. Pick a chat and the message's text, or its downloaded photo or file, is sent there as a new message.	Añade Reenviar como copia a un mensaje de un chat que no permite reenviar. Elige un chat y el texto del mensaje, o su foto o archivo descargado, se envía allí como un mensaje nuevo.
 Forward as copy	Reenviar como copia
 Open it first to download it	Ábrelo primero para descargarlo
+Downloading it first. It'll send when it's done.	Primero se está descargando. Se enviará cuando termine.
+Couldn't download that. Try again.	No se pudo descargar. Inténtalo de nuevo.
 # context: Ways in section (#29): four switches for the ways that open the HushTelegram settings. 'Settings' in the Telegram row is Telegram's own applied Settings label (translations.telegram.org key Settings).
 Ways in	Formas de entrar
 Ways to open these settings	Formas de abrir esta configuración

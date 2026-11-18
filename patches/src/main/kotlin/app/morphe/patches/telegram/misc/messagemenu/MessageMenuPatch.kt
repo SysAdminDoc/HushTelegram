@@ -704,8 +704,9 @@ internal fun BytecodePatchContext.writeMessageMenuStubs(site: MessageMenuSite) {
         move-result-object v0
         invoke-virtual {v0, v1}
     """.trimIndent()
-    writeStub(MESSAGE_MENU, "photoFile", 3, """
+    writeStub(MESSAGE_MENU, "photoFile", 4, """
         check-cast p0, $MESSAGE
+        ${shownDocumentFile()}
         iget-object v1, p0, $MESSAGE->messageOwner:$TL_MESSAGE
         $path, $FILE_LOADER->getPathToMessage($TL_MESSAGE)$FILE
         move-result-object v0

@@ -1210,6 +1210,8 @@ Add Forward as copy to the message menu	Als Kopie weiterleiten zum Nachrichtenme
 Adds Forward as copy to a message in a chat that doesn't allow forwarding. Pick a chat and the message's text, or its downloaded photo or file, is sent there as a new message.	Fügt Als Kopie weiterleiten zu einer Nachricht in einem Chat hinzu, der kein Weiterleiten erlaubt. Wähle einen Chat, und der Text der Nachricht oder das heruntergeladene Foto bzw. die Datei wird dort als neue Nachricht gesendet.
 Forward as copy	Als Kopie weiterleiten
 Open it first to download it	Öffne es zuerst, um es herunterzuladen
+Downloading it first. It'll send when it's done.	Wird zuerst heruntergeladen. Es wird gesendet, sobald es fertig ist.
+Couldn't download that. Try again.	Das konnte nicht heruntergeladen werden. Versuch es noch einmal.
 # context: Ways in section (#29): four switches for the ways that open the HushTelegram settings. 'Settings' in the Telegram row is Telegram's own applied Settings label (translations.telegram.org key Settings).
 Ways in	Zugänge
 Ways to open these settings	Wege, diese Einstellungen zu öffnen

@@ -11,6 +11,10 @@ Every HushTelegram release, newest first.
 * **Telegram:** A switch that's new since you last opened HushTelegram settings gets a small dot after its name, and so does the closed section it's in, so you can see what an update added without reading every page. Open the section and the dot moves to the new switch. Close it again, or close the settings, and the dots are gone. Search shows no dots. Nothing shows a dot the first time the settings open after you install, so the first dots come with the update after the one that adds them. (#96)
 * **Telegram:** Plus Messenger can be patched too. Pick Plus Messenger 13.2.2.1 (`org.telegram.plus`, version code 22710, the APKMirror download with all four architectures) in Morphe Manager and it offers 79 of the 82 patches, each one read against Plus's own build. Plus keeps its own package, so it installs beside a patched Telegram. (#7)
 
+### Fixed
+
+* **Telegram:** With **Bypass channel restrictions** on, forwarding a protected video or photo you haven't downloaded yet works better. Videos that come in several qualities were waiting on the wrong file and never went out. A download that stops now starts again, a stuck forward no longer holds up the next one, and Telegram tells you when it's downloading first and when the download fails. Photos that aren't on your phone download too, and **Save to Downloads** finds the quality you're watching. (#84)
+
 ### Changed
 
 * **Tooling:** The GitHub release notes leave the Tooling bullets out now and no longer end with What was checked. Those bullets stay here in the changelog, and the publish stage doesn't take `-Validation` anymore.

@@ -1184,6 +1184,8 @@ Add Forward as copy to the message menu	在消息菜单中添加“作为副本�
 Adds Forward as copy to a message in a chat that doesn't allow forwarding. Pick a chat and the message's text, or its downloaded photo or file, is sent there as a new message.	在不允许转发的聊天中，为消息添加“作为副本转发”。选择一个聊天后，消息的文字或已下载的照片或文件会作为新消息发送过去.
 Forward as copy	作为副本转发
 Open it first to download it	请先打开以下载
+Downloading it first. It'll send when it's done.	正在先下载，完成后就会发送.
+Couldn't download that. Try again.	无法下载。请重试.
 # context: Ways in section (#29): four switches for the ways that open the HushTelegram settings. 'Settings' in the Telegram row is Telegram's own applied Settings label (translations.telegram.org key Settings).
 Ways in	入口
 Ways to open these settings	打开这些设置的方式

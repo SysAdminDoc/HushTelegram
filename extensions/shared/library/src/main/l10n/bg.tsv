@@ -1206,6 +1206,8 @@ Add Forward as copy to the message menu	Добавяне на Препращан
 Adds Forward as copy to a message in a chat that doesn't allow forwarding. Pick a chat and the message's text, or its downloaded photo or file, is sent there as a new message.	Добавя Препращане като копие към съобщение в чат, който не позволява препращане. Изберете чат и текстът на съобщението или изтеглената снимка или файл се изпращат там като ново съобщение.
 Forward as copy	Препращане като копие
 Open it first to download it	Първо го отворете, за да се изтегли
+Downloading it first. It'll send when it's done.	Първо се изтегля. Ще се изпрати, когато приключи.
+Couldn't download that. Try again.	Не можа да се изтегли. Опитайте отново.
 # context: Ways in section (#29): four switches for the ways that open the HushTelegram settings. 'Settings' in the Telegram row is Telegram's own applied Settings label (translations.telegram.org key Settings).
 Ways in	Начини за достъп
 Ways to open these settings	Начини за отваряне на тези настройки
