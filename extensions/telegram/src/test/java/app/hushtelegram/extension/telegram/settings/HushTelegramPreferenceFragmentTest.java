@@ -679,6 +679,12 @@ public class HushTelegramPreferenceFragmentTest {
             // The chat's menu and its search stay as Telegram has them until each switch is turned on.
             assertFalse(Settings.REVEAL_MENU.key, ((SwitchPreference) page.findPreference(Settings.REVEAL_MENU.key)).isChecked());
             assertFalse(Settings.SEARCH_OPENS_QUOTES.key, ((SwitchPreference) page.findPreference(Settings.SEARCH_OPENS_QUOTES.key)).isChecked());
+            assertEquals("Show view-once and timed media unblurred", String.valueOf(page.findPreference(Settings.REVEAL_TIMED_MEDIA.key).getTitle()));
+            assertEquals("View-once and self-destructing photos and videos show clearly in the chat, even with Reveal "
+                    + "spoilers off. Tapping one still opens it the way Telegram does. Paid and sensitive media stay covered.",
+                    String.valueOf(page.findPreference(Settings.REVEAL_TIMED_MEDIA.key).getSummary()));
+            // The blur the sender's timer brings stays until this one is turned on (#82).
+            assertFalse(Settings.REVEAL_TIMED_MEDIA.key, ((SwitchPreference) page.findPreference(Settings.REVEAL_TIMED_MEDIA.key)).isChecked());
             assertEquals("Hide keyboard on scroll", String.valueOf(page.findPreference(Settings.HIDE_KEYBOARD_ON_SCROLL.key).getTitle()));
             assertEquals("The keyboard closes when you start scrolling a chat. The emoji and sticker panel stays open.",
                     String.valueOf(page.findPreference(Settings.HIDE_KEYBOARD_ON_SCROLL.key).getSummary()));
@@ -884,7 +890,8 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("Also save view-once and timed media",
                     String.valueOf(page.findPreference(Settings.SAVE_TIMED_MEDIA.key).getTitle()));
             assertEquals("With Save downloaded files on, view-once and self-destructing photos, videos, voice and video "
-                    + "messages get copied to Download/Telegram when they download. The sender meant them to disappear, "
+                    + "messages get copied to Download/Telegram when they download. The message menu's Save to Downloads "
+                    + "shows up on them too. The sender meant them to disappear, "
                     + "so only use it where they're fine with you keeping a copy. Secret chats need Also save from secret "
                     + "chats too.",
                     String.valueOf(page.findPreference(Settings.SAVE_TIMED_MEDIA.key).getSummary()));
@@ -914,6 +921,16 @@ public class HushTelegramPreferenceFragmentTest {
             // A secret chat stays blocked until this one is turned on as well (#82).
             assertFalse(Settings.SECRET_CHAT_SCREENSHOTS.key,
                     ((SwitchPreference) page.findPreference(Settings.SECRET_CHAT_SCREENSHOTS.key)).isChecked());
+            assertEquals("Also allow screenshots of view-once and timed media",
+                    String.valueOf(page.findPreference(Settings.TIMED_MEDIA_SCREENSHOTS.key).getTitle()));
+            assertEquals("Works with Allow screenshots in chats that don't allow saving on. The screen that opens view-once "
+                    + "and self-destructing photos and videos can be captured too. In a secret chat it also needs Also allow "
+                    + "screenshots in secret chats, and Telegram tells the other person unless Suppress screenshot "
+                    + "notification is on.",
+                    String.valueOf(page.findPreference(Settings.TIMED_MEDIA_SCREENSHOTS.key).getSummary()));
+            // The timed viewer stays blocked until this one is turned on as well (#82).
+            assertFalse(Settings.TIMED_MEDIA_SCREENSHOTS.key,
+                    ((SwitchPreference) page.findPreference(Settings.TIMED_MEDIA_SCREENSHOTS.key)).isChecked());
             assertEquals("Silence people outside your contacts", String.valueOf(page.findPreference(Settings.SILENCE_NON_CONTACTS.key).getTitle()));
             assertEquals("Private messages from people not in your contacts still show a notification, but without "
                     + "sound or vibration. Bots, reminders and login codes keep their sound.",

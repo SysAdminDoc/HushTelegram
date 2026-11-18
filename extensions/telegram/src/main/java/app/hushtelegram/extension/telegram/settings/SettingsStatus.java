@@ -87,6 +87,7 @@ public final class SettingsStatus {
     public static boolean copySelection() { return false; }
     public static boolean storySave() { return false; }
     public static boolean allowScreenshots() { return false; }
+    public static boolean timedScreenshots() { return false; }
     public static boolean quietContactsNag() { return false; }
     public static boolean holidayLook() { return false; }
     public static boolean titleEmoji() { return false; }
@@ -102,6 +103,7 @@ public final class SettingsStatus {
     public static boolean revealSpoilers() { return false; }
     public static boolean chatRevealMenu() { return false; }
     public static boolean searchHitQuotes() { return false; }
+    public static boolean revealTimedMedia() { return false; }
     public static boolean hideKeyboardOnScroll() { return false; }
     public static boolean keepVideosMuted() { return false; }
     public static boolean videoEitherLandscape() { return false; }

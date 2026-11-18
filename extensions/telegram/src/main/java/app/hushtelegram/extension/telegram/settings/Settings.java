@@ -307,6 +307,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_search_opens_quotes", FALSE);
 
     /**
+     * View-once and self-destructing photos and videos are drawn without the blur in the chat, with
+     * or without {@link #REVEAL_SPOILERS}. Opening one stays Telegram's timed viewer (#82).
+     */
+    public static final BooleanSetting REVEAL_TIMED_MEDIA =
+            new BooleanSetting("hushtelegram_reveal_timed_media", FALSE);
+
+    /**
      * The keyboard closes when a finger starts scrolling through a chat, not only during a search.
      */
     public static final BooleanSetting HIDE_KEYBOARD_ON_SCROLL =
@@ -905,7 +912,7 @@ public class Settings extends BaseSettings {
      * With {@link #SAVE_DOWNLOADS} on, view-once and self-destructing photos, videos, voice and
      * round videos get a copy too, decrypted from Telegram's cache. A chat that doesn't allow saving
      * needs {@link #SAVE_RESTRICTED_DOWNLOADS} as well, and a secret chat {@link #SAVE_SECRET_CHATS} on
-     * top of that. Starts off,
+     * top of that. The message menu's Save to Downloads offers them too (#82). Starts off,
      * since it goes past the sender's choice (#9).
      */
     public static final BooleanSetting SAVE_TIMED_MEDIA =
@@ -1064,6 +1071,9 @@ public class Settings extends BaseSettings {
     /** With {@link #ALLOW_SCREENSHOTS} on, secret chats, their profiles and their photos can be captured too (#82). */
     public static final BooleanSetting SECRET_CHAT_SCREENSHOTS =
             new BooleanSetting("hushtelegram_encrypted_chat_screenshots", FALSE);
+    /** With {@link #ALLOW_SCREENSHOTS} on, the screen that opens view-once and timed media can be captured too (#82). */
+    public static final BooleanSetting TIMED_MEDIA_SCREENSHOTS =
+            new BooleanSetting("hushtelegram_timed_media_screenshots", FALSE);
     /** A message in a chat that doesn't allow forwarding gets Forward as copy in its long-press menu (#46, #47). */
     public static final BooleanSetting MESSAGE_MENU_FORWARD_COPY =
             new BooleanSetting("hushtelegram_message_menu_forward_copy", FALSE);

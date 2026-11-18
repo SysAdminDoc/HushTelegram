@@ -130,6 +130,7 @@ val messageMenuPatch = bytecodePatch(
         val selection = resolveSelectionCopy()
         val story = resolveStorySave()
         val screenshots = resolveScreenshots()
+        val timedViewer = resolveTimedViewer()
         // Assembled on copies first, so a refusal leaves the app untouched.
         site.insertFill(MutableMethod(ImmutableMethod.of(site.fill)))
         site.insertChosen(MutableMethod(ImmutableMethod.of(site.choose)))
@@ -151,6 +152,12 @@ val messageMenuPatch = bytecodePatch(
         if (screenshots.missing == null) {
             screenshots.apply()
             enableCapability("allowScreenshots")
+            if (timedViewer.missing == null) {
+                timedViewer.apply()
+                enableCapability("timedScreenshots")
+            } else {
+                patchLog.warning("Add Repeat to the message menu: ${timedViewer.missing}. The patch goes on without screenshots of view-once and timed media.")
+            }
         } else {
             patchLog.warning("Add Repeat to the message menu: ${screenshots.missing}. The patch goes on without screenshots in chats that don't allow saving.")
         }
@@ -259,6 +266,8 @@ internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
     controlHook(SCREENSHOTS, "protectedContent", listOf("I"), "Z")
     controlHook(SCREENSHOTS, "storyAllowed", listOf("I"), "Z")
     controlHook(SCREENSHOTS, "secretChat", listOf(OBJECT), OBJECT)
+    requireStatusMethod("timedScreenshots")
+    controlHook(SCREENSHOTS, "timedViewer", listOf("Landroid/view/WindowManager\$LayoutParams;", OBJECT), "V")
     controlHook(MESSAGE_MENU, "selectionCopy", listOf(), "Z")
     controlHook(MESSAGE_MENU, "fill", listOf(OBJECT, OBJECT, LIST, LIST, LIST), "V")
     controlHook(MESSAGE_MENU, "chosen", listOf(OBJECT, "I"), "V")

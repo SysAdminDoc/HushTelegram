@@ -23,7 +23,10 @@ import java.util.regex.Pattern;
  * videos until they're tapped. Both ask here first.
  *
  * <p>Some covers stay. The blur on view-once media and on sensitive content shares Telegram's media
- * check, so those messages keep it. Telegram also covers login codes itself, so a shared screen
+ * check, so those messages keep it. View-once and timed media lose it only through a switch of their
+ * own, which also answers the bubble's blur check (#82). That check alone decides the dark blur, and
+ * everything else that asks Telegram about it, the tap that opens the timed viewer included, still
+ * gets Telegram's answer. Telegram also covers login codes itself, so a shared screen
  * doesn't leak one, and a spoiler over text shaped like a code keeps its cover. Text being typed
  * keeps its spoiler preview, and sending, notifications and retries ask Telegram directly.
  */
@@ -85,23 +88,59 @@ public final class Spoilers {
     public static boolean mediaCovered(Object message) {
         // Telegram's answer comes first and throws the way it always did. The checks are method
         // references that capture nothing, so a frame that draws media allocates nothing here.
-        return covered(stockMediaCovered(message), message, Spoilers::keptCovered);
+        return covered(stockMediaCovered(message), message, Spoilers::keptCovered, Spoilers::timedPreview);
+    }
+
+    /** {@link #covered(boolean, Object, Predicate, Predicate)} for a message that isn't timed media. */
+    static boolean covered(boolean stock, Object message, Predicate<Object> kept) {
+        return covered(stock, message, kept, timed -> false);
     }
 
     /**
-     * Telegram's answer, or uncovered when only the sender's spoiler covers it and either the switch
-     * is on or Show all spoilers in the chat's menu picked the message.
+     * Telegram's answer, or uncovered in two cases: it's view-once or timed media and that switch is
+     * on, or only the sender's spoiler covers it and either Reveal spoilers is on or Show all spoilers
+     * in the chat's menu picked the message.
      */
-    static boolean covered(boolean stock, Object message, Predicate<Object> kept) {
+    static boolean covered(boolean stock, Object message, Predicate<Object> kept, Predicate<Object> timed) {
         HookStatus.invoked(FamilyNames.REVEAL_SPOILERS);
         try {
             if (!stock) return false;
-            if (!Utils.settingsReady() || HushTelegramPause.isPaused() || !shown(message) && !Settings.REVEAL_SPOILERS.get()) return stock;
+            if (!Utils.settingsReady() || HushTelegramPause.isPaused()) return stock;
+            if (Settings.REVEAL_TIMED_MEDIA.get() && timed.test(message)) {
+                HookStatus.counted(FamilyNames.REVEAL_SPOILERS, "timed media shown");
+                return false;
+            }
+            if (!shown(message) && !Settings.REVEAL_SPOILERS.get()) return stock;
             if (kept.test(message)) return true;
             HookStatus.counted(FamilyNames.REVEAL_SPOILERS, "spoiler media shown");
             return false;
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.REVEAL_SPOILERS, "spoiler media", failure);
+            return stock;
+        }
+    }
+
+    /**
+     * Answers MessageObject.needDrawBluredPreview for the three checks in the chat bubble that pick
+     * the dark blur for a message's photo or video (#82).
+     *
+     * @param message the message
+     * @return whether the bubble blurs it
+     */
+    public static boolean blurred(Object message) {
+        return stillBlurred(stockBlurred(message), message, Spoilers::timedPreview);
+    }
+
+    /** Telegram's answer, or false for view-once and timed media with the switch on. */
+    static boolean stillBlurred(boolean stock, Object message, Predicate<Object> timed) {
+        HookStatus.invoked(FamilyNames.REVEAL_SPOILERS);
+        try {
+            if (!stock) return false;
+            if (!Utils.settingsReady() || HushTelegramPause.isPaused() || !Settings.REVEAL_TIMED_MEDIA.get() || !timed.test(message)) return stock;
+            HookStatus.counted(FamilyNames.REVEAL_SPOILERS, "timed media shown");
+            return false;
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.REVEAL_SPOILERS, "timed media", failure);
             return stock;
         }
     }
@@ -127,4 +166,10 @@ public final class Spoilers {
 
     /** View-once or sensitive media. Replaced with the MessageObject checks Telegram makes when patching. */
     public static boolean keptCovered(Object message) { return false; }
+
+    /** Telegram's own answer. Replaced with MessageObject.needDrawBluredPreview when patching. */
+    public static boolean stockBlurred(Object message) { return false; }
+
+    /** Blurred for being view-once or timed, not paid or sensitive. Replaced when patching, and false without the hook. */
+    public static boolean timedPreview(Object message) { return false; }
 }

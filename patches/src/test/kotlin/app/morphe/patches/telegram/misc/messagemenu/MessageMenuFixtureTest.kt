@@ -90,6 +90,8 @@ class MessageMenuFixtureTest {
             val oldFill = ImmutableMethod.of(site.fill)
             val oldChoose = ImmutableMethod.of(site.choose)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { messageMenuPatch.execute(context) })
+            assertEquals("$name: the timed viewer's hook went in", 1, context.tgMutableClassDefBy(SECRET_VIEWER).methods
+                .count { m -> m.controlBody().any { it.controlRef() == SCREENSHOTS_TIMED } })
 
             // The builder: the call sits where its one return was, and every branch to that return lands on the call.
             val before = oldFill.controlBody()

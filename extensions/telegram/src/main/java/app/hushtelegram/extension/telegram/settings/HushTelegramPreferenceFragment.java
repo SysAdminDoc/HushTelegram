@@ -971,6 +971,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("Open quotes on search hits"), L10n.t("When a chat search lands on a match inside a collapsed"
                                 + " quote, the quote opens so the highlighted match stays in view.")));
             }
+            if (PatchFamily.Capability.REVEAL_TIMED_MEDIA.installed()) {
+                on(pages, PatchFamily.REVEAL_SPOILERS).addPreference(toggle(context, Settings.REVEAL_TIMED_MEDIA,
+                        L10n.t("Show view-once and timed media unblurred"), L10n.t("View-once and self-destructing photos and videos"
+                                + " show clearly in the chat, even with Reveal spoilers off. Tapping one still opens it the way"
+                                + " Telegram does. Paid and sensitive media stay covered.")));
+            }
         }
         if (build.contains(PatchFamily.MY_MESSAGES)) {
             on(pages, PatchFamily.MY_MESSAGES).addPreference(toggle(context, Settings.MY_MESSAGES, L10n.t("My messages"),
@@ -1052,6 +1058,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Works with Allow screenshots in chats that don't allow saving on. "
                                 + "Secret chats, their photos and profiles can be captured too. Telegram tells the other person when you take one, "
                                 + "unless Suppress screenshot notification is on. Their view-once media stays blocked."))));
+                if (PatchFamily.Capability.TIMED_SCREENSHOTS.installed()) {
+                    on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.TIMED_MEDIA_SCREENSHOTS, L10n.t("Also allow screenshots of view-once and timed media"),
+                            PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Works with Allow screenshots in chats that don't allow saving on. "
+                                    + "The screen that opens view-once and self-destructing photos and videos can be captured too. "
+                                    + "In a secret chat it also needs Also allow screenshots in secret chats, and Telegram tells the other "
+                                    + "person unless Suppress screenshot notification is on."))));
+                }
             }
             on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.MESSAGE_MENU_SAVE_PROTECTED, L10n.t("Add Save to Downloads to the message menu"),
                     PatchFamily.MESSAGE_MENU_REPEAT.coverageSummary(L10n.t("Adds Save to Downloads to a downloaded photo, video, file or song "
@@ -1330,7 +1343,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(toggle(context, Settings.SAVE_TIMED_MEDIA,
                     L10n.t("Also save view-once and timed media"),
                     L10n.t("With Save downloaded files on, view-once and self-destructing photos, videos, voice and video"
-                            + " messages get copied to Download/Telegram when they download. The sender meant them to disappear,"
+                            + " messages get copied to Download/Telegram when they download. The message menu's Save to Downloads"
+                            + " shows up on them too. The sender meant them to disappear,"
                             + " so only use it where they're fine with you keeping a copy. Secret chats need Also save from secret"
                             + " chats too.")));
             on(pages, PatchFamily.SAVE_DOWNLOADS).addPreference(toggle(context, Settings.SAVE_SECRET_CHATS,

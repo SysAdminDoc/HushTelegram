@@ -809,7 +809,7 @@ With Save downloaded files on, files from chats whose owner turned off saving ge
 # context: a third switch under Save downloaded files (#9). Turned on, it also copies view-once and self-destructing (timed) photos, videos, voice and video messages. Secret chats stay excluded.
 Also save view-once and timed media	也保存仅查看一次和阅后即焚的媒体
 # context: that switch's summary, a warning that it goes past the sender's choice to have the media disappear. "Save downloaded files" is the name of the first switch.
-With Save downloaded files on, view-once and self-destructing photos, videos, voice and video messages get copied to Download/Telegram when they download. The sender meant them to disappear, so only use it where they're fine with you keeping a copy. Secret chats need Also save from secret chats too.	在“保存下载的文件”开启时，仅查看一次和阅后即焚的照片、视频、语音消息和视频消息下载后会复制到 Download/Telegram。发送者本想让它们消失，所以只在对方同意你保留副本时使用。私密聊天还需要开启“也保存私密聊天中的文件”.
+With Save downloaded files on, view-once and self-destructing photos, videos, voice and video messages get copied to Download/Telegram when they download. The message menu's Save to Downloads shows up on them too. The sender meant them to disappear, so only use it where they're fine with you keeping a copy. Secret chats need Also save from secret chats too.	在“保存下载的文件”开启时，仅查看一次和阅后即焚的照片、视频、语音消息和视频消息下载后会复制到 Download/Telegram。消息菜单中的“保存到下载文件夹”也会对它们显示。发送者本想让它们消失，所以只在对方同意你保留副本时使用。私密聊天还需要开启“也保存私密聊天中的文件”.
 # context: a fourth switch under Save downloaded files (#82). Turned on, it also copies files, photos and videos from Telegram secret chats, on top of Also save from chats that don't allow saving. The names in it are the switches above it and the message menu item Save to Downloads.
 Also save from secret chats	也保存私密聊天中的文件
 Works with Also save from chats that don't allow saving on. Files, photos and videos from secret chats get copied too, and the message menu's Save to Downloads shows up there. Their view-once and timed media also need Also save view-once and timed media. A secret chat is meant to stay on your two phones, so only use it where the other person is fine with that.	在“也保存不允许保存的聊天中的文件”开启时生效。私密聊天中的文件、照片和视频也会被复制，消息菜单中的“保存到下载文件夹”也会在私密聊天中出现。其中仅查看一次和阅后即焚的媒体还需要开启“也保存仅查看一次和阅后即焚的媒体”。私密聊天本应只留在你们两人的手机上，所以只在对方同意时使用.
@@ -1237,6 +1237,8 @@ Screenshots and screen recording work in those chats, their photos, profiles and
 # context: Switch under Allow screenshots in chats that don't allow saving (#82). Turned on with it, screenshots and screen recording work in secret chats, their photo viewer and profile too. Telegram sends the other person a screenshot notice unless the Suppress screenshot notification patch is on. View-once media keeps its own block.
 Also allow screenshots in secret chats	也允许在私密聊天中截屏
 Works with Allow screenshots in chats that don't allow saving on. Secret chats, their photos and profiles can be captured too. Telegram tells the other person when you take one, unless Suppress screenshot notification is on. Their view-once media stays blocked.	在“在不允许保存的聊天中允许截屏”开启时生效。私密聊天及其照片和个人资料也可以截屏。你截屏时 Telegram 会通知对方，除非开启了“隐藏截屏通知”。对方的仅查看一次的媒体仍禁止截屏.
+Also allow screenshots of view-once and timed media	也允许对仅查看一次和阅后即焚的媒体截屏
+Works with Allow screenshots in chats that don't allow saving on. The screen that opens view-once and self-destructing photos and videos can be captured too. In a secret chat it also needs Also allow screenshots in secret chats, and Telegram tells the other person unless Suppress screenshot notification is on.	在“在不允许保存的聊天中允许截屏”开启时生效。打开仅查看一次和阅后即焚的照片和视频的界面也可以截屏。在私密聊天中还需要开启“也允许在私密聊天中截屏”，除非开启了“隐藏截屏通知”，否则 Telegram 会通知对方.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the switch that allows screenshots in chats that don't allow saving.
 screenshots in chats that don't allow saving	在不允许保存的聊天中截屏
 # context: Switch for Fast forward in the message menu (#53), its item, choices and picker.
@@ -1996,6 +1998,8 @@ Show all spoilers and quotes	显示所有遮罩内容和引用
 A chat's menu at the top gets Show all spoilers and Expand all quotes, for the messages loaded so far.	聊天顶部的菜单中会出现“显示所有遮罩内容”和“展开所有引用”，作用于目前已加载的消息.
 Open quotes on search hits	搜索命中时展开引用
 When a chat search lands on a match inside a collapsed quote, the quote opens so the highlighted match stays in view.	聊天搜索的匹配项位于折叠的引用中时，该引用会展开，让高亮的匹配内容保持可见.
+Show view-once and timed media unblurred	不模糊显示仅查看一次和阅后即焚的媒体
+View-once and self-destructing photos and videos show clearly in the chat, even with Reveal spoilers off. Tapping one still opens it the way Telegram does. Paid and sensitive media stay covered.	仅查看一次和阅后即焚的照片和视频在聊天中清晰显示，即使“直接显示遮罩内容”已关闭。点按后仍按 Telegram 的方式打开。付费和敏感媒体仍会遮盖.
 # context: Lowercase noun phrase naming the Show all spoilers and quotes switch (#71) in the patch status list
 spoiler and quote items in the chat menu	聊天菜单中的遮罩和引用选项
 # context: Lowercase noun phrase naming the Open quotes on search hits switch (#71) in the patch status list

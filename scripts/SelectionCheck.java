@@ -461,6 +461,7 @@ public final class SelectionCheck {
         hook(calls, flags, "emojiPackNote", "misc/DoubleTapReactions", "packNote");
         hook(calls, flags, "storySave", "misc/StorySave", "shareable", "premium");
         hook(calls, flags, "allowScreenshots", "misc/Screenshots", "protectedContent", "storyAllowed", "secretChat");
+        hook(calls, flags, "timedScreenshots", "misc/Screenshots", "timedViewer");
         hook(calls, flags, "hideFolderCounters", "misc/FolderTabs", "countersHidden");
         hook(calls, flags, "launchFolder", "misc/LaunchFolder", "firstTabs");
         hook(calls, flags, "hideAllChats", "misc/LaunchFolder", "allChatsTab", "tabsAdded", "editing", "skipsDone");
@@ -523,6 +524,7 @@ public final class SelectionCheck {
         hook(calls, flags, "chatPreviewButtons", "misc/ChatPreview", "menu");
         hook(calls, flags, "chatRevealMenu", "misc/ChatReveal", "headerMenu", "headerClick");
         hook(calls, flags, "searchHitQuotes", "misc/ChatReveal", "searchHit");
+        hook(calls, flags, "revealTimedMedia", "misc/Spoilers", "blurred");
         for (String[] bridge : List.of(
                 new String[]{"nativeTokenPresence", names.method("Lorg/telegram/messenger/SharedConfig;->hushTelegramTokenPresence()I")},
                 new String[]{"nativeAccountCounts", names.method("Lorg/telegram/messenger/UserConfig;->hushTelegramAccountCounts()I")})) {
