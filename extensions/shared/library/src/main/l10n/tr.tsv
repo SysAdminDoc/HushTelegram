@@ -1388,6 +1388,10 @@ the hidden accounts	gizli hesaplar
 Fit all folder tabs	Tüm klasör sekmelerini sığdır
 # context: Summary of the Fit all folder tabs switch. The folder tabs shrink so none of them scrolls out of sight; with few folders nothing changes
 Shrinks the folder tabs above the chat list until all of them fit on the screen, so you never scroll sideways to find one. With only a few folders nothing changes.	Sohbet listesinin üstündeki klasör sekmelerini hepsi ekrana sığana kadar küçültür, böylece birini bulmak için yana kaydırman gerekmez. Klasör azsa hiçbir şey değişmez.
+# context: Switch title on the Chat list page. Moves the folder tabs (All, Personal, Channels) from the top of the screen down to just above the bottom navigation bar
+Folder tabs at the bottom	Klasör sekmeleri altta
+# context: Summary of the Folder tabs at the bottom switch. The bottom bar is the one with Chats, Contacts, Settings and Profile; the point is reaching the tabs one-handed
+Moves the folder tabs from the top of the chat list to just above the bottom bar, where your thumb can reach them.	Klasör sekmelerini sohbet listesinin üstünden alt çubuğun hemen üzerine taşır, böylece başparmağın onlara yetişir.
 # context: Switch title on the Chat list page under Hide folder tab counters, off by default. It puts an icon for the kind of folder in front of each folder tab's name above the chat list
 Folder icons on tabs	Klasör sekmelerinde simgeler
 # context: Summary of the Folder icons on tabs switch. All Chats gets two speech bubbles, a folder of only private chats a person, of only groups a group, of only channels a channel, of only bots a bot. All Chats is Telegram's FilterAllChats label
@@ -1395,6 +1399,8 @@ Puts a small icon in front of each folder tab's name: a chat bubble for All Chat
 # context: Lowercase noun phrase naming a part of Hide folder tab counters in a diagnostic line. It names the switch that shrinks the folder tabs to fit the screen
 the fitted folder tabs	sığdırılmış klasör sekmeleri
 the folder tab icons	klasör sekmesi simgeleri
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that moves the folder tabs down to just above the bottom bar
+the folder tabs at the bottom	alttaki klasör sekmeleri
 # context: Switch under Privacy for Receive only mode, per account (#53).
 Receive only mode	Yalnızca alma modu
 The accounts you pick below can read but not write. Messages, reactions, drafts and typing stay on this phone and show an error. Reading, files and read receipts work. Works with this switch on.	Aşağıda seçtiğiniz hesaplar okuyabilir ama yazamaz. Mesajlar, tepkiler, taslaklar ve yazıyor bilgisi bu telefonda kalır ve hata gösterir. Okuma, dosyalar ve okundu bilgisi çalışır. Bu anahtar açıkken geçerlidir.

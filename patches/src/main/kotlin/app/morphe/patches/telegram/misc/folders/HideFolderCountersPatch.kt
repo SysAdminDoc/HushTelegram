@@ -56,6 +56,7 @@ val hideFolderCountersPatch = bytecodePatch(
         val counter = resolveHideFolderCounters()
         requireLaunchFolderRuntime()
         requireTabIconsRuntime()
+        requireBottomTabsRuntime()
         // The folder at launch switch rides along while the catalog is held. A build without its shape
         // keeps the counters and leaves the switch out.
         val launch = resolveLaunchFolder()
@@ -178,6 +179,20 @@ val hideFolderCountersPatch = bytecodePatch(
                 enableCapability("tabIcons")
             } else {
                 patchLog.warning("Hide folder tab counters: $noIcons. The patch goes on without folder tab icons.")
+            }
+            // Moving the strip above the bottom bar rides on it too, and a chat list without the shape keeps it on top.
+            val bottom = resolveBottomTabs(launch.refs!!)
+            val notMoved = bottom.missing ?: try {
+                writeBottomTabsStubs(bottom.refs!!)
+                null
+            } catch (failed: Exception) {
+                "the moved folder tabs' stubs don't build (${failed.javaClass.simpleName}: ${failed.message})"
+            }
+            if (notMoved == null) {
+                bottom.apply()
+                enableCapability("bottomTabs")
+            } else {
+                patchLog.warning("Hide folder tab counters: $notMoved. The patch goes on without moving the folder tabs.")
             }
             if (launch.refs!!.scrollTo == null) {
                 patchLog.warning("Hide folder tab counters: the folder tabs can't be scrolled. A picked folder past the screen's edge opens out of view.")

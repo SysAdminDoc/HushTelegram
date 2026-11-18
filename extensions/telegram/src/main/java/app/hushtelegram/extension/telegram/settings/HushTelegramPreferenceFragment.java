@@ -121,6 +121,7 @@ import app.hushtelegram.extension.telegram.misc.SavedPicture;
 import app.hushtelegram.extension.telegram.misc.SpecialContacts;
 import app.hushtelegram.extension.telegram.misc.StickerSize;
 import app.hushtelegram.extension.telegram.misc.StorageFolder;
+import app.hushtelegram.extension.telegram.misc.BottomFolderTabs;
 import app.hushtelegram.extension.telegram.misc.TabFit;
 import app.hushtelegram.extension.telegram.misc.UnifiedPush;
 import app.hushtelegram.extension.telegram.misc.V2RayProxies;
@@ -724,6 +725,16 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     return true;
                 });
                 folderTabs.addPreference(fit);
+            }
+            if (PatchFamily.Capability.BOTTOM_TABS.installed()) {
+                SwitchPreference bottom = toggle(context, Settings.FOLDER_TABS_BOTTOM, L10n.t("Folder tabs at the bottom"),
+                        L10n.t("Moves the folder tabs from the top of the chat list to just above the bottom bar, "
+                                + "where your thumb can reach them."));
+                bottom.setOnPreferenceChangeListener((row, value) -> {
+                    Utils.runOnMainThreadDelayed(BottomFolderTabs::refreshAll, 0);
+                    return true;
+                });
+                folderTabs.addPreference(bottom);
             }
             if (PatchFamily.Capability.TAB_ICONS.installed()) {
                 folderTabs.addPreference(toggle(context, Settings.FOLDER_TAB_ICONS, L10n.t("Folder icons on tabs"),

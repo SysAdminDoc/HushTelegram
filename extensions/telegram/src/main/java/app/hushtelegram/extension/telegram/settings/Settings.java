@@ -483,6 +483,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_fit_all_tabs", FALSE);
 
     /**
+     * The folder tabs sit right above the bottom bar instead of under the chat list's header
+     * ({@link app.hushtelegram.extension.telegram.misc.BottomFolderTabs}).
+     */
+    public static final BooleanSetting FOLDER_TABS_BOTTOM =
+            new BooleanSetting("hushtelegram_folder_tabs_bottom", FALSE);
+
+    /**
      * Each folder tab above the chat list shows an icon for its kind of folder in front of its name
      * ({@link app.hushtelegram.extension.telegram.misc.TabIcons}). The tabs take it when they're
      * built, so a change waits for a restart.

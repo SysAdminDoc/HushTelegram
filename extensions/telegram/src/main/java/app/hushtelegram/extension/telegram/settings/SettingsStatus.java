@@ -129,6 +129,7 @@ public final class SettingsStatus {
     public static boolean localPins() { return false; }
     public static boolean fitTabs() { return false; }
     public static boolean tabIcons() { return false; }
+    public static boolean bottomTabs() { return false; }
     public static boolean hiddenPasscode() { return false; }
     public static boolean adminChats() { return false; }
     public static boolean hiddenAccounts() { return false; }
