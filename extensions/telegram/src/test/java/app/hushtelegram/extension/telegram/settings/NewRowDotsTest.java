@@ -13,6 +13,7 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
+import android.text.Spanned;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -78,7 +79,8 @@ public class NewRowDotsTest {
         View head = heading(holder);
         assertTrue(dotted(head));
         TextView title = head.findViewById(android.R.id.title);
-        assertEquals(title.getText() + ", New", String.valueOf(title.getContentDescription()));
+        assertEquals(holder.getTitle() + ", New", String.valueOf(title.getContentDescription()));
+        assertEquals(holder.getTitle().toString(), NewRowDots.plain(title.getText()).toString());
         for (Preference section : page.sections()) {
             if (section != holder) assertFalse(section.getTitle() + " has a dot", dotted(heading(section)));
         }
@@ -185,10 +187,20 @@ public class NewRowDotsTest {
         return row("section_" + section.getTitle());
     }
 
+    /**
+     * Whether [row]'s title ends in the dot, right after its own text. A row's title spans the row
+     * up to its switch, so an end drawable stood by the switch instead (S22, 2026-11-17).
+     */
     private static boolean dotted(View row) {
         TextView title = row.findViewById(android.R.id.title);
-        return title != null && NewRowDots.TAG.equals(title.getTag())
-                && title.getCompoundDrawablesRelative()[2] != null;
+        if (title == null || !NewRowDots.TAG.equals(title.getTag())) return false;
+        CharSequence text = title.getText();
+        if (!(text instanceof Spanned) || text.length() < 2 || text.charAt(text.length() - 1) != NewRowDots.HOLDER) return false;
+        NewRowDots.Dot[] dots = ((Spanned) text).getSpans(0, text.length(), NewRowDots.Dot.class);
+        assertEquals(1, dots.length);
+        assertEquals(text.length() - 1, ((Spanned) text).getSpanStart(dots[0]));
+        assertNull(title.getCompoundDrawablesRelative()[2]);
+        return true;
     }
 
     private void tap(String key) {

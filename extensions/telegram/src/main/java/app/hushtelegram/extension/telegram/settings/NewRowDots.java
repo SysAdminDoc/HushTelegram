@@ -9,9 +9,13 @@ package app.hushtelegram.extension.telegram.settings;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.drawable.GradientDrawable;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ReplacementSpan;
 import android.view.View;
 import android.widget.TextView;
 
@@ -159,35 +163,78 @@ final class NewRowDots {
     }
 
     /**
-     * Puts the dot after [row]'s title when [fresh], and takes any earlier one off. The dot is part
-     * of the title's text line, so it follows the reading direction, wraps with the title at a large
-     * text size and can't leave the row.
+     * Puts the dot right after [row]'s title text when [fresh], and takes any earlier one off. The
+     * dot is a character of the title, so it follows the reading direction, wraps with the title at
+     * a large text size and can't leave the row. A row's title spans the whole row up to its switch,
+     * so a drawable at the title's end stood by the switch, far from a short title (S22, 2026-11-17).
      */
     private static void dot(View row, boolean fresh, int accent) {
         try {
             TextView title = row.findViewById(android.R.id.title);
             if (title == null) return;
-            boolean had = TAG.equals(title.getTag());
+            CharSequence text = plain(title.getText());
             if (!fresh) {
-                if (had) {
-                    title.setCompoundDrawablesRelative(null, null, null, null);
+                if (TAG.equals(title.getTag())) {
+                    if (text != title.getText()) title.setText(text);
                     title.setTag(null);
                     title.setContentDescription(null);
                 }
                 return;
             }
             float density = row.getResources().getDisplayMetrics().density;
-            int size = Math.round(8 * density);
-            GradientDrawable dot = new GradientDrawable();
-            dot.setShape(GradientDrawable.OVAL);
-            dot.setColor(accent);
-            dot.setBounds(0, 0, size, size);
-            title.setCompoundDrawablesRelative(null, null, dot, null);
-            title.setCompoundDrawablePadding(Math.round(8 * density));
+            SpannableStringBuilder marked = new SpannableStringBuilder(text);
+            int at = marked.length();
+            marked.append(HOLDER);
+            marked.setSpan(new Dot(accent, Math.round(8 * density), Math.round(6 * density)), at, at + 1,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            title.setText(marked);
             title.setTag(TAG);
-            title.setContentDescription(title.getText() + ", " + L10n.t("New"));
+            title.setContentDescription(text + ", " + L10n.t("New"));
         } catch (RuntimeException ignored) {
             // No dot.
+        }
+    }
+
+    /** The object replacement character, which the dot draws over. */
+    static final char HOLDER = (char) 0xFFFC;
+
+    /** [text] without the dot an earlier paint put after it. */
+    static CharSequence plain(CharSequence text) {
+        if (!(text instanceof Spanned)) return text;
+        Spanned spanned = (Spanned) text;
+        Dot[] dots = spanned.getSpans(0, spanned.length(), Dot.class);
+        if (dots.length == 0) return text;
+        int end = spanned.length();
+        for (Dot each : dots) end = Math.min(end, spanned.getSpanStart(each));
+        return spanned.subSequence(0, end);
+    }
+
+    /** A filled circle [size] wide with [gap] on each side, centred on the text's middle. */
+    static final class Dot extends ReplacementSpan {
+        final int color;
+        private final int size;
+        private final int gap;
+
+        Dot(int color, int size, int gap) {
+            this.color = color;
+            this.size = size;
+            this.gap = gap;
+        }
+
+        @Override public int getSize(Paint paint, CharSequence text, int start, int end, @Nullable Paint.FontMetricsInt metrics) {
+            return gap + size + gap;
+        }
+
+        @Override public void draw(Canvas canvas, CharSequence text, int start, int end, float x, int top, int y, int bottom, Paint paint) {
+            int was = paint.getColor();
+            Paint.Style style = paint.getStyle();
+            paint.setColor(color);
+            paint.setStyle(Paint.Style.FILL);
+            Paint.FontMetrics metrics = paint.getFontMetrics();
+            float radius = size / 2f;
+            canvas.drawCircle(x + gap + radius, y + (metrics.ascent + metrics.descent) / 2f, radius, paint);
+            paint.setColor(was);
+            paint.setStyle(style);
         }
     }
 }
