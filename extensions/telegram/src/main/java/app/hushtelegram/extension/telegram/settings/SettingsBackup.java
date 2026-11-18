@@ -149,6 +149,7 @@ public final class SettingsBackup {
             Settings.LIST_BACKGROUND,
             Settings.HIDE_TRANSLATE_BAR,
             Settings.HIDE_PINNED_BAR,
+            Settings.ALWAYS_SHOW_TRANSLATE_BAR,
             Settings.EXACT_NUMBERS,
             Settings.REVEAL_SPOILERS,
             Settings.REVEAL_MENU,

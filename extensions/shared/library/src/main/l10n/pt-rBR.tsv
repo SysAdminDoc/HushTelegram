@@ -386,6 +386,12 @@ Hide pinned message bar	Ocultar barra de mensagens fixadas
 The bar under a chat's top bar that shows pinned messages is gone, along with its counter and list button. Messages stay pinned and nothing is marked as read.	A barra abaixo da barra superior da conversa que mostra as mensagens fixadas some, junto com o contador e o botão de lista. As mensagens continuam fixadas e nada é marcado como lido.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide translate bar that hides the pinned message bar in chats.
 pinned message bar in chats	barra de mensagens fixadas nas conversas
+# context: Conversations page switch title, below Hide pinned message bar. It puts the translate bar at the top of every chat, including chats where Telegram doesn't detect another language.
+Always show translate bar	Sempre mostrar barra de tradução
+# context: Summary under the Always show translate bar switch. Premium is Telegram Premium, the outside translation service is the Translate with an outside service switch, and Hide translate bar is the switch of that name, which overrules this one.
+Every chat gets the translate bar, even when Telegram doesn't spot another language. It needs Premium or an outside translation service, and Hide translate bar wins.	Toda conversa mostra a barra de tradução, mesmo quando o Telegram não detecta outro idioma. Precisa do Premium ou de um serviço de tradução externo, e Ocultar barra de tradução tem prioridade.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide translate bar that shows the translate bar in every chat.
+translate bar in every chat	barra de tradução em todas as conversas
 Exact numbers	Números exatos
 Member, subscriber, view, reply and reaction counts show in full, like 12,345 instead of 12.3K.	As contagens de membros, inscritos, visualizações, respostas e reações aparecem completas, como 12.345 em vez de 12,3 mil.
 Reveal spoilers	Revelar spoilers

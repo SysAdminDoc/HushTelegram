@@ -281,6 +281,13 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_hide_pinned_bar", FALSE);
 
     /**
+     * The translate bar at the top of every chat that can be translated, whatever language Telegram
+     * thinks the chat is in. {@link #HIDE_TRANSLATE_BAR} wins when both are on.
+     */
+    public static final BooleanSetting ALWAYS_SHOW_TRANSLATE_BAR =
+            new BooleanSetting("hushtelegram_always_show_translate_bar", FALSE);
+
+    /**
      * Member, subscriber, view, reply and reaction counts written in full instead of shortened to
      * 12.3K.
      */

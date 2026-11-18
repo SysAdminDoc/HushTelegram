@@ -389,6 +389,12 @@ Hide pinned message bar	Leiste für angeheftete Nachrichten ausblenden
 The bar under a chat's top bar that shows pinned messages is gone, along with its counter and list button. Messages stay pinned and nothing is marked as read.	Die Leiste unter der oberen Leiste eines Chats, die angeheftete Nachrichten zeigt, verschwindet samt Zähler und Listen-Taste. Nachrichten bleiben angeheftet, und nichts wird als gelesen markiert.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide translate bar that hides the pinned message bar in chats.
 pinned message bar in chats	Leiste für angeheftete Nachrichten in Chats
+# context: Conversations page switch title, below Hide pinned message bar. It puts the translate bar at the top of every chat, including chats where Telegram doesn't detect another language.
+Always show translate bar	Übersetzungsleiste immer anzeigen
+# context: Summary under the Always show translate bar switch. Premium is Telegram Premium, the outside translation service is the Translate with an outside service switch, and Hide translate bar is the switch of that name, which overrules this one.
+Every chat gets the translate bar, even when Telegram doesn't spot another language. It needs Premium or an outside translation service, and Hide translate bar wins.	Jeder Chat zeigt die Übersetzungsleiste, auch wenn Telegram keine andere Sprache erkennt. Dafür brauchst du Premium oder einen externen Übersetzungsdienst, und Übersetzungsleiste ausblenden hat Vorrang.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide translate bar that shows the translate bar in every chat.
+translate bar in every chat	Übersetzungsleiste in jedem Chat
 Exact numbers	Genaue Zahlen
 Member, subscriber, view, reply and reaction counts show in full, like 12,345 instead of 12.3K.	Zahlen für Mitglieder, Abonnenten, Aufrufe, Antworten und Reaktionen erscheinen vollständig, etwa 12.345 statt 12,3K.
 Reveal spoilers	Spoiler aufdecken

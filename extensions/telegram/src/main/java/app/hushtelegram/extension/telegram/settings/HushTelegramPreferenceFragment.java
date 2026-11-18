@@ -967,6 +967,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("Hide pinned message bar"), L10n.t("The bar under a chat's top bar that shows pinned messages is gone, "
                                 + "along with its counter and list button. Messages stay pinned and nothing is marked as read.")));
             }
+            if (PatchFamily.Capability.ALWAYS_TRANSLATE_BAR.installed()) {
+                on(pages, PatchFamily.HIDE_TRANSLATE_BAR).addPreference(toggle(context, Settings.ALWAYS_SHOW_TRANSLATE_BAR,
+                        L10n.t("Always show translate bar"), L10n.t("Every chat gets the translate bar, even when Telegram doesn't "
+                                + "spot another language. It needs Premium or an outside translation service, and Hide translate bar wins.")));
+            }
         }
         if (build.contains(PatchFamily.REVEAL_SPOILERS)) {
             on(pages, PatchFamily.REVEAL_SPOILERS).addPreference(toggle(context, Settings.REVEAL_SPOILERS, L10n.t("Reveal spoilers"),

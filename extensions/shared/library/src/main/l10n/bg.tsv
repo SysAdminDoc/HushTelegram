@@ -386,6 +386,12 @@ Hide pinned message bar	Скриване на лентата със закаче
 The bar under a chat's top bar that shows pinned messages is gone, along with its counter and list button. Messages stay pinned and nothing is marked as read.	Лентата под горната лента на чата, която показва закачените съобщения, изчезва заедно с брояча и бутона за списъка. Съобщенията остават закачени и нищо не се отбелязва като прочетено.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide translate bar that hides the pinned message bar in chats.
 pinned message bar in chats	лентата със закачени съобщения в чатовете
+# context: Conversations page switch title, below Hide pinned message bar. It puts the translate bar at the top of every chat, including chats where Telegram doesn't detect another language.
+Always show translate bar	Постоянно показване на лентата за превод
+# context: Summary under the Always show translate bar switch. Premium is Telegram Premium, the outside translation service is the Translate with an outside service switch, and Hide translate bar is the switch of that name, which overrules this one.
+Every chat gets the translate bar, even when Telegram doesn't spot another language. It needs Premium or an outside translation service, and Hide translate bar wins.	Всички чатове показват лентата за превод, дори когато Telegram не открие друг език. Нужен е Premium или външна услуга за превод, а „Скриване на лентата за превод“ има предимство.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide translate bar that shows the translate bar in every chat.
+translate bar in every chat	лентата за превод във всеки чат
 Exact numbers	Точни числа
 Member, subscriber, view, reply and reaction counts show in full, like 12,345 instead of 12.3K.	Броят на членове, абонати, преглеждания, отговори и реакции се показва изцяло, например 12 345 вместо 12,3K.
 Reveal spoilers	Разкриване на спойлери

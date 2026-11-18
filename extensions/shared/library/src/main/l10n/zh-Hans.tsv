@@ -2090,6 +2090,12 @@ Hide pinned message bar	隐藏置顶消息栏
 The bar under a chat's top bar that shows pinned messages is gone, along with its counter and list button. Messages stay pinned and nothing is marked as read.	聊天顶部栏下方显示置顶消息的栏会被隐藏，连同其计数和列表按钮。消息仍保持置顶，也不会被标记为已读.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide translate bar that hides the pinned message bar in chats.
 pinned message bar in chats	聊天中的置顶消息栏
+# context: Conversations page switch title, below Hide pinned message bar. It puts the translate bar at the top of every chat, including chats where Telegram doesn't detect another language.
+Always show translate bar	始终显示翻译栏
+# context: Summary under the Always show translate bar switch. Premium is Telegram Premium, the outside translation service is the Translate with an outside service switch, and Hide translate bar is the switch of that name, which overrules this one.
+Every chat gets the translate bar, even when Telegram doesn't spot another language. It needs Premium or an outside translation service, and Hide translate bar wins.	即使 Telegram 没有检测到其他语言，每个聊天也会显示翻译栏。需要 Premium 或外部翻译服务，且“隐藏翻译栏”优先.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide translate bar that shows the translate bar in every chat.
+translate bar in every chat	每个聊天中的翻译栏
 # context: Row in a person's profile menu (#79), under the ID row. %1$s is a month and year such as "March 2016", already in the phone's language. It's an estimate worked out from the user ID
 Registered about %1$s	约于 %1$s 注册
 # context: Row in a person's profile menu (#79) for an account newer than every known point. %1$s is a month and year such as "September 2026", already in the phone's language

@@ -19,6 +19,7 @@ import app.morphe.patches.telegram.misc.forward.IS_PREMIUM
 import app.morphe.patches.telegram.misc.forward.NAME_HIDE
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
+import app.morphe.patches.telegram.misc.localcontrols.controlString
 import app.morphe.patches.telegram.misc.messagemenu.CHOSEN
 import app.morphe.patches.telegram.misc.messagemenu.FILL
 import app.morphe.patches.telegram.misc.messagemenu.isSelectionCanCopy
@@ -67,7 +68,7 @@ class OutsideTranslateFixtureTest {
         "Lorg/telegram/messenger/ChatObject;", "Lorg/telegram/messenger/UserObject;", "Lorg/telegram/messenger/DialogObject;",
         "Lorg/telegram/messenger/FileLoader;", "Lorg/telegram/messenger/ApplicationLoader;", "Landroidx/core/content/FileProvider;",
         "Lorg/telegram/messenger/SendMessagesHelper;", "Lorg/telegram/messenger/AccountInstance;", "Lorg/telegram/tgnet/TLRPC\$Dialog;",
-        "Lorg/telegram/tgnet/TLRPC\$Chat;", "Lorg/telegram/messenger/R\$string;",
+        "Lorg/telegram/tgnet/TLRPC\$Chat;", "Lorg/telegram/messenger/R\$string;", "Lorg/telegram/messenger/BaseController;",
     )
 
     private fun Instruction.shape() = listOf(opcode, namedRegisters(), origRef())
@@ -84,7 +85,11 @@ class OutsideTranslateFixtureTest {
                 neighbours && (AccessFlags.STATIC.isSet(m.accessFlags) && params == listOf("I", "I", list, list) && m.origReturnType == "V" ||
                     AccessFlags.STATIC.isSet(m.accessFlags) && params == listOf("I", list, "I", list, "I") && m.origReturnType == "Ljava/lang/Integer;" ||
                     m.origName == "getParentActivity" && params.isEmpty() || m.isSelectionCanCopy() ||
-                    m.controlBody().map { it.controlRef() }.let { IS_PREMIUM in it && FORWARDS in it && NAME_HIDE in it })
+                    m.controlBody().map { it.controlRef() }.let { IS_PREMIUM in it && FORWARDS in it && NAME_HIDE in it } ||
+                    // The translate bar's tap, close and label, which Hide translate bar's Always show switch reads.
+                    m.name == "onClick" && params == listOf("Landroid/view/View;") && m.controlBody().any { it.controlString() == "dialog_show_translate_count" } ||
+                    params.isEmpty() && m.returnType == "V" && m.controlBody().map { it.controlRef() }.let {
+                        TRANSLATING in it && "$TRANSLATE_CONTROLLER->getDialogTranslateTo(J)Ljava/lang/String;" in it })
         }
         val items = found.flatMap { it.methods }.filter { m ->
             m.parameterTypes.map(CharSequence::toString) in listOf(listOf("I", "I", "Ljava/lang/String;"), listOf("I", "I", "Ljava/lang/CharSequence;")) &&
@@ -297,6 +302,8 @@ class OutsideTranslateFixtureTest {
             assertEquals("$name: the header menu call comes first", "$OUTSIDE_TRANSLATE->headerMenu(Ljava/lang/Object;)V", shown[0].controlRef())
             assertEquals("$name: the bar read is Hide translate bar's", listOf(BAR_HIDDEN_HOOK),
                 shown.mapNotNull { it.controlRef() }.filter { it == BAR_HIDDEN || it == BAR_HIDDEN_HOOK })
+            assertEquals("$name: the offer is Always show translate bar's", listOf("$TRANSLATE_BAR->offered(Ljava/lang/Object;J)Z"),
+                shown.mapNotNull { it.controlRef() }.filter { it.endsWith("isDialogTranslatable(J)Z") || it.endsWith("->offered(Ljava/lang/Object;J)Z") })
 
             val built = site.fill.controlBody()
             assertEquals("$name: both builder calls and nothing else", builtBefore.size + 2, built.size)

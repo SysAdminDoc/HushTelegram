@@ -654,7 +654,15 @@ public class HushTelegramPreferenceFragmentTest {
             // The pinned message bar stays until someone turns its own switch on.
             assertFalse(Settings.HIDE_PINNED_BAR.key,
                     ((SwitchPreference) page.findPreference(Settings.HIDE_PINNED_BAR.key)).isChecked());
-            assertEquals("Exact numbers", String.valueOf(page.findPreference(Settings.EXACT_NUMBERS.key).getTitle()));
+            assertEquals("Always show translate bar",
+                    String.valueOf(page.findPreference(Settings.ALWAYS_SHOW_TRANSLATE_BAR.key).getTitle()));
+            assertEquals("Every chat gets the translate bar, even when Telegram doesn't spot another language. It needs "
+                    + "Premium or an outside translation service, and Hide translate bar wins.",
+                    String.valueOf(page.findPreference(Settings.ALWAYS_SHOW_TRANSLATE_BAR.key).getSummary()));
+            // Telegram decides on the bar until someone turns this switch on.
+            assertFalse(Settings.ALWAYS_SHOW_TRANSLATE_BAR.key,
+                    ((SwitchPreference) page.findPreference(Settings.ALWAYS_SHOW_TRANSLATE_BAR.key)).isChecked());
+            assertEquals("Exact numbers",String.valueOf(page.findPreference(Settings.EXACT_NUMBERS.key).getTitle()));
             assertEquals("Member, subscriber, view, reply and reaction counts show in full, like 12,345 instead of "
                     + "12.3K.",
                     String.valueOf(page.findPreference(Settings.EXACT_NUMBERS.key).getSummary()));

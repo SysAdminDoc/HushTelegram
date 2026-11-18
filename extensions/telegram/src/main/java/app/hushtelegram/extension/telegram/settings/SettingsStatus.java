@@ -99,6 +99,7 @@ public final class SettingsStatus {
     public static boolean listBackground() { return false; }
     public static boolean hideTranslateBar() { return false; }
     public static boolean hidePinnedBar() { return false; }
+    public static boolean alwaysTranslateBar() { return false; }
     public static boolean exactNumbers() { return false; }
     public static boolean revealSpoilers() { return false; }
     public static boolean chatRevealMenu() { return false; }
