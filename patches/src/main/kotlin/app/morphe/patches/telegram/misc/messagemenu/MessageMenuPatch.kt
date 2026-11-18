@@ -219,6 +219,13 @@ val messageMenuPatch = bytecodePatch(
         } else {
             patchLog.warning("Add Repeat to the message menu: ${photoEdit.missing}. The patch goes on without Edit a copy.")
         }
+        val linkPreviewPhoto = resolveLinkPreviewPhoto(site.chat)
+        if (linkPreviewPhoto.missing == null) {
+            linkPreviewPhoto.apply(this)
+            enableCapability("linkPreviewPhoto")
+        } else {
+            patchLog.warning("Add Repeat to the message menu: ${linkPreviewPhoto.missing}. The patch goes on without Send photo in the link preview menu.")
+        }
         enableStatus("messageMenuRepeat")
     }
 }

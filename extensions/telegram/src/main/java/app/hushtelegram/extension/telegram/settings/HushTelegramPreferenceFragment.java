@@ -1132,6 +1132,13 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("Opens a photo from a chat in Telegram's photo editor, where you can draw, add text or blur parts. "
                                 + "Sending it sends the edited copy to the chat. The photo in the chat stays as it was.")));
             }
+            if (PatchFamily.Capability.LINK_PREVIEW_PHOTO.installed()) {
+                on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.LINK_PREVIEW_PHOTO,
+                        L10n.t("Add Send photo to the link preview menu"),
+                        L10n.t("When the link preview above the message box has a picture, its menu gets Send photo. The picture "
+                                + "goes to the chat with what you typed as its caption, and the preview is removed. Text too long for "
+                                + "a caption stays in the box.")));
+            }
             if (PatchFamily.Capability.SELECT_BETWEEN.installed()) {
                 on(pages, PatchFamily.MESSAGE_MENU_REPEAT).addPreference(toggle(context, Settings.SELECT_BETWEEN, L10n.t("Select between"),
                         L10n.t("Adds a Select between button to the bar that shows while you pick messages. It selects everything between the first and"

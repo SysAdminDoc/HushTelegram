@@ -1143,6 +1143,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting MESSAGE_MENU_EDIT_COPY =
             new BooleanSetting("hushtelegram_message_menu_edit_copy", FALSE);
 
+    /** Send photo in the link preview menu (#101): the preview's picture sent to the chat ({@link app.hushtelegram.extension.telegram.misc.LinkPreviewPhoto}). */
+    public static final BooleanSetting LINK_PREVIEW_PHOTO =
+            new BooleanSetting("hushtelegram_link_preview_photo", FALSE);
+
     /** Also delete for, checked from the start in Telegram's delete messages dialog (#83) ({@link app.hushtelegram.extension.telegram.misc.MessageMenu#alsoDeleteChecked}). */
     public static final BooleanSetting ALSO_DELETE_CHECKED =
             new BooleanSetting("hushtelegram_also_delete_checked", FALSE);

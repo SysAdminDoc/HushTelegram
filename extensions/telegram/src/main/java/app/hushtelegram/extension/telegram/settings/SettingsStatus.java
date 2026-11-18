@@ -149,6 +149,7 @@ public final class SettingsStatus {
     public static boolean alsoDeleteChecked() { return false; }
     public static boolean bookmarks() { return false; }
     public static boolean photoEdit() { return false; }
+    public static boolean linkPreviewPhoto() { return false; }
     public static boolean silenceNonContacts() { return false; }
     public static boolean disableArchivePull() { return false; }
     public static boolean rearCameraFirst() { return false; }

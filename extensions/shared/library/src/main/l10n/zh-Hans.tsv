@@ -2406,6 +2406,18 @@ Edit a copy	编辑副本
 Add Edit a copy to the message menu	在消息菜单中添加“编辑副本”
 # context: Summary under the Edit a copy switch in HushTelegram settings
 Opens a photo from a chat in Telegram's photo editor, where you can draw, add text or blur parts. Sending it sends the edited copy to the chat. The photo in the chat stays as it was.	在 Telegram 的照片编辑器中打开聊天里的照片，你可以在上面画画、添加文字或模糊部分区域。发送时会把编辑后的副本发到聊天中。聊天里的原照片保持不变.
+# context: Switch title in HushTelegram settings that adds Send photo to the menu of the link preview above the message box
+Add Send photo to the link preview menu	在链接预览菜单中添加“发送照片”
+# context: Summary under the Send photo switch for the link preview menu in HushTelegram settings
+When the link preview above the message box has a picture, its menu gets Send photo. The picture goes to the chat with what you typed as its caption, and the preview is removed. Text too long for a caption stays in the box.	当消息框上方的链接预览带有图片时，其菜单会出现“发送照片”。图片会发送到聊天，你输入的文字作为说明，预览随之移除。文字过长、放不进说明时会留在输入框中.
+# context: Row in the menu of the link preview above the message box, beside Telegram's Apply changes and Do not preview. It sends the preview's picture to the chat
+Send photo	发送照片
+# context: Short toast when the link preview's picture can't be downloaded after tapping Send photo
+Couldn't get the photo. Try again.	无法获取照片。请重试.
+# context: Short toast when the link preview's picture can't be sent after tapping Send photo
+Couldn't send the photo. Try again.	无法发送照片。请重试.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names Send photo in the link preview menu.
+sending a link preview's photo	发送链接预览中的照片
 # context: Title of the Duress passcode switch (#79) on HushTelegram's Privacy page, also the first field's hint in its dialog. A duress passcode is a second passcode someone types when forced to unlock; typing it logs every account out
 Duress passcode	胁迫锁定码
 # context: Summary of the Duress passcode switch. It must say plainly that typing the code logs out or deletes accounts, as picked in the row below it, that HushTelegram's kept data is cleared, and that the switch starts off

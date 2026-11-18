@@ -416,6 +416,8 @@
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/messagemenu/BookmarksSupport.kt",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/PhotoEdit.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/messagemenu/PhotoEditSupport.kt",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/LinkPreviewPhoto.java",
+        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/messagemenu/LinkPreviewPhotoSupport.kt",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/AppPasscode.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/AdminChats.java",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/folders/AdminChatsSupport.kt",

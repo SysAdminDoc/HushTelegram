@@ -35,7 +35,7 @@ private const val TOOLS_DRAWABLES = "Lorg/telegram/messenger/R\$drawable;"
 private const val TOOLS_PATH_TO_ATTACH = "getPathToAttach(${TOOLS_TL_OBJECT}Z)$TOOLS_FILE"
 
 /** FileLoader's public getPathToAttach(TLObject, boolean). The build makes it static, since it never reads its loader. */
-private fun BytecodePatchContext.pathToAttach() = tgClassDefByOrNull(TOOLS_FILE_LOADER)?.methods?.filter {
+internal fun BytecodePatchContext.pathToAttach() = tgClassDefByOrNull(TOOLS_FILE_LOADER)?.methods?.filter {
     "${it.origName}${it.origDescriptor}" == TOOLS_PATH_TO_ATTACH && AccessFlags.PUBLIC.isSet(it.accessFlags) &&
         !AccessFlags.ABSTRACT.isSet(it.accessFlags)
 }?.singleOrNull()

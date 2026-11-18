@@ -286,6 +286,7 @@ public class SettingsNavigationTest {
         assertEquals(position(Settings.HIDE_TRANSLATE_BAR.key) + 1, position(Settings.HIDE_PINNED_BAR.key));
         assertEquals(position(Settings.HIDE_PINNED_BAR.key) + 1, position(Settings.ALWAYS_SHOW_TRANSLATE_BAR.key));
         assertEquals(position(Settings.ALWAYS_SHOW_TRANSLATE_BAR.key) + 1, position(Settings.OUTSIDE_TRANSLATE.key));
+        assertEquals(position(Settings.MESSAGE_MENU_EDIT_COPY.key) + 1, position(Settings.LINK_PREVIEW_PHOTO.key));
         assertEquals(position(Settings.HIDE_BY_KEYWORD.key) + 1, position(FilterEditor.GROUPS));
         assertEquals(position(FilterEditor.GROUPS) + 1, position(FilterEditor.CHANNELS));
         assertEquals(position(Settings.KEEP_DELETED_MESSAGES.key) + 1, position(Settings.RED_DELETED_LABEL.key));

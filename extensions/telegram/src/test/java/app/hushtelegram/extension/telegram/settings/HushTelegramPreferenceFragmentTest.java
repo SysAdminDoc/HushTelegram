@@ -1707,6 +1707,27 @@ public class HushTelegramPreferenceFragmentTest {
         }
     }
 
+    /** Send photo in the link preview menu has its own switch, off at first, on builds that can do it (#101). */
+    @Test
+    public void theLinkPreviewPhotoRowIsOffAndOnlyOnBuildsThatCanSendIt() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.MESSAGE_MENU_REPEAT);
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.LINK_PREVIEW_PHOTO);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            HushTelegramPreferenceFragment page = pageOf(controller);
+            SwitchPreference row = (SwitchPreference) page.findPreference(Settings.LINK_PREVIEW_PHOTO.key);
+            assertNotNull(row);
+            assertEquals("Add Send photo to the link preview menu", String.valueOf(row.getTitle()));
+            assertEquals("When the link preview above the message box has a picture, its menu gets Send photo. The picture "
+                    + "goes to the chat with what you typed as its caption, and the preview is removed. Text too long for "
+                    + "a caption stays in the box.", String.valueOf(row.getSummary()));
+            assertFalse(row.isChecked());
+        }
+        PatchFamily.capabilitiesForTests = EnumSet.noneOf(PatchFamily.Capability.class);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            assertNull(pageOf(controller).findPreference(Settings.LINK_PREVIEW_PHOTO.key));
+        }
+    }
+
     /**
      * The Folder icons row sits with the folder tab rows, says what is picked, lists None and the
      * three packs with the saved one checked, and a pick saves at once and closes the list (#53).
