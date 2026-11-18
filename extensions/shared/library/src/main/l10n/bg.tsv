@@ -2378,6 +2378,12 @@ No duress passcode yet. Tap to pick one.	Още няма парола при п�
 A duress passcode is set. Tap to change it.	Има зададена парола при принуда. Докосни, за да я смениш.
 # context: Message at the top of the Set duress passcode dialog, above its two fields
 Typing this on Telegram's lock screen logs out every account on this phone. Pick one that's different from your Telegram passcode.	Въвеждането ѝ на заключения екран на Telegram излиза от всички акаунти на този телефон. Избери различна от паролата си за Telegram.
+# context: Message at the top of the Set duress passcode dialog when Log out the open account is picked
+Typing this on Telegram's lock screen logs out the open account. Pick one that's different from your Telegram passcode.	Въвеждането ѝ на заключения екран на Telegram излиза от отворения акаунт. Избери различна от паролата си за Telegram.
+# context: Message at the top of the Set duress passcode dialog when Delete every account is picked
+Typing this twice on Telegram's lock screen deletes every account on this phone for good. Pick one that's different from your Telegram passcode.	Въвеждането ѝ два пъти на заключения екран на Telegram изтрива завинаги всички акаунти на този телефон. Избери различна от паролата си за Telegram.
+# context: Message at the top of the Set duress passcode dialog when Delete the open account is picked
+Typing this twice on Telegram's lock screen deletes the open account for good. Pick one that's different from your Telegram passcode.	Въвеждането ѝ два пъти на заключения екран на Telegram изтрива завинаги отворения акаунт. Избери различна от паролата си за Telegram.
 # context: Hint of the second field in the Set duress passcode dialog, where the code is typed again to confirm it
 Type it again	Въведи я отново
 # context: Refusal in the Set duress passcode dialog when the two fields differ

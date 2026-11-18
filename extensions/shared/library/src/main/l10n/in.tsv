@@ -2382,6 +2382,12 @@ No duress passcode yet. Tap to pick one.	Belum ada kode sandi darurat. Ketuk unt
 A duress passcode is set. Tap to change it.	Kode sandi darurat sudah diatur. Ketuk untuk menggantinya.
 # context: Message at the top of the Set duress passcode dialog, above its two fields
 Typing this on Telegram's lock screen logs out every account on this phone. Pick one that's different from your Telegram passcode.	Mengetiknya di layar kunci Telegram mengeluarkan semua akun di ponsel ini. Pilih yang berbeda dari kode sandi Telegram-mu.
+# context: Message at the top of the Set duress passcode dialog when Log out the open account is picked
+Typing this on Telegram's lock screen logs out the open account. Pick one that's different from your Telegram passcode.	Mengetiknya di layar kunci Telegram mengeluarkan akun yang terbuka. Pilih yang berbeda dari kode sandi Telegram-mu.
+# context: Message at the top of the Set duress passcode dialog when Delete every account is picked
+Typing this twice on Telegram's lock screen deletes every account on this phone for good. Pick one that's different from your Telegram passcode.	Mengetiknya dua kali di layar kunci Telegram menghapus semua akun di ponsel ini selamanya. Pilih yang berbeda dari kode sandi Telegram-mu.
+# context: Message at the top of the Set duress passcode dialog when Delete the open account is picked
+Typing this twice on Telegram's lock screen deletes the open account for good. Pick one that's different from your Telegram passcode.	Mengetiknya dua kali di layar kunci Telegram menghapus akun yang terbuka selamanya. Pilih yang berbeda dari kode sandi Telegram-mu.
 # context: Hint of the second field in the Set duress passcode dialog, where the code is typed again to confirm it
 Type it again	Ketik sekali lagi
 # context: Refusal in the Set duress passcode dialog when the two fields differ

@@ -2382,6 +2382,12 @@ No duress passcode yet. Tap to pick one.	尚未设置胁迫锁定码。点按以
 A duress passcode is set. Tap to change it.	已设置胁迫锁定码。点按以更改.
 # context: Message at the top of the Set duress passcode dialog, above its two fields
 Typing this on Telegram's lock screen logs out every account on this phone. Pick one that's different from your Telegram passcode.	在 Telegram 锁屏上输入它会退出此手机上的所有账号。请选择一个与 Telegram 锁定码不同的锁定码.
+# context: Message at the top of the Set duress passcode dialog when Log out the open account is picked
+Typing this on Telegram's lock screen logs out the open account. Pick one that's different from your Telegram passcode.	在 Telegram 锁屏上输入它会退出当前账号。请选择一个与 Telegram 锁定码不同的锁定码.
+# context: Message at the top of the Set duress passcode dialog when Delete every account is picked
+Typing this twice on Telegram's lock screen deletes every account on this phone for good. Pick one that's different from your Telegram passcode.	在 Telegram 锁屏上输入它两次会永久删除此手机上的所有账号。请选择一个与 Telegram 锁定码不同的锁定码.
+# context: Message at the top of the Set duress passcode dialog when Delete the open account is picked
+Typing this twice on Telegram's lock screen deletes the open account for good. Pick one that's different from your Telegram passcode.	在 Telegram 锁屏上输入它两次会永久删除当前账号。请选择一个与 Telegram 锁定码不同的锁定码.
 # context: Hint of the second field in the Set duress passcode dialog, where the code is typed again to confirm it
 Type it again	再次输入
 # context: Refusal in the Set duress passcode dialog when the two fields differ

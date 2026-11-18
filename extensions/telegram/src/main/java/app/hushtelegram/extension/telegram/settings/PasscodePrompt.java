@@ -79,6 +79,24 @@ public final class PasscodePrompt {
         return dialog;
     }
 
+    /** The Set duress passcode dialog's message, which says what typing the code does with [action] picked. */
+    static String duressMessage(String action) {
+        if (DuressWipe.LOG_OUT_OPEN.equals(action)) {
+            return L10n.t("Typing this on Telegram's lock screen logs out the open account. "
+                    + "Pick one that's different from your Telegram passcode.");
+        }
+        if (DuressWipe.DELETE_ALL.equals(action)) {
+            return L10n.t("Typing this twice on Telegram's lock screen deletes every account on this phone for good. "
+                    + "Pick one that's different from your Telegram passcode.");
+        }
+        if (DuressWipe.DELETE_OPEN.equals(action)) {
+            return L10n.t("Typing this twice on Telegram's lock screen deletes the open account for good. "
+                    + "Pick one that's different from your Telegram passcode.");
+        }
+        return L10n.t("Typing this on Telegram's lock screen logs out every account on this phone. "
+                + "Pick one that's different from your Telegram passcode.");
+    }
+
     /**
      * Asks for a duress passcode (#79) twice, with the keyboard Telegram's own passcode uses. A code
      * that's empty, the wrong length for a PIN or Telegram's own passcode is refused and the dialog
@@ -88,8 +106,7 @@ public final class PasscodePrompt {
     public static AlertDialog chooseDuress(Activity activity, Runnable saved) {
         EditText code = duressField(activity, android.R.id.edit, L10n.t("Duress passcode"));
         EditText again = duressField(activity, android.R.id.text2, L10n.t("Type it again"));
-        EditorForm form = new EditorForm(code.getContext(), L10n.t("Typing this on Telegram's lock screen logs out every account "
-                + "on this phone. Pick one that's different from your Telegram passcode."));
+        EditorForm form = new EditorForm(code.getContext(), duressMessage(DuressWipe.action()));
         form.add(code, code.getHint().toString());
         form.add(again, again.getHint().toString());
 

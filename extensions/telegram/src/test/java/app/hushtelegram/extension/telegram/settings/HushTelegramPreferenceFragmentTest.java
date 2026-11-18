@@ -3077,6 +3077,31 @@ public class HushTelegramPreferenceFragmentTest {
                     String.valueOf(row.getSummary()));
             assertEquals(warning, ShadowToast.getTextOfLatestToast());
 
+            // The Set duress passcode dialog says what the code does with the choice made.
+            AlertDialog ask = dialogOf(page.findPreference(HushTelegramPreferenceFragment.DURESS_PASSCODE_ROW));
+            assertEquals("Set duress passcode", String.valueOf(shadowOf(ask).getTitle()));
+            assertTrue(showsText(ask.getWindow().getDecorView(), "Typing this twice on Telegram's lock screen deletes "
+                    + "the open account for good. Pick one that's different from your Telegram passcode."));
+            assertFalse(showsText(ask.getWindow().getDecorView(), "Typing this on Telegram's lock screen logs out every "
+                    + "account on this phone. Pick one that's different from your Telegram passcode."));
+            ask.dismiss();
+            String[] messages = {
+                "Typing this on Telegram's lock screen logs out every account on this phone. "
+                        + "Pick one that's different from your Telegram passcode.",
+                "Typing this on Telegram's lock screen logs out the open account. "
+                        + "Pick one that's different from your Telegram passcode.",
+                "Typing this twice on Telegram's lock screen deletes every account on this phone for good. "
+                        + "Pick one that's different from your Telegram passcode.",
+                "Typing this twice on Telegram's lock screen deletes the open account for good. "
+                        + "Pick one that's different from your Telegram passcode."};
+            for (int i = 0; i < messages.length; i++) {
+                assertEquals(messages[i], PasscodePrompt.duressMessage(DuressWipe.ACTIONS.get(i)));
+                for (String language : new String[]{"bg", "de", "es", "in", "pt-rbr", "tr", "zh-hans"}) {
+                    assertNotNull(language + ": " + messages[i],
+                            app.hushtelegram.extension.shared.L10nTablesForTests.of(language).get(messages[i]));
+                }
+            }
+
             // The switch going on with a deletion picked warns again.
             assertTrue(DuressWipe.save("1357"));
             ShadowToast.reset();
@@ -3088,6 +3113,16 @@ public class HushTelegramPreferenceFragmentTest {
             Settings.DURESS_WIPE.resetToDefault();
             Settings.DURESS_ACTION.resetToDefault();
         }
+    }
+
+    /** Whether a TextView under [view] shows exactly [text]. */
+    private static boolean showsText(android.view.View view, String text) {
+        if (view instanceof TextView && text.equals(String.valueOf(((TextView) view).getText()))) return true;
+        if (view instanceof android.view.ViewGroup) {
+            android.view.ViewGroup group = (android.view.ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) if (showsText(group.getChildAt(i), text)) return true;
+        }
+        return false;
     }
 
     /** A toast line holds about 34 characters on a small phone; 28 leaves room for wider letters. */

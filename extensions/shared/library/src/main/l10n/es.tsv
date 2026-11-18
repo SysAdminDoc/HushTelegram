@@ -2382,6 +2382,12 @@ No duress passcode yet. Tap to pick one.	Aún no hay código de coacción. Toca 
 A duress passcode is set. Tap to change it.	Hay un código de coacción configurado. Toca para cambiarlo.
 # context: Message at the top of the Set duress passcode dialog, above its two fields
 Typing this on Telegram's lock screen logs out every account on this phone. Pick one that's different from your Telegram passcode.	Escribirlo en la pantalla de bloqueo de Telegram cierra la sesión de todas las cuentas de este teléfono. Elige uno distinto de tu código de Telegram.
+# context: Message at the top of the Set duress passcode dialog when Log out the open account is picked
+Typing this on Telegram's lock screen logs out the open account. Pick one that's different from your Telegram passcode.	Escribirlo en la pantalla de bloqueo de Telegram cierra la sesión de la cuenta abierta. Elige uno distinto de tu código de Telegram.
+# context: Message at the top of the Set duress passcode dialog when Delete every account is picked
+Typing this twice on Telegram's lock screen deletes every account on this phone for good. Pick one that's different from your Telegram passcode.	Escribirlo dos veces en la pantalla de bloqueo de Telegram elimina para siempre todas las cuentas de este teléfono. Elige uno distinto de tu código de Telegram.
+# context: Message at the top of the Set duress passcode dialog when Delete the open account is picked
+Typing this twice on Telegram's lock screen deletes the open account for good. Pick one that's different from your Telegram passcode.	Escribirlo dos veces en la pantalla de bloqueo de Telegram elimina para siempre la cuenta abierta. Elige uno distinto de tu código de Telegram.
 # context: Hint of the second field in the Set duress passcode dialog, where the code is typed again to confirm it
 Type it again	Escríbelo otra vez
 # context: Refusal in the Set duress passcode dialog when the two fields differ
