@@ -42,6 +42,7 @@ import androidx.annotation.Nullable;
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Logger;
 import app.hushtelegram.extension.shared.ui.ShimmerTitle;
+import app.hushtelegram.extension.telegram.misc.TranslateBar;
 
 /**
  * The HushTelegram screen: a full screen, black dialog with a title bar and the preference list.
@@ -424,6 +425,12 @@ public final class SettingsDialog extends DialogFragment {
     public void onStart() {
         super.onStart();
         SettingsEntry.onDialogShown(getActivity());
+    }
+
+    @Override
+    public void onDismiss(android.content.DialogInterface dialog) {
+        super.onDismiss(dialog);
+        TranslateBar.settingsClosed();
     }
 
     @Override

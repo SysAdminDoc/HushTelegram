@@ -225,6 +225,17 @@ class HideTranslateBarFixtureTest {
             assertTrue("$name: no handler", (at until at + 7).all { flow.exceptional[it].isEmpty() })
             assertEquals("$name: every stock instruction, branch and handler", shape(stock, IntRange.EMPTY, at), shape(changed, at until at + 7, at))
             assertEquals(1L, flag(context, "hidePinnedBar"))
+
+            // The settings closing over a chat that never left the front runs the same decision.
+            val stub = context.tgMutableClassDefBy(TRANSLATE_BAR).methods.single { it.origName == "decidePinnedBar" }
+            val stubBody = stub.controlBody()
+            assertEquals(name, listOf(Opcode.CHECK_CAST, Opcode.CONST_4, Opcode.CONST_4, Opcode.INVOKE_VIRTUAL, Opcode.RETURN), stubBody.map { it.opcode })
+            assertEquals("$name: the screen", decision.definingClass, (stubBody[0] as ReferenceInstruction).reference.toString())
+            assertEquals("$name: animated", 1L, (stubBody[1] as WideLiteralInstruction).wideLiteral)
+            assertEquals("$name: from its first step", 0L, (stubBody[2] as WideLiteralInstruction).wideLiteral)
+            assertEquals("$name: the decision", decisionRef, (stubBody[3] as ReferenceInstruction).reference.toString())
+            assertEquals(name, listOf(2) + decision.parameterTypes.map { if (it.toString() == "Z") 0 else 1 }, stubBody[3].namedRegisters())
+            assertEquals("$name: answers yes", listOf(0), stubBody[4].namedRegisters())
         }
     }
 

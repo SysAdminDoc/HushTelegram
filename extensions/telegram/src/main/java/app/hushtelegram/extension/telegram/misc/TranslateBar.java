@@ -4,10 +4,12 @@
  */
 package app.hushtelegram.extension.telegram.misc;
 
+import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 
 import app.hushtelegram.extension.shared.Utils;
 import app.hushtelegram.extension.shared.diagnostics.HookStatus;
@@ -26,7 +28,8 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * hides the bar and lays the chat out again. {@link #pinnedBarHidden()} sends it down that path first.
  * Nothing is unpinned or marked as read, and the bar is back the next time the screen decides with
  * the switch off. A chat that comes back to the front after the answer changed decides again
- * ({@link #pinnedBarChanged(Object)}), so the switch reaches a chat left open behind the settings.
+ * ({@link #pinnedBarChanged(Object)}). The settings are a dialog, so a chat under them never leaves
+ * the front, and it decides again when they close ({@link #settingsClosed()}).
  */
 public final class TranslateBar {
     private TranslateBar() {}
@@ -85,6 +88,7 @@ public final class TranslateBar {
     public static boolean pinnedBarChanged(Object screen) {
         HookStatus.invoked(FamilyNames.HIDE_TRANSLATE_BAR);
         try {
+            front = new WeakReference<>(screen);
             boolean hidden = pinnedSwitch();
             Boolean before = RETURNED.put(screen, hidden);
             if (before == null || before == hidden) return false;
@@ -96,8 +100,34 @@ public final class TranslateBar {
         }
     }
 
+    /**
+     * The settings dialog closed. The chat screen under it stayed at the front the whole time, so it
+     * won't come back to it, and this is its turn to decide. If the build can't, the answer stays
+     * unrecorded and the chat decides the next time it does come back.
+     */
+    public static void settingsClosed() {
+        HookStatus.invoked(FamilyNames.HIDE_TRANSLATE_BAR);
+        try {
+            Object screen = front.get();
+            if (screen == null) return;
+            boolean hidden = pinnedSwitch();
+            Boolean before = RETURNED.get(screen);
+            if (before == null || before == hidden || !decider.test(screen)) return;
+            RETURNED.put(screen, hidden);
+            HookStatus.counted(FamilyNames.HIDE_TRANSLATE_BAR, "pinned bar decided again");
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.HIDE_TRANSLATE_BAR, "pinned bar after the settings", failure);
+        }
+    }
+
     /** What each chat screen still open answered when it last came back. */
     private static final Map<Object, Boolean> RETURNED = Collections.synchronizedMap(new WeakHashMap<>());
+
+    /** The chat screen that last came to the front. */
+    static WeakReference<Object> front = new WeakReference<>(null);
+
+    /** Has a chat screen decide on its bar. A field so a test can stand in for the patched stub. */
+    static Predicate<Object> decider = TranslateBar::decidePinnedBar;
 
     private static boolean pinnedSwitch() {
         return Utils.settingsReady() && Settings.HIDE_PINNED_BAR.get();
@@ -108,4 +138,7 @@ public final class TranslateBar {
 
     /** Whether the chat is being translated. Replaced with TranslateController.isTranslatingDialog when patching. */
     public static boolean translating(Object controller, long dialogId) { return false; }
+
+    /** Runs the chat screen's decision on its pinned bar and answers true. Replaced when patching. */
+    public static boolean decidePinnedBar(Object screen) { return false; }
 }

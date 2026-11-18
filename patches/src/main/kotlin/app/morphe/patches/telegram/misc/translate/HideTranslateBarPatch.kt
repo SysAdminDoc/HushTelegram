@@ -71,6 +71,7 @@ val hideTranslateBarPatch = bytecodePatch(
             // Without it the switch still works, from the next time a chat is opened.
             if (resumeMissing == null) {
                 resume!!.apply(resume.method!!)
+                resume.decideStub()?.let { writeStub(TRANSLATE_BAR, "decidePinnedBar", 3, it) }
             } else {
                 patchLog.warning("Hide translate bar: $resumeMissing. A chat left open keeps its pinned message bar until it's opened again.")
             }

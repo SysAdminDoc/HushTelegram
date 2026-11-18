@@ -28,6 +28,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import app.hushtelegram.extension.shared.SettingsContextRule;
+import app.hushtelegram.extension.telegram.misc.TranslateBar;
+import app.hushtelegram.extension.telegram.misc.TranslateBarForTests;
 
 import org.junit.After;
 import org.junit.Rule;
@@ -115,6 +117,24 @@ public class SettingsDialogTest {
 
         assertNull("the settings stayed open", activity.getFragmentManager().findFragmentByTag(TAG));
         assertFalse("Back finished the host activity", activity.isFinishing());
+    }
+
+    @Test
+    public void closingTheSettingsLetsTheChatUnderThemDecideOnItsPinnedBar() {
+        Object chat = new Object();
+        List<Object> decided = new ArrayList<>();
+        TranslateBarForTests.decideWith(decided::add);
+        try {
+            TranslateBar.pinnedBarChanged(chat);
+            SettingsDialog dialog = show(controller.get());
+            Settings.HIDE_PINNED_BAR.save(true);
+            dialog.getDialog().dismiss();
+            ShadowLooper.idleMainLooper();
+            assertEquals(List.of(chat), decided);
+        } finally {
+            TranslateBarForTests.restore();
+            Settings.HIDE_PINNED_BAR.resetToDefault();
+        }
     }
 
     @Test

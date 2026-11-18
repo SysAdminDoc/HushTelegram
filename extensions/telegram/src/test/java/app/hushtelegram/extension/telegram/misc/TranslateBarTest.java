@@ -21,6 +21,9 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 30)
 public class TranslateBarTest {
@@ -28,6 +31,7 @@ public class TranslateBarTest {
 
     @Before public void reset() { restore(); }
     @After public void restore() {
+        TranslateBarForTests.restore();
         PauseForTests.resume();
         SettingReadsForTests.mend(Settings.HIDE_TRANSLATE_BAR);
         SettingReadsForTests.mend(Settings.HIDE_PINNED_BAR);
@@ -105,6 +109,62 @@ public class TranslateBarTest {
         SettingReadsForTests.breakReads(Settings.HIDE_PINNED_BAR);
         assertFalse(TranslateBar.pinnedBarChanged(chat));
         assertFalse(HookStatus.missing(FamilyNames.HIDE_TRANSLATE_BAR).isEmpty());
+    }
+
+    @Test public void theSettingsClosingHaveTheChatUnderThemDecideOnce() {
+        Object chat = new Object();
+        List<Object> decided = new ArrayList<>();
+        TranslateBarForTests.decideWith(decided::add);
+        assertFalse(TranslateBar.pinnedBarChanged(chat));
+
+        TranslateBar.settingsClosed();
+        assertTrue("nothing changed", decided.isEmpty());
+
+        Settings.HIDE_PINNED_BAR.save(true);
+        TranslateBar.settingsClosed();
+        TranslateBar.settingsClosed();
+        assertEquals(List.of(chat), decided);
+        assertFalse("and it isn't asked again on return", TranslateBar.pinnedBarChanged(chat));
+        assertTrue(String.join("\n", HookStatus.report()).contains("pinned bar decided again 1"));
+    }
+
+    @Test public void onlyTheChatAtTheFrontDecidesWhenTheSettingsClose() {
+        Object under = new Object();
+        Object front = new Object();
+        List<Object> decided = new ArrayList<>();
+        TranslateBarForTests.decideWith(decided::add);
+        assertFalse(TranslateBar.pinnedBarChanged(under));
+        assertFalse(TranslateBar.pinnedBarChanged(front));
+
+        Settings.HIDE_PINNED_BAR.save(true);
+        TranslateBar.settingsClosed();
+        assertEquals(List.of(front), decided);
+        assertTrue("the other decides when it comes back", TranslateBar.pinnedBarChanged(under));
+    }
+
+    @Test public void theSettingsClosingWithNoChatOpenAsksNothing() {
+        TranslateBarForTests.decideWith(screen -> { throw new AssertionError("no chat to ask"); });
+        Settings.HIDE_PINNED_BAR.save(true);
+        TranslateBar.settingsClosed();
+        assertTrue(HookStatus.missing(FamilyNames.HIDE_TRANSLATE_BAR).isEmpty());
+    }
+
+    @Test public void aBuildThatCantDecideLeavesItForTheChatsReturn() {
+        Object chat = new Object();
+        assertFalse(TranslateBar.pinnedBarChanged(chat));
+        Settings.HIDE_PINNED_BAR.save(true);
+        TranslateBar.settingsClosed();
+        assertTrue("the stub said no, so the return still decides", TranslateBar.pinnedBarChanged(chat));
+    }
+
+    @Test public void aFailedDecisionLeavesTheChatForItsReturnAndReportsIt() {
+        Object chat = new Object();
+        TranslateBarForTests.decideWith(screen -> { throw new IllegalStateException("injected"); });
+        assertFalse(TranslateBar.pinnedBarChanged(chat));
+        Settings.HIDE_PINNED_BAR.save(true);
+        TranslateBar.settingsClosed();
+        assertFalse(HookStatus.missing(FamilyNames.HIDE_TRANSLATE_BAR).isEmpty());
+        assertTrue(TranslateBar.pinnedBarChanged(chat));
     }
 
     @Test public void offByDefaultShowsTheBarWhereTelegramDoes() {
