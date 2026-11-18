@@ -216,7 +216,7 @@ class HideContactsTabFixtureTest {
             assertEquals(name, compactWarnings(build), PatchLogCapture.warnings { hideContactsTabPatch.execute(context) })
 
             val after = outline.build.controlBody()
-            assertEquals("$name: one instruction besides the compact bar's", stock.size + 1 + 2 * compactInBuild, after.size)
+            assertEquals("$name: one instruction besides the compact bar's and the tab's hide", stock.size + 1 + 2 * compactInBuild + plan.setAgain.size, after.size)
             val hook = after.indices.single { after[it].controlRef() == BAR_GLASS }
             assertEquals(name, Opcode.INVOKE_STATIC_RANGE, after[hook].opcode)
             assertEquals(name, listOf(colors), after[hook].namedRegisters())
@@ -601,6 +601,8 @@ class HideContactsTabFixtureTest {
                 assertTrue(name, plan.pins.isEmpty())
                 PatchLogCapture.warnings { hideContactsTabPatch.execute(context) }
                 assertEquals("$name: Telegram has no switch of its own", listOf(Opcode.CONST_4, Opcode.RETURN), answer().map { it.opcode })
+                assertTrue("$name: nothing sets the Contacts tab again after the hook, so the build needs none",
+                    context.tgMutableClassDefBy(plan.screen).methods.single(::isBuild).controlBody().none { it.controlRef() == TABS_SHOWN })
                 continue
             }
             val flag = plan.hostFlag!!
@@ -633,6 +635,17 @@ class HideContactsTabFixtureTest {
             val own = answer()
             assertEquals(name, listOf(Opcode.SGET_BOOLEAN, Opcode.RETURN), own.map { it.opcode })
             assertEquals(name, flag, own[0].controlRef())
+
+            // Plus's build sets the Contacts tab by its own switch after the bar's method ran, so the
+            // hook has to come again right behind that, or the tab shows whichever switch is on.
+            val build = screen.methods.single(::isBuild)
+            val built = build.controlBody()
+            val lastSet = built.indices.last { built[it].controlRef() == plan.setTab }
+            val hook = built[lastSet + 1]
+            assertEquals("$name: the hook follows the build's last word on the tab", TABS_SHOWN, hook.controlRef())
+            assertEquals("$name: this, kept in the build's first move", listOf(built[0].namedRegisters()[0], built[lastSet].namedRegisters()[3]),
+                hook.namedRegisters())
+            assertEquals("$name: that first move copies this", build.localRegisterCount(), built[0].namedRegisters()[1])
         }
     }
 
