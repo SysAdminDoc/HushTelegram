@@ -3087,7 +3087,7 @@ public class HushTelegramPreferenceFragmentTest {
                 + "If an account has a cloud password, Telegram waits a week first.";
         String warning = "Typed twice, the duress passcode deletes for good.";
         assertFitsATwoLineToast("en", warning);
-        for (String language : new String[]{"bg", "de", "es", "in", "pt-rbr", "tr", "zh-hans"}) {
+        for (String language : new String[]{"bg", "de", "es", "in", "it", "pt-rbr", "tr", "zh-hans"}) {
             String row = app.hushtelegram.extension.shared.L10nTablesForTests.of(language).get(warning);
             assertNotNull(language, row);
             assertFitsATwoLineToast(language, row);
@@ -3148,7 +3148,7 @@ public class HushTelegramPreferenceFragmentTest {
                         + "Pick one that's different from your Telegram passcode."};
             for (int i = 0; i < messages.length; i++) {
                 assertEquals(messages[i], PasscodePrompt.duressMessage(DuressWipe.ACTIONS.get(i)));
-                for (String language : new String[]{"bg", "de", "es", "in", "pt-rbr", "tr", "zh-hans"}) {
+                for (String language : new String[]{"bg", "de", "es", "in", "it", "pt-rbr", "tr", "zh-hans"}) {
                     assertNotNull(language + ": " + messages[i],
                             app.hushtelegram.extension.shared.L10nTablesForTests.of(language).get(messages[i]));
                 }

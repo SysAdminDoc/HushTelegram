@@ -140,7 +140,7 @@ public class SettingsNavigationTest {
 
     /** Each task has its own section that opens in place, while search still reaches every original control. */
     @Test public void pauseBackupAndDiagnosticsSectionsOpenInPlaceInEveryShippedLanguage() {
-        String[][] languages = {{"en", null}, {"bg", "bg"}, {"de", "de"}, {"es", "es"}, {"in-rID", "in"}, {"pt-rBR", "pt-rbr"}, {"tr", "tr"}};
+        String[][] languages = {{"en", null}, {"bg", "bg"}, {"de", "de"}, {"es", "es"}, {"in-rID", "in"}, {"it", "it"}, {"pt-rBR", "pt-rbr"}, {"tr", "tr"}};
         for (String[] language : languages) {
             controller.close();
             org.robolectric.RuntimeEnvironment.setQualifiers("+" + language[0]);
@@ -178,7 +178,7 @@ public class SettingsNavigationTest {
     /** The screen title is spoken once as a heading, each section keeps its localized name, and every control wraps at either text size. */
     @Test @GraphicsMode(GraphicsMode.Mode.NATIVE)
     public void groupedPagesKeepTheirHeadingsAndAllControlsAtNormalAndDoubleText() {
-        String[] languages = {"en", "bg", "de", "es", "in-rID", "pt-rBR", "tr"};
+        String[] languages = {"en", "bg", "de", "es", "in-rID", "it", "pt-rBR", "tr"};
         try {
             for (String language : languages) for (float scale : new float[]{1f, 2f}) {
                 controller.close();
@@ -2166,7 +2166,7 @@ public class SettingsNavigationTest {
      * all three in search.
      */
     @Test public void theAccountScopeIsSearchableInEveryShippedLanguage() {
-        String[][] languages = {{"en", null}, {"bg", "bg"}, {"de", "de"}, {"es", "es"}, {"in-rID", "in"}, {"pt-rBR", "pt-rbr"}, {"tr", "tr"}};
+        String[][] languages = {{"en", null}, {"bg", "bg"}, {"de", "de"}, {"es", "es"}, {"in-rID", "in"}, {"it", "it"}, {"pt-rBR", "pt-rbr"}, {"tr", "tr"}};
         for (String[] language : languages) {
             controller.close();
             org.robolectric.RuntimeEnvironment.setQualifiers("+" + language[0]);

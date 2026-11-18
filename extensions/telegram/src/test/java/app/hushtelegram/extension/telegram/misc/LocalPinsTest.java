@@ -352,7 +352,7 @@ public class LocalPinsTest {
                 "You can pin up to %1$d chats on this phone.", "Couldn't save the chats. Try again in a moment."};
         for (String toast : toasts) {
             assertFitsATwoLineToast("en", String.format(Locale.ROOT, toast, LocalPins.MAX_PINS));
-            for (String language : new String[]{"bg", "de", "es", "in", "pt-rbr", "tr", "zh-hans"}) {
+            for (String language : new String[]{"bg", "de", "es", "in", "it", "pt-rbr", "tr", "zh-hans"}) {
                 String row = L10nTablesForTests.of(language).get(toast);
                 assertNotNull(language + ": " + toast, row);
                 assertFitsATwoLineToast(language, String.format(Locale.ROOT, row, LocalPins.MAX_PINS));

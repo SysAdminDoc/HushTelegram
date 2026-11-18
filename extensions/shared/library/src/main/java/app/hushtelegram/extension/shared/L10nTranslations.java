@@ -21,7 +21,7 @@ public final class L10nTranslations {
     }
 
     /** The language tags with a table, lower case. */
-    static final String[] LANGUAGES = {"bg", "de", "es", "in", "pt-rbr", "tr", "zh-hans"};
+    static final String[] LANGUAGES = {"bg", "de", "es", "in", "it", "pt-rbr", "tr", "zh-hans"};
 
     /**
      * The table for one language tag, or null when nothing was translated into it.
@@ -39,6 +39,8 @@ public final class L10nTranslations {
             case "in":
             case "id":
                 return buildIn();
+            case "it":
+                return buildIt();
             case "pt-rbr":
                 return buildPt_rBR();
             case "tr":
@@ -13417,6 +13419,3345 @@ public final class L10nTranslations {
                 "Status Emoji Anda di ponsel ini");
         table.put("your own chat list title",
                 "judul daftar obrolan sendiri");
+    }
+
+    private static Map<String, String> buildIt() {
+        Map<String, String> table = new HashMap<>(3226);
+        fillIt0(table);
+        fillIt1(table);
+        fillIt2(table);
+        fillIt3(table);
+        fillIt4(table);
+        fillIt5(table);
+        fillIt6(table);
+        fillIt7(table);
+        fillIt8(table);
+        fillIt9(table);
+        fillIt10(table);
+        fillIt11(table);
+        fillIt12(table);
+        fillIt13(table);
+        fillIt14(table);
+        fillIt15(table);
+        fillIt16(table);
+        fillIt17(table);
+        fillIt18(table);
+        fillIt19(table);
+        fillIt20(table);
+        fillIt21(table);
+        fillIt22(table);
+        fillIt23(table);
+        fillIt24(table);
+        fillIt25(table);
+        fillIt26(table);
+        return table;
+    }
+
+    private static void fillIt0(Map<String, String> table) {
+        table.put("%1$d bookmark",
+                "%1$d segnalibro");
+        table.put("%1$d bookmarks",
+                "%1$d segnalibri");
+        table.put("%1$d chat",
+                "%1$d chat");
+        table.put("%1$d chats",
+                "%1$d chat");
+        table.put("%1$d day",
+                "%1$d giorno");
+        table.put("%1$d days",
+                "%1$d giorni");
+        table.put("%1$d filter",
+                "%1$d filtro");
+        table.put("%1$d filter.",
+                "%1$d filtro.");
+        table.put("%1$d filters",
+                "%1$d filtri");
+        table.put("%1$d filters.",
+                "%1$d filtri.");
+        table.put("%1$d item in that file isn't a setting this version of HushTelegram knows, so it'll be left out.",
+                "%1$d elemento in quel file non \u00e8 un'impostazione che questa versione di HushTelegram conosce, quindi verr\u00e0 omesso.");
+        table.put("%1$d items in that file aren't settings this version of HushTelegram knows, so they'll be left out.",
+                "%1$d elementi in quel file non sono impostazioni che questa versione di HushTelegram conosce, quindi verranno omessi.");
+        table.put("%1$d list of message filters will change.",
+                "%1$d lista di filtri dei messaggi cambier\u00e0.");
+        table.put("%1$d lists of message filters will change.",
+                "%1$d liste di filtri dei messaggi cambieranno.");
+        table.put("%1$d message shows again.",
+                "%1$d messaggio torna visibile.");
+        table.put("%1$d messages show again.",
+                "%1$d messaggi tornano visibili.");
+        table.put("%1$d other switch was already set.",
+                "%1$d altro interruttore era gi\u00e0 impostato.");
+        table.put("%1$d other switches were already set.",
+                "%1$d altri interruttori erano gi\u00e0 impostati.");
+        table.put("%1$d people tracked",
+                "%1$d persone tracciate");
+        table.put("%1$d person tracked",
+                "%1$d persona tracciata");
+        table.put("%1$d proxies pinned on top of Telegram's proxy list. The rest keep Telegram's order.",
+                "%1$d proxy fissati in cima alla lista dei proxy di Telegram. Il resto mantiene l'ordine di Telegram.");
+        table.put("%1$d proxy pinned on top of Telegram's proxy list. The rest keep Telegram's order.",
+                "%1$d proxy fissato in cima alla lista dei proxy di Telegram. Il resto mantiene l'ordine di Telegram.");
+        table.put("%1$d rule",
+                "%1$d regola");
+        table.put("%1$d rules",
+                "%1$d regole");
+        table.put("%1$d setting found",
+                "%1$d impostazione trovata");
+        table.put("%1$d settings found",
+                "%1$d impostazioni trovate");
+        table.put("%1$d switch couldn't change.",
+                "%1$d interruttore non ha potuto cambiare.");
+        table.put("%1$d switch differs from how it started. Open to flip it back.",
+                "%1$d interruttore \u00e8 diverso da come era all'inizio. Aprilo per riportarlo indietro.");
+        table.put("%1$d switch will change.",
+                "%1$d interruttore cambier\u00e0.");
+        table.put("%1$d switch you changed since stays as you set it.",
+                "%1$d interruttore che hai cambiato da allora resta come l'hai impostato.");
+        table.put("%1$d switches couldn't change.",
+                "%1$d interruttori non hanno potuto cambiare.");
+        table.put("%1$d switches differ from how they started. Open to flip any of them back.",
+                "%1$d interruttori sono diversi da come erano all'inizio. Aprilo per riportarne indietro uno qualsiasi.");
+        table.put("%1$d switches will change.",
+                "%1$d interruttori cambieranno.");
+        table.put("%1$d switches you changed since stay as you set them.",
+                "%1$d interruttori che hai cambiato da allora restano come li hai impostati.");
+        table.put("%1$s (%2$s)",
+                "%1$s (%2$s)");
+        table.put("%1$s ended the sign-up. Turn the switch off and on to sign up again.",
+                "%1$s ha chiuso la registrazione. Disattiva e riattiva per registrarti di nuovo.");
+        table.put("%1$s gave an address without https, which Telegram's servers won't call.",
+                "%1$s ha fornito un indirizzo senza https, che i server di Telegram non chiameranno.");
+        table.put("%1$s h ago",
+                "%1$s h fa");
+        table.put("%1$s min ago",
+                "%1$s min fa");
+        table.put("%1$s of Telegram's size",
+                "%1$s della dimensione di Telegram");
+        table.put("%1$s shows after Telegram's name at the top of the chat list, on this phone only. Tap to change it.",
+                "%1$s appare dopo il nome di Telegram in cima alla lista chat, solo su questo telefono. Tocca per cambiarlo.");
+        table.put("%1$s shows in place of Telegram's name while Your own chat list title is on. Tap to change it.",
+                "%1$s appare al posto del nome di Telegram mentre Titolo personalizzato per la lista chat \u00e8 attivo. Tocca per cambiarlo.");
+        table.put("%1$s to %2$s",
+                "Da %1$s a %2$s");
+        table.put("%1$s to %2$s, media only",
+                "Da %1$s a %2$s, solo media");
+        table.put("%1$s turned the sign-up down. Check that it allows UnifiedPush.",
+                "%1$s ha rifiutato la registrazione. Controlla che consenta UnifiedPush.");
+        table.put("%1$s turns off",
+                "%1$s si disattiva");
+        table.put("%1$s turns on",
+                "%1$s si attiva");
+        table.put("%1$s \u00b7 joined %2$s",
+                "%1$s \u00b7 entrato %2$s");
+        table.put("%1$s, %2$s ms",
+                "%1$s, %2$s ms");
+        table.put("%1$s, and more",
+                "%1$s e altro");
+        table.put("%1$s, no answer",
+                "%1$s, nessuna risposta");
+        table.put("%1$s, used for all of Telegram's text while Use system font is on. Tap to change it.",
+                "%1$s, usato per tutto il testo di Telegram finch\u00e9 \u00e8 attivo Usa font di sistema. Tocca per cambiarlo.");
+        table.put("%1$s. Icons show beside folder names in HushTelegram's own lists, and on the folder tabs with Folder icons on tabs on.",
+                "%1$s. Le icone appaiono accanto ai nomi delle cartelle negli elenchi di HushTelegram e sulle schede delle cartelle quando l'opzione Icone cartelle sulle schede \u00e8 attiva.");
+        table.put("%1$s. Icons show beside folder names in HushTelegram's own lists. Telegram's folder tabs stay as they are.",
+                "%1$s. Le icone appaiono accanto ai nomi delle cartelle negli elenchi di HushTelegram. Le schede delle cartelle di Telegram restano come sono.");
+        table.put("%1$s. It was set when you patched, so Pause can't turn it off. To get rid of it, patch again without that patch.",
+                "%1$s. \u00c8 stato impostato quando hai applicato le patch, quindi Pausa non pu\u00f2 disattivarlo. Per eliminarlo, applica di nuovo le patch senza quella patch.");
+        table.put("%1$s. They were set when you patched, so Pause can't turn them off. To get rid of one, patch again without the patch named in brackets after it.",
+                "%1$s. Sono stati impostati quando hai applicato le patch, quindi Pausa non pu\u00f2 disattivarli. Per eliminarne uno, applica di nuovo le patch senza la patch indicata tra parentesi dopo di esso.");
+        table.put("%1$s. Turn the switch on to sign up with it.",
+                "%1$s. Attiva l'interruttore per registrarti con l'app.");
+        table.put("%1$s: %2$s",
+                "%1$s: %2$s");
+        table.put("%1$s: %2$s to %3$s",
+                "%1$s: da %2$s a %3$s");
+        table.put("(Off)",
+                "(Spento)");
+    }
+
+    private static void fillIt1(Map<String, String> table) {
+        table.put("(Read only)",
+                "(Sola lettura)");
+        table.put("(Translated. Open the message menu for the original.)",
+                "(Tradotto. Apri il menu del messaggio per vedere l'originale.)");
+        table.put("A button on the call and voice chat screens records just that call, or stops recording it when Record calls is on.",
+                "Un pulsante nelle schermate di chiamata e di chat vocale registra solo quella chiamata, oppure ne interrompe la registrazione quando Registra chiamate \u00e8 attivo.");
+        table.put("A change here applies after Telegram restarts.",
+                "Una modifica qui si applica dopo il riavvio di Telegram.");
+        table.put("A channel that banned you offers Open on the web, which shows its public posts in your browser.",
+                "Un canale che ti ha bloccato offre Apri sul web, che mostra i suoi post pubblici nel browser.");
+        table.put("A chat or message you turn on stays on only in the account you turned it on in.",
+                "Una chat o un messaggio che attivi resta attivo solo nell'account in cui l'hai attivato.");
+        table.put("A chat's menu at the top gets Show all spoilers and Expand all quotes, for the messages loaded so far.",
+                "Il menu in alto di una chat include Mostra tutti gli spoiler e Espandi tutte le citazioni, per i messaggi caricati finora.");
+        table.put("A diagnostic report is already being saved.",
+                "Salvataggio del rapporto gi\u00e0 in corso.");
+        table.put("A double check at the top of the chat list sends the read receipts Ghost mode is holding for the account you're on, from chats read since Telegram last started. Send read receipts in a chat's menu sends just that chat's. Shows with Ghost mode and No read receipts on.",
+                "Un doppio segno di spunta in cima alla lista chat invia le conferme di lettura che la Modalit\u00e0 fantasma trattiene per l'account in uso, dalle chat lette dall'ultimo avvio di Telegram. Inviare conferme di lettura nel menu di una chat invia solo quelle di quella chat. Compare con la Modalit\u00e0 fantasma e Nessuna conferma di lettura attive.");
+        table.put("A duress passcode is set. Tap to change it.",
+                "\u00c8 impostato un codice di emergenza. Tocca per cambiarlo.");
+        table.put("A few things belong to the account you have open instead, and their descriptions say so.",
+                "Alcune cose appartengono invece all'account che hai aperto, e le loro descrizioni lo dicono.");
+        table.put("A file Telegram already downloaded, in another account for example, shows as downloaded here too when its folders hold one with the same name and size. With Keep Telegram's files in internal storage on, files from before a reinstall count too.",
+                "Un file che Telegram ha gi\u00e0 scaricato, per esempio in un altro account, viene mostrato come scaricato anche qui quando le cartelle di Telegram ne contengono uno con lo stesso nome e dimensione. Con Mantieni i file di Telegram nella memoria interna attivo, contano anche i file precedenti a una reinstallazione.");
+        table.put("A file named %1$s in %2$s paused HushTelegram.",
+                "Un file chiamato %1$s in %2$s ha messo in pausa HushTelegram.");
+        table.put("A forwarded message's header also shows the date and time it was first sent, after Forwarded from. The date comes with the message, so nothing more is asked of Telegram.",
+                "L'intestazione di un messaggio inoltrato mostra anche la data e l'ora in cui \u00e8 stato inviato per la prima volta, dopo Inoltrato da. La data arriva con il messaggio, quindi non viene chiesto altro a Telegram.");
+        table.put("A ghost at the top of the chat list turns Ghost mode on and off with a tap. It's filled while Ghost mode is on.",
+                "Un fantasma in cima alla lista chat attiva e disattiva la Modalit\u00e0 fantasma con un tocco. \u00c8 riempito mentre la Modalit\u00e0 fantasma \u00e8 attiva.");
+        table.put("A group or channel you own or manage gets Admin tools in its menu at the top. It opens Recent Actions, the member lists and Invite Links, as far as your rights there go.",
+                "Un gruppo o un canale che possiedi o amministri riceve Strumenti di amministrazione nel menu in alto. Apre Azioni recenti, gli elenchi dei membri e Link d'invito, nei limiti dei tuoi permessi.");
+        table.put("A group's member lists, on its profile and its Members page, also show when each person joined, next to their last seen. The date comes with the list, so nothing more is asked of Telegram. Admins and the owner keep their role.",
+                "Le liste dei membri di un gruppo, nel suo profilo e nella sua pagina Membri, mostrano anche quando ogni persona \u00e8 entrata, accanto al suo ultimo accesso. La data arriva con la lista, quindi non viene chiesto nulla di pi\u00f9 a Telegram. Gli amministratori e il proprietario mantengono il loro ruolo.");
+        table.put("A group's menu at the top gets My messages, which shows the messages you sent there in the chat's search.",
+                "Il menu in alto di un gruppo include I miei messaggi, che mostra nella ricerca della chat i messaggi che hai inviato l\u00ec.");
+        table.put("A link you copy in Telegram, or paste into the message box, loses the same tracking tags. Only text that is one link and nothing else is changed.",
+                "Un link che copi in Telegram o incolli nel campo del messaggio perde le stesse etichette di tracciamento. Viene modificato solo il testo che \u00e8 un unico link e nient'altro.");
+        table.put("A list holds up to %1$d filters.",
+                "Una lista pu\u00f2 contenere fino a %1$d filtri.");
+        table.put("A message you start but don't send stays on this phone and stops syncing to your other devices. Clearing a draft still clears it there.",
+                "Un messaggio che inizi ma non invii resta su questo telefono e smette di sincronizzarsi con gli altri tuoi dispositivi. Cancellare una bozza la cancella comunque anche l\u00ec.");
+        table.put("A person's profile menu also shows about which month they joined Telegram, worked out from their user ID. It's an estimate, and nothing is asked of Telegram. Bots, groups and channels get none.",
+                "Il menu del profilo di una persona mostra anche il mese approssimativo in cui \u00e8 entrata su Telegram, calcolato dal suo ID utente. \u00c8 una stima e non viene chiesto nulla a Telegram. Bot, gruppi e canali non ne hanno.");
+        table.put("A person's profile menu gets Track this user. For anyone you track, a history builds up from what Telegram already shows you: coming online and going offline, typing, and changes to their name, username, phone number, photo or contacts. Nothing extra is asked of Telegram, and the history stays on this phone.",
+                "Il menu del profilo di una persona include Traccia questo utente. Per ogni persona che tieni traccia, si crea uno storico con quello che Telegram ti mostra gi\u00e0: quando va online e quando va offline, quando scrive e le modifiche a nome, username, numero di telefono, foto o contatti. Non viene chiesto nulla in pi\u00f9 a Telegram e lo storico resta su questo telefono.");
+        table.put("A profile's menu also shows which of Telegram's five data centers (its server locations) stores the profile photo. No photo, no number.",
+                "Il menu del profilo mostra anche in quale dei cinque centri dati di Telegram (le posizioni dei suoi server) \u00e8 salvata la foto del profilo. Nessuna foto, nessun numero.");
+        table.put("A rule needs two chats.",
+                "Una regola richiede due chat.");
+        table.put("A short name",
+                "Un nome breve");
+        table.put("A switch you turn on or off shows up here until you put it back.",
+                "Un interruttore che cambi compare qui finch\u00e9 non lo riporti com'era.");
+        table.put("A tap on the notification plays the recording. Its buttons share it or send it to your Saved Messages.",
+                "Un tocco sulla notifica riproduce la registrazione. I suoi pulsanti la condividono o la inviano ai tuoi Messaggi salvati.");
+        table.put("A value in that file can't be read. Nothing was changed.",
+                "Un valore in quel file non pu\u00f2 essere letto. Non \u00e8 stato cambiato nulla.");
+        table.put("A video you open plays muted until you press a volume key. Round videos keep their sound.",
+                "Un video che apri viene riprodotto senza audio finch\u00e9 non premi un tasto del volume. I video circolari mantengono il loro audio.");
+        table.put("A video's settings menu gets Audio track when the video has more than one, and Subtitles when it has any. The subtitles you pick show over the video.",
+                "Il menu delle impostazioni di un video mostra Traccia audio quando il video ha pi\u00f9 di una traccia audio e Sottotitoli quando ne ha. I sottotitoli che scegli appaiono sopra il video.");
+        table.put("AMOLED black",
+                "Nero AMOLED");
+        table.put("API key",
+                "Chiave API");
+        table.put("APK and EXE files get their own icon in chats and in Shared media. Once downloaded, a PDF shows its first page and a video a frame from it. Files with a thumbnail from Telegram keep it.",
+                "I file APK e EXE ricevono un'icona propria nelle chat e nei Media condivisi. Una volta scaricati, un PDF mostra la sua prima pagina e un video un fotogramma. I file con una miniatura di Telegram la mantengono.");
+        table.put("APP_PUSH_APIKEY_MISSING means Telegram's servers have no push key set up for this app. That's configured on Telegram's side, so no setting on this phone fixes it.",
+                "APP_PUSH_APIKEY_MISSING significa che i server di Telegram non hanno configurata una chiave push per questa app. Questo si configura lato Telegram, quindi nessuna impostazione su questo telefono pu\u00f2 risolverlo.");
+        table.put("About",
+                "Informazioni");
+        table.put("Accepted",
+                "Accettato");
+        table.put("Account %1$s",
+                "Account %1$s");
+        table.put("Account deleted.",
+                "Account eliminato.");
+        table.put("Accounts",
+                "Account");
+        table.put("Accounts Telegram confirmed for notifications: %1$s",
+                "Account confermati da Telegram per le notifiche: %1$s");
+        table.put("Accounts to hide",
+                "Account da nascondere");
+        table.put("Add Bookmark to the message menu",
+                "Aggiungi Segnalibro al menu del messaggio");
+        table.put("Add Clear from cache to the message menu",
+                "Aggiungi Cancella dalla cache al menu del messaggio");
+        table.put("Add Copy photo to the message menu",
+                "Aggiungi Copia foto al menu del messaggio");
+        table.put("Add Delete for them to the message menu",
+                "Aggiungi Elimina per gli altri al menu del messaggio");
+        table.put("Add Edit a copy to the message menu",
+                "Aggiungi Modifica una copia al menu del messaggio");
+        table.put("Add Fast forward to the message menu",
+                "Aggiungi Inoltro rapido al menu del messaggio");
+        table.put("Add Forward as copy to the message menu",
+                "Aggiungi Inoltra come copia al menu del messaggio");
+        table.put("Add Forward as plain text to the message menu",
+                "Aggiungi Inoltra come testo semplice al menu del messaggio");
+        table.put("Add Forward to Saved Messages to the message menu",
+                "Aggiungi Inoltra a Messaggi salvati al menu del messaggio");
+        table.put("Add Hide for me to the message menu",
+                "Aggiungi Nascondi per me al menu del messaggio");
+        table.put("Add Message details to the message menu",
+                "Aggiungi Dettagli messaggio al menu del messaggio");
+        table.put("Add Quick forward to the message menu",
+                "Aggiungi Inoltro rapido al menu del messaggio");
+        table.put("Add Repeat to the message menu",
+                "Aggiungi Ripeti al menu del messaggio");
+        table.put("Add Save album art to the message menu",
+                "Aggiungi Salva copertina album al menu del messaggio");
+        table.put("Add Save to Downloads to the message menu",
+                "Aggiungi Salva nei download al menu del messaggio");
+        table.put("Add Save to Gallery to stories",
+                "Aggiungi Salva nella galleria alle storie");
+        table.put("Add Save video cover to the message menu",
+                "Aggiungi Salva copertina video al menu del messaggio");
+        table.put("Add Send photo to the link preview menu",
+                "Aggiungi Invia foto al menu dell'anteprima del link");
+    }
+
+    private static void fillIt2(Map<String, String> table) {
+        table.put("Add an emoji or a few letters after Telegram's name at the top of the chat list. It stays on this phone, and your Premium emoji status is left alone.",
+                "Aggiungi un'emoji o qualche lettera dopo il nome di Telegram in cima alla lista chat. Resta su questo telefono e il tuo stato emoji Premium non cambia.");
+        table.put("Add rule",
+                "Aggiungi regola");
+        table.put("Add the addresses of proxy lists you trust, and Free proxies reads those instead of the public ones.",
+                "Aggiungi gli indirizzi delle liste proxy di cui ti fidi e Free proxies legger\u00e0 quelle al posto di quelle pubbliche.");
+        table.put("Added a profile photo",
+                "Ha aggiunto una foto profilo");
+        table.put("Added you to their contacts",
+                "Ti ha aggiunto ai suoi contatti");
+        table.put("Adds Bookmark to any message, post, photo, video or file. Bookmarks stay on this phone only. Tap one on the Bookmarks page to open its chat at that message.",
+                "Aggiunge Segnalibro a qualsiasi messaggio, post, foto, video o file. I segnalibri restano solo su questo telefono. Toccane uno nella pagina Segnalibri per aprire la chat in quel messaggio.");
+        table.put("Adds Clear from cache to a video or file message. It stops a running download, deletes what Telegram kept of it and brings the download arrow back. Saved copies in Downloads or Pictures stay.",
+                "Aggiunge Cancella dalla cache a un messaggio video o file. Ferma un download in corso, elimina ci\u00f2 che Telegram ne ha conservato e fa tornare la freccia di download. Le copie salvate in Download o Immagini restano.");
+        table.put("Adds Copy photo to a downloaded photo's menu, so you can paste the picture into another app. Not shown in protected or secret chats.",
+                "Aggiunge Copia foto al menu di una foto scaricata, cos\u00ec puoi incollare l'immagine in un'altra app. Non compare nelle chat protette o segrete.");
+        table.put("Adds Delete for them to your own messages in chats and groups. It deletes the message for everyone else and keeps it on this phone, marked deleted. Clear kept messages removes it here too.",
+                "Aggiunge Elimina per gli altri ai tuoi messaggi nelle chat e nei gruppi. Elimina il messaggio per tutti gli altri e lo conserva su questo telefono, contrassegnato come eliminato. Cancella messaggi conservati lo rimuove anche da qui.");
+        table.put("Adds Do Not Disturb to the menu at the top of the chat list. While it's on, no message notification shows or makes a sound, and messages still arrive. Calls ring as usual.",
+                "Aggiunge Non disturbare al menu in cima alla lista chat. Quando \u00e8 attivo, non appare n\u00e9 suona alcuna notifica di messaggio, e i messaggi continuano ad arrivare. Le chiamate squillano come al solito.");
+        table.put("Adds Fake typing to the three dots menu when you long press chats in the chat list. The chats you pick show you typing for 10 minutes, or until you pick them again, even with Ghost mode on.",
+                "Aggiunge Digitazione simulata al menu dei tre puntini quando tieni premute le chat nella lista chat. Le chat che scegli mostrano che stai scrivendo per 10 minuti, o finch\u00e9 non le selezioni di nuovo, anche con la Modalit\u00e0 fantasma attiva.");
+        table.put("Adds Fast forward to a message you can forward. Pick without the sender's name, without the caption, or both, then pick a chat.",
+                "Aggiunge Inoltro rapido a un messaggio che puoi inoltrare. Scegli senza il nome del mittente, senza la didascalia o senza entrambi, poi scegli una chat.");
+        table.put("Adds Forward as copy to a message in a chat that doesn't allow forwarding. Pick a chat and the message's text, or its downloaded photo or file, is sent there as a new message.",
+                "Aggiunge Inoltra come copia a un messaggio in una chat che non consente l'inoltro. Scegli una chat e il testo del messaggio, oppure la foto o il file scaricati, vengono inviati l\u00ec come nuovo messaggio.");
+        table.put("Adds Forward as plain text to a message you can forward. Pick a chat and its text is sent there as a new message, with no formatting or sender name. Custom emoji become regular ones.",
+                "Aggiunge Inoltra come testo semplice a un messaggio che puoi inoltrare. Scegli una chat e il suo testo viene inviato l\u00ec come nuovo messaggio, senza formattazione n\u00e9 nome del mittente. Le emoji personalizzate diventano emoji normali.");
+        table.put("Adds Forward to Saved Messages to a message you can forward. Pick as is, without the sender's name, without the caption, or both, and it lands in your Saved Messages at once.",
+                "Aggiunge Inoltra a Messaggi salvati a un messaggio che puoi inoltrare. Scegli cos\u00ec com'\u00e8, senza il nome del mittente, senza la didascalia o entrambi, e arriva subito in Messaggi salvati.");
+        table.put("Adds Hide for me to a message. It leaves the chat on this phone only, with nothing sent to Telegram, so everyone else still sees it. Turn this off and hidden messages show again.",
+                "Aggiunge Nascondi per me a un messaggio. Il messaggio scompare dalla chat solo su questo telefono, senza inviare nulla a Telegram, quindi tutti gli altri lo vedono ancora. Disattivalo e i messaggi nascosti tornano visibili.");
+        table.put("Adds HushTelegram to the menu you get from holding Telegram's icon.",
+                "Aggiunge HushTelegram al menu che appare tenendo premuta l'icona di Telegram.");
+        table.put("Adds Message details to a message's menu. It shows IDs, send and edit times, where it was forwarded from, and file info.",
+                "Aggiunge Dettagli messaggio al menu di un messaggio. Mostra gli ID, gli orari di invio e di modifica, da dove \u00e8 stato inoltrato e le informazioni sul file.");
+        table.put("Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under your pinned chats in All Chats, newest first. Nothing is sent to Telegram, so your other devices and Telegram's pin limit stay as they are.",
+                "Aggiunge Fissa su questo telefono al menu che si apre con una pressione prolungata sulla lista chat. Quelle chat compaiono subito sotto le tue chat fissate in Tutte le chat, dalla pi\u00f9 recente alla meno recente. Non viene inviato nulla a Telegram, quindi i tuoi altri dispositivi e il limite di Telegram per le chat fissate restano invariati.");
+        table.put("Adds Quick forward to a message's menu. One tap sends it to Saved Messages or a recent chat. Not in protected or secret chats.",
+                "Aggiunge Inoltro rapido al menu di un messaggio. Un tocco lo invia a Messaggi salvati o a una chat recente. Non compare nelle chat protette o segrete.");
+        table.put("Adds Repeat under Forward in a message's menu. It sends the same message again to the chat. Not shown in protected or secret chats.",
+                "Aggiunge Ripeti sotto Inoltra nel menu di un messaggio. Invia di nuovo lo stesso messaggio alla chat. Non compare nelle chat protette o segrete.");
+        table.put("Adds Save album art to a song that has art, inside the file or on Telegram. The picture goes to Pictures.",
+                "Aggiunge Salva copertina album a una canzone che ha una copertina, nel file o su Telegram. L'immagine va in Immagini.");
+        table.put("Adds Save to Downloads to a downloaded photo, video, file or song in a chat that doesn't allow saving. Nothing is copied until you tap it.",
+                "Aggiunge Salva nei download a una foto, un video, un file o una canzone scaricati in una chat che non consente il salvataggio. Non viene copiato nulla finch\u00e9 non lo tocchi.");
+        table.put("Adds Save video cover to a video message. The biggest cover or thumbnail Telegram has goes to Pictures, fetched first if it is not on the phone yet.",
+                "Aggiunge Salva copertina video a un messaggio video. La copertina o miniatura pi\u00f9 grande che Telegram ha va in Immagini, scaricata prima se non \u00e8 ancora sul telefono.");
+        table.put("Adds Translate here to a message's menu and Translate this chat to a chat's menu, using the translation service you choose. The text you ask to translate is sent to that service, one message at a time. Nothing leaves your phone until you turn a chat or message on.",
+                "Aggiunge Traduci qui al menu di un messaggio e Traduci questa chat al menu di una chat, usando il servizio di traduzione che scegli. Il testo che chiedi di tradurre viene inviato a quel servizio, un messaggio alla volta. Niente lascia il telefono finch\u00e9 non attivi una chat o un messaggio.");
+        table.put("Adds a HushTelegram row to Telegram's Settings page.",
+                "Aggiunge una riga HushTelegram alla pagina Impostazioni di Telegram.");
+        table.put("Adds a HushTelegram row to the side menu, which has its own switch.",
+                "Aggiunge una riga HushTelegram al menu laterale, che ha un proprio interruttore.");
+        table.put("Adds a Screenshot button to the bar that shows while you pick messages. It saves a picture of them as the chat shows them, background, dates and times included, to Pictures/Telegram.",
+                "Aggiunge un pulsante Screenshot alla barra che compare mentre selezioni i messaggi. Salva una loro immagine come la chat li mostra, inclusi sfondo, date e ore, in Pictures/Telegram.");
+        table.put("Adds a Select all button to the bar that shows while you pick messages, in chats and in a chat's shared media. It selects everything loaded, newest first, up to Telegram's limit of 100.",
+                "Aggiunge un pulsante Seleziona tutto alla barra che appare mentre selezioni i messaggi, nelle chat e nei contenuti condivisi di una chat. Seleziona tutto ci\u00f2 che \u00e8 stato caricato, dal pi\u00f9 recente al meno recente, fino al limite di 100 di Telegram.");
+        table.put("Adds a Select between button to the bar that shows while you pick messages. It selects everything between the first and last one you picked. Pick one past the end and the gap fills in.",
+                "Aggiunge un pulsante Seleziona intermedi alla barra che appare mentre selezioni i messaggi. Seleziona tutto quello che c'\u00e8 tra il primo e l'ultimo messaggio selezionato. Selezionane uno oltre l'estremit\u00e0 e il vuoto viene colmato.");
+        table.put("Adds a copyable ID number for a user or chat to the profile's menu. Telegram isn't asked for anything extra.",
+                "Aggiunge al menu del profilo un numero ID copiabile per un utente o una chat. A Telegram non viene chiesto nulla di pi\u00f9.");
+        table.put("Adds an Administrators row to the side menu, so one tap lists only the groups and channels you own or manage and another brings every chat back. It needs the side menu switch on, only changes how this phone lists chats, and starts off again when Telegram restarts.",
+                "Aggiunge una riga Amministratori al menu laterale: un tocco mostra solo i gruppi e i canali che possiedi o amministri e un altro riporta tutte le chat. Richiede che l'interruttore del menu laterale sia attivo, cambia solo il modo in cui questo telefono elenca le chat e si disattiva di nuovo quando Telegram si riavvia.");
+        table.put("Admin",
+                "Admin");
+        table.put("Admin folder",
+                "Cartella Admin");
+        table.put("Admin tools",
+                "Strumenti di amministrazione");
+        table.put("Administrators",
+                "Amministratori");
+        table.put("Administrators row in the side menu",
+                "Riga Amministratori nel menu laterale");
+        table.put("Ads",
+                "Annunci");
+        table.put("Ads in channels",
+                "Annunci nei canali");
+        table.put("Ads in channels and search",
+                "Annunci nei canali e nella ricerca");
+        table.put("Ads in search",
+                "Annunci nella ricerca");
+        table.put("After Telegram restarts, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.",
+                "Dopo il riavvio di Telegram, ogni interruttore tranne Registrazione di debug funziona come se fosse disattivato. Le tue scelte restano salvate. Le modifiche fatte quando hai applicato le patch restano attive.");
+        table.put("After you say no to contacts access, the Contacts tab stops asking again and its warning badge goes away.",
+                "Dopo aver negato l'accesso ai contatti, la scheda Contatti smette di chiedere di nuovo e il suo indicatore di avviso scompare.");
+        table.put("After you tap full screen, a video follows your phone to either landscape side, even with auto-rotate off. Turning your phone upright doesn't end full screen. Tap the button to leave it.",
+                "Dopo che tocchi schermo intero, un video segue il telefono su entrambi i lati in orizzontale, anche con la rotazione automatica disattivata. Girare il telefono in verticale non fa uscire dalla schermata intera. Tocca il pulsante per uscirne.");
+        table.put("Album art isn't available yet",
+                "Copertina album non ancora disponibile");
+        table.put("Album art saved to Pictures",
+                "Copertina album salvata in Immagini");
+        table.put("All Chats",
+                "Tutte le chat");
+        table.put("All Chats is still showing because it holds your only way to Archived Chats. Patch again with Disable pull to archive to give the archive another way in.",
+                "Tutte le chat \u00e8 ancora visibile perch\u00e9 \u00e8 il tuo unico modo per arrivare alle chat archiviate. Applica di nuovo le patch con Disattiva trascina per archiviare per dare all'archivio un altro accesso.");
+        table.put("All Chats is still showing because it holds your only way to Archived Chats. Turn on the side menu to give the archive another way in.",
+                "Tutte le chat \u00e8 ancora visibile perch\u00e9 \u00e8 il tuo unico modo per arrivare alle chat archiviate. Attiva il menu laterale per dare all'archivio un altro accesso.");
+        table.put("All Chats is still showing because the folder tabs couldn't be read. The diagnostic report has the details.",
+                "Tutte le chat \u00e8 ancora visibile perch\u00e9 non \u00e8 stato possibile leggere le schede delle cartelle. Il report diagnostico contiene i dettagli.");
+        table.put("All Chats is still showing because this account has no folder of its own to open, or each one is locked.",
+                "Tutte le chat \u00e8 ancora visibile perch\u00e9 questo account non ha una cartella propria da aprire o tutte sono bloccate.");
+        table.put("All files access is off, so Telegram's files stay in Android/data. Turning this on opens the setting.",
+                "L'accesso a tutti i file \u00e8 disattivato, quindi i file di Telegram restano in Android/data. Attivando questa opzione si apre l'impostazione.");
+        table.put("All files access is on.",
+                "L'accesso a tutti i file \u00e8 attivo.");
+        table.put("Allow chat blur on slower phones",
+                "Consenti la sfocatura delle chat sui telefoni pi\u00f9 lenti");
+        table.put("Allow screenshots in chats that don't allow saving",
+                "Consenti screenshot nelle chat che non consentono il salvataggio");
+        table.put("Allowed",
+                "Consentito");
+        table.put("Already in Downloads",
+                "Gi\u00e0 nei download");
+        table.put("Already set that way.",
+                "Gi\u00e0 configurato cos\u00ec.");
+        table.put("Also allow screenshots in secret chats",
+                "Consenti screenshot anche nelle chat segrete");
+        table.put("Also allow screenshots of view-once and timed media",
+                "Consenti anche screenshot dei media a visualizzazione singola e a tempo");
+    }
+
+    private static void fillIt3(Map<String, String> table) {
+        table.put("Also save from chats that don't allow saving",
+                "Salva anche dalle chat che non consentono il salvataggio");
+        table.put("Also save from secret chats",
+                "Salva anche dalle chat segrete");
+        table.put("Also save view-once and timed media",
+                "Salva anche i media a visualizzazione singola e temporizzati");
+        table.put("Always show translate bar",
+                "Mostra sempre la barra di traduzione");
+        table.put("An open video stays upright when you turn your phone. It goes landscape only when you tap full screen, and back only when you tap the button again.",
+                "Un video aperto resta in verticale quando ruoti il telefono. Passa in orizzontale solo quando tocchi il pulsante a schermo intero, e torna in verticale solo quando lo tocchi di nuovo.");
+        table.put("Android 11 and older don't say which links open here. Tap to open this app's settings, then Open by default.",
+                "Android 11 e versioni precedenti non indicano quali link si aprono qui. Tocca per aprire le impostazioni di questa app, quindi Apri per impostazione predefinita.");
+        table.put("Android didn't say which links open here. Tap to check in Android's settings.",
+                "Android non ha indicato quali link si aprono qui. Tocca per verificare nelle impostazioni di Android.");
+        table.put("Android doesn't say whether Data Saver is on.",
+                "Android non indica se il Risparmio dati \u00e8 attivo.");
+        table.put("Android doesn't say whether this network is metered.",
+                "Android non indica se questa rete \u00e8 a consumo.");
+        table.put("Android opens t.me links in this Telegram app only if you select their addresses on its Open by default page. Other link settings don't change.",
+                "Android apre i link t.me in questa app Telegram solo se selezioni i loro indirizzi nella pagina Apri per impostazione predefinita. Le altre impostazioni dei link non cambiano.");
+        table.put("Android stops Telegram's Keep-Alive Service soon after you leave the app, so messages wait until you open it again. With this on, the service shows a quiet notification and keeps running. It only does something while Keep-Alive Service is on in Telegram's own Settings > Notifications, under Other.",
+                "Android arresta il Servizio keep-alive di Telegram poco dopo che lasci l'app, quindi i messaggi aspettano finch\u00e9 non la riapri. Con questa opzione attiva, il servizio mostra una notifica silenziosa e continua a funzionare. Funziona solo mentre il Servizio keep-alive \u00e8 attivo in Impostazioni > Notifiche di Telegram, sotto Altro.");
+        table.put("Android verified this app for Telegram's web addresses, so their links open here.",
+                "Android ha verificato questa app per gli indirizzi web di Telegram, quindi i loro link si aprono qui.");
+        table.put("Android's Data Saver is off.",
+                "Il Risparmio dati di Android \u00e8 disattivato.");
+        table.put("Android's Data Saver is on, but Telegram may use data freely.",
+                "Il Risparmio dati di Android \u00e8 attivo, ma Telegram pu\u00f2 usare i dati liberamente.");
+        table.put("Android's Data Saver is on.",
+                "Il Risparmio dati di Android \u00e8 attivo.");
+        table.put("App settings didn't open. Try App info, then Open by default.",
+                "Impostazioni non aperte. Prova Info app, poi Apri per impostazione predefinita.");
+        table.put("Ask before joining a voice chat",
+                "Chiedi prima di partecipare a una chat vocale");
+        table.put("Ask before sending a GIF",
+                "Chiedi prima di inviare una GIF");
+        table.put("Ask before sending a message",
+                "Chiedi prima di inviare un messaggio");
+        table.put("Ask before sending a round video message",
+                "Chiedi prima di inviare un videomessaggio circolare");
+        table.put("Ask before sending a sticker",
+                "Chiedi prima di inviare uno sticker");
+        table.put("Ask before sending a voice message",
+                "Chiedi prima di inviare un messaggio vocale");
+        table.put("Ask before starting a call",
+                "Chiedi prima di avviare una chiamata");
+        table.put("Asking Telegram to make your folders.",
+                "Richiesta a Telegram di creare le cartelle.");
+        table.put("Asking Telegram to remove the folders.",
+                "Richiesta a Telegram di rimuovere le cartelle.");
+        table.put("Asks Call or Cancel before the call button in a chat or on a profile starts a call.",
+                "Chiede Chiama o Annulla prima che il pulsante di chiamata in una chat o in un profilo avvii una chiamata.");
+        table.put("Asks Join or Cancel before you join a group's voice chat or a channel's live stream. Starting a new one doesn't ask.",
+                "Chiede Partecipa o Annulla prima che tu partecipi alla chat vocale di un gruppo o alla diretta di un canale. Avviarne una nuova non chiede conferma.");
+        table.put("Asks Send or Cancel before a GIF you tap goes into a chat. Cancel drops it. Scheduled GIFs go out without asking.",
+                "Chiede Invia o Annulla prima che una GIF che tocchi venga inviata in una chat. Annulla la scarta. Le GIF programmate partono senza chiedere.");
+        table.put("Asks Send or Cancel before a round video message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.",
+                "Chiede Invia o Annulla prima che un videomessaggio circolare registrato venga inviato. La registrazione si mette prima in pausa e Annulla la lascia in pausa, pronto per essere riprodotto, eliminato o inviato.");
+        table.put("Asks Send or Cancel before a sticker you tap goes into a chat. Cancel drops it. Scheduled stickers go out without asking.",
+                "Chiede Invia o Annulla prima che uno sticker che tocchi venga inviato in una chat. Annulla lo scarta. Gli sticker programmati partono senza chiedere.");
+        table.put("Asks Send or Cancel before a voice message you recorded goes out. The recording pauses first, and Cancel leaves it paused, ready to play, delete or send.",
+                "Chiede Invia o Annulla prima che un messaggio vocale registrato venga inviato. La registrazione si mette prima in pausa e Annulla la lascia in pausa, pronto per essere riprodotto, eliminato o inviato.");
+        table.put("Asks Send or Cancel before the send button or the keyboard's send key sends what you typed. Cancel leaves the text as it was. Scheduled and silent messages, edits and forwards go out without asking.",
+                "Chiede Invia o Annulla prima che il pulsante di invio o il tasto invio della tastiera invii ci\u00f2 che hai digitato. Annulla lascia il testo com'era. I messaggi programmati e silenziosi, le modifiche e gli inoltri partono senza chiedere.");
+        table.put("Attachment menu",
+                "Menu allegati");
+        table.put("Audio track",
+                "Traccia audio");
+        table.put("Audio track and subtitles",
+                "Traccia audio e sottotitoli");
+        table.put("Auto-forwarding rules",
+                "Regole di inoltro automatico");
+        table.put("Automatic",
+                "Automatico");
+        table.put("Avatar size",
+                "Dimensione avatar");
+        table.put("Baby",
+                "Bambino");
+        table.put("Back",
+                "Indietro");
+        table.put("Back to Google's web translate.",
+                "Torna al traduttore web di Google.");
+        table.put("Back to defaults",
+                "Torna alle impostazioni predefinite");
+        table.put("Background dim",
+                "Oscuramento sfondo");
+        table.put("Background picture",
+                "Immagine di sfondo");
+        table.put("Background picture saved.",
+                "Immagine di sfondo salvata.");
+        table.put("Background removed.",
+                "Sfondo rimosso.");
+        table.put("Background use: %1$s",
+                "Uso in background: %1$s");
+        table.put("Banner picture saved.",
+                "Immagine del banner salvata.");
+        table.put("Banner removed.",
+                "Banner rimosso.");
+        table.put("Battery optimization: Off",
+                "Ottimizzazione batteria: Disattivata");
+        table.put("Battery optimization: On",
+                "Ottimizzazione batteria: Attivata");
+        table.put("Battery optimization: Unknown",
+                "Ottimizzazione batteria: Sconosciuta");
+        table.put("Before the edit at %1$s: %2$s",
+                "Prima della modifica (%1$s): %2$s");
+        table.put("Bitrate: %1$s kbps",
+                "Bitrate: %1$s kbps");
+        table.put("Block new channels and groups",
+                "Blocca nuovi canali e gruppi");
+        table.put("Blocked",
+                "Bloccato");
+        table.put("Bold",
+                "Grassetto");
+        table.put("Bold, italic and code text use your phone's font instead of Telegram's built-in one. Restart Telegram to see the change.",
+                "Il testo in grassetto, corsivo e codice usa il carattere del telefono invece di quello integrato di Telegram. Riavvia Telegram per vedere la modifica.");
+        table.put("Bookmark",
+                "Segnalibro");
+        table.put("Bookmark removed.",
+                "Segnalibro rimosso.");
+    }
+
+    private static void fillIt4(Map<String, String> table) {
+        table.put("Bookmarked.",
+                "Segnalibro aggiunto.");
+        table.put("Bookmarks",
+                "Segnalibri");
+        table.put("Bot token",
+                "Token bot");
+        table.put("Bot token sign-in",
+                "Accesso con token bot");
+        table.put("Both work on the account you have open.",
+                "Entrambe funzionano sull'account che hai aperto.");
+        table.put("Bots",
+                "Bots");
+        table.put("Brings back every message you hid with Hide for me, in every account. Open the chat again to see them.",
+                "Recupera tutti i messaggi che hai nascosto con Nascondi per me, in tutti gli account. Riapri la chat per vederli.");
+        table.put("Buttons in chat previews",
+                "Pulsanti nelle anteprime delle chat");
+        table.put("Bypass channel restrictions",
+                "Ignora restrizioni canali");
+        table.put("Bypass integrity check",
+                "Ignora controllo di integrit\u00e0");
+        table.put("Call",
+                "Chiama");
+        table.put("Call diagnostics",
+                "Diagnostica delle chiamate");
+        table.put("Call recording saved",
+                "Registrazione della chiamata salvata");
+        table.put("Call recordings",
+                "Registrazioni delle chiamate");
+        table.put("Call saved to %1$s",
+                "Chiamata salvata in %1$s");
+        table.put("Calls in these chats are recorded.",
+                "Le chiamate in queste chat vengono registrate.");
+        table.put("Calls in these chats aren't recorded anymore.",
+                "Le chiamate in queste chat non vengono pi\u00f9 registrate.");
+        table.put("Calls to record",
+                "Chiamate da registrare");
+        table.put("Came online",
+                "\u00c8 andato online");
+        table.put("Camera only on tap",
+                "Fotocamera solo al tocco");
+        table.put("Can't forward there",
+                "Impossibile inoltrare l\u00ec");
+        table.put("Can't open the link. Go to %1$s.",
+                "Impossibile aprire il link. Vai a %1$s.");
+        table.put("Cancel",
+                "Annulla");
+        table.put("Cancel unlock",
+                "Annulla sblocco");
+        table.put("Cards. Tap for plain rows.",
+                "Schede. Tocca per righe semplici.");
+        table.put("Change avatar size",
+                "Cambia dimensione avatar");
+        table.put("Change sticker size",
+                "Cambia la dimensione degli sticker");
+        table.put("Changed %1$d setting. Undo it from Quick setups.",
+                "Modificata %1$d impostazione. Annullala da Configurazioni rapide.");
+        table.put("Changed %1$d settings. Undo them from Quick setups.",
+                "Modificate %1$d impostazioni. Annullale da Configurazioni rapide.");
+        table.put("Changed name from %1$s to %2$s",
+                "Ha cambiato nome da %1$s a %2$s");
+        table.put("Changed phone number from %1$s to %2$s",
+                "Ha cambiato numero di telefono da %1$s a %2$s");
+        table.put("Changed switches",
+                "Interruttori modificati");
+        table.put("Changed their profile photo",
+                "Ha cambiato la sua foto profilo");
+        table.put("Changed username from %1$s to %2$s",
+                "Ha cambiato nome utente da %1$s a %2$s");
+        table.put("Channels",
+                "Canali");
+        table.put("Channels and chats that block forwarding and saving let you forward messages and save media.",
+                "I canali e le chat che bloccano l'inoltro e il salvataggio ti permettono di inoltrare i messaggi e salvare i media.");
+        table.put("Channels, groups and messages Telegram says are unavailable for copyright or local law open anyway, as long as Telegram still sends them.",
+                "I canali, i gruppi e i messaggi che Telegram dichiara non disponibili per copyright o legge locale si aprono comunque, finch\u00e9 Telegram li invia ancora.");
+        table.put("Chat ID %1$s",
+                "ID chat %1$s");
+        table.put("Chat ID: %1$s",
+                "ID chat: %1$s");
+        table.put("Chat list",
+                "Lista chat");
+        table.put("Chat list banner",
+                "Banner della lista chat");
+        table.put("Chat pictures in the chat list show at the size you pick below. Each row keeps its height, and the picture stays centered where Telegram puts it.",
+                "Le immagini delle chat nella lista chat vengono mostrate alla dimensione che scegli qui sotto. Ogni riga mantiene la sua altezza e l'immagine resta centrata dove la posiziona Telegram.");
+        table.put("Chats in another language stop showing the translate bar at the top. Translate moves to the chat's menu, and a chat you're translating keeps its bar.",
+                "Le chat in un'altra lingua non mostrano pi\u00f9 la barra di traduzione in alto. Traduci si sposta nel menu della chat, e una chat che stai traducendo mantiene la sua barra.");
+        table.put("Chats pinned on this phone",
+                "Chat fissate su questo telefono");
+        table.put("Chats to hide",
+                "Chat da nascondere");
+        table.put("Chats to record",
+                "Chat da registrare");
+        table.put("Chats you were removed from",
+                "Chat da cui sei stato rimosso");
+        table.put("Check Also delete for by default",
+                "Spunta di default Elimina anche per\u2026");
+        table.put("Check for new HushTelegram releases",
+                "Cerca nuove versioni di HushTelegram");
+        table.put("Check now",
+                "Controlla ora");
+        table.put("Checking GitHub now.",
+                "Controllo di GitHub in corso.");
+        table.put("Checks GitHub for the newest release right now, even if the switch above is off.",
+                "Controlla subito su GitHub la versione pi\u00f9 recente, anche se l'interruttore sopra \u00e8 spento.");
+        table.put("Choose another folder",
+                "Scegli un'altra cartella");
+        table.put("Choose another font",
+                "Scegli un altro font");
+        table.put("Choose another picture",
+                "Scegli un'altra immagine");
+        table.put("Clean links when you copy or paste",
+                "Pulisci i link quando li copi o li incolli");
+        table.put("Clear diagnostic data",
+                "Cancella dati diagnostici");
+        table.put("Clear edit history",
+                "Cancella la cronologia modifiche");
+        table.put("Clear from cache",
+                "Cancella dalla cache");
+        table.put("Clear history",
+                "Cancella cronologia");
+    }
+
+    private static void fillIt5(Map<String, String> table) {
+        table.put("Clear kept messages",
+                "Cancella i messaggi conservati");
+        table.put("Clear search",
+                "Cancella ricerca");
+        table.put("Cleared %1$s",
+                "Cancellato %1$s");
+        table.put("Cleared the edit history of %1$d message.",
+                "Cronologia modifiche cancellata: %1$d messaggio.");
+        table.put("Cleared the edit history of %1$d messages.",
+                "Cronologia modifiche cancellata: %1$d messaggi.");
+        table.put("Clears the activity log and patch checks that a report would include.",
+                "Cancella il registro attivit\u00e0 e i controlli delle patch che un rapporto includerebbe.");
+        table.put("Close",
+                "Chiudi");
+        table.put("Close preview",
+                "Chiudi anteprima");
+        table.put("Compact bottom bar",
+                "Barra inferiore compatta");
+        table.put("Control character",
+                "Carattere di controllo");
+        table.put("Conversations",
+                "Conversazioni");
+        table.put("Copy",
+                "Copia");
+        table.put("Copy %1$s",
+                "Copia %1$s");
+        table.put("Copy a short report or save the full one to a file. The saved location is shown afterward. Links, IDs and sign-in details are left out. Look it over before sharing.",
+                "Copia un rapporto breve o salva quello completo in un file. Dopo viene mostrato dove \u00e8 stato salvato. I link, gli ID e i dati di accesso vengono omessi. Controllalo prima di condividerlo.");
+        table.put("Copy a short report to the clipboard.",
+                "Copia un breve report negli appunti.");
+        table.put("Copy chat ID %1$s",
+                "Copia ID chat %1$s");
+        table.put("Copy data center %1$s",
+                "Copia centro dati %1$s");
+        table.put("Copy photo",
+                "Copia foto");
+        table.put("Copy quick report",
+                "Copia rapporto rapido");
+        table.put("Copy text from chats that don't allow saving",
+                "Copia il testo dalle chat che non consentono il salvataggio");
+        table.put("Copy user ID %1$s",
+                "Copia ID utente %1$s");
+        table.put("Couldn't change the lock. Try again in a moment.",
+                "Impossibile modificare il blocco. Riprova tra poco.");
+        table.put("Couldn't change the text.",
+                "Impossibile modificare il testo.");
+        table.put("Couldn't change your folders. Try again in a moment.",
+                "Non \u00e8 stato possibile modificare le tue cartelle. Riprova tra poco.");
+        table.put("Couldn't clear that. Try again.",
+                "Impossibile cancellare. Riprova.");
+        table.put("Couldn't complete that action. Try again.",
+                "Impossibile completare l'azione. Riprova.");
+        table.put("Couldn't copy that. Try again.",
+                "Impossibile copiare. Riprova.");
+        table.put("Couldn't crop the photo. Try again.",
+                "Impossibile ritagliare la foto. Riprova.");
+        table.put("Couldn't download a proxy list last time. Check your connection and try again.",
+                "Impossibile scaricare un elenco di proxy l'ultima volta. Controlla la connessione e riprova.");
+        table.put("Couldn't download that. Try again.",
+                "Download non riuscito. Riprova.");
+        table.put("Couldn't get the photo. Try again.",
+                "Impossibile ottenere la foto. Riprova.");
+        table.put("Couldn't import or restore old settings. Check the switches.",
+                "Importazione o ripristino non riusciti. Controlla gli interruttori.");
+        table.put("Couldn't import the settings. Nothing was changed.",
+                "Impossibile importare le impostazioni. Non \u00e8 stato modificato nulla.");
+        table.put("Couldn't load the lyrics. Tap to try again.",
+                "Impossibile caricare il testo. Tocca per riprovare.");
+        table.put("Couldn't open All files access.",
+                "Impossibile aprire l'accesso a tutti i file.");
+        table.put("Couldn't open admin tools here.",
+                "Impossibile aprire gli strumenti admin qui.");
+        table.put("Couldn't open app info. Open Android settings.",
+                "Impossibile aprire le info dell'app. Apri le impostazioni di Android.");
+        table.put("Couldn't open battery optimization. Open Android settings.",
+                "Impossibile aprire l'ottimizzazione batteria. Apri le impostazioni di Android.");
+        table.put("Couldn't open notification settings. Open Android settings.",
+                "Impossibile aprire le notifiche. Apri le impostazioni di Android.");
+        table.put("Couldn't open that file. Nothing was changed.",
+                "Impossibile aprire quel file. Non \u00e8 stato modificato nulla.");
+        table.put("Couldn't open that. Try again.",
+                "Impossibile aprire. Riprova.");
+        table.put("Couldn't open the file picker. Try again.",
+                "Impossibile aprire il selettore di file. Riprova.");
+        table.put("Couldn't open your messages here.",
+                "Impossibile aprire i tuoi messaggi qui.");
+        table.put("Couldn't put back the diagnostic data. Try again.",
+                "Impossibile ripristinare i dati diagnostici. Riprova.");
+        table.put("Couldn't reach GitHub. Try again later.",
+                "Impossibile raggiungere GitHub. Riprova pi\u00f9 tardi.");
+        table.put("Couldn't read the list.",
+                "Non \u00e8 stato possibile leggere la lista.");
+        table.put("Couldn't read your accounts.",
+                "Impossibile leggere i tuoi account.");
+        table.put("Couldn't read your chats.",
+                "Impossibile leggere le tue chat.");
+        table.put("Couldn't read your folders.",
+                "Impossibile leggere le tue cartelle.");
+        table.put("Couldn't remove %1$s. Delete it by hand.",
+                "Non \u00e8 stato possibile rimuovere %1$s. Eliminalo manualmente.");
+        table.put("Couldn't save that. It's back to the saved value. Try again.",
+                "Non \u00e8 stato possibile salvarlo. \u00c8 tornato al valore salvato. Riprova.");
+        table.put("Couldn't save that. Try again.",
+                "Impossibile salvarlo. Riprova.");
+        table.put("Couldn't save the accounts. Try again in a moment.",
+                "Impossibile salvare gli account. Riprova tra poco.");
+        table.put("Couldn't save the bookmark. Try again.",
+                "Impossibile salvare il segnalibro. Riprova.");
+        table.put("Couldn't save the call recording.",
+                "Impossibile salvare la registrazione.");
+        table.put("Couldn't save the chats. Try again in a moment.",
+                "Impossibile salvare le chat. Riprova tra poco.");
+        table.put("Couldn't save the choice. Try again in a moment.",
+                "Impossibile salvare la scelta. Riprova tra poco.");
+        table.put("Couldn't save the device. Try again in a moment.",
+                "Non \u00e8 stato possibile salvare il dispositivo. Riprova tra poco.");
+        table.put("Couldn't save the dim. Try again in a moment.",
+                "Oscuramento non salvato. Riprova tra poco.");
+        table.put("Couldn't save the emoji. Try again in a moment.",
+                "Impossibile salvare l'emoji. Riprova tra poco.");
+    }
+
+    private static void fillIt6(Map<String, String> table) {
+        table.put("Couldn't save the filters. Try again in a moment.",
+                "Impossibile salvare i filtri. Riprova tra poco.");
+        table.put("Couldn't save the folder. Try again in a moment.",
+                "Impossibile salvare la cartella. Riprova tra poco.");
+        table.put("Couldn't save the font. Try again.",
+                "Impossibile salvare il font. Riprova.");
+        table.put("Couldn't save the kinds. Try again in a moment.",
+                "Non \u00e8 stato possibile salvare i tipi. Riprova tra poco.");
+        table.put("Couldn't save the language. Try again in a moment.",
+                "Impossibile salvare la lingua. Riprova tra poco.");
+        table.put("Couldn't save the links. Try again in a moment.",
+                "Impossibile salvare i link. Riprova tra poco.");
+        table.put("Couldn't save the lists. Try again in a moment.",
+                "Impossibile salvare le liste. Riprova tra poco.");
+        table.put("Couldn't save the order. Try again.",
+                "Impossibile salvare l'ordine. Riprova.");
+        table.put("Couldn't save the picture",
+                "Impossibile salvare l'immagine");
+        table.put("Couldn't save the picture. Try again.",
+                "Impossibile salvare l'immagine. Riprova.");
+        table.put("Couldn't save the rules. Try again in a moment.",
+                "Impossibile salvare le regole. Riprova tra poco.");
+        table.put("Couldn't save the settings file. Try again.",
+                "Impossibile salvare il file delle impostazioni. Riprova.");
+        table.put("Couldn't save the size. Try again in a moment.",
+                "Impossibile salvare la dimensione. Riprova tra poco.");
+        table.put("Couldn't save the title. Try again in a moment.",
+                "Impossibile salvare il titolo. Riprova tra poco.");
+        table.put("Couldn't save the translation service. Try again in a moment.",
+                "Non \u00e8 stato possibile salvare il servizio di traduzione. Riprova tra poco.");
+        table.put("Couldn't send read receipts",
+                "Impossibile inviare le conferme di lettura");
+        table.put("Couldn't send the photo. Try again.",
+                "Impossibile inviare la foto. Riprova.");
+        table.put("Couldn't send the read receipt. Try again.",
+                "Non \u00e8 stato possibile inviare la conferma di lettura. Riprova.");
+        table.put("Couldn't start that. Try again in a moment.",
+                "Impossibile avviare l'operazione. Riprova tra poco.");
+        table.put("Couldn't start the report export. Try again in a moment.",
+                "Impossibile avviare l'esportazione del rapporto. Riprova tra poco.");
+        table.put("Couldn't start tracking",
+                "Non \u00e8 stato possibile iniziare a tracciare");
+        table.put("Couldn't stream this video",
+                "Impossibile trasmettere questo video");
+        table.put("Couldn't try it now. Try again in a moment.",
+                "Non \u00e8 stato possibile provarlo ora. Riprova tra poco.");
+        table.put("Couldn't turn HushTelegram back on. Try again.",
+                "Impossibile riattivare HushTelegram. Riprova.");
+        table.put("Couldn't update the messages here.",
+                "Impossibile aggiornare i messaggi qui.");
+        table.put("Couldn't update the preview. Copy and Save still use only what's ticked.",
+                "Impossibile aggiornare l'anteprima. Copia e Salva usano comunque solo ci\u00f2 che \u00e8 spuntato.");
+        table.put("Couldn't use that folder. Pick another one.",
+                "Impossibile usare quella cartella. Scegline un'altra.");
+        table.put("Cover isn't available yet",
+                "La copertina non \u00e8 ancora disponibile");
+        table.put("Cover saved to Pictures",
+                "Copertina salvata in Immagini");
+        table.put("Data center %1$s",
+                "Centro dati %1$s");
+        table.put("Data center copied",
+                "Centro dati copiato");
+        table.put("Dates on your profile songs",
+                "Date sulle canzoni del tuo profilo");
+        table.put("Debug logging",
+                "Registrazione di debug");
+        table.put("Default rules",
+                "Regole predefinite");
+        table.put("Delete account",
+                "Elimina account");
+        table.put("Delete every account",
+                "Elimina tutti gli account");
+        table.put("Delete for them",
+                "Elimina per gli altri");
+        table.put("Delete the open account",
+                "Elimina l'account aperto");
+        table.put("Delete this account?",
+                "Eliminare questo account?");
+        table.put("Deleted for them, kept here.",
+                "Eliminato per gli altri, conservato qui.");
+        table.put("Deleted messages",
+                "Messaggi eliminati");
+        table.put("Deleted their account",
+                "Ha eliminato il suo account");
+        table.put("Deletes the account you're using now, with its messages and contacts. If it has a cloud password, Telegram waits a week first.",
+                "Elimina l'account che stai usando ora, con i suoi messaggi e contatti. Se ha una password cloud, Telegram attende prima una settimana.");
+        table.put("Deletes the messages this phone kept after others deleted them, in every account, the way Telegram would have.",
+                "Elimina i messaggi che questo telefono ha conservato dopo che altri li hanno eliminati, in tutti gli account, come avrebbe fatto Telegram.");
+        table.put("Device in Active sessions",
+                "Dispositivo in Sessioni attive");
+        table.put("Device name",
+                "Nome dispositivo");
+        table.put("Diagnostic data cleared. Tap again to put it back.",
+                "Dati diagnostici cancellati. Tocca di nuovo per ripristinarli.");
+        table.put("Diagnostic data put back.",
+                "Dati diagnostici ripristinati.");
+        table.put("Diagnostic report copied to the clipboard.",
+                "Rapporto diagnostico copiato negli appunti.");
+        table.put("Diagnostics",
+                "Diagnostica");
+        table.put("Dim the picture",
+                "Oscura l'immagine");
+        table.put("Dimmed by %1$s. Tap to change it.",
+                "Oscurata del %1$s. Tocca per cambiarla.");
+        table.put("Disable double-tap reactions",
+                "Disattiva le reazioni con doppio tocco");
+        table.put("Disable pull to archive",
+                "Disattiva il trascinamento verso l'archivio");
+        table.put("Disable secret chats",
+                "Disattiva chat segrete");
+        table.put("Do Not Disturb in the chat list menu",
+                "Non disturbare nel menu della lista chat");
+        table.put("Do Not Disturb is off.",
+                "Non disturbare \u00e8 disattivato.");
+        table.put("Do Not Disturb is on.",
+                "Non disturbare \u00e8 attivo.");
+        table.put("Do Not Disturb menu item",
+                "la voce Non disturbare del menu");
+        table.put("Documents",
+                "Documenti");
+    }
+
+    private static void fillIt7(Map<String, String> table) {
+        table.put("Don't notify contacts",
+                "Non avvisare i contatti");
+        table.put("Don't share my number by default",
+                "Non condividere il mio numero di default");
+        table.put("Done",
+                "Fatto");
+        table.put("Double-tapping a message no longer adds a reaction. Scrolling, normal taps, selecting and the reaction menu work as before.",
+                "Toccando due volte un messaggio non si aggiunge pi\u00f9 una reazione. Lo scorrimento, i tocchi normali, la selezione e il menu delle reazioni funzionano come prima.");
+        table.put("Download manager",
+                "Gestore download");
+        table.put("Downloading",
+                "In download");
+        table.put("Downloading it first. It'll send when it's done.",
+                "Prima lo scarico. Verr\u00e0 inviato al termine.");
+        table.put("Downloads",
+                "Download");
+        table.put("Downloads a public list of proxies now, times them and adds the fastest to Telegram's proxy list, even with the switch above off.",
+                "Scarica subito un elenco pubblico di proxy, misura i tempi di risposta e aggiunge i pi\u00f9 veloci alla lista dei proxy di Telegram, anche con l'interruttore qui sopra disattivato.");
+        table.put("Downloads your proxy lists now, times them and adds the fastest to Telegram's proxy list, even with the switch above off.",
+                "Scarica ora le tue liste proxy, le cronometra e aggiunge le pi\u00f9 veloci alla lista proxy di Telegram, anche con l'interruttore sopra spento.");
+        table.put("Draft link previews",
+                "Anteprime dei link nelle bozze");
+        table.put("Drag a proxy by its handle to move it, and pin the ones you want on top. Telegram's proxy screen shows them in this order. Once you've moved one, proxies added later go below in Telegram's order.",
+                "Trascina un proxy per la maniglia per spostarlo e fissa in alto quelli che vuoi. La schermata dei proxy di Telegram li mostra in questo ordine. Dopo averne spostato uno, i proxy aggiunti in seguito vanno sotto, nell'ordine di Telegram.");
+        table.put("Drag the proxies in Telegram's proxy list into your own order, or pin some on top.",
+                "Trascina i proxy nella lista dei proxy di Telegram nell'ordine che preferisci, oppure fissane alcuni in cima.");
+        table.put("Draws a thin Telegram blue line around the bar at the bottom of the main screen, so it stands out on a black background. Restart Telegram to see the change.",
+                "Disegna una sottile linea azzurro Telegram attorno alla barra in fondo alla schermata principale, cos\u00ec risalta su uno sfondo nero. Riavvia Telegram per vedere la modifica.");
+        table.put("Duration: %1$s",
+                "Durata: %1$s");
+        table.put("Duress passcode",
+                "Codice di emergenza");
+        table.put("Duress passcode saved.",
+                "Codice di emergenza salvato.");
+        table.put("Dusk",
+                "Crepuscolo");
+        table.put("Each file or song you download also goes to Download/Telegram on your phone, where file managers and other apps can open it. Files from secret chats and chats that don't allow saving stay in Telegram.",
+                "Ogni file o canzone che scarichi va anche in Download/Telegram sul telefono, dove i gestori di file e altre app possono aprirlo. I file delle chat segrete e delle chat che non consentono il salvataggio restano in Telegram.");
+        table.put("Each line is a site, an arrow and the site its previews come from. Put *. in front of both to cover subdomains too, like *.tiktok.com -> *.kktiktok.com. A path after the first site covers only links that start with it, * standing for any one part, like x.com/*/status -> fixupx.com. Lines that aren't rules are left out.",
+                "Ogni riga \u00e8 un sito, una freccia e il sito da cui provengono le anteprime. Metti *. davanti a entrambi per includere anche i sottodomini, come *.tiktok.com -> *.kktiktok.com. Un percorso dopo il primo sito copre solo i link che iniziano con esso, dove * indica una qualsiasi parte, come x.com/*/status -> fixupx.com. Le righe che non sono regole vengono ignorate.");
+        table.put("Each line needs an https address",
+                "Ogni riga deve avere un indirizzo https");
+        table.put("Each list is a page of t.me/proxy or tg://proxy links. Free proxies times them and adds the 10 fastest. Leave it empty to use the public lists again.",
+                "Ogni lista \u00e8 una pagina di link t.me/proxy o tg://proxy. Free proxies li cronometra e aggiunge i 10 pi\u00f9 veloci. Lascia vuoto per usare di nuovo le liste pubbliche.");
+        table.put("Each message's time includes seconds, like 9:41:27 PM, so messages sent close together are easy to tell apart.",
+                "L'ora di ogni messaggio include i secondi, ad esempio 21:41:27, cos\u00ec i messaggi inviati a breve distanza sono facili da distinguere.");
+        table.put("Each new forward starts with Hide sender's name turned on, so copies arrive without the original author, even when you pick several chats at once. You can still turn it off in the forward preview, or by holding the send button in the Share sheet. Forwards to Saved Messages keep the sender.",
+                "Ogni nuovo inoltro parte con l'opzione Nascondi nome del mittente attiva, cos\u00ec le copie arrivano senza l'autore originale, anche quando scegli pi\u00f9 chat alla volta. Puoi comunque disattivarlo nell'anteprima dell'inoltro o tenendo premuto il pulsante di invio nel foglio di condivisione. Gli inoltri ai Messaggi salvati mantengono il mittente.");
+        table.put("Edit a copy",
+                "Modifica una copia");
+        table.put("Edited: %1$s",
+                "Modificato: %1$s");
+        table.put("Ember",
+                "Brace");
+        table.put("Emoji next to the chat list title",
+                "Emoji accanto al titolo della lista chat");
+        table.put("Emoji or a few letters",
+                "Emoji o qualche lettera");
+        table.put("Emoji status on this phone",
+                "Stato emoji su questo telefono");
+        table.put("Empty private chats stop suggesting a sticker to say hello. Their other text and notices, and the sticker picker, stay.",
+                "Le chat private vuote smettono di suggerire uno sticker per salutare. Gli altri testi e avvisi, e il selettore di sticker, restano.");
+        table.put("Every 6 hours, downloads a public list of proxies and adds the 10 fastest to Telegram's proxy list, and Telegram connects through them unless you use a proxy of your own. Whoever runs a proxy can see your IP address. Turning this off leaves them in the list.",
+                "Ogni 6 ore scarica un elenco pubblico di proxy e aggiunge i 10 pi\u00f9 veloci alla lista dei proxy di Telegram, quindi Telegram si connette tramite loro a meno che non usi un proxy tuo. Chi gestisce un proxy pu\u00f2 vedere il tuo indirizzo IP. Se disattivi questa opzione, restano nell'elenco.");
+        table.put("Every call",
+                "Tutte le chiamate");
+        table.put("Every chat gets the translate bar, even when Telegram doesn't spot another language. It needs Premium or an outside translation service, and Hide translate bar wins.",
+                "Ogni chat mostra la barra di traduzione, anche quando Telegram non rileva un'altra lingua. Serve Premium o un servizio di traduzione esterno, e Nascondi barra di traduzione ha la precedenza.");
+        table.put("Every kind",
+                "Tutti i tipi");
+        table.put("Every kind of file.",
+                "Ogni tipo di file.");
+        table.put("Every message",
+                "Ogni messaggio");
+        table.put("Every message you bookmarked, newest first. Tap one to open it, or long-press it to remove it.",
+                "Ogni messaggio che hai aggiunto ai segnalibri, dal pi\u00f9 recente. Toccalo per aprirlo o tienilo premuto per rimuoverlo.");
+        table.put("Every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.",
+                "Ogni interruttore tranne Registrazione di debug funziona come se fosse disattivato. Le tue scelte restano salvate. Le modifiche fatte quando hai applicato le patch restano attive.");
+        table.put("Every switch here applies to all the accounts in this Telegram app, not only the one you have open.",
+                "Ogni interruttore qui si applica a tutti gli account in questa app Telegram, non solo a quello che hai aperto.");
+        table.put("Every switch is the way it started.",
+                "Ogni interruttore \u00e8 come all'inizio.");
+        table.put("Everything here is already selected",
+                "\u00c8 gi\u00e0 tutto selezionato");
+        table.put("Exact numbers",
+                "Numeri esatti");
+        table.put("Exception chats",
+                "Chat in eccezione");
+        table.put("Expand all quotes",
+                "Espandi tutte le citazioni");
+        table.put("Export diagnostic report",
+                "Esporta rapporto diagnostico");
+        table.put("Export settings",
+                "Esporta impostazioni");
+        table.put("Fake typing",
+                "Digitazione simulata");
+        table.put("Fast forward",
+                "Inoltro rapido");
+        table.put("Faster downloads",
+                "Download pi\u00f9 veloci");
+        table.put("Faster uploads",
+                "Upload pi\u00f9 veloci");
+        table.put("File data center: %1$s",
+                "Centro dati del file: %1$s");
+        table.put("File icons and thumbnails",
+                "Icone e miniature dei file");
+        table.put("File name: %1$s",
+                "Nome file: %1$s");
+        table.put("File size: %1$s",
+                "Dimensione file: %1$s");
+        table.put("Files about half the size, ending in .ogg. Some older players can't open them.",
+                "File grandi circa la met\u00e0, con estensione .ogg. Alcuni lettori pi\u00f9 vecchi non riescono ad aprirli.");
+        table.put("Files download in 512 KB pieces, 8 at a time, instead of 128 KB pieces 4 at a time. If a big piece fails, Telegram goes back to small ones. The next download picks this up.",
+                "I file vengono scaricati in blocchi da 512 KB, 8 alla volta, invece di blocchi da 128 KB, 4 alla volta. Se un blocco grande fallisce, Telegram torna a quelli piccoli. Il download successivo applica questa modifica.");
+        table.put("Files download one at a time, in the order you asked for them. Adds a Downloads row to the side menu, which needs Side menu on too.",
+                "I file vengono scaricati uno alla volta, nell'ordine in cui li hai richiesti. Aggiunge una voce Download al menu laterale, che richiede anche Menu laterale attivo.");
+        table.put("Filled",
+                "Riempito");
+        table.put("Filters for channels",
+                "Filtri per canali");
+    }
+
+    private static void fillIt8(Map<String, String> table) {
+        table.put("Filters for groups",
+                "Filtri per gruppi");
+        table.put("Filters saved.",
+                "Filtri salvati.");
+        table.put("Find free proxies now",
+                "Trova proxy gratuiti ora");
+        table.put("Find names in styled letters",
+                "Trova nomi con lettere decorate");
+        table.put("Finished",
+                "Completato");
+        table.put("Firebase certificate header",
+                "Intestazione certificato Firebase");
+        table.put("First strong isolate",
+                "Isolamento in base al primo carattere forte");
+        table.put("Fit all folder tabs",
+                "Adatta tutte le schede delle cartelle");
+        table.put("Fix link previews",
+                "Correggi anteprime dei link");
+        table.put("Folder icons",
+                "Icone cartelle");
+        table.put("Folder icons on tabs",
+                "Icone cartelle sulle schede");
+        table.put("Folder in internal storage",
+                "Cartella nella memoria interna");
+        table.put("Folder limit reached. Remove a folder and try again.",
+                "Limite cartelle raggiunto. Rimuovi una cartella e riprova.");
+        table.put("Folder name",
+                "Nome cartella");
+        table.put("Folder tab counts and the app badge still count their unread messages.",
+                "I contatori delle schede delle cartelle e il badge dell'app contano ancora i loro messaggi non letti.");
+        table.put("Folder tab counts leave them out, but the app badge still counts their unread messages.",
+                "I contatori delle schede delle cartelle le escludono, ma il badge dell'app conta ancora i loro messaggi non letti.");
+        table.put("Folder tabs above the chat list show just their names, without unread counts. Chats stay unread and the app icon badge doesn't change.",
+                "Le schede delle cartelle sopra la lista chat mostrano solo i loro nomi, senza conteggi di non letti. Le chat restano non lette e il badge dell'icona dell'app non cambia.");
+        table.put("Folder tabs at the bottom",
+                "Schede delle cartelle in basso");
+        table.put("Folder to open",
+                "Cartella da aprire");
+        table.put("Folders by chat type",
+                "Cartelle per tipo di chat");
+        table.put("Font file",
+                "File del font");
+        table.put("Font removed.",
+                "Font rimosso.");
+        table.put("For phones where Firebase notifications don't arrive. Telegram signs up an address from a UnifiedPush app like ntfy, and Telegram's servers call it to wake Telegram when something arrives. The messages still come from Telegram itself. It also turns on Telegram's own Keep-Alive Service and Background Connection, unless you've set either one yourself. Turned off, Telegram goes back to Firebase the next time it starts.",
+                "Per i telefoni in cui le notifiche Firebase non arrivano. Telegram registra un indirizzo da un'app UnifiedPush come ntfy e i server di Telegram lo chiamano per svegliare Telegram quando arriva qualcosa. I messaggi continuano ad arrivare da Telegram stesso. Attiva anche il Servizio keep-alive di Telegram e la Connessione in background, a meno che tu non abbia gi\u00e0 impostato tu stesso una delle due. Se disattivato, Telegram torna a Firebase al prossimo avvio.");
+        table.put("Forest",
+                "Foresta");
+        table.put("Forgets the earlier text this phone kept for edited messages, in every account.",
+                "Dimentica il testo precedente che questo telefono ha conservato per i messaggi modificati, in ogni account.");
+        table.put("Forward as copy",
+                "Inoltra come copia");
+        table.put("Forward as is",
+                "Inoltra cos\u00ec com'\u00e8");
+        table.put("Forward as plain text",
+                "Inoltra come testo semplice");
+        table.put("Forward new messages from",
+                "Inoltra i nuovi messaggi da");
+        table.put("Forward them to",
+                "Inoltrali a");
+        table.put("Forward to",
+                "Inoltra a");
+        table.put("Forward to Saved Messages",
+                "Inoltra a Messaggi salvati");
+        table.put("Forwarded from: %1$s",
+                "Inoltrato da: %1$s");
+        table.put("Forwarding rules",
+                "Regole di inoltro");
+        table.put("Forwarding to %1$s",
+                "Inoltro a %1$s");
+        table.put("Free proxies",
+                "Proxy gratuiti");
+        table.put("Full report saved to %1$s",
+                "Report completo salvato in %1$s");
+        table.put("Full screen videos turn either way",
+                "I video a schermo intero ruotano da entrambi i lati");
+        table.put("Gallery camera",
+                "Fotocamera galleria");
+        table.put("Gallery folder",
+                "Cartella galleria");
+        table.put("Ghost mode",
+                "Modalit\u00e0 fantasma");
+        table.put("Ghost mode button",
+                "Pulsante Modalit\u00e0 fantasma");
+        table.put("Ghost mode exception",
+                "Eccezione Modalit\u00e0 fantasma");
+        table.put("Ghost mode exceptions",
+                "Eccezioni Modalit\u00e0 fantasma");
+        table.put("Ghost mode is off in these chats.",
+                "La Modalit\u00e0 fantasma \u00e8 disattivata in queste chat.");
+        table.put("Ghost mode is on in these chats.",
+                "La Modalit\u00e0 fantasma \u00e8 attivata in queste chat.");
+        table.put("Ghost mode off",
+                "Modalit\u00e0 fantasma disattivata");
+        table.put("Ghost mode on",
+                "Modalit\u00e0 fantasma attivata");
+        table.put("GitHub is blocking checks from this network for now. Try again later.",
+                "GitHub sta bloccando i controlli da questa rete per ora. Riprova pi\u00f9 tardi.");
+        table.put("GitHub sent a reply HushTelegram couldn't read. Try again later.",
+                "Risposta di GitHub non leggibile. Riprova pi\u00f9 tardi.");
+        table.put("Go straight to one group of settings. Back returns to where you were.",
+                "Vai direttamente a un gruppo di impostazioni. Indietro ti riporta dove eri.");
+        table.put("Google sign-in failed. Type your email above.",
+                "Accesso Google non riuscito. Scrivi l'email sopra.");
+        table.put("Google's web translate. Tap to use an AI service with your own key.",
+                "Il traduttore web di Google. Tocca per usare un servizio di IA con la tua chiave.");
+        table.put("Gram transfer Send Gram item",
+                "voce Invia Gram nei trasferimenti di Gram");
+        table.put("Groups",
+                "Gruppi");
+        table.put("Hidden from your chat list.",
+                "Nascoste dalla tua lista chat.");
+        table.put("Hidden messages",
+                "Messaggi nascosti");
+        table.put("Hidden on this phone.",
+                "Nascosto su questo telefono.");
+        table.put("Hide All Chats",
+                "Nascondi Tutte le chat");
+        table.put("Hide Contacts tab",
+                "Nascondi la scheda Contatti");
+    }
+
+    private static void fillIt9(Map<String, String> table) {
+        table.put("Hide Premium, gifts and Stars",
+                "Nascondi Premium, regali e Stars");
+        table.put("Hide Send as button",
+                "Nascondi il pulsante Invia come");
+        table.put("Hide Stories",
+                "Nascondi storie");
+        table.put("Hide Telegram Features and Invite Friends",
+                "Nascondi Funzioni di Telegram e Invita amici");
+        table.put("Hide accounts",
+                "Nascondi account");
+        table.put("Hide ads",
+                "Nascondi annunci");
+        table.put("Hide blocked users in groups",
+                "Nascondi gli utenti bloccati nei gruppi");
+        table.put("Hide channel Mute button",
+                "Nascondi il pulsante Silenzia del canale");
+        table.put("Hide channel bar buttons",
+                "Nascondi i pulsanti della barra del canale");
+        table.put("Hide channel share button",
+                "Nascondi il pulsante Condividi dei canali");
+        table.put("Hide contacts on Telegram",
+                "Nascondi contatti su Telegram");
+        table.put("Hide emoji statuses",
+                "Nascondi stati emoji");
+        table.put("Hide folder tab counters",
+                "Nascondi i contatori delle schede delle cartelle");
+        table.put("Hide for me",
+                "Nascondi per me");
+        table.put("Hide from chat list",
+                "Nascondi dalla lista chat");
+        table.put("Hide gallery camera tile",
+                "Nascondi il riquadro della fotocamera nella galleria");
+        table.put("Hide greeting stickers",
+                "Nascondi gli sticker di saluto");
+        table.put("Hide keyboard on scroll",
+                "Nascondi tastiera durante lo scorrimento");
+        table.put("Hide messages by keyword",
+                "Nascondi messaggi per parola chiave");
+        table.put("Hide new message button",
+                "Nascondi il pulsante nuovo messaggio");
+        table.put("Hide online status",
+                "Nascondi stato online");
+        table.put("Hide phone number",
+                "Nascondi numero di telefono");
+        table.put("Hide picked chats",
+                "Nascondi chat scelte");
+        table.put("Hide pinned message bar",
+                "Nascondi barra dei messaggi fissati");
+        table.put("Hide popular apps",
+                "Nascondi app popolari");
+        table.put("Hide promotional banners",
+                "Nascondi i banner promozionali");
+        table.put("Hide reactions under messages",
+                "Nascondi reazioni sotto i messaggi");
+        table.put("Hide recommendations",
+                "Nascondi suggerimenti");
+        table.put("Hide sender names when forwarding",
+                "Nascondi i nomi dei mittenti durante l'inoltro");
+        table.put("Hide sponsored proxy channel",
+                "Nascondi il canale sponsorizzato del proxy");
+        table.put("Hide the emoji pack line",
+                "Nascondi la riga del pacchetto di emoji");
+        table.put("Hide the reaction picker",
+                "Nascondi il selettore delle reazioni");
+        table.put("Hide time on stickers",
+                "Nascondi l'ora sugli sticker");
+        table.put("Hide translate bar",
+                "Nascondi barra di traduzione");
+        table.put("Hide trending packs",
+                "Nascondi pacchetti in tendenza");
+        table.put("Hide typing",
+                "Nascondi digitazione");
+        table.put("Hides ads, suggestions, stories, promotions and nags.",
+                "Nasconde annunci, suggerimenti, storie, promozioni e avvisi.");
+        table.put("Hides suggested similar channels and bots, including ones already saved, and stops asking Telegram for new ones.",
+                "Nasconde canali e bot simili suggeriti, compresi quelli gi\u00e0 salvati, e smette di chiederne di nuovi a Telegram.");
+        table.put("Hides the Popular apps list on the Apps tab of search, and doesn't ask Telegram for it. Apps you've opened and other results stay.",
+                "Nasconde l'elenco App popolari nella scheda App della ricerca e non lo richiede a Telegram. Le app che hai aperto e gli altri risultati restano.");
+        table.put("Hides the Premium, birthday and low Stars balance banners above your chat list. Account security notices and other suggestions still show.",
+                "Nasconde i banner di Premium, compleanno e saldo basso di Stars sopra la lista chat. Gli avvisi di sicurezza dell'account e altri suggerimenti vengono comunque mostrati.");
+        table.put("Hides the sponsored channel a proxy adds to your chat list and folders. Your proxy settings aren't touched.",
+                "Nasconde il canale sponsorizzato che un proxy aggiunge alla lista chat e alle cartelle. Le impostazioni del proxy non vengono toccate.");
+        table.put("History cleared",
+                "Cronologia cancellata");
+        table.put("Hold automatic downloads on Data Saver",
+                "Sospendi i download automatici con Risparmio dati");
+        table.put("Hold the Telegram title at the top of your chats.",
+                "Tieni premuto il titolo Telegram in cima alla lista chat.");
+        table.put("Home screen shortcut",
+                "Collegamento nella schermata Home");
+        table.put("Horror movie",
+                "Film horror");
+        table.put("How to translate (optional)",
+                "Come tradurre (facoltativo)");
+        table.put("HushTelegram %1$s is made for Telegram %2$s.",
+                "HushTelegram %1$s \u00e8 fatto per Telegram %2$s.");
+        table.put("HushTelegram %1$s is out. Update it in Morphe Manager.",
+                "HushTelegram %1$s \u00e8 disponibile. Aggiornalo in Morphe Manager.");
+        table.put("HushTelegram %1$s on Telegram %2$s",
+                "HushTelegram %1$s su Telegram %2$s");
+        table.put("HushTelegram is on",
+                "HushTelegram \u00e8 attivo");
+        table.put("HushTelegram is paused",
+                "HushTelegram \u00e8 in pausa");
+        table.put("HushTelegram is paused, so your folders stay as they are.",
+                "HushTelegram \u00e8 in pausa, quindi le tue cartelle restano come sono.");
+        table.put("HushTelegram pauses when Telegram restarts.",
+                "HushTelegram si mette in pausa quando Telegram si riavvia.");
+        table.put("HushTelegram settings",
+                "Impostazioni di HushTelegram");
+        table.put("HushTelegram settings couldn't open",
+                "Impossibile aprire le impostazioni di HushTelegram");
+        table.put("HushTelegram turns back on when Telegram restarts.",
+                "HushTelegram si riattiva quando Telegram si riavvia.");
+        table.put("I haven't seen that person.",
+                "Non ho visto quella persona.");
+        table.put("ID",
+                "ID");
+        table.put("ID copied",
+                "ID copiato");
+    }
+
+    private static void fillIt10(Map<String, String> table) {
+        table.put("Ignore mentions in muted chats",
+                "Ignora le menzioni nelle chat silenziate");
+        table.put("Import",
+                "Importa");
+        table.put("Import settings",
+                "Importa impostazioni");
+        table.put("Importing settings",
+                "Importazione delle impostazioni");
+        table.put("In a chat",
+                "In una chat");
+        table.put("In use",
+                "In uso");
+        table.put("Install a UnifiedPush app like ntfy first.",
+                "Installa prima un'app UnifiedPush come ntfy.");
+        table.put("Install a UnifiedPush app like ntfy, then come back here.",
+                "Installa un'app UnifiedPush come ntfy, poi torna qui.");
+        table.put("Instant lock",
+                "Blocco istantaneo");
+        table.put("Internal storage",
+                "Memoria interna");
+        table.put("Internal storage/%1$s",
+                "Archivio interno/%1$s");
+        table.put("Invite Links",
+                "Link d'invito");
+        table.put("It's made for Telegram %1$s.",
+                "\u00c8 realizzato per Telegram %1$s.");
+        table.put("Join",
+                "Unisciti");
+        table.put("Join live stream",
+                "Unisciti alla diretta streaming");
+        table.put("Join this live stream?",
+                "Unirsi a questa diretta streaming?");
+        table.put("Join this voice chat?",
+                "Unirsi a questa chat vocale?");
+        table.put("Join voice chat",
+                "Unisciti alla chat vocale");
+        table.put("Jump to a section",
+                "Vai a una sezione");
+        table.put("Keep Telegram's files in internal storage",
+                "Conserva i file di Telegram nella memoria interna");
+        table.put("Keep at least one account showing.",
+                "Lascia visibile almeno un account.");
+        table.put("Keep captions with their photos",
+                "Mantieni le didascalie con le loro foto");
+        table.put("Keep chats you're removed from",
+                "Conserva le chat da cui vieni rimosso");
+        table.put("Keep deleted messages",
+                "Conserva i messaggi eliminati");
+        table.put("Keep drafts on this phone",
+                "Mantieni le bozze su questo telefono");
+        table.put("Keep edit history",
+                "Conserva la cronologia modifiche");
+        table.put("Keep my messages too",
+                "Conserva anche i miei messaggi");
+        table.put("Keep one way into HushTelegram settings",
+                "Mantieni un accesso alle impostazioni di HushTelegram");
+        table.put("Keep recordings",
+                "Conserva registrazioni");
+        table.put("Keep searches on this phone",
+                "Mantieni le ricerche su questo telefono");
+        table.put("Keep self-destructing secret chat messages",
+                "Conserva i messaggi che si autodistruggono nelle chat segrete");
+        table.put("Keep the Keep-Alive Service running",
+                "Mantieni attivo il Servizio keep-alive");
+        table.put("Keep videos muted on volume keys",
+                "Mantieni i video muti con i tasti del volume");
+        table.put("Keep view-once and timed media",
+                "Conserva i media a visualizzazione singola e a tempo");
+        table.put("Keep voice messages quiet while locked",
+                "Silenzia i messaggi vocali con telefono bloccato");
+        table.put("Keep your location from Mini Apps",
+                "Nascondi la tua posizione alle Mini App");
+        table.put("Keep-Alive Service",
+                "Servizio keep-alive");
+        table.put("Keep-Alive Service and Background Connection on: %1$s",
+                "Servizio keep-alive e Connessione in background attivi: %1$s");
+        table.put("Keep-Alive Service start",
+                "avvio del Servizio keep-alive");
+        table.put("Keeping Telegram connected",
+                "Mantenendo Telegram connesso");
+        table.put("Keeps the text a message had before someone else edited it, on this phone only. Message details in the message's menu shows it.",
+                "Conserva il testo che aveva un messaggio prima che qualcun altro lo modificasse, solo su questo telefono. La voce Dettagli messaggio nel menu del messaggio lo mostra.");
+        table.put("Kept messages are removed %1$d day after they were deleted.",
+                "I messaggi conservati vengono rimossi %1$d giorno dopo essere stati eliminati.");
+        table.put("Kept messages are removed %1$d days after they were deleted.",
+                "I messaggi conservati vengono rimossi %1$d giorni dopo essere stati eliminati.");
+        table.put("Kept messages stay until you clear them.",
+                "I messaggi conservati restano finch\u00e9 non li cancelli.");
+        table.put("Language for outside translations: %1$s. Tap to pick another.",
+                "Lingua per le traduzioni esterne: %1$s. Tocca per sceglierne un'altra.");
+        table.put("Last seen a long time ago",
+                "Ultimo accesso molto tempo fa");
+        table.put("Last seen recently",
+                "Ultimo accesso di recente");
+        table.put("Last seen within a month",
+                "Ultimo accesso entro un mese");
+        table.put("Last seen within a week",
+                "Ultimo accesso entro una settimana");
+        table.put("Left out of the file: %1$s.",
+                "Esclusi dal file: %1$s.");
+        table.put("Left to right",
+                "Da sinistra a destra");
+        table.put("Left-to-right isolate",
+                "Isolamento da sinistra a destra");
+        table.put("Left-to-right mark",
+                "Marca da sinistra a destra");
+        table.put("Less clutter",
+                "Meno distrazioni");
+        table.put("Lets you drag All Chats to another place among your folder tabs, as Premium does. The place is saved on this phone for this account, and your other devices keep All Chats first. Has no effect while Hide All Chats is on.",
+                "Ti consente di trascinare Tutte le chat in un'altra posizione tra le tue schede delle cartelle, come con Premium. La posizione viene salvata su questo telefono per questo account e gli altri tuoi dispositivi mantengono Tutte le chat al primo posto. Non ha effetto mentre Nascondi Tutte le chat \u00e8 attivo.");
+        table.put("Licenses",
+                "Licenze");
+        table.put("Line %1$d is longer than %2$d characters.",
+                "La riga %1$d supera i %2$d caratteri.");
+        table.put("Line %1$d isn't a valid regex. Fix it or take off the slashes.",
+                "La riga %1$d non \u00e8 un'espressione regolare valida. Correggila o togli le barre.");
+        table.put("Line %1$d may be slow on long messages. Try a simpler pattern.",
+                "La riga %1$d pu\u00f2 essere lenta sui messaggi lunghi. Usa un modello pi\u00f9 semplice.");
+        table.put("Line %1$d would hide this message: %2$s",
+                "La riga %1$d nasconderebbe questo messaggio: %2$s");
+    }
+
+    private static void fillIt11(Map<String, String> table) {
+        table.put("Line %1$s isn't a link this can use",
+                "La riga %1$s non \u00e8 un link utilizzabile");
+        table.put("Lines left out: %1$s. They aren't rules.",
+                "Righe ignorate: %1$s. Non sono regole.");
+        table.put("Link preview rules",
+                "Regole per le anteprime dei link");
+        table.put("Links",
+                "Link");
+        table.put("Links saved: %1$s. Links in Your proxy lists are read too.",
+                "Link salvati: %1$s. Vengono letti anche i link in Le tue liste di proxy.");
+        table.put("Lists added: %1$s. Free proxies reads these instead of the public ones.",
+                "Liste aggiunte: %1$s. Free proxies legger\u00e0 queste al posto di quelle pubbliche.");
+        table.put("Loads your switches, filter lists and sticker size from a saved file. You see what will change before anything is applied. It applies to all accounts.",
+                "Carica i tuoi interruttori, le liste dei filtri e la dimensione degli sticker da un file salvato. Vedrai cosa cambier\u00e0 prima che venga applicato qualcosa. Si applica a tutti gli account.");
+        table.put("Lock HushTelegram settings",
+                "Blocca le impostazioni di HushTelegram");
+        table.put("Locked just now. Tap within %1$d min to unlock right away. After that, unlocking takes 24 hours.",
+                "Bloccate proprio ora. Tocca entro %1$d min per sbloccarle subito. Dopo, lo sblocco richiede 24 ore.");
+        table.put("Locked with your Telegram passcode.",
+                "Bloccato con il tuo codice Telegram.");
+        table.put("Log out every account",
+                "Esci da tutti gli account");
+        table.put("Log out the open account",
+                "Esci dall'account aperto");
+        table.put("Long press on the chat list title",
+                "Pressione prolungata sul titolo della lista chat");
+        table.put("Look and feel",
+                "Aspetto e comportamento");
+        table.put("Looking for free proxies now.",
+                "Ricerca di proxy gratuiti in corso.");
+        table.put("Looking for the lyrics.",
+                "Ricerca del testo in corso.");
+        table.put("Lots to translate at once. The rest will follow.",
+                "Molto da tradurre in una volta. Il resto arriver\u00e0 dopo.");
+        table.put("Lyrics",
+                "Testo");
+        table.put("Lyrics from lrclib.net",
+                "Testo da lrclib.net");
+        table.put("Lyrics in the music player",
+                "Testo nel lettore musicale");
+        table.put("MIME type: %1$s",
+                "Tipo MIME: %1$s");
+        table.put("Made Private, Groups, Channels and Bots folders.",
+                "Create le cartelle Privati, Gruppi, Canali e Bots.");
+        table.put("Made some folders. Telegram turned the rest down.",
+                "Create alcune cartelle. Telegram ha rifiutato le altre.");
+        table.put("Made some folders. The folder limit left no room for the rest.",
+                "Create alcune cartelle. Il limite cartelle non ha lasciato spazio per le altre.");
+        table.put("Made the Admin folder.",
+                "Cartella Admin creata.");
+        table.put("Made the Admin folder. Some chats didn't fit.",
+                "Cartella Admin creata. Alcune chat non ci sono entrate.");
+        table.put("Made the folders. Telegram didn't save their order.",
+                "Create le cartelle. Telegram non ha salvato il loro ordine.");
+        table.put("Makes every setting here read-only. A tap within %1$d min unlocks them again. After that, unlocking takes 24 hours.",
+                "Rende ogni impostazione qui in sola lettura. Un tocco entro %1$d min la sblocca di nuovo. Dopo, lo sblocco richiede 24 ore.");
+        table.put("Man",
+                "Uomo");
+        table.put("May have blocked you. A guess: their photo and last seen went away together.",
+                "Potrebbe averti bloccato. Un'ipotesi: la sua foto e l'ultimo accesso sono spariti insieme.");
+        table.put("May have unblocked you. A guess: their photo or last seen came back.",
+                "Potrebbe averti sbloccato. Un'ipotesi: la sua foto o l'ultimo accesso sono tornati.");
+        table.put("Member, subscriber, view, reply and reaction counts show in full, like 12,345 instead of 12.3K.",
+                "I conteggi di membri, iscritti, visualizzazioni, risposte e reazioni si mostrano completi, come 12.345 invece di 12,3K.");
+        table.put("Members",
+                "Membri");
+        table.put("Mention by ID",
+                "Menziona per ID");
+        table.put("Mentions and replies in groups or channels you've muted no longer notify you. Chats you haven't muted notify as before.",
+                "Le menzioni e le risposte nei gruppi o canali che hai silenziato non ti inviano pi\u00f9 notifiche. Le chat che non hai silenziato ti inviano notifiche come prima.");
+        table.put("Message",
+                "Messaggio");
+        table.put("Message ID: %1$s",
+                "ID messaggio: %1$s");
+        table.put("Message details",
+                "Dettagli messaggio");
+        table.put("Message details copied",
+                "Dettagli messaggio copiati");
+        table.put("Message menu",
+                "Menu dei messaggi");
+        table.put("Message times with seconds",
+                "Orari dei messaggi con i secondi");
+        table.put("Messages and stickers",
+                "Messaggi e sticker");
+        table.put("Messages from people you've blocked are left out of groups and supergroups you open, and don't notify you. Nothing is deleted. Private chats and channel posts stay as they are.",
+                "I messaggi delle persone che hai bloccato vengono esclusi dai gruppi e supergruppi che apri e non ti inviano notifiche. Non viene eliminato nulla. Le chat private e i post dei canali restano come sono.");
+        table.put("Messages in groups and channels that match one of your filters are left out when you open the chat. Private chats and your own messages stay as they are. Nothing is deleted, and your filters stay on this phone.",
+                "I messaggi nei gruppi e nei canali che corrispondono a uno dei tuoi filtri non vengono mostrati quando apri la chat. Le chat private e i tuoi messaggi restano come sono. Non viene eliminato nulla, e i tuoi filtri restano su questo telefono.");
+        table.put("Messages others delete stay in your chat on this phone, marked deleted next to the time. Your own deletes and disappearing messages work as usual.",
+                "I messaggi che gli altri eliminano restano nella chat su questo telefono, contrassegnati come eliminati accanto all'ora. Le tue eliminazioni e i messaggi che scompaiono funzionano come al solito.");
+        table.put("Messages you read stay unread for the people who sent them, in private chats, groups and secret chats, and voice messages you play stay unplayed. Works with Ghost mode on.",
+                "I messaggi che leggi restano non letti per chi li ha inviati, nelle chat private, nei gruppi e nelle chat segrete, e i messaggi vocali che riproduci restano non ascoltati. Funziona con la Modalit\u00e0 fantasma attiva.");
+        table.put("Messages, photos and videos in secret chats stay on this phone when their self-destruct timer runs out. The other person's copy still disappears on their own timer, and they aren't told.",
+                "I messaggi, le foto e i video nelle chat segrete restano su questo telefono quando scade il loro timer di autodistruzione. La copia dell'altra persona scompare comunque con il proprio timer e non viene avvisata.");
+        table.put("Mini App and web page location",
+                "la posizione di Mini App e pagine web");
+        table.put("Mini Apps are told your phone's location isn't available, and web pages opened in Telegram are refused it. A page that already had it keeps it until you close it. Sites can still guess a rough area from your connection. Sending your location in a chat works as before.",
+                "Alle Mini App viene detto che la posizione del telefono non \u00e8 disponibile e alle pagine web aperte in Telegram viene negata. Una pagina che l'aveva gi\u00e0 la mantiene finch\u00e9 non la chiudi. I siti possono comunque ricavare una zona approssimativa dalla tua connessione. L'invio della tua posizione in una chat funziona come prima.");
+        table.put("Model",
+                "Modello");
+        table.put("Move All Chats",
+                "Sposta Tutte le chat");
+        table.put("Move down",
+                "Sposta gi\u00f9");
+        table.put("Move up",
+                "Sposta su");
+        table.put("Moves the folder tabs from the top of the chat list to just above the bottom bar, where your thumb can reach them.",
+                "Sposta le schede delle cartelle dalla parte alta della lista chat a subito sopra la barra inferiore, dove il pollice le raggiunge.");
+        table.put("Music",
+                "Musica");
+        table.put("Mute button on the channel bar",
+                "pulsante Silenzia della barra del canale");
+        table.put("My messages",
+                "I miei messaggi");
+        table.put("Never",
+                "Mai");
+        table.put("Never send an uncropped photo",
+                "Non inviare mai una foto non ritagliata");
+        table.put("New",
+                "Nuovo");
+    }
+
+    private static void fillIt12(Map<String, String> table) {
+        table.put("New Year look all year",
+                "Aspetto di Capodanno tutto l'anno");
+        table.put("New chats are blocked in HushTelegram settings.",
+                "Le nuove chat sono bloccate nelle impostazioni di HushTelegram.");
+        table.put("New messages in a chat are forwarded to another chat by the rules below. Your own forwards are never forwarded again, and at most 20 go out a minute.",
+                "I nuovi messaggi in una chat vengono inoltrati a un'altra chat secondo le regole qui sotto. I tuoi inoltri non vengono mai inoltrati di nuovo, e al massimo ne partono 20 al minuto.");
+        table.put("New photos, videos and files Telegram downloads go to the folder below in Internal storage, where file managers and other apps can open them, instead of Android/data. Files downloaded before stay where they are, and Telegram still opens them from there. Needs All files access and a restart.",
+                "Le nuove foto, i video e i file che Telegram scarica vanno nella cartella qui sotto nella memoria interna, dove i gestori file e le altre app possono aprirli, invece di Android/data. I file scaricati in precedenza restano dove sono e Telegram continua ad aprirli da l\u00ec. Richiede l'accesso a tutti i file e un riavvio.");
+        table.put("Next and previous on headphones, in a car, in the notification, on the lock screen and in the full player move between a chat's voice messages, as they do for songs.",
+                "I pulsanti Avanti e indietro su cuffie, in auto, nella notifica, nella schermata di blocco e nel lettore completo si spostano tra i messaggi vocali di una chat, come fanno per le canzoni.");
+        table.put("Night and Dark themes use pure black screens. Message bubbles and menus keep their colors. Restart Telegram to see the change.",
+                "I temi Notte e Scuro usano schermi neri puri. Le bolle dei messaggi e i menu mantengono i loro colori. Riavvia Telegram per vedere la modifica.");
+        table.put("No",
+                "No");
+        table.put("No HushTelegram release is out yet.",
+                "Non \u00e8 ancora uscita nessuna versione di HushTelegram.");
+        table.put("No V2Ray-style links found in your links or proxy lists.",
+                "Nessun link in stile V2Ray trovato nei tuoi link o nelle tue liste di proxy.");
+        table.put("No accounts hidden yet.",
+                "Ancora nessun account nascosto.");
+        table.put("No album art to save",
+                "Nessuna copertina album da salvare");
+        table.put("No app can play this video",
+                "Nessuna app pu\u00f2 riprodurre questo video");
+        table.put("No automatic sign-in on Telegram's sites",
+                "Nessun accesso automatico ai siti di Telegram");
+        table.put("No bookmarks yet. Long-press a message and tap Bookmark.",
+                "Ancora nessun segnalibro. Tieni premuto un messaggio e tocca Segnalibro.");
+        table.put("No browser could open %1$s.",
+                "Nessun browser \u00e8 riuscito ad aprire %1$s.");
+        table.put("No changed switches",
+                "Nessun interruttore modificato");
+        table.put("No chat to forward to",
+                "Nessuna chat a cui inoltrare");
+        table.put("No chats hidden yet.",
+                "Ancora nessuna chat nascosta.");
+        table.put("No chats picked yet.",
+                "Nessuna chat selezionata.");
+        table.put("No collapsed quotes in the loaded messages.",
+                "Nessuna citazione compressa nei messaggi caricati.");
+        table.put("No cover to save",
+                "Nessuna copertina da salvare");
+        table.put("No downloads yet",
+                "Nessun download finora");
+        table.put("No duress passcode yet. Tap to pick one.",
+                "Ancora nessun codice di emergenza. Tocca per sceglierne uno.");
+        table.put("No filter here would hide this message.",
+                "Nessun filtro qui nasconderebbe questo messaggio.");
+        table.put("No filters yet.",
+                "Ancora nessun filtro.");
+        table.put("No font file yet. Tap to pick a .ttf or .otf file for all of Telegram's text.",
+                "Ancora nessun file del font. Tocca per scegliere un file .ttf o .otf per tutto il testo di Telegram.");
+        table.put("No hidden spoilers in the loaded messages.",
+                "Nessun spoiler nascosto nei messaggi caricati.");
+        table.put("No history yet",
+                "Nessuna cronologia");
+        table.put("No lyrics found for this song.",
+                "Nessun testo trovato per questo brano.");
+        table.put("No matching settings",
+                "Nessuna impostazione corrispondente");
+        table.put("No messages are hidden.",
+                "Nessun messaggio nascosto.");
+        table.put("No picture yet. Tap to pick one.",
+                "Ancora nessuna immagine. Tocca per sceglierne una.");
+        table.put("No previews before sending",
+                "Nessuna anteprima prima dell'invio");
+        table.put("No read receipts",
+                "Nessuna conferma di lettura");
+        table.put("No read receipts waiting",
+                "Nessuna conferma di lettura in attesa");
+        table.put("No reply since Telegram started",
+                "Nessuna risposta dall'avvio di Telegram");
+        table.put("No rules yet.",
+                "Nessuna regola ancora.");
+        table.put("No rules yet. Add one per line, like x.com/*/status -> fixupx.com.",
+                "Ancora nessuna regola. Aggiungine una per riga, come x.com/*/status -> fixupx.com.");
+        table.put("No swipe actions on chats",
+                "Nessuna azione di scorrimento sulle chat");
+        table.put("Nobody tracked yet",
+                "Nessuna persona tracciata");
+        table.put("Nobody yet. Track someone from their profile's menu.",
+                "Ancora nessuno. Traccia qualcuno dal menu del suo profilo.");
+        table.put("None",
+                "Nessuna");
+        table.put("None of Telegram's web addresses are selected for this app, so their links open elsewhere. Tap to select them in Android's settings.",
+                "Nessuno degli indirizzi web di Telegram \u00e8 selezionato per questa app, quindi i loro link si aprono altrove. Tocca per selezionarli nelle impostazioni di Android.");
+        table.put("None of the listed proxies answered last time. Try again later.",
+                "Nessuno dei proxy elencati ha risposto l'ultima volta. Riprova pi\u00f9 tardi.");
+        table.put("None of your servers answered last time.",
+                "Nessuno dei tuoi server ha risposto l'ultima volta.");
+        table.put("None. Tap to pick colors or a picture.",
+                "Nessuno. Tocca per scegliere colori o un'immagine.");
+        table.put("Not in secret chats",
+                "Non nelle chat segrete");
+        table.put("Not tested yet. Tap to pick a server or test them now.",
+                "Non ancora provati. Tocca per scegliere un server o provali ora.");
+        table.put("Nothing changed. %1$d switch couldn't change now.",
+                "Non \u00e8 cambiato nulla. %1$d interruttore non ha potuto cambiare adesso.");
+        table.put("Nothing changed. %1$d switches couldn't change now.",
+                "Non \u00e8 cambiato nulla. %1$d interruttori non hanno potuto cambiare adesso.");
+        table.put("Nothing in between to select",
+                "Niente in mezzo da selezionare");
+        table.put("Nothing to clear",
+                "Niente da cancellare");
+        table.put("Notification ID saved on this phone: %1$s",
+                "ID notifica salvato su questo telefono: %1$s");
+        table.put("Notification permission: %1$s",
+                "Permesso notifiche: %1$s");
+        table.put("Notification status on this phone",
+                "Stato delle notifiche su questo telefono");
+        table.put("Notifications",
+                "Notifiche");
+        table.put("Notify when a call is saved",
+                "Avvisa quando viene salvata una chiamata");
+        table.put("OK",
+                "OK");
+        table.put("Ocean",
+                "Oceano");
+        table.put("Off",
+                "Off");
+    }
+
+    private static void fillIt13(Map<String, String> table) {
+        table.put("Oldest chats first",
+                "Prima le chat pi\u00f9 vecchie");
+        table.put("On this phone",
+                "Su questo telefono");
+        table.put("Once a day, when Telegram starts, checks GitHub for a newer HushTelegram and shows it at the top of these settings. Nothing is downloaded.",
+                "Una volta al giorno, all'avvio di Telegram, cerca su GitHub un HushTelegram pi\u00f9 recente e lo mostra all'inizio di queste impostazioni. Non viene scaricato nulla.");
+        table.put("One filter a line",
+                "Un filtro per riga");
+        table.put("One https address a line",
+                "Un indirizzo https per riga");
+        table.put("One link a line",
+                "Un link per riga");
+        table.put("One rule per line, like x.com/*/status -> fixupx.com",
+                "Una regola per riga, come x.com/*/status -> fixupx.com");
+        table.put("One way always stays on, so you can always get back here.",
+                "Un modo resta sempre attivo, cos\u00ec puoi sempre tornare qui.");
+        table.put("Only %1$s. The rest stay in Telegram.",
+                "Solo %1$s. Il resto rimane in Telegram.");
+        table.put("Only calls in the chats you pick below",
+                "Solo le chiamate nelle chat che scegli sotto");
+        table.put("Only chats and contacts on this phone were searched.",
+                "Sono state cercate solo le chat e i contatti su questo telefono.");
+        table.put("Only messages with media",
+                "Solo messaggi con media");
+        table.put("Only some of Telegram's web addresses are selected for this app, and links to the rest open elsewhere. Tap to select them in Android's settings.",
+                "Solo alcuni degli indirizzi web di Telegram sono selezionati per questa app, e i link agli altri si aprono altrove. Tocca per selezionarli nelle impostazioni di Android.");
+        table.put("Only switches go back. Anything a switch already cleared, like chats' translate choices, stays cleared.",
+                "Solo gli interruttori vengono ripristinati. Ci\u00f2 che un interruttore ha gi\u00e0 cancellato, come le scelte di traduzione delle chat, resta cancellato.");
+        table.put("Open",
+                "Apri");
+        table.put("Open a chat by ID",
+                "Apri chat per ID");
+        table.put("Open a folder at launch",
+                "Apri una cartella all'avvio");
+        table.put("Open app info",
+                "Apri info app");
+        table.put("Open battery optimization",
+                "Apri ottimizzazione batteria");
+        table.put("Open chat",
+                "Apri chat");
+        table.put("Open it first to download it",
+                "Aprilo prima per scaricarlo");
+        table.put("Open links externally",
+                "Apri i link esternamente");
+        table.put("Open notification settings",
+                "Apri impostazioni notifiche");
+        table.put("Open on the web",
+                "Apri sul web");
+        table.put("Open quotes on search hits",
+                "Apri le citazioni nei risultati di ricerca");
+        table.put("Open restricted channels",
+                "Apri canali con restrizioni");
+        table.put("Open the guide",
+                "Apri la guida");
+        table.put("Opening supported links is off for this app in Android's settings. Tap to turn it on.",
+                "L'apertura dei link supportati \u00e8 disattivata per questa app nelle impostazioni di Android. Tocca per attivarla.");
+        table.put("Opening the attachment gallery doesn't start the camera or ask for camera access. Tap the camera tile to start it.",
+                "Aprire la galleria allegati non avvia la fotocamera n\u00e9 chiede l'accesso alla fotocamera. Tocca il riquadro della fotocamera per avviarla.");
+        table.put("Opening the list of hidden accounts, and turning off Hide accounts or this switch, asks for your Telegram passcode first. It uses the passcode you already set in Telegram, and it only guards this settings page.",
+                "Per aprire l'elenco degli account nascosti e disattivare Nascondi account o questo interruttore ti viene prima chiesto il codice di Telegram. Usa il codice che hai gi\u00e0 impostato in Telegram e protegge solo questa pagina delle impostazioni.");
+        table.put("Opening the list of hidden chats, and turning off Hide picked chats or this switch, asks for your Telegram passcode first. It uses the passcode you already set in Telegram, and it only guards this settings page. Anyone who can open Telegram can still find the hidden chats through search.",
+                "Aprire la lista delle chat nascoste, o disattivare Nascondi chat selezionate o questo interruttore, chiede prima il codice di Telegram. Usa il codice che hai gi\u00e0 impostato in Telegram e protegge solo questa pagina delle impostazioni. Chiunque possa aprire Telegram pu\u00f2 comunque trovare le chat nascoste tramite la ricerca.");
+        table.put("Opens a GitHub report with your versions and settings filled in. Add what happened.",
+                "Apre una segnalazione su GitHub con le tue versioni e impostazioni gi\u00e0 compilate. Aggiungi cosa \u00e8 successo.");
+        table.put("Opens a photo from a chat in Telegram's photo editor, where you can draw, add text or blur parts. Sending it sends the edited copy to the chat. The photo in the chat stays as it was.",
+                "Apre una foto di una chat nell'editor di foto di Telegram, dove puoi disegnare, aggiungere testo o sfocare parti. Inviandola, invia la copia modificata alla chat. La foto nella chat resta com'era.");
+        table.put("Opens normal web links in your browser. Telegram links, sign-in and payment pages keep working the way they did.",
+                "Apre i normali link web nel tuo browser. I link Telegram, le pagine di accesso e di pagamento continuano a funzionare come prima.");
+        table.put("Orders your unpinned chats by the date of their last message. Pinned chats and the archive row keep their places. It only changes how this phone shows the list, and nothing is sent to Telegram.",
+                "Ordina le tue chat non fissate in base alla data del loro ultimo messaggio. Le chat fissate e la riga dell'archivio restano al loro posto. Cambia solo il modo in cui questo telefono mostra la lista e non viene inviato nulla a Telegram.");
+        table.put("Original sender ID: %1$s",
+                "ID mittente originale: %1$s");
+        table.put("Originally sent: %1$s",
+                "Inviato originariamente: %1$s");
+        table.put("Other people don't see that you're typing, recording or sending a file. Works with Ghost mode on.",
+                "Gli altri non vedono che stai digitando, registrando o inviando un file. Funziona con la Modalit\u00e0 fantasma attiva.");
+        table.put("Outline the bottom bar",
+                "Contorna la barra inferiore");
+        table.put("Passcode for hidden accounts",
+                "Codice per gli account nascosti");
+        table.put("Passcode for hidden chats",
+                "Codice per le chat nascoste");
+        table.put("Passcode needed",
+                "Codice necessario");
+        table.put("Paste or type a message",
+                "Incolla o scrivi un messaggio");
+        table.put("Paste the token @BotFather gave your bot. It goes only to Telegram, which keeps it with the account like any sign-in.",
+                "Incolla il token che @BotFather ha dato al tuo bot. Va solo a Telegram, che lo conserva con l'account come per qualsiasi accesso.");
+        table.put("Paste vmess://, vless://, trojan:// and ss:// links here. Links in Your proxy lists are read too.",
+                "Incolla qui link vmess://, vless://, trojan:// e ss://. Vengono letti anche i link in Le tue liste di proxy.");
+        table.put("Pastes text exactly as you copied it, without Telegram adding formatting, tables or code styling. Spaces and links stay as they were.",
+                "Incolla il testo esattamente come l'hai copiato, senza che Telegram aggiunga formattazione, tabelle o stile di codice. Spazi e link rimangono com'erano.");
+        table.put("Pause",
+                "Pausa");
+        table.put("Pause HushTelegram",
+                "Metti in pausa HushTelegram");
+        table.put("Pause recording",
+                "Pausa registrazione");
+        table.put("Permissions",
+                "Permessi");
+        table.put("Photo",
+                "Foto");
+        table.put("Photo copied",
+                "Foto copiata");
+        table.put("Photos",
+                "Foto");
+        table.put("Photos and videos you save to the gallery go to %1$s. Camera photos and automatic saving keep Telegram's folders.",
+                "Le foto e i video che salvi nella galleria vanno in %1$s. Le foto della fotocamera e il salvataggio automatico mantengono le cartelle di Telegram.");
+        table.put("Photos go out in HD and videos at their own size and quality, without touching the quality button first. You can still lower one before sending. Only sending as a file keeps a photo exactly as it is.",
+                "Le foto partono in HD e i video con le proprie dimensioni e qualit\u00e0, senza toccare prima il pulsante qualit\u00e0. Puoi comunque ridurla per uno prima dell'invio. Solo l'invio come file mantiene una foto esattamente com'\u00e8.");
+        table.put("Picture behind the lists",
+                "Immagine dietro le liste");
+        table.put("Picture from your gallery",
+                "Immagine dalla tua galleria");
+        table.put("Pictures/Telegram and Movies/Telegram (Telegram's own)",
+                "Pictures/Telegram e Movies/Telegram (quelle di Telegram)");
+        table.put("Pin",
+                "Fissa");
+        table.put("Pin chats on this phone",
+                "Fissa chat su questo telefono");
+    }
+
+    private static void fillIt14(Map<String, String> table) {
+        table.put("Pin on this phone",
+                "Fissa su questo telefono");
+        table.put("Pinned",
+                "Fissato");
+        table.put("Pinned in All Chats on this phone.",
+                "Fissato in Tutte le chat su questo telefono.");
+        table.put("Pinned on top.",
+                "Fissato in alto.");
+        table.put("Pinned, in use",
+                "Fissato, in uso");
+        table.put("Plain rows. Tap for cards.",
+                "Righe semplici. Tocca per schede.");
+        table.put("Play videos in another app",
+                "Riproduci i video in un'altra app");
+        table.put("Play voice messages one at a time",
+                "Riproduci i messaggi vocali uno alla volta");
+        table.put("Playback",
+                "Riproduzione");
+        table.put("Playing video in another app",
+                "Riproduzione del video in un'altra app");
+        table.put("Pop directional formatting",
+                "Fine della formattazione direzionale");
+        table.put("Pop directional isolate",
+                "Fine isolamento direzionale");
+        table.put("Post Story button",
+                "pulsante Pubblica storia");
+        table.put("Power off accounts",
+                "Spegni account");
+        table.put("Powered off",
+                "Spento");
+        table.put("Premium emoji packs in the emoji keyboard",
+                "i pacchetti di emoji Premium nella tastiera emoji");
+        table.put("Premium icons in the App Icon list",
+                "le icone Premium nell'elenco Icona app");
+        table.put("Premium promo accepts",
+                "le accettazioni delle promozioni Premium");
+        table.put("Premium promo failures",
+                "gli errori delle promozioni Premium");
+        table.put("Premium promo taps",
+                "i tocchi sulle promozioni Premium");
+        table.put("Premium promo views",
+                "le visualizzazioni delle promozioni Premium");
+        table.put("Premium sticker effects",
+                "gli effetti degli sticker Premium");
+        table.put("Premium stickers in the keyboard and packs",
+                "gli sticker Premium nella tastiera e nei pacchetti");
+        table.put("Premium, Turbo and Nox in Telegram's App Icon list work without Premium, with no lock and no Premium sheet. Only the icon on your home screen changes.",
+                "Premium, Turbo e Nera nell'elenco Icona app di Telegram funzionano senza Premium, senza lucchetto e senza la pagina Premium. Cambia solo l'icona nella schermata Home.");
+        table.put("Preparing the diagnostic report",
+                "Preparazione del report diagnostico");
+        table.put("Pressing and holding a chat adds Open chat and Close preview to the menu under its preview.",
+                "Tenendo premuta una chat, il menu sotto la sua anteprima include Apri chat e Chiudi anteprima.");
+        table.put("Preview the report",
+                "Anteprima del report");
+        table.put("Privacy",
+                "Privacy");
+        table.put("Private",
+                "Privati");
+        table.put("Private calls only",
+                "Solo chiamate private");
+        table.put("Private messages from people not in your contacts still show a notification, but without sound or vibration. Bots, reminders and login codes keep their sound.",
+                "I messaggi privati delle persone che non sono tra i tuoi contatti mostrano comunque una notifica, ma senza suono o vibrazione. Bot, promemoria e codici di accesso mantengono il loro suono.");
+        table.put("Profiles",
+                "Profili");
+        table.put("Proxies added last time: %1$s of %2$s read. They're in Telegram's proxy list.",
+                "Proxy aggiunti l'ultima volta: %1$s su %2$s letti. Sono nella lista dei proxy di Telegram.");
+        table.put("Proxies added last time: %1$s. They're in Telegram's proxy list.",
+                "Proxy aggiunti l'ultima volta: %1$s. Sono nella lista dei proxy di Telegram.");
+        table.put("Proxy",
+                "Proxy");
+        table.put("Proxy button when signing in",
+                "Pulsante proxy durante l'accesso");
+        table.put("Proxy in the chat list menu",
+                "Proxy nel menu della lista chat");
+        table.put("Proxy order",
+                "Ordine dei proxy");
+        table.put("Pulling down the chat list no longer opens the archive. Use Archived chats in the list's menu instead. Restart Telegram to see the change.",
+                "Trascinando verso il basso la lista chat non si apre pi\u00f9 l'archivio. Usa invece Chat archiviate nel menu della lista. Riavvia Telegram per vedere la modifica.");
+        table.put("Pulling up at the bottom of a channel only scrolls. Open the next channel from your chat list.",
+                "Trascinando verso l'alto alla fine di un canale scorri solo il contenuto. Apri il canale successivo dalla tua lista chat.");
+        table.put("Pulling up at the bottom of a forum topic only scrolls. Open the next topic from the topic list.",
+                "Trascinando verso l'alto alla fine di un tema del forum scorri solo il contenuto. Apri il tema successivo dall'elenco dei temi.");
+        table.put("Push app",
+                "App push");
+        table.put("Push service",
+                "Servizio push");
+        table.put("Put back %1$d switch",
+                "Ripristinato %1$d interruttore");
+        table.put("Put back %1$d switches",
+                "Ripristinati %1$d interruttori");
+        table.put("Puts Copy back in the menu of a message in a chat that doesn't allow saving, and lets you copy selected text there. Secret chats stay as they are.",
+                "Rimette Copia nel menu di un messaggio in una chat che non consente il salvataggio e ti permette di copiare il testo selezionato. Le chat segrete restano invariate.");
+        table.put("Puts Copy back in the menu of a message in a chat that doesn't allow saving. Secret chats stay as they are.",
+                "Rimette Copia nel menu di un messaggio in una chat che non consente il salvataggio. Le chat segrete restano invariate.");
+        table.put("Puts Save to Gallery in a story's three-dot menu without Premium, stories that don't allow saving included. It saves only the ones you pick.",
+                "Aggiunge Salva nella galleria al menu a tre punti di una storia senza Premium, incluse le storie che non consentono il salvataggio. Salva solo quelle che scegli.");
+        table.put("Puts a small icon in front of each folder tab's name: a chat bubble for All Chats, and a person, group, channel or bot for a folder of that kind of chat. Other folders get a folder icon. With a pack picked under Folder icons, the tabs use that pack instead.",
+                "Mette una piccola icona davanti al nome di ogni scheda cartella: una bolla di chat per Tutte le chat, e una persona, un gruppo, un canale o un bot per una cartella con quel tipo di chat. Le altre cartelle usano un'icona a forma di cartella. Con un pacchetto scelto in Icone cartelle, le schede usano quel pacchetto.");
+        table.put("Puts every feature switch back the way it started.",
+                "Riporta ogni interruttore di funzione allo stato iniziale.");
+        table.put("Quick forward",
+                "Inoltro rapido");
+        table.put("Quick setups",
+                "Configurazioni rapide");
+        table.put("Quiet",
+                "Tranquillo");
+        table.put("Quiet contacts prompts",
+                "Silenzia le richieste dei contatti");
+        table.put("Reaction notifications without push",
+                "Notifiche delle reazioni senza push");
+        table.put("Read after you reply",
+                "Letto dopo la risposta");
+        table.put("Read chats and watch stories without anyone being told. Sending a message in a chat still marks it read, and your other devices keep showing it unread.",
+                "Leggi le chat e guarda le storie senza che nessuno lo venga a sapere. Se invii un messaggio in una chat, questa viene comunque segnata come letta e i tuoi altri dispositivi continuano a mostrarla come non letta.");
+        table.put("Read receipt sent.",
+                "Conferma di lettura inviata.");
+        table.put("Read receipts button",
+                "Pulsante conferme di lettura");
+        table.put("Read receipts sent",
+                "Conferme di lettura inviate");
+    }
+
+    private static void fillIt15(Map<String, String> table) {
+        table.put("Reading the settings file",
+                "Lettura del file delle impostazioni");
+        table.put("Receive only",
+                "Solo ricezione");
+        table.put("Receive only mode",
+                "Modalit\u00e0 solo ricezione");
+        table.put("Receive only mode is on.",
+                "Modalit\u00e0 solo ricezione attiva.");
+        table.put("Recent Actions",
+                "Azioni recenti");
+        table.put("Recognize files you already have",
+                "Riconosci i file che hai gi\u00e0");
+        table.put("Record button on calls",
+                "Pulsante di registrazione nelle chiamate");
+        table.put("Record call",
+                "Registra chiamata");
+        table.put("Record calls",
+                "Registra chiamate");
+        table.put("Record calls here",
+                "Registra le chiamate qui");
+        table.put("Recording paused",
+                "Registrazione in pausa");
+        table.put("Recording resumed",
+                "Registrazione ripresa");
+        table.put("Recording stopped",
+                "Registrazione interrotta");
+        table.put("Recording this call",
+                "Registrazione di questa chiamata");
+        table.put("Recordings folder",
+                "Cartella delle registrazioni");
+        table.put("Recordings go to %1$s. The usual folder is %2$s.",
+                "Registrazioni in %1$s. La cartella abituale \u00e8 %2$s.");
+        table.put("Recordings older than %1$d day are deleted when the next one is saved.",
+                "Le registrazioni pi\u00f9 vecchie di %1$d giorno vengono eliminate quando viene salvata la successiva.");
+        table.put("Recordings older than %1$d days are deleted when the next one is saved.",
+                "Le registrazioni pi\u00f9 vecchie di %1$d giorni vengono eliminate quando viene salvata la successiva.");
+        table.put("Recordings stay until you delete them.",
+                "Le registrazioni restano finch\u00e9 non le elimini.");
+        table.put("Records what HushTelegram does and shows error messages, to help with a bug report. Leave it off for everyday use.",
+                "Registra ci\u00f2 che fa HushTelegram e mostra i messaggi di errore, per aiutare con una segnalazione di bug. Lascialo disattivato per l'uso quotidiano.");
+        table.put("Refused",
+                "Rifiutato");
+        table.put("Refused (%1$s)",
+                "Rifiutato (%1$s)");
+        table.put("Registered about %1$s",
+                "Registrato verso %1$s");
+        table.put("Registered after %1$s",
+                "Registrato dopo %1$s");
+        table.put("Registration date copied",
+                "Data di registrazione copiata");
+        table.put("Regular",
+                "Normale");
+        table.put("Remember where playback stopped",
+                "Ricorda dove si \u00e8 fermata la riproduzione");
+        table.put("Remove",
+                "Rimuovi");
+        table.put("Remove background",
+                "Rimuovi sfondo");
+        table.put("Remove bookmark",
+                "Rimuovi segnalibro");
+        table.put("Remove font",
+                "Rimuovi il font");
+        table.put("Remove kept messages after",
+                "Rimuovi i messaggi conservati dopo");
+        table.put("Remove link tracking tags",
+                "Rimuovi i tag di tracciamento dei link");
+        table.put("Removed %1$d kept message.",
+                "Rimosso %1$d messaggio conservato.");
+        table.put("Removed %1$d kept messages.",
+                "Rimossi %1$d messaggi conservati.");
+        table.put("Removed Users",
+                "Utenti rimossi");
+        table.put("Removed the Admin folder.",
+                "Cartella Admin rimossa.");
+        table.put("Removed the folders HushTelegram made. Changed ones stay.",
+                "Rimosse le cartelle create da HushTelegram. Quelle modificate restano.");
+        table.put("Removed their profile photo",
+                "Ha rimosso la sua foto profilo");
+        table.put("Removed you from their contacts",
+                "Ti ha rimosso dai suoi contatti");
+        table.put("Removes Premium, Stars, My Grams, Wallet, Business and Send a Gift from Settings, Wallet and Send Gram from the chat, profile and link menus, Gifts tabs on profiles, the Gift button in channels, and Premium stickers, their effects and Premium emoji packs if you don't have Premium.",
+                "Rimuove Premium, Stars, My Grams, Wallet, Business e Invia un regalo dalle Impostazioni, Wallet e Invia Gram dai menu di chat, profilo e link, le schede Regali nei profili, il pulsante Regalo nei canali e gli sticker Premium, i loro effetti e i pacchetti di emoji Premium se non hai Premium.");
+        table.put("Removes sponsored messages in channels, sponsored accounts in search and ads in videos. They're never loaded, so none count as seen.",
+                "Rimuove i messaggi sponsorizzati nei canali, gli account sponsorizzati nella ricerca e gli annunci nei video. Non vengono mai caricati, quindi nessuno risulta visto.");
+        table.put("Removes the Telegram Features row from Settings and Invite Friends from Contacts. With no contacts yet, the invite list goes too.",
+                "Rimuove la riga Funzioni di Telegram dalle Impostazioni e Invita amici dai Contatti. Se non hai ancora contatti, scompare anche l'elenco degli inviti.");
+        table.put("Removes the round pencil button from the chat list. Start a chat from the menu or search. Restart Telegram to see the change.",
+                "Rimuove il pulsante rotondo a forma di matita dalla lista chat. Avvia una chat dal menu o dalla ricerca. Riavvia Telegram per vedere la modifica.");
+        table.put("Removes the story bar above your chats, the rings around profile pictures and the Post Story button. Profile stories and archives stay.",
+                "Rimuove la barra delle storie sopra le tue chat, gli anelli attorno alle foto profilo e il pulsante Pubblica storia. Le storie dei profili e gli archivi restano.");
+        table.put("Removes tracking tags like utm_source, gclid and fbclid from links you open or share. A link with any other tag is left unchanged.",
+                "Rimuove i tag di tracciamento come utm_source, gclid e fbclid dai link che apri o condividi. Un link con qualsiasi altro tag viene lasciato invariato.");
+        table.put("Removing %1$d kept message.",
+                "Rimozione di %1$d messaggio conservato.");
+        table.put("Removing %1$d kept messages.",
+                "Rimozione di %1$d messaggi conservati.");
+        table.put("Repair Firebase push registration",
+                "Ripara la registrazione push Firebase");
+        table.put("Repeat",
+                "Ripeti");
+        table.put("Report a problem",
+                "Segnala un problema");
+        table.put("Report saved to %1$s",
+                "Report salvato in %1$s");
+        table.put("Resolution: %1$s",
+                "Risoluzione: %1$s");
+        table.put("Restart Telegram to apply %1$d changes",
+                "Riavvia Telegram per applicare %1$d modifiche");
+        table.put("Restart Telegram to apply this change",
+                "Riavvia Telegram per applicare questa modifica");
+        table.put("Restricted",
+                "Limitato");
+        table.put("Resume",
+                "Riprendi");
+        table.put("Resume recording",
+                "Riprendi registrazione");
+        table.put("Retry",
+                "Riprova");
+        table.put("Reveal spoilers",
+                "Mostra spoiler");
+    }
+
+    private static void fillIt16(Map<String, String> table) {
+        table.put("Right to left",
+                "Da destra a sinistra");
+        table.put("Right-to-left isolate",
+                "Isolamento da destra a sinistra");
+        table.put("Right-to-left mark",
+                "Marca da destra a sinistra");
+        table.put("Robot",
+                "Robot");
+        table.put("Row in Telegram's Settings",
+                "Riga nelle Impostazioni di Telegram");
+        table.put("Row in the side menu",
+                "Riga nel menu laterale");
+        table.put("Rule removed",
+                "Regola rimossa");
+        table.put("Rule saved",
+                "Regola salvata");
+        table.put("Rules: %1$s. Fix link previews follows these for the links you send.",
+                "Regole: %1$s. Correggi anteprime dei link le segue per i link che invii.");
+        table.put("Save",
+                "Salva");
+        table.put("Save album art",
+                "Salva copertina album");
+        table.put("Save downloaded files",
+                "Salva i file scaricati");
+        table.put("Save full report",
+                "Salva report completo");
+        table.put("Save recordings as Opus",
+                "Salva le registrazioni come Opus");
+        table.put("Save the full report to a file. The saved location is shown afterward.",
+                "Salva il rapporto completo in un file. Dopo viene mostrato dove \u00e8 stato salvato.");
+        table.put("Save to Downloads",
+                "Salva nei download");
+        table.put("Save to Gallery in stories",
+                "Salva nella galleria nelle storie");
+        table.put("Save video cover",
+                "Salva copertina video");
+        table.put("Saved Messages",
+                "Messaggi salvati");
+        table.put("Saved to Downloads",
+                "Salvato nei download");
+        table.put("Saved, but the file doesn't match. Save it again as a new file.",
+                "Salvato, ma il file non corrisponde. Salvalo di nuovo come nuovo file.");
+        table.put("Saved.",
+                "Salvato.");
+        table.put("Saved. Restart Telegram to apply this change.",
+                "Salvato. Riavvia Telegram per applicare questa modifica.");
+        table.put("Saves both sides of each call to %1$s on this phone. The other person isn't told.",
+                "Salva entrambi i lati di ogni chiamata in %1$s su questo telefono. L'altra persona non viene avvisata.");
+        table.put("Saves your switches, filter lists, sticker size and chat list emoji to a file, for all the accounts in this Telegram app. Your chats, drafts and kept messages aren't in it.",
+                "Salva in un file i tuoi interruttori, le liste dei filtri, la dimensione degli sticker e l'emoji della lista chat, per tutti gli account in questa app di Telegram. Le tue chat, le bozze e i messaggi conservati non sono inclusi.");
+        table.put("Saving the settings file",
+                "Salvataggio del file delle impostazioni");
+        table.put("Screenshot",
+                "Screenshot");
+        table.put("Screenshot saved to Pictures",
+                "Screenshot salvato in Pictures");
+        table.put("Screenshot selected messages",
+                "Screenshot messaggi selezionati");
+        table.put("Screenshots and screen recording work in those chats, their photos, profiles and stories. Telegram doesn't tell anyone. Secret chats need Also allow screenshots in secret chats. View-once media and the passcode screen stay blocked.",
+                "Gli screenshot e la registrazione dello schermo funzionano in quelle chat, nelle loro foto, profili e storie. Telegram non avvisa nessuno. Le chat segrete richiedono Consenti screenshot anche nelle chat segrete. I media monouso e la schermata del codice restano bloccati.");
+        table.put("Scroll so they're all on screen",
+                "Scorri per vederli tutti");
+        table.put("Search",
+                "Cerca");
+        table.put("Search finds your chats, contacts and messages from chats you're in, and nothing public. The Channels, Apps and Posts tabs go away, and a hashtag's public posts don't load.",
+                "La ricerca trova le tue chat, i contatti e i messaggi delle chat in cui sei, e niente di pubblico. Le schede Canali, App e Post scompaiono, e i post pubblici di un hashtag non vengono caricati.");
+        table.put("Search languages",
+                "Cerca lingue");
+        table.put("Search only my chats",
+                "Cerca solo nelle mie chat");
+        table.put("Search settings",
+                "Cerca impostazioni");
+        table.put("Search, Direct messages and Info leave the bar at the bottom of a channel. Mute and Join stay, and tapping the channel's name at the top still opens its info. A channel picks this up the next time you open it.",
+                "Cerca, Messaggi diretti e Info spariscono dalla barra in fondo al canale. Silenzia e Unisciti restano, e toccare il nome del canale in alto continua ad aprire le sue informazioni. Un canale lo applica la prossima volta che lo apri.");
+        table.put("Searching your chats and contacts also finds names written in letters like \ud835\udc01\ud835\udc28\ud835\udc25\ud835\udc1d, \ud835\ude10\ud835\ude35\ud835\ude22\ud835\ude2d\ud835\ude2a\ud835\ude24 or \uff37\uff49\uff44\uff45 when you type plain ones. Names still show as they're written and numbers aren't changed. A name found this way isn't highlighted.",
+                "La ricerca nelle tue chat e nei tuoi contatti trova anche i nomi scritti con lettere come \ud835\udc06\ud835\udc2b\ud835\udc1a\ud835\udc2c\ud835\udc2c\ud835\udc1e\ud835\udc2d\ud835\udc2d\ud835\udc28, \ud835\ude0a\ud835\ude30\ud835\ude33\ud835\ude34\ud835\ude2a\ud835\ude37\ud835\ude30 o \uff2c\uff41\uff52\uff47\uff4f quando digiti lettere normali. I nomi vengono mostrati come sono scritti e i numeri non cambiano. Un nome trovato cos\u00ec non viene evidenziato.");
+        table.put("Secret chats can't show typing.",
+                "Le chat segrete non mostrano la digitazione.");
+        table.put("See the report first and leave out any part you'd rather not share, then copy or save it.",
+                "Guarda prima il report e togli le parti che preferisci non condividere, poi copialo o salvalo.");
+        table.put("Select all",
+                "Seleziona tutto");
+        table.put("Select between",
+                "Seleziona intermedi");
+        table.put("Select two messages first",
+                "Seleziona prima due messaggi");
+        table.put("Selecting links by hand",
+                "Selezione manuale dei link");
+        table.put("Send",
+                "Invia");
+        table.put("Send GIF",
+                "Invia GIF");
+        table.put("Send message",
+                "Invia messaggio");
+        table.put("Send photo",
+                "Invia foto");
+        table.put("Send photos and videos in the best quality",
+                "Invia foto e video alla massima qualit\u00e0");
+        table.put("Send read receipt",
+                "Invia conferma di lettura");
+        table.put("Send read receipts",
+                "Invia conferme di lettura");
+        table.put("Send sticker",
+                "Invia sticker");
+        table.put("Send this GIF to this chat?",
+                "Inviare questa GIF in questa chat?");
+        table.put("Send this message to this chat?",
+                "Inviare questo messaggio a questa chat?");
+        table.put("Send this sticker to this chat?",
+                "Inviare questo sticker in questa chat?");
+        table.put("Send this video message to this chat?",
+                "Inviare questo videomessaggio in questa chat?");
+        table.put("Send this voice message to this chat?",
+                "Inviare questo messaggio vocale in questa chat?");
+        table.put("Send video message",
+                "Invia videomessaggio");
+        table.put("Send voice message",
+                "Invia messaggio vocale");
+        table.put("Sender ID: %1$s",
+                "ID mittente: %1$s");
+    }
+
+    private static void fillIt17(Map<String, String> table) {
+        table.put("Sending",
+                "Invio");
+        table.put("Sent: %1$s",
+                "Inviato: %1$s");
+        table.put("Server %1$s",
+                "Server %1$s");
+        table.put("Servers that answered last time: %1$s of %2$s.",
+                "Server che hanno risposto l'ultima volta: %1$s su %2$s.");
+        table.put("Service address",
+                "Indirizzo del servizio");
+        table.put("Set a Telegram passcode first.",
+                "Imposta prima un codice Telegram.");
+        table.put("Set duress passcode",
+                "Imposta codice di emergenza");
+        table.put("Settings > Devices on your other phones and computers shows this phone with these. Leave a box empty for what Telegram sends, and restart Telegram after a change.",
+                "Impostazioni > Dispositivi sugli altri tuoi telefoni e computer mostra questo telefono con questi dati. Lascia vuoto un campo per usare ci\u00f2 che Telegram invia e riavvia Telegram dopo una modifica.");
+        table.put("Settings are locked. Tap Start unlock, then wait 24 hours.",
+                "Le impostazioni sono bloccate. Tocca Avvia sblocco e attendi 24 ore.");
+        table.put("Settings are locked. Tap Unlock now within %1$d min.",
+                "Le impostazioni sono bloccate. Tocca Sblocca ora entro %1$d min.");
+        table.put("Settings are locked. They unlock in %1$d h %2$d min.",
+                "Le impostazioni sono bloccate. Si sbloccano tra %1$d h %2$d min.");
+        table.put("Settings backup",
+                "Backup impostazioni");
+        table.put("Settings couldn't open",
+                "Impossibile aprire le impostazioni");
+        table.put("Settings couldn't refresh. Reopen settings and try again.",
+                "Impossibile aggiornare le impostazioni. Riapri le impostazioni e riprova.");
+        table.put("Settings exported but not checked. Open the file to make sure.",
+                "Impostazioni esportate ma non verificate. Apri il file per controllare.");
+        table.put("Settings exported.",
+                "Impostazioni esportate.");
+        table.put("Settings imported.",
+                "Impostazioni importate.");
+        table.put("Settings imported. %1$d switch changed.",
+                "Impostazioni importate. %1$d interruttore modificato.");
+        table.put("Settings imported. %1$d switches changed.",
+                "Impostazioni importate. %1$d interruttori modificati.");
+        table.put("Settings locked. Changed your mind? Tap again within %1$d min.",
+                "Impostazioni bloccate. Hai cambiato idea? Tocca di nuovo entro %1$d min.");
+        table.put("Settings look",
+                "Aspetto delle impostazioni");
+        table.put("Settings sales rows",
+                "Righe di vendita nelle Impostazioni");
+        table.put("Settings unlock in %1$d h %2$d min. Tap to cancel and keep them locked.",
+                "Sblocco tra %1$d h %2$d min. Tocca per annullare e lasciarle bloccate.");
+        table.put("Settings unlocked. They change as usual again.",
+                "Impostazioni sbloccate. Si possono modificare di nuovo come al solito.");
+        table.put("Shadowsocks plugins",
+                "plugin di Shadowsocks");
+        table.put("Share",
+                "Condividi");
+        table.put("Show all chats",
+                "Mostra tutte le chat");
+        table.put("Show all spoilers",
+                "Mostra tutti gli spoiler");
+        table.put("Show all spoilers and quotes",
+                "Mostra tutti gli spoiler e le citazioni");
+        table.put("Show deleted in red",
+                "Mostra eliminato in rosso");
+        table.put("Show hidden messages",
+                "Mostra messaggi nascosti");
+        table.put("Show original",
+                "Mostra originale");
+        table.put("Show user and chat IDs",
+                "Mostra ID utente e chat");
+        table.put("Show view-once and timed media unblurred",
+                "Mostra senza sfocatura i media a visualizzazione singola e a tempo");
+        table.put("Show when an account was made",
+                "Mostra quando \u00e8 stato creato un account");
+        table.put("Show when forwards were first sent",
+                "Mostra il primo invio degli inoltri");
+        table.put("Show when members joined",
+                "Mostra quando sono entrati i membri");
+        table.put("Show where a profile photo is stored",
+                "Mostra dove \u00e8 salvata una foto del profilo");
+        table.put("Showing all chats.",
+                "Mostro tutte le chat.");
+        table.put("Showing chats you manage.",
+                "Mostro le chat che amministri.");
+        table.put("Showing the first %1$s of %2$s characters. Save keeps all of it, and Copy keeps what fits, leaving out the oldest events first.",
+                "Mostrati i primi %1$s di %2$s caratteri. Salva conserva tutto, mentre Copia conserva ci\u00f2 che pu\u00f2 essere incluso, escludendo prima gli eventi pi\u00f9 vecchi.");
+        table.put("Shown after Telegram's name at the top of the chat list. It stays on this phone, so nothing goes to Telegram and your Premium emoji status is left alone. Leave it empty to show nothing, and restart Telegram to see a change.",
+                "Compare dopo il nome di Telegram in cima alla lista chat. Resta su questo telefono, quindi nulla va a Telegram e il tuo stato emoji Premium non cambia. Lascialo vuoto per non mostrare nulla e riavvia Telegram per vedere la modifica.");
+        table.put("Shown in place of Telegram's name at the top of the chat list while Your own chat list title is on, in the title's own font and color. It stays on this phone, so nothing goes to Telegram. Leave it empty to keep Telegram's name, and restart Telegram to see a change.",
+                "Compare al posto del nome di Telegram in cima alla lista chat mentre Titolo personalizzato per la lista chat \u00e8 attivo, con il carattere e il colore del titolo. Resta su questo telefono, quindi nulla va a Telegram. Lascialo vuoto per mantenere il nome di Telegram e riavvia Telegram per vedere la modifica.");
+        table.put("Shows Telegram's Santa hat and New Year snow all year, not only around New Year. Snow falls on the chat list's top bar and on chat backgrounds once Wallpaper rotation is on under Power Saving, in Effects in Chats.",
+                "Mostra il cappello di Babbo Natale di Telegram e la neve di Capodanno tutto l'anno, non solo nel periodo di Capodanno. La neve cade sulla barra superiore della lista chat e sugli sfondi delle chat quando Rotazione dello sfondo \u00e8 attiva in Risparmio energetico, in Effetti nelle chat.");
+        table.put("Shows a notification when someone reacts to your message while Telegram is connected, even when no push arrives. A reaction that also comes by push shows once.",
+                "Mostra una notifica quando qualcuno reagisce al tuo messaggio mentre Telegram \u00e8 connesso, anche se non arriva nessun push. Una reazione che arriva anche tramite push viene mostrata una sola volta.");
+        table.put("Shows a picture from your gallery behind the chat list, Settings, profiles and the other lists. Chats keep their wallpaper, and menus and dialogs stay solid. Works with Telegram's built-in themes.",
+                "Mostra un'immagine dalla tua galleria dietro la lista chat, Impostazioni, i profili e le altre liste. Le chat mantengono il loro sfondo e i menu e i dialoghi restano opachi. Funziona con i temi integrati di Telegram.");
+        table.put("Shows text of your choice in place of Telegram's name at the top of the chat list, in the title's own font and color. It stays on this phone. Restart Telegram to see the change.",
+                "Mostra un testo a tua scelta al posto del nome di Telegram in cima alla lista chat, con il carattere e il colore del titolo. Resta su questo telefono. Riavvia Telegram per vedere la modifica.");
+        table.put("Shrinks the folder tabs above the chat list until all of them fit on the screen, so you never scroll sideways to find one. With only a few folders nothing changes.",
+                "Riduce le schede delle cartelle sopra la lista chat finch\u00e9 non entrano tutte sullo schermo, cos\u00ec non devi mai scorrere lateralmente per trovarne una. Con poche cartelle non cambia nulla.");
+        table.put("Side menu",
+                "Menu laterale");
+        table.put("Sign in",
+                "Accedi");
+        table.put("Sign in to Telegram first.",
+                "Accedi prima a Telegram.");
+        table.put("Sign in to a second account first.",
+                "Accedi prima a un secondo account.");
+        table.put("Sign in with a bot token",
+                "Accedi con un token bot");
+        table.put("Signed-in accounts: %1$s",
+                "Account con accesso effettuato: %1$s");
+        table.put("Signing in or adding an account shows Telegram's Test Backend box on the phone number screen. Tick it to sign that account in on Telegram's test servers, kept apart from your other accounts.",
+                "Quando accedi o aggiungi un account, nella schermata del numero di telefono viene mostrata la casella Backend di test di Telegram. Spuntala per accedere con quell'account sui server di test di Telegram, separato dagli altri tuoi account.");
+        table.put("Signing in or adding an account shows a Sign in with a bot token button on the phone number screen. Paste the token from @BotFather to use that account as your bot. A chat shows up once someone messages the bot, without older history, and a bot has no contacts, stickers or folders. A bot with a webhook set, or one another program is reading, may not get its messages here. Turning this off only hides the button.",
+                "Quando accedi o aggiungi un account, nella schermata del numero di telefono viene mostrato il pulsante \"Accedi con un token bot\". Incolla il token di @BotFather per usare quell'account come il tuo bot. Una chat appare quando qualcuno scrive al bot, senza la cronologia precedente, e un bot non ha contatti, sticker o cartelle. Un bot con un webhook impostato, o che un altro programma sta leggendo, potrebbe non ricevere qui i suoi messaggi. Disattivare questa opzione nasconde solo il pulsante.");
+        table.put("Signing up with %1$s\u2026",
+                "Registrazione con %1$s\u2026");
+        table.put("Silence people outside your contacts",
+                "Silenzia chi non \u00e8 tra i tuoi contatti");
+        table.put("Skip between voice messages",
+                "Salta tra i messaggi vocali");
+        table.put("Skipped, not supported yet: %1$s.",
+                "Saltati, non ancora supportati: %1$s.");
+    }
+
+    private static void fillIt18(Map<String, String> table) {
+        table.put("Slate",
+                "Ardesia");
+        table.put("So messages arrive on time. Tap to hide this notification.",
+                "Cos\u00ec i messaggi arrivano in orario. Tocca per nascondere questa notifica.");
+        table.put("Songs you add to your profile from now on show the day you added them, after the artist. The days are kept on this phone only.",
+                "Le canzoni che aggiungi al tuo profilo da adesso in poi mostrano il giorno in cui le hai aggiunte, dopo l'artista. Le date vengono conservate solo su questo telefono.");
+        table.put("Sort by speed",
+                "Ordina per velocit\u00e0");
+        table.put("Sort chats by date",
+                "Ordina le chat per data");
+        table.put("Sound for reaction notifications",
+                "Suono per le notifiche delle reazioni");
+        table.put("Source code and issues",
+                "Codice sorgente e problemi");
+        table.put("Special contacts",
+                "Contatti speciali");
+        table.put("Spoiler text, photos and videos show right away without a tap. View-once media, sensitive content and login codes stay covered.",
+                "Il testo, le foto e i video con spoiler si mostrano subito senza toccare. I media a visualizzazione singola, i contenuti sensibili e i codici di accesso restano coperti.");
+        table.put("Start a call",
+                "Avvia una chiamata");
+        table.put("Start a video call?",
+                "Avviare una videochiamata?");
+        table.put("Start a voice call?",
+                "Avviare una chiamata vocale?");
+        table.put("Start of left-to-right embedding",
+                "Inizio di incorporazione da sinistra a destra");
+        table.put("Start of left-to-right override",
+                "Inizio di forzatura da sinistra a destra");
+        table.put("Start of right-to-left embedding",
+                "Inizio di incorporazione da destra a sinistra");
+        table.put("Start of right-to-left override",
+                "Inizio di forzatura da destra a sinistra");
+        table.put("Start the camera on the rear lens",
+                "Avvia la fotocamera con l'obiettivo posteriore");
+        table.put("Start unlock",
+                "Avvia sblocco");
+        table.put("Start videos without sound",
+                "Avvia i video senza audio");
+        table.put("Started tracking",
+                "Tracciamento iniziato");
+        table.put("Stays in while paused",
+                "Resta attivo durante la pausa");
+        table.put("Sticker size",
+                "Dimensione degli sticker");
+        table.put("Stickers and big animated emoji no longer show the time and read checks in their corner. Other messages keep their time.",
+                "Gli sticker e le grandi emoji animate non mostrano pi\u00f9 l'ora e le spunte di lettura nell'angolo. Gli altri messaggi mantengono la loro ora.");
+        table.put("Stickers in chats show at the size you pick below. Animated emoji and dice keep Telegram's size. A chat picks this up the next time you open it.",
+                "Gli sticker nelle chat vengono mostrati nella dimensione che scegli qui sotto. Le emoji animate e i dadi mantengono la dimensione di Telegram. Una chat la applica la prossima volta che la apri.");
+        table.put("Stop",
+                "Interrompi");
+        table.put("Stop call diagnostics",
+                "Interrompi la diagnostica delle chiamate");
+        table.put("Stop pull to next channel",
+                "Impedisci il passaggio al canale successivo");
+        table.put("Stop pull to next topic",
+                "Impedisci il passaggio al tema successivo");
+        table.put("Stop tracking",
+                "Smetti di tracciare");
+        table.put("Stop translating this chat",
+                "Smetti di tradurre questa chat");
+        table.put("Stop usage reports",
+                "Interrompi le segnalazioni di utilizzo");
+        table.put("Stop vibrations on taps",
+                "Disattiva le vibrazioni al tocco");
+        table.put("Stopped at 100 messages",
+                "Fermato a 100 messaggi");
+        table.put("Stopped tracking",
+                "Tracciamento interrotto");
+        table.put("Stopped typing in these chats.",
+                "Hai smesso di scrivere in queste chat.");
+        table.put("Stops joining channels and groups, from search, a link or a shared folder, and opening ones you aren't in. Chats you're already in stay. To keep this on, also turn on Lock HushTelegram settings.",
+                "Impedisce di entrare in canali e gruppi dalla ricerca, da un link o da una cartella condivisa, e di aprire quelli in cui non sei. Le chat in cui sei gi\u00e0 restano. Per mantenerlo attivo, attiva anche Blocca impostazioni di HushTelegram.");
+        table.put("Stops on its own when the player closes.",
+                "Si ferma da sola alla chiusura del lettore.");
+        table.put("Stops usage reports to Telegram, like how long you read each channel post and what you tap on Premium screens. Messages and calls work as before.",
+                "Interrompe i report di utilizzo a Telegram, come quanto tempo leggi ogni post di un canale e cosa tocchi nelle schermate Premium. Messaggi e chiamate funzionano come prima.");
+        table.put("Stops usage reports, strips tracking from links and covers your own phone number on screen.",
+                "Interrompe i report sull'utilizzo, rimuove il tracciamento dai link e copre il tuo numero di telefono sullo schermo.");
+        table.put("Stops your phone from automatically sending call problem reports and log files when Telegram's server asks for them.",
+                "Impedisce al telefono di inviare automaticamente segnalazioni di problemi di chiamata e file di registro quando il server di Telegram li richiede.");
+        table.put("Stories you watch don't add you to their viewer list. Works with Ghost mode on.",
+                "Le storie che guardi non ti aggiungono al loro elenco degli spettatori. Funziona con la Modalit\u00e0 fantasma attiva.");
+        table.put("Subscribers",
+                "Iscritti");
+        table.put("Subtitles",
+                "Sottotitoli");
+        table.put("Support HushTelegram",
+                "Sostieni HushTelegram");
+        table.put("Supported links",
+                "Link supportati");
+        table.put("Suppress screenshot notification",
+                "Nascondi notifica screenshot");
+        table.put("Swipe back on profiles",
+                "Scorri indietro sui profili");
+        table.put("Swipe right on your first chat folder and a menu slides in, like the one older Telegram had. It has your profile, new message, contacts, calls, saved messages and settings, plus a way to switch accounts. Back or a tap beside it closes it.",
+                "Scorri verso destra sulla tua prima cartella di chat e appare un menu laterale, come quello del vecchio Telegram. Contiene il tuo profilo, nuovo messaggio, contatti, chiamate, Messaggi salvati e impostazioni, pi\u00f9 un modo per cambiare account. Il tasto indietro o un tocco accanto lo chiude.");
+        table.put("Swiping a chat in your list no longer archives, mutes, pins, deletes or marks it read. Press and hold still offers every action.",
+                "Scorrere su una chat nell'elenco non la archivia pi\u00f9, non la silenzia, non la fissa, non la elimina n\u00e9 la segna come letta. Tenere premuto offre ancora tutte le azioni.");
+        table.put("Swiping right on a profile's photos or media tabs goes back, like the rest of the profile, instead of showing the previous photo or tab.",
+                "Scorrendo verso destra sulle schede foto o media di un profilo si torna indietro, come nel resto del profilo, invece di mostrare la foto o la scheda precedente.");
+        table.put("Switch account",
+                "Cambia account");
+        table.put("System version",
+                "Versione del sistema");
+        table.put("TCP with HTTP headers",
+                "TCP con intestazioni HTTP");
+        table.put("TON link Send Gram item",
+                "voce Invia Gram nei link TON");
+        table.put("Take the spaces out of the address, model and key.",
+                "Rimuovi gli spazi da indirizzo, modello e chiave.");
+        table.put("Tap a rule to remove it",
+                "Tocca una regola per rimuoverla");
+        table.put("Tap for details and Android settings.",
+                "Tocca per i dettagli e le impostazioni Android.");
+        table.put("Tap the star next to Telegram at the top of the chat list and pick any emoji status, animated ones too, without Premium. It shows there on this phone only. Nobody else sees it, and nothing is sent to Telegram.",
+                "Tocca la stella accanto a Telegram in cima alla lista chat e scegli qualunque stato emoji, anche quelli animati, senza Premium. Compare l\u00ec solo su questo telefono. Nessun altro lo vede e non viene inviato nulla a Telegram.");
+        table.put("Tap to pick which UnifiedPush app to use.",
+                "Tocca per scegliere quale app UnifiedPush usare.");
+        table.put("Tap to turn it back on.",
+                "Tocca per riattivarlo.");
+    }
+
+    private static void fillIt19(Map<String, String> table) {
+        table.put("Tapping a video in a chat opens it in a player app like VLC or MX Player. Videos that aren't downloaded stream as they play. Secret, view-once and protected videos stay in Telegram's player.",
+                "Toccando un video in una chat si apre in un'app di riproduzione come VLC o MX Player. I video non scaricati vengono trasmessi durante la riproduzione. I video segreti, a visualizzazione singola e protetti restano nel lettore di Telegram.");
+        table.put("Taps, long presses, swipes and wrong entries no longer vibrate the phone. Incoming calls still vibrate, and notifications follow your own settings.",
+                "Tocchi, pressioni prolungate, scorrimenti e inserimenti errati non fanno pi\u00f9 vibrare il telefono. Le chiamate in arrivo vibrano ancora e le notifiche seguono le tue impostazioni.");
+        table.put("Telegram accounts",
+                "Account Telegram");
+        table.put("Telegram adds a sign-in token for your account to links to some of its own websites. With this on, those links open without it, and you can sign in there yourself.",
+                "Telegram aggiunge ai link di alcuni dei suoi siti web un token di accesso per il tuo account. Con questa opzione attiva, quei link si aprono senza token e puoi accedere tu stesso.");
+        table.put("Telegram closes and reopens on this page.",
+                "Telegram si chiude e si riapre su questa pagina.");
+        table.put("Telegram connects through your own VMess, VLESS, Trojan and Shadowsocks servers by way of a proxy that runs inside Telegram, with one entry for it in Telegram's proxy list. It's used unless you use a proxy of your own. Calls don't go through it.",
+                "Telegram si connette attraverso i tuoi server VMess, VLESS, Trojan e Shadowsocks per mezzo di un proxy che gira dentro Telegram, con una voce per esso nell'elenco dei proxy di Telegram. Viene usato salvo che tu usi un proxy tuo. Le chiamate non passano da l\u00ec.");
+        table.put("Telegram crashed or froze within a minute of starting three times in a row, so HushTelegram paused itself.",
+                "Telegram \u00e8 crashato o si \u00e8 bloccato entro un minuto dall'avvio per tre volte di seguito, quindi HushTelegram si \u00e8 messo in pausa.");
+        table.put("Telegram deletes %1$s with all its messages and contacts. This can't be undone.",
+                "Telegram elimina %1$s con tutti i suoi messaggi e contatti. Non si pu\u00f2 annullare.");
+        table.put("Telegram deletes the account in %1$d day.",
+                "Telegram eliminer\u00e0 l'account tra %1$d giorno.");
+        table.put("Telegram deletes the account in %1$d days.",
+                "Telegram eliminer\u00e0 l'account tra %1$d giorni.");
+        table.put("Telegram didn't accept the API ID and hash this app was patched with, so no login code was sent. Copy both again from my.telegram.org/apps and patch once more.",
+                "Telegram non ha accettato l'ID API e l'hash con cui \u00e8 stata modificata questa app, quindi non \u00e8 stato inviato alcun codice di accesso. Copia di nuovo entrambi da my.telegram.org/apps e applica ancora una volta le patch.");
+        table.put("Telegram didn't delete the account.",
+                "Telegram non ha eliminato l'account.");
+        table.put("Telegram didn't make the folder. Try again later.",
+                "Telegram non ha creato la cartella. Riprova pi\u00f9 tardi.");
+        table.put("Telegram didn't remove the folders. Try again in a moment.",
+                "Telegram non ha rimosso le cartelle. Riprova tra poco.");
+        table.put("Telegram didn't sign the bot in.",
+                "Telegram non ha effettuato l'accesso con il bot.");
+        table.put("Telegram didn't take the proxies last time.",
+                "Telegram non ha accettato i proxy l'ultima volta.");
+        table.put("Telegram doesn't look up link previews for messages you haven't sent yet, including shares, polls, story links and bots. Sent messages still get one.",
+                "Telegram non cerca le anteprime dei link per i messaggi che non hai ancora inviato, inclusi condivisioni, sondaggi, link di storie e bot. I messaggi inviati ne ricevono comunque una.");
+        table.put("Telegram is still answering. Try again in a moment.",
+                "Telegram sta ancora rispondendo. Riprova tra poco.");
+        table.put("Telegram is still loading your folders. Try again in a moment.",
+                "Telegram sta ancora caricando le tue cartelle. Riprova tra poco.");
+        table.put("Telegram isn't told that you're online while you use it. Going offline still goes out. Works with Ghost mode on.",
+                "Telegram non viene informato che sei online mentre lo usi. Il passaggio a offline viene comunque comunicato. Funziona con la Modalit\u00e0 fantasma attiva.");
+        table.put("Telegram kept some folders. Turn this off again to retry.",
+                "Telegram ha mantenuto alcune cartelle. Disattivalo di nuovo per riprovare.");
+        table.put("Telegram kept the Admin folder. Try again later.",
+                "Telegram ha mantenuto la cartella Admin. Riprova pi\u00f9 tardi.");
+        table.put("Telegram no longer tells the other person in a secret chat when you take a screenshot.",
+                "Telegram non avvisa pi\u00f9 l'altra persona in una chat segreta quando fai uno screenshot.");
+        table.put("Telegram on this phone treats your account as Premium, so the parts the app itself locks open up. Telegram's servers still know your real plan, so their limits stay the same.",
+                "Telegram su questo telefono considera il tuo account come Premium, quindi si aprono le parti che l'app stessa blocca. I server di Telegram conoscono comunque il tuo piano reale, quindi i loro limiti restano gli stessi.");
+        table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
+                "Telegram sfoca le intestazioni e i pannelli delle chat solo sui telefoni veloci. Questa opzione permette a qualsiasi telefono di farlo, quando Sfocatura nelle chat \u00e8 attiva in Risparmio energetico.");
+        table.put("Telegram passcode",
+                "Codice Telegram");
+        table.put("Telegram refused it: %1$s",
+                "Telegram l'ha rifiutato: %1$s");
+        table.put("Telegram refused this app's ID",
+                "Telegram ha rifiutato l'ID di questa app");
+        table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
+                "Telegram smette di offrire aggiornamenti da telegram.org. Non possono essere installati sopra questa build modificata, quindi applica le patch a ogni nuova versione in Morphe Manager.");
+        table.put("Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.",
+                "Telegram ha rifiutato l'ID API con cui questa app accede, quindi non \u00e8 stato inviato alcun codice di accesso. Applica di nuovo le patch a HushTelegram con Use registered Telegram API credentials e il tuo ID da my.telegram.org/apps. La guida ti spiega come fare.");
+        table.put("Telegram turned the folders down. Try again later.",
+                "Telegram ha rifiutato le cartelle. Riprova pi\u00f9 tardi.");
+        table.put("Telegram's files go in this folder in Internal storage, and it's made if it isn't there. Leave it empty for Telegram, and restart Telegram after a change.",
+                "I file di Telegram vanno in questa cartella nell'Archivio interno, che viene creata se non c'\u00e8. Lascia vuoto il campo per Telegram e riavvia Telegram dopo una modifica.");
+        table.put("Telegram's language",
+                "Lingua di Telegram");
+        table.put("Telegram's own files in internal storage",
+                "File di Telegram nell'Archivio interno");
+        table.put("Telegram's proxy list is empty. Add a proxy in Telegram's proxy settings, or find free proxies, then come back here.",
+                "La lista dei proxy di Telegram \u00e8 vuota. Aggiungi un proxy dalle impostazioni proxy di Telegram oppure trova proxy gratuiti, poi torna qui.");
+        table.put("Telegram's proxy list is in your order, with %1$d proxies pinned on top.",
+                "La lista dei proxy di Telegram \u00e8 nel tuo ordine, con %1$d proxy fissati in cima.");
+        table.put("Telegram's proxy list is in your order, with %1$d proxy pinned on top.",
+                "La lista dei proxy di Telegram \u00e8 nel tuo ordine, con %1$d proxy fissato in cima.");
+        table.put("Telegram's proxy list is in your order. Tap to change it.",
+                "La lista dei proxy di Telegram \u00e8 nel tuo ordine. Tocca per cambiarla.");
+        table.put("Telegram's reaction notifications make no sound. Turned on, they play the sound and vibration set in Telegram's Notifications and Sounds > Reactions.",
+                "Le notifiche delle reazioni di Telegram non emettono alcun suono. Se attivato, riproducono il suono e la vibrazione impostati in Notifiche e suoni > Reazioni di Telegram.");
+        table.put("Telegram's reply to account %1$s on %2$s: %3$s, %4$s",
+                "Risposta di Telegram all'account %1$s su %2$s: %3$s, %4$s");
+        table.put("Telegram's reply to notification sign-up: %1$s",
+                "Risposta di Telegram alla registrazione delle notifiche: %1$s");
+        table.put("Telegram's two emulator checks always say this phone isn't an emulator.",
+                "I due controlli dell'emulatore di Telegram dicono sempre che questo telefono non \u00e8 un emulatore.");
+        table.put("Telegram's wake-ups come through %1$s.",
+                "I risvegli di Telegram arrivano tramite %1$s.");
+        table.put("Telegram's web addresses are selected for this app in Android's settings, so their links open here.",
+                "Gli indirizzi web di Telegram sono selezionati per questa app nelle impostazioni di Android, quindi i link si aprono qui.");
+        table.put("Test again",
+                "Prova di nuovo");
+        table.put("Test server sign-in",
+                "Accesso ai server di test");
+        table.put("Testing your V2Ray-style servers now.",
+                "Test dei tuoi server in stile V2Ray in corso.");
+        table.put("Text copied",
+                "Testo copiato");
+        table.put("Text direction",
+                "Direzione del testo");
+        table.put("Text for the chat list title",
+                "Testo per il titolo della lista chat");
+        table.put("Text on a line matches wherever it appears in a message. A line in slashes, like /crypto|airdrop/, is a regular expression. Case doesn't matter.",
+                "Il testo su una riga corrisponde ovunque compaia in un messaggio. Una riga tra barre, come /crypto|airdrop/, \u00e8 un'espressione regolare. Le maiuscole non contano.");
+        table.put("That account isn't signed in here.",
+                "Quell'account non \u00e8 collegato qui.");
+        table.put("That app is slow to answer. Nothing was changed. Try again.",
+                "Quell'app \u00e8 lenta a rispondere. Non \u00e8 stato cambiato nulla. Riprova.");
+        table.put("That app is slow. It may still save the file, so check it.",
+                "Quell'app \u00e8 lenta. Potrebbe ancora salvare il file, quindi controllalo.");
+        table.put("That bot token isn't valid.",
+                "Questo token bot non \u00e8 valido.");
+        table.put("That bot token was revoked.",
+                "Questo token bot \u00e8 stato revocato.");
+        table.put("That chat isn't on this phone anymore.",
+                "Quella chat non \u00e8 pi\u00f9 su questo telefono.");
+        table.put("That file is damaged. Download it again. Nothing was changed.",
+                "Quel file \u00e8 danneggiato. Scaricalo di nuovo. Non \u00e8 stato cambiato nulla.");
+        table.put("That file is too big for a settings file. Nothing was changed.",
+                "File troppo grande per le impostazioni. Non \u00e8 stato cambiato nulla.");
+        table.put("That file isn't a font.",
+                "Quel file non \u00e8 un font.");
+    }
+
+    private static void fillIt20(Map<String, String> table) {
+        table.put("That file isn't a picture.",
+                "Quel file non \u00e8 un'immagine.");
+        table.put("That file isn't readable text. Nothing was changed.",
+                "Quel file non \u00e8 un testo leggibile. Non \u00e8 stato cambiato nulla.");
+        table.put("That file lists a setting twice. Nothing was changed.",
+                "Quel file elenca un'impostazione due volte. Non \u00e8 stato cambiato nulla.");
+        table.put("That file's app still hasn't answered. Try again later.",
+                "L'app di quel file non ha ancora risposto. Riprova pi\u00f9 tardi.");
+        table.put("That font file is too large.",
+                "Quel file del font \u00e8 troppo grande.");
+        table.put("That isn't a HushTelegram settings file. Nothing was changed.",
+                "Non \u00e8 un file di impostazioni di HushTelegram. Non \u00e8 stato cambiato nulla.");
+        table.put("That isn't a bot token.",
+                "Non \u00e8 un token bot.");
+        table.put("That message isn't on this phone anymore.",
+                "Quel messaggio non \u00e8 pi\u00f9 su questo telefono.");
+        table.put("That name won't work. Try letters and numbers.",
+                "Questo nome non funziona. Prova con lettere e numeri.");
+        table.put("That picture is too large.",
+                "Quell'immagine \u00e8 troppo grande.");
+        table.put("That's not your passcode.",
+                "Non \u00e8 il tuo codice.");
+        table.put("That's too long. Try a shorter name.",
+                "\u00c8 troppo lungo. Prova con un nome pi\u00f9 breve.");
+        table.put("That's too long. Try an emoji or two, or a short word.",
+                "\u00c8 troppo lungo. Prova con una o due emoji o una parola corta.");
+        table.put("That's your Telegram passcode. Pick a different one.",
+                "\u00c8 il tuo codice di Telegram. Scegline uno diverso.");
+        table.put("The Contacts tab leaves the bar at the bottom of the main screen, and swiping doesn't open its page either. The Calls or Settings tab stays as Telegram has it, and the chat list's new message button still opens your contacts. Restart Telegram to see the change.",
+                "La scheda Contatti sparisce dalla barra in fondo alla schermata principale e anche scorrere non apre pi\u00f9 la sua pagina. La scheda Chiamate o Impostazioni resta come in Telegram, e il pulsante di nuovo messaggio della lista chat continua ad aprire i tuoi contatti. Riavvia Telegram per vedere la modifica.");
+        table.put("The GPL-3.0 license, and credits for the projects HushTelegram is built on",
+                "La licenza GPL-3.0 e i crediti per i progetti su cui si basa HushTelegram");
+        table.put("The accounts you pick below can read but not write. Messages, reactions, drafts and typing stay on this phone and show an error. Reading, files and read receipts work. Works with this switch on.",
+                "Gli account che scegli qui sotto possono leggere ma non scrivere. Messaggi, reazioni, bozze e digitazione restano su questo telefono e mostrano un errore. La lettura, i file e le conferme di lettura funzionano. Funziona con questo interruttore attivo.");
+        table.put("The accounts you pick below leave Telegram's account lists, but only there. Each one stays signed in, keeps syncing, and its notifications follow Telegram's own settings. Nothing is signed out or deleted, and the account you're using always shows.",
+                "Gli account che scegli qui sotto spariscono dagli elenchi di account di Telegram, ma solo da l\u00ec. Ognuno resta collegato, continua a sincronizzarsi e le sue notifiche seguono le impostazioni di Telegram. Nulla viene disconnesso o eliminato, e l'account che stai usando viene sempre mostrato.");
+        table.put("The accounts you pick below send nothing. Telegram's connection can still stay open in the background, so it may still receive messages and notifications. Works with this switch on.",
+                "Gli account che scegli qui sotto non inviano nulla. La connessione di Telegram pu\u00f2 rimanere aperta in background, quindi pu\u00f2 ancora ricevere messaggi e notifiche. Funziona con questo interruttore attivo.");
+        table.put("The address has to start with https://.",
+                "L'indirizzo deve iniziare con https://.");
+        table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
+                "La griglia di foto del menu degli allegati inizia con le tue foto invece di un riquadro della fotocamera in tempo reale. Una chat applica questa modifica la prossima volta che la apri.");
+        table.put("The bar at the bottom of a channel you've joined goes away, along with its Mute button and the Search and Info buttons beside it. Channels you haven't joined still show Join. To mute a channel, open its info. A channel picks this up the next time you open it.",
+                "La barra in fondo a un canale a cui ti sei unito scompare, insieme al suo pulsante Silenzia e ai pulsanti Cerca e Informazioni accanto. I canali a cui non ti sei unito mostrano ancora Unisciti. Per silenziare un canale, apri le sue informazioni. Un canale lo applica la prossima volta che lo apri.");
+        table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
+                "La barra in fondo alla schermata principale diventa pi\u00f9 bassa e larga solo quanto serve alle sue schede. Le schede mantengono tutta la loro altezza, quindi restano facili da toccare. Riavvia Telegram per vedere la modifica.");
+        table.put("The bar under a chat's top bar that shows pinned messages is gone, along with its counter and list button. Messages stay pinned and nothing is marked as read.",
+                "La barra sotto la barra superiore della chat che mostra i messaggi fissati scompare, insieme al contatore e al pulsante dell'elenco. I messaggi rimangono fissati e nulla viene segnato come letto.");
+        table.put("The camera in the attachment menu always opens on the rear lens, not the lens you used last. You can still flip it.",
+                "La fotocamera nel menu degli allegati si apre sempre con la lente posteriore, non con quella usata l'ultima volta. Puoi comunque cambiarla.");
+        table.put("The chat list opens on the folder you pick below instead of All Chats. Each account keeps its own pick, and the folder order doesn't change. If that folder is gone, renamed or locked, All Chats opens as usual.",
+                "La lista chat si apre nella cartella scelta qui sotto invece di Tutte le chat. Ogni account mantiene la propria scelta e l'ordine delle cartelle non cambia. Se quella cartella non c'\u00e8 pi\u00f9, \u00e8 stata rinominata o \u00e8 bloccata, si apre Tutte le chat come al solito.");
+        table.put("The chats you pick below leave All Chats, your folders, archived chats and the forward and share lists. They keep their messages and notifications, search still finds them, and nothing changes on your other devices. Each account keeps its own list.",
+                "Le chat che scegli qui sotto escono da Tutte le chat, dalle tue cartelle, dalle chat archiviate e dagli elenchi per inoltrare e condividere. Mantengono i loro messaggi e le notifiche, la ricerca continua a trovarle e non cambia nulla sui tuoi altri dispositivi. Ogni account mantiene il proprio elenco.");
+        table.put("The chats you pick work the other way around. While Ghost mode is on they act as usual, and while it's off the Ghost mode switches above apply there. Long press chats in the chat list and use the three dots to add them. Online status follows Ghost mode everywhere.",
+                "Le chat che scegli funzionano al contrario. Quando la Modalit\u00e0 fantasma \u00e8 attiva si comportano come al solito, e quando \u00e8 disattivata si applicano gli interruttori della Modalit\u00e0 fantasma qui sopra. Tieni premute le chat nella lista chat e usa i tre puntini per aggiungerle. Lo stato online segue la Modalit\u00e0 fantasma ovunque.");
+        table.put("The deleted label next to a kept message's time turns red, so it stands out in the chat. Works with Keep deleted messages on.",
+                "L'etichetta eliminato accanto all'ora di un messaggio conservato diventa rossa, cos\u00ec risalta nella chat. Funziona con Conserva i messaggi eliminati attivo.");
+        table.put("The diagnostic report couldn't be saved. Try again.",
+                "Non \u00e8 stato possibile salvare il report di diagnostica. Riprova.");
+        table.put("The emoji a Premium account puts next to its name goes away in chats, the chat list and profiles, and the Premium star shows instead. Your own status hides too but stays set for everyone else. A chat picks this up the next time you open it.",
+                "Lo stato emoji che un account Premium mette accanto al nome scompare nelle chat, nella lista chat e nei profili, e al suo posto appare la stella Premium. Anche il tuo stato viene nascosto, ma resta impostato per tutti gli altri. Una chat lo recepisce la prossima volta che la apri.");
+        table.put("The emoji next to the chat list title will change.",
+                "L'emoji accanto al titolo della lista chat cambier\u00e0.");
+        table.put("The fastest that answers",
+                "Il pi\u00f9 veloce che risponde");
+        table.put("The file %1$s couldn't be removed. Delete it from %2$s to turn HushTelegram back on.",
+                "Non \u00e8 stato possibile rimuovere il file %1$s. Eliminalo da %2$s per riattivare HushTelegram.");
+        table.put("The file %1$s couldn't be removed. Delete it from %2$s, then tap Resume again.",
+                "Non \u00e8 stato possibile rimuovere il file %1$s. Eliminalo da %2$s, poi tocca di nuovo Riprendi.");
+        table.put("The folder for Telegram's files will change.",
+                "La cartella per i file di Telegram cambier\u00e0.");
+        table.put("The folder tabs leave out All Chats, so the chat list opens on the folder picked above or your first one. Archived Chats moves to the chat list's menu, and to the side menu when that's on. Tabs can't be dragged into a new order while this is on. Restart Telegram to see the change.",
+                "Le schede delle cartelle escludono Tutte le chat, quindi la lista chat si apre nella cartella scelta sopra o nella prima. Le chat archiviate si spostano nel menu della lista chat e, quando \u00e8 attivo, nel menu laterale. Con questa opzione attiva, le schede non possono essere trascinate in un nuovo ordine. Riavvia Telegram per vedere la modifica.");
+        table.put("The gallery folder will change.",
+                "La cartella galleria cambier\u00e0.");
+        table.put("The keyboard closes when you start scrolling a chat. The emoji and sticker panel stays open.",
+                "La tastiera si chiude quando inizi a scorrere in una chat. Il pannello di emoji e sticker resta aperto.");
+        table.put("The line at the bottom of the long-press menu that names a message's emoji pack is gone. The rest of the menu works as before.",
+                "La riga in fondo al menu di pressione prolungata che indica il pacchetto di emoji di un messaggio scompare. Il resto del menu funziona come prima.");
+        table.put("The local proxy couldn't start. Turn the switch off and on again.",
+                "Il proxy locale non \u00e8 riuscito ad avviarsi. Spegni e riaccendi l'interruttore.");
+        table.put("The menu at the top of the chat list always has Proxy, so your proxies are one tap away even where Telegram isn't blocked.",
+                "Il menu in cima alla lista chat include sempre Proxy, cos\u00ec i tuoi proxy sono a portata di tocco anche dove Telegram non \u00e8 bloccato.");
+        table.put("The message box's text menu gets Right to left and Left to right for the lines you selected, and Control character for invisible marks like RLM or ZWJ.",
+                "Il menu di testo del campo del messaggio include Da destra a sinistra e Da sinistra a destra per le righe selezionate, e Carattere di controllo per segni invisibili come RLM o ZWJ.");
+        table.put("The music player's menu gets Lyrics. They come from lrclib.net, and timed ones follow along with the song.",
+                "Il menu del lettore musicale include Testo. I testi provengono da lrclib.net e quelli sincronizzati seguono il brano.");
+        table.put("The newest HushTelegram release is %1$s.",
+                "La versione pi\u00f9 recente di HushTelegram \u00e8 la %1$s.");
+        table.put("The number from a profile's ID row, or a chat ID the way bots write it.",
+                "Il numero dalla riga ID di un profilo, oppure un ID chat come lo scrivono i bot.");
+        table.put("The phone number screen always has the proxy button, so you can add a proxy before you sign in.",
+                "La schermata del numero di telefono mostra sempre il pulsante proxy, cos\u00ec puoi aggiungere un proxy prima di accedere.");
+        table.put("The report couldn't be saved yet. Try again in a moment.",
+                "Il report non \u00e8 stato ancora salvato. Riprova tra poco.");
+        table.put("The round share button beside channel posts goes away, in the channel and wherever a post is forwarded. A post's own menu still forwards it. Bots and Saved Messages keep theirs. A chat picks this up the next time you open it.",
+                "Il pulsante rotondo Condividi accanto ai post dei canali scompare, nel canale e ovunque un post venga inoltrato. Il menu del post permette comunque di inoltrarlo. Bot e Messaggi salvati mantengono il loro. Una chat lo applica la prossima volta che la apri.");
+        table.put("The row of reactions at the top of the long-press menu, the panel it opens and the reaction bubble over a selected message are gone. The rest of the menu works as before.",
+                "La riga delle reazioni in cima al menu di pressione prolungata, il pannello che apre e la bolla delle reazioni sopra un messaggio selezionato spariscono. Il resto del menu funziona come prima.");
+        table.put("The row of reactions under each message isn't drawn. Nothing is removed, so turn it off and they're back. Tags in Saved Messages stay.",
+                "La riga delle reazioni sotto ogni messaggio non viene mostrata. Non viene rimosso nulla, quindi disattivalo e riappaiono. Le etichette nei Messaggi salvati restano.");
+        table.put("The server behind %1$s is down for now. Wake-ups come back once it's up.",
+                "Il server di %1$s non \u00e8 al momento disponibile. I risvegli riprenderanno quando sar\u00e0 di nuovo attivo.");
+        table.put("The sticker keyboard's Trending tab and row and the emoji keyboard's trending packs go away, so both list only packs you've added. Search and the Stickers and Emoji screen still show them. A chat picks this up the next time you open it.",
+                "La scheda In tendenza e la relativa riga nella tastiera degli sticker e i pacchetti in tendenza nella tastiera delle emoji spariscono, quindi entrambe mostrano solo i pacchetti che hai aggiunto. La ricerca e la schermata Sticker ed emoji li mostrano ancora. Una chat li applica la prossima volta che la apri.");
+        table.put("The sticker size will change.",
+                "La dimensione degli sticker cambier\u00e0.");
+        table.put("The translation language will change.",
+                "La lingua di traduzione cambier\u00e0.");
+        table.put("The two passcodes don't match.",
+                "I due codici non coincidono.");
+        table.put("Theme",
+                "Tema");
+        table.put("There are no filters to try yet.",
+                "Non ci sono ancora filtri da provare.");
+        table.put("There are no kept messages to clear.",
+                "Non ci sono messaggi conservati da cancellare.");
+        table.put("There were no folders from HushTelegram to remove.",
+                "Non c'erano cartelle di HushTelegram da rimuovere.");
+    }
+
+    private static void fillIt21(Map<String, String> table) {
+        table.put("There's no diagnostic data to clear.",
+                "Non ci sono dati diagnostici da cancellare.");
+        table.put("There's no diagnostic data to put back.",
+                "Non ci sono dati diagnostici da ripristinare.");
+        table.put("There's no edit history to clear.",
+                "Non c'\u00e8 cronologia delle modifiche da cancellare.");
+        table.put("These chats follow Ghost mode again.",
+                "Queste chat seguono di nuovo la Modalit\u00e0 fantasma.");
+        table.put("This account is powered off.",
+                "Questo account \u00e8 spento.");
+        table.put("This app hasn't seen that ID yet",
+                "Questa app non ha ancora visto quell'ID");
+        table.put("This chat doesn't allow saving",
+                "Questa chat non consente di salvare");
+        table.put("This chat shows the original messages",
+                "Questa chat mostra i messaggi originali");
+        table.put("This chat will be translated",
+                "Questa chat verr\u00e0 tradotta");
+        table.put("This covers every account in this Telegram app.",
+                "Questo vale per tutti gli account in questa app di Telegram.");
+        table.put("This field is too long. Use %1$d characters or fewer.",
+                "Questo campo \u00e8 troppo lungo. Usa al massimo %1$d caratteri.");
+        table.put("This list is too long for a settings file. Remove a few lines.",
+                "Lista troppo lunga per un file di impostazioni. Rimuovi qualche riga.");
+        table.put("This network is metered.",
+                "Questa rete \u00e8 a consumo.");
+        table.put("This network isn't metered.",
+                "Questa rete non \u00e8 a consumo.");
+        table.put("This only shows what's saved on this phone. It doesn't prove notifications will arrive.",
+                "Mostra solo ci\u00f2 che \u00e8 salvato su questo telefono. Non dimostra che le notifiche arriveranno.");
+        table.put("This patched app changes %1$s but not %2$s.",
+                "Questa app modificata modifica %1$s ma non %2$s.");
+        table.put("This patched app doesn't change %1$s.",
+                "Questa app modificata non modifica %1$s.");
+        table.put("This phone has no file picker, so you can't choose a file here.",
+                "Questo telefono non ha un selettore di file, non puoi sceglierne uno.");
+        table.put("This phone has no folder picker.",
+                "Questo telefono non ha un selettore di cartelle.");
+        table.put("This phone has no gallery picker.",
+                "Questo telefono non ha un selettore per la galleria.");
+        table.put("This song is instrumental.",
+                "Questo brano \u00e8 strumentale.");
+        table.put("Those chats already have a rule.",
+                "Quelle chat hanno gi\u00e0 una regola.");
+        table.put("Those messages aren't all loaded",
+                "Non tutti i messaggi sono caricati");
+        table.put("Tick at least one kind of file.",
+                "Spunta almeno un tipo di file.");
+        table.put("Too many rules to keep. Take some out.",
+                "Troppe regole da conservare. Rimuovine alcune.");
+        table.put("Too many tries. Wait %1$s seconds and try again.",
+                "Troppi tentativi. Attendi %1$s secondi e riprova.");
+        table.put("Touch and keyboard",
+                "Tocco e tastiera");
+        table.put("Track %1$d",
+                "Traccia %1$d");
+        table.put("Track this user",
+                "Traccia questo utente");
+        table.put("Tracked people",
+                "Persone tracciate");
+        table.put("Tracking this user",
+                "Ora tracci questo utente");
+        table.put("Translate here",
+                "Traduci qui");
+        table.put("Translate into",
+                "Traduci in");
+        table.put("Translate this chat",
+                "Traduci questa chat");
+        table.put("Translate with an outside service",
+                "Traduci con un servizio esterno");
+        table.put("Translation",
+                "Traduzione");
+        table.put("Translation isn't available right now",
+                "La traduzione non \u00e8 disponibile al momento");
+        table.put("Translation service",
+                "Servizio di traduzione");
+        table.put("Translation service saved.",
+                "Servizio di traduzione salvato.");
+        table.put("Tries to help this patched Telegram sign up for push notifications with Firebase, Google's notification service, using Telegram's original certificate. Notification permission and battery settings still apply.",
+                "Prova ad aiutare questo Telegram modificato a registrarsi per le notifiche push con Firebase, il servizio di notifiche di Google, usando il certificato originale di Telegram. Il permesso per le notifiche e le impostazioni della batteria continuano ad applicarsi.");
+        table.put("Try",
+                "Prova");
+        table.put("Try a different word or clear the search.",
+                "Prova una parola diversa o cancella la ricerca.");
+        table.put("Try a message",
+                "Prova un messaggio");
+        table.put("Try a message below to see which line would hide it. It isn't saved anywhere.",
+                "Prova un messaggio qui sotto per vedere quale riga lo nasconderebbe. Non viene salvato da nessuna parte.");
+        table.put("Try again, or go back to Telegram.",
+                "Riprova oppure torna a Telegram.");
+        table.put("Turn chat translation on again. It's now set per account.",
+                "Riattiva la traduzione delle chat. Ora \u00e8 impostata per account.");
+        table.put("Turn off Do Not Disturb",
+                "Disattiva Non disturbare");
+        table.put("Turn off Hide All Chats to drag tabs",
+                "Disattiva Nascondi Tutte le chat per spostare le schede");
+        table.put("Turn off Telegram's update checks",
+                "Disattiva i controlli degli aggiornamenti di Telegram");
+        table.put("Turn off reaction effects",
+                "Disattiva gli effetti delle reazioni");
+        table.put("Turn on Do Not Disturb",
+                "Attiva Non disturbare");
+        table.put("Turn on a set of switches in one tap, or put every switch back the way it started.",
+                "Attiva una serie di interruttori con un tocco, oppure riporta ogni interruttore allo stato iniziale.");
+        table.put("Turn videos only from the full screen button",
+                "Ruota i video solo con il pulsante a schermo intero");
+        table.put("Turned off: %1$s.",
+                "Disattivati: %1$s.");
+        table.put("Turned on: %1$s.",
+                "Attivati: %1$s.");
+        table.put("Turning this on makes Private, Groups, Channels and Bots folders, as tabs above the chat list and on your other devices. Turning it off removes the ones it made, unless you renamed or changed them.",
+                "Attivandolo crea le cartelle Privati, Gruppi, Canali e Bots, come schede sopra la lista chat e sui tuoi altri dispositivi. Disattivandolo rimuove quelle che ha creato, a meno che tu le abbia rinominate o modificate.");
+        table.put("Turning this on makes an Admin folder with the groups and channels you own or manage, and keeps it up to date as that changes. Turning it off removes it, unless you renamed or changed it.",
+                "Attivandolo viene creata una cartella Admin con i gruppi e i canali che possiedi o amministri, e viene mantenuta aggiornata man mano che cambia. Disattivandolo viene rimossa, a meno che tu non l'abbia rinominata o modificata.");
+        table.put("Type a duress passcode.",
+                "Digita un codice di emergenza.");
+        table.put("Type a message to try the filters on.",
+                "Scrivi un messaggio per provare i filtri.");
+        table.put("Type a model name.",
+                "Digita un nome di modello.");
+    }
+
+    private static void fillIt22(Map<String, String> table) {
+        table.put("Type a user, group or channel ID to open that chat. It works for anyone this app has already seen, such as someone who wrote in a group you opened.",
+                "Digita l'ID di un utente, gruppo o canale per aprire quella chat. Funziona con chiunque questa app abbia gi\u00e0 visto, come qualcuno che ha scritto in un gruppo che hai aperto.");
+        table.put("Type it again",
+                "Digitalo di nuovo");
+        table.put("Type the ID in numbers",
+                "Digita l'ID in cifre");
+        table.put("Type the passcode you use to unlock Telegram.",
+                "Digita il codice che usi per sbloccare Telegram.");
+        table.put("Type what shows in place of Telegram's name while Your own chat list title is on. Empty keeps Telegram's name.",
+                "Scrivi cosa mostrare al posto del nome di Telegram mentre Titolo personalizzato per la lista chat \u00e8 attivo. Se lo lasci vuoto, resta il nome di Telegram.");
+        table.put("Type your API key, or tap Use Google.",
+                "Digita la tua chiave API oppure tocca Usa Google.");
+        table.put("Typed once, the duress passcode looks wrong. Typed again, it deletes for good. If an account has a cloud password, Telegram waits a week first.",
+                "Digitato una volta, il codice di emergenza sembra sbagliato. Digitato di nuovo, elimina definitivamente. Se un account ha una password cloud, Telegram aspetta prima una settimana.");
+        table.put("Typed twice, the duress passcode deletes for good.",
+                "Digitato due volte, elimina per sempre.");
+        table.put("Typing",
+                "Sta scrivendo");
+        table.put("Typing @ and a user ID, or tg://user?id= and the ID, turns into a real mention. It only works for people this app has already seen, such as in a chat or group. Anyone else is sent as typed.",
+                "Digitando @ e un ID utente, oppure tg://user?id= e l'ID, ottieni una menzione reale. Funziona solo per le persone che questa app ha gi\u00e0 visto, ad esempio in una chat o in un gruppo. Chiunque altro viene inviato come digitato.");
+        table.put("Typing in %1$s",
+                "Sta scrivendo in %1$s");
+        table.put("Typing in these chats for 10 minutes.",
+                "Stai scrivendo in queste chat per 10 minuti.");
+        table.put("Typing the duress passcode on Telegram's lock screen logs out or deletes accounts, as picked below, and clears what HushTelegram kept, like deleted messages, edit history and call recordings. It needs a Telegram passcode and starts off.",
+                "Digitando il codice di emergenza nella schermata di blocco di Telegram si esce dagli account o li elimina, come scelto sotto, e si cancellano i dati conservati da HushTelegram, come messaggi eliminati, cronologia delle modifiche e registrazioni delle chiamate. Richiede un codice di Telegram e all'inizio \u00e8 disattivato.");
+        table.put("Typing this on Telegram's lock screen logs out every account on this phone. Pick one that's different from your Telegram passcode.",
+                "Digitando questo codice nella schermata di blocco di Telegram si esce da tutti gli account su questo telefono. Scegline uno diverso dal tuo codice di Telegram.");
+        table.put("Typing this on Telegram's lock screen logs out the open account. Pick one that's different from your Telegram passcode.",
+                "Digitando questo codice nella schermata di blocco di Telegram si esce dall'account aperto. Scegline uno diverso dal tuo codice di Telegram.");
+        table.put("Typing this twice on Telegram's lock screen deletes every account on this phone for good. Pick one that's different from your Telegram passcode.",
+                "Digitando due volte questo codice nella schermata di blocco di Telegram si eliminano definitivamente tutti gli account su questo telefono. Scegline uno diverso dal tuo codice di Telegram.");
+        table.put("Typing this twice on Telegram's lock screen deletes the open account for good. Pick one that's different from your Telegram passcode.",
+                "Digitando due volte questo codice nella schermata di blocco di Telegram si elimina definitivamente l'account aperto. Scegline uno diverso dal tuo codice di Telegram.");
+        table.put("Undo",
+                "Annulla");
+        table.put("Undo the last setup",
+                "Annulla l'ultima configurazione");
+        table.put("UnifiedPush notifications",
+                "Notifiche UnifiedPush");
+        table.put("UnifiedPush: %1$s",
+                "UnifiedPush: %1$s");
+        table.put("Unknown",
+                "Sconosciuto");
+        table.put("Unlock",
+                "Sblocca");
+        table.put("Unlock Premium app icons",
+                "Sblocca le icone Premium dell'app");
+        table.put("Unlock Premium features",
+                "Sblocca funzioni Premium");
+        table.put("Unlock canceled. Settings stay locked.",
+                "Sblocco annullato. Le impostazioni restano bloccate.");
+        table.put("Unlock now",
+                "Sblocca ora");
+        table.put("Unlock started. Settings open in 24 hours unless you cancel.",
+                "Sblocco avviato. Le impostazioni si sbloccano tra 24 ore se non annulli.");
+        table.put("Unlock your phone to play voice and video messages.",
+                "Sblocca il telefono per riprodurre i messaggi vocali e video.");
+        table.put("Unpin",
+                "Togli il pin");
+        table.put("Unpin on this phone",
+                "Rimuovi da questo telefono");
+        table.put("Unpinned on this phone.",
+                "Rimosso da questo telefono.");
+        table.put("Unpinned proxies sort by speed again.",
+                "I proxy non fissati tornano all'ordine per velocit\u00e0.");
+        table.put("Unpinned.",
+                "Tolto il pin.");
+        table.put("Untick a part to leave it out. Copy and Save use only what's ticked.",
+                "Togli la spunta a una parte per escluderla. Copia e Salva usano solo ci\u00f2 che \u00e8 spuntato.");
+        table.put("Until you delete them",
+                "Finch\u00e9 non le elimini");
+        table.put("Until you resume, every switch except Debug logging acts as if it were off. Your choices stay saved. Edits made when you patched stay in.",
+                "Finch\u00e9 non riprendi, ogni interruttore tranne Log di debug si comporta come se fosse spento. Le tue scelte restano salvate. Le modifiche fatte quando hai applicato le patch rimangono attive.");
+        table.put("Up to %1$s links",
+                "Fino a %1$s link");
+        table.put("Up to %1$s lists",
+                "Fino a %1$s liste");
+        table.put("Update HushTelegram to read that file. Nothing was changed.",
+                "Aggiorna HushTelegram per leggere quel file. Non \u00e8 stato cambiato nulla.");
+        table.put("Updates",
+                "Aggiornamenti");
+        table.put("Uploads keep four times as many pieces on their way at once. Telegram's servers still decide how fast an account can send. The next upload picks this up.",
+                "Gli upload mantengono in viaggio quattro volte pi\u00f9 parti contemporaneamente. I server di Telegram decidono comunque quanto velocemente un account pu\u00f2 inviare. Il prossimo upload adotta questa modifica.");
+        table.put("Usage reports",
+                "Segnalazioni di utilizzo");
+        table.put("Usage reports and call diagnostics",
+                "Segnalazioni di utilizzo e diagnostica delle chiamate");
+        table.put("Use 4 digits, the same length as your Telegram passcode.",
+                "Usa 4 cifre, la stessa lunghezza del tuo codice di Telegram.");
+        table.put("Use Google",
+                "Usa Google");
+        table.put("Use normal paste",
+                "Usa l'incolla normale");
+        table.put("Use system font",
+                "Usa il carattere di sistema");
+        table.put("Use the usual folder",
+                "Usa la cartella abituale");
+        table.put("User ID %1$s",
+                "ID utente %1$s");
+        table.put("User or chat ID",
+                "ID utente o chat");
+        table.put("Using %1$s.",
+                "In uso: %1$s.");
+        table.put("V2Ray server",
+                "Server V2Ray");
+        table.put("V2Ray-style servers",
+                "Server in stile V2Ray");
+        table.put("VLESS encryption",
+                "cifratura VLESS");
+        table.put("VMess, VLESS, Trojan and Shadowsocks links work, over TCP or WebSocket, with or without TLS. They stay on this phone and out of settings files.",
+                "I link VMess, VLESS, Trojan e Shadowsocks funzionano su TCP o WebSocket, con o senza TLS. Restano su questo telefono e fuori dai file delle impostazioni.");
+        table.put("Version",
+                "Versione");
+        table.put("Video",
+                "Video");
+        table.put("Video streaming",
+                "Streaming video");
+        table.put("Videos",
+                "Video");
+    }
+
+    private static void fillIt23(Map<String, String> table) {
+        table.put("Videos, voice messages and music pick up where you left off, even short ones. Telegram only does that for long ones.",
+                "I video, i messaggi vocali e la musica riprendono da dove li avevi lasciati, anche quelli brevi. Telegram lo fa solo per quelli lunghi.");
+        table.put("View stories anonymously",
+                "Guarda le storie in modo anonimo");
+        table.put("View-once and self-destructing photos and videos show clearly in the chat, even with Reveal spoilers off. Tapping one still opens it the way Telegram does. Paid and sensitive media stay covered.",
+                "Le foto e i video a visualizzazione singola e autodistruttivi si vedono nitidi nella chat, anche con Mostra spoiler disattivato. Toccandoli si aprono comunque come in Telegram. I media a pagamento e sensibili restano coperti.");
+        table.put("View-once and timed photos, videos and voice messages someone sends you stay in the chat after you open them, with no timer. The sender doesn't see them opened. Secret chats work as usual.",
+                "Le foto, i video e i messaggi vocali a visualizzazione singola e a tempo che qualcuno ti invia restano nella chat dopo che li apri, senza timer. Il mittente non li vede come aperti. Le chat segrete funzionano come al solito.");
+        table.put("Voice changer",
+                "Cambia voce");
+        table.put("Voice chats and live streams only",
+                "Solo chat vocali e live streaming");
+        table.put("Voice messages",
+                "Messaggi vocali");
+        table.put("Voice messages in the music player",
+                "Messaggi vocali nel lettore musicale");
+        table.put("Volume keys only change the volume. They no longer start the video or round video on screen with sound. Tap a video to hear it.",
+                "I tasti del volume cambiano solo il volume. Non avviano pi\u00f9 il video o il video rotondo sullo schermo con l'audio. Tocca un video per ascoltarlo.");
+        table.put("Wait %1$s seconds, then try again.",
+                "Attendi %1$s secondi e riprova.");
+        table.put("Wait for the settings import to finish, then save again.",
+                "Attendi che l'importazione delle impostazioni finisca, poi salva di nuovo.");
+        table.put("Waiting",
+                "In attesa");
+        table.put("Waiting for Telegram.",
+                "In attesa di Telegram.");
+        table.put("Ways in",
+                "Vie d'accesso");
+        table.put("Ways to open these settings",
+                "Modi per aprire queste impostazioni");
+        table.put("Went offline",
+                "\u00c8 andato offline");
+        table.put("Went offline, last seen %1$s",
+                "\u00c8 andato offline, ultimo accesso %1$s");
+        table.put("What the duress passcode does",
+                "Cosa fa il codice di emergenza");
+        table.put("What to copy",
+                "Cosa copiare");
+        table.put("What to forward",
+                "Cosa inoltrare");
+        table.put("What you type in the main search isn't sent to Telegram, except in the Posts tab. The Chats tab finds your chats and contacts on this phone, plus recent searches, but not messages or public accounts. Channels, Apps, the media tabs and chat or date filters don't search for typed text. Search inside a chat still goes to Telegram.",
+                "Ci\u00f2 che digiti nella ricerca principale non viene inviato a Telegram, tranne nella scheda Post. La scheda Chat trova le tue chat e i tuoi contatti su questo telefono, oltre alle ricerche recenti, ma non i messaggi o gli account pubblici. Canali, App, le schede Media, Link, File, Musica e Voce e i filtri per chat o data non cercano il testo digitato. La ricerca all'interno di una chat va comunque a Telegram.");
+        table.put("When Telegram can't finish a crop, the editor stays open and asks you to try again, so the part you cropped out never gets sent. Covers photos and profile pictures. Videos crop as usual.",
+                "Quando Telegram non riesce a completare un ritaglio, l'editor resta aperto e ti chiede di riprovare, cos\u00ec la parte che hai ritagliato non viene mai inviata. Vale per foto e foto del profilo. I video vengono ritagliati come al solito.");
+        table.put("When a chat search lands on a match inside a collapsed quote, the quote opens so the highlighted match stays in view.",
+                "Quando una ricerca nella chat trova una corrispondenza in una citazione compressa, la citazione si apre cos\u00ec la corrispondenza evidenziata resta visibile.");
+        table.put("When a group or channel removes or bans you, it stays in your chats with what this phone saved, and you can still open and scroll it. Delete it from the chat list to let it go.",
+                "Quando un gruppo o un canale ti rimuove o ti banna, resta nelle tue chat con ci\u00f2 che ha salvato questo telefono e puoi ancora aprirlo e scorrerlo. Eliminalo dalla lista chat per rimuoverlo definitivamente.");
+        table.put("When a voice or video message ends, the next one doesn't start by itself.",
+                "Quando termina un messaggio vocale o video, il successivo non parte da solo.");
+        table.put("When someone asks for a secret chat, this phone ignores it. Nothing is saved or shown, and nothing is sent back, so they just see it waiting. Secret chats you already have keep working.",
+                "Quando qualcuno richiede una chat segreta, questo telefono la ignora. Non viene salvato n\u00e9 mostrato nulla e non viene inviata nessuna risposta, quindi chi l'ha richiesta vede solo che resta in attesa. Le chat segrete che hai gi\u00e0 continuano a funzionare.");
+        table.put("When someone deletes a whole chat for both of you, your own messages stay here along with theirs. So do messages you delete on another of your devices. Works with Keep deleted messages on.",
+                "Quando qualcuno elimina un'intera chat per entrambi, i tuoi messaggi restano qui insieme ai loro. Lo stesso vale per i messaggi che elimini su un altro dei tuoi dispositivi. Funziona con Conserva i messaggi eliminati attivo.");
+        table.put("When someone reacts to a message, the emoji doesn't fly across the screen and burst. The reaction still shows on the message.",
+                "Quando qualcuno reagisce a un messaggio, l'emoji non attraversa lo schermo e non esplode. La reazione viene comunque mostrata sul messaggio.");
+        table.put("When the link preview above the message box has a picture, its menu gets Send photo. The picture goes to the chat with what you typed as its caption, and the preview is removed. Text too long for a caption stays in the box.",
+                "Quando l'anteprima del link sopra la casella del messaggio ha un'immagine, il suo menu mostra Invia foto. L'immagine va nella chat con quello che hai scritto come didascalia e l'anteprima viene rimossa. Il testo troppo lungo per una didascalia resta nella casella.");
+        table.put("When you add someone as a contact from their chat, Telegram ticks the box that shares your phone number with them. With this on, the box starts clear and your number goes only if you tick it.",
+                "Quando aggiungi qualcuno come contatto dalla sua chat, Telegram spunta la casella che condivide il tuo numero di telefono con quella persona. Con questa opzione attiva, la casella parte vuota e il tuo numero viene condiviso solo se la spunti.");
+        table.put("When you delete messages in a chat with a person, Telegram's Also delete for box starts checked, so they're deleted for both of you. Uncheck it to delete them just for you.",
+                "Quando elimini messaggi in una chat con una persona, la casella Elimina anche per\u2026 di Telegram parte gi\u00e0 spuntata, quindi i messaggi vengono eliminati per entrambi. Deselezionala per eliminarli solo per te.");
+        table.put("When you remove or reorder photos that each have a caption, every caption stays with its own photo.",
+                "Quando rimuovi o riordini foto che hanno ciascuna una didascalia, ogni didascalia resta con la propria foto.");
+        table.put("When you send a link to a site in your rules, its preview comes from the other site the rule names, like fixupx.com for x.com. Your message keeps the link you typed.",
+                "Quando invii un link a un sito presente nelle tue regole, la sua anteprima proviene dall'altro sito indicato dalla regola, come fixupx.com per x.com. Il tuo messaggio mantiene il link che hai digitato.");
+        table.put("When you send a message in a chat, the read receipt Ghost mode held back there goes out too, so your other devices stop showing it unread. Works with Ghost mode and No read receipts on.",
+                "Quando invii un messaggio in una chat, viene inviata anche la conferma di lettura che la Modalit\u00e0 fantasma aveva trattenuto l\u00ec, cos\u00ec gli altri tuoi dispositivi non la mostrano pi\u00f9 come non letta. Funziona con Modalit\u00e0 fantasma e Nessuna conferma di lettura attive.");
+        table.put("When you sign up a phone number that's new to Telegram, people who have it saved aren't told you joined. Accounts that already exist aren't affected.",
+                "Quando registri un numero di telefono nuovo su Telegram, le persone che lo hanno salvato non vengono avvisate che ti sei iscritto. Gli account gi\u00e0 esistenti non sono interessati.");
+        table.put("When your chat list is short, Telegram lists your contacts below it. This hides that list and its heading. Chats, folders and search stay.",
+                "Quando la lista chat \u00e8 breve, Telegram mostra i tuoi contatti sotto di essa. Questa opzione nasconde quell'elenco e il suo titolo. Chat, cartelle e ricerca restano.");
+        table.put("While Android's Data Saver is on and the network is metered, Telegram doesn't start photos, videos, files, voice messages, music or stories downloading on its own, and stops the ones in its download queue. What you tap still downloads.",
+                "Finch\u00e9 il Risparmio dati di Android \u00e8 attivo e la rete \u00e8 a consumo, Telegram non avvia da solo il download di foto, video, file, messaggi vocali, musica o storie, e mette in pausa quelli in coda. Ci\u00f2 che tocchi viene comunque scaricato.");
+        table.put("While a voice message plays, tapping the bar above the chat opens the full music player, where you can drag to skip around, instead of jumping to the message.",
+                "Mentre viene riprodotto un messaggio vocale, toccando la barra sopra la chat si apre il lettore musicale completo, dove puoi trascinare per spostarti avanti e indietro, invece di saltare al messaggio.");
+        table.put("While your phone is locked, voice and round video messages don't start, resume or skip to the next one, whether from headphones, a car, the notification or the lock screen. One that's already playing finishes. Music and other videos play as usual.",
+                "Mentre il telefono \u00e8 bloccato, i messaggi vocali e i messaggi video circolari non si avviano, non riprendono e non passano al successivo, che arrivino da auricolari, auto, notifica o schermata di blocco. Quello gi\u00e0 in riproduzione termina. La musica e gli altri video vengono riprodotti come al solito.");
+        table.put("With Save downloaded files on, files from chats whose owner turned off saving get copied too. Only use it where the owner is fine with you keeping a copy, since it goes past their setting. Secret chats need Also save from secret chats too.",
+                "Con Salva i file scaricati attivo, vengono copiati anche i file delle chat in cui il proprietario ha disattivato il salvataggio. Usalo solo quando il proprietario \u00e8 d'accordo che tu conservi una copia, perch\u00e9 va oltre la sua impostazione. Le chat segrete richiedono anche l'opzione Salva anche dalle chat segrete.");
+        table.put("With Save downloaded files on, view-once and self-destructing photos, videos, voice and video messages get copied to Download/Telegram when they download. The message menu's Save to Downloads shows up on them too. The sender meant them to disappear, so only use it where they're fine with you keeping a copy. Secret chats need Also save from secret chats too.",
+                "Con Salva i file scaricati attivo, le foto, i video, i messaggi vocali e i videomessaggi a visualizzazione singola e autodistruttivi vengono copiati in Download/Telegram quando vengono scaricati. Anche Salva nei download compare per questi messaggi nel menu del messaggio. Il mittente voleva che scomparissero, quindi usalo solo quando \u00e8 d'accordo che tu conservi una copia. Le chat segrete richiedono anche l'opzione Salva anche dalle chat segrete.");
+        table.put("With Sort chats by date on, the chat with the oldest last message comes first instead of the newest.",
+                "Con Ordina le chat per data attivo, la chat con l'ultimo messaggio pi\u00f9 vecchio viene prima di quella con il pi\u00f9 recente.");
+        table.put("With a Telegram passcode set, Telegram locks a second or two after you leave it instead of waiting for Auto-lock. Turning this off brings your Auto-lock time back.",
+                "Con un codice Telegram impostato, Telegram si blocca un secondo o due dopo che lo lasci invece di attendere il blocco automatico. Disattivando questa opzione ripristina il tempo di blocco automatico.");
+        table.put("With a key, the text you translate goes to this AI service instead of Google. Any service that takes OpenAI's chat format works, like OpenAI, OpenRouter, DeepSeek or Groq. The key stays on this phone and never goes in a settings file.",
+                "Con una chiave, il testo che traduci viene inviato a questo servizio di IA invece che a Google. Funziona qualsiasi servizio che accetti il formato chat di OpenAI, come OpenAI, OpenRouter, DeepSeek o Groq. La chiave resta su questo telefono e non finisce mai in un file di impostazioni.");
+        table.put("Without caption",
+                "Senza didascalia");
+        table.put("Without push, turn both on to get messages on time. They're in Telegram's own Settings > Notifications, under Other.",
+                "Senza push, attiva entrambi per ricevere i messaggi in orario. Si trovano in Impostazioni > Notifiche di Telegram, sotto Altro.");
+        table.put("Without sender name",
+                "Senza nome del mittente");
+        table.put("Without sender name or caption",
+                "Senza nome del mittente n\u00e9 didascalia");
+        table.put("Woman",
+                "Donna");
+        table.put("Works with Allow screenshots in chats that don't allow saving on. Secret chats, their photos and profiles can be captured too. Telegram tells the other person when you take one, unless Suppress screenshot notification is on. Their view-once media stays blocked.",
+                "Funziona con Consenti screenshot nelle chat che non consentono il salvataggio attivo. Anche le chat segrete, le loro foto e i profili possono essere acquisiti. Telegram avvisa l'altra persona quando fai uno screenshot, a meno che Nascondi notifica screenshot sia attivo. I loro media monouso restano bloccati.");
+        table.put("Works with Allow screenshots in chats that don't allow saving on. The screen that opens view-once and self-destructing photos and videos can be captured too. In a secret chat it also needs Also allow screenshots in secret chats, and Telegram tells the other person unless Suppress screenshot notification is on.",
+                "Funziona con Consenti screenshot nelle chat che non consentono il salvataggio attivo. Si pu\u00f2 catturare anche la schermata che apre foto e video a visualizzazione singola e autodistruttivi. In una chat segreta serve anche Consenti screenshot anche nelle chat segrete, e Telegram avvisa l'altra persona a meno che Nascondi notifica screenshot non sia attivo.");
+        table.put("Works with Also save from chats that don't allow saving on. Files, photos and videos from secret chats get copied too, and the message menu's Save to Downloads shows up there. Their view-once and timed media also need Also save view-once and timed media. A secret chat is meant to stay on your two phones, so only use it where the other person is fine with that.",
+                "Funziona con l'opzione Salva anche dalle chat che non consentono il salvataggio attiva. Anche i file, le foto e i video delle chat segrete vengono copiati, e la voce Salva in Download del menu del messaggio compare anche l\u00ec. I loro media a visualizzazione singola e temporizzati richiedono anche l'opzione Salva anche i media a visualizzazione singola e temporizzati. Una chat segreta \u00e8 pensata per restare sui due telefoni, quindi usalo solo quando l'altra persona \u00e8 d'accordo.");
+        table.put("Yes",
+                "S\u00ec");
+        table.put("You",
+                "Tu");
+        table.put("You already have a folder for each chat type.",
+                "Hai gi\u00e0 una cartella per ogni tipo di chat.");
+        table.put("You can keep up to %1$d bookmarks.",
+                "Puoi conservare fino a %1$d segnalibri.");
+        table.put("You can pin up to %1$d chats on this phone.",
+                "Puoi fissare fino a %1$d chat su questo telefono.");
+        table.put("You can track up to 50 people",
+                "Puoi tracciare fino a 50 persone");
+        table.put("You changed the Admin folder, so it stays.",
+                "Hai modificato la cartella Admin, quindi rimane.");
+        table.put("You don't have any chats yet.",
+                "Non hai ancora nessuna chat.");
+    }
+
+    private static void fillIt24(Map<String, String> table) {
+        table.put("You don't have any folders yet.",
+                "Non hai ancora nessuna cartella.");
+        table.put("You don't manage any groups or channels yet.",
+                "Non possiedi n\u00e9 amministri ancora gruppi o canali.");
+        table.put("You have the newest HushTelegram release.",
+                "Hai la versione pi\u00f9 recente di HushTelegram.");
+        table.put("You paused HushTelegram.",
+                "Hai messo in pausa HushTelegram.");
+        table.put("You removed them from your contacts",
+                "Hai rimosso questa persona dai contatti");
+        table.put("You saved them to your contacts",
+                "Hai salvato questa persona nei contatti");
+        table.put("You were removed. This is what's saved on this phone.",
+                "Sei stato rimosso. Ecco cosa \u00e8 salvato su questo telefono.");
+        table.put("You're not in that chat anymore.",
+                "Non sei pi\u00f9 in quella chat.");
+        table.put("Your AI service at %1$s, model %2$s.",
+                "Il tuo servizio di IA su %1$s, modello %2$s.");
+        table.put("Your AI service didn't accept the key",
+                "Il tuo servizio di IA non ha accettato la chiave");
+        table.put("Your V2Ray links",
+                "I tuoi link V2Ray");
+        table.put("Your choices are saved. Tap Resume, then restart Telegram.",
+                "Le tue scelte sono salvate. Tocca Riprendi e poi riavvia Telegram.");
+        table.put("Your other sessions see %1$s, %2$s.",
+                "Le tue altre sessioni vedono %1$s, %2$s.");
+        table.put("Your own chat list title",
+                "Titolo personalizzato per la lista chat");
+        table.put("Your own phone number shows as dots in Settings and your profile, which helps with screenshots. Others' numbers stay visible.",
+                "Il tuo numero di telefono appare come puntini in Impostazioni e nel tuo profilo, il che aiuta con gli screenshot. I numeri degli altri restano visibili.");
+        table.put("Your picture",
+                "La tua immagine");
+        table.put("Your picture next to the message box goes away in groups and channels where you could post as a channel, while you're posting as yourself. Once you pick a channel it shows again, so you can always see who you're posting as. To pick one, turn this off first. A chat picks this up the next time you open it.",
+                "La tua foto accanto al campo del messaggio scompare nei gruppi e nei canali dove potresti pubblicare come canale, mentre pubblichi come te stesso. Quando scegli un canale, riappare, cos\u00ec puoi sempre vedere per conto di chi pubblichi. Per sceglierne uno, disattiva prima questa opzione. Una chat lo applica la prossima volta che la apri.");
+        table.put("Your proxy lists",
+                "Le tue liste proxy");
+        table.put("Your settings are locked. Tap to start the 24-hour wait. You can cancel it while it runs.",
+                "Le tue impostazioni sono bloccate. Tocca per avviare l'attesa di 24 ore. Puoi annullarla mentre \u00e8 in corso.");
+        table.put("Your switches already match that file, so nothing will change.",
+                "I tuoi interruttori corrispondono gi\u00e0 a quel file, quindi non cambier\u00e0 nulla.");
+        table.put("Your switches are working.",
+                "I tuoi interruttori funzionano.");
+        table.put("Zero width joiner",
+                "Unione a larghezza zero");
+        table.put("Zero width non-joiner",
+                "Non unione a larghezza zero");
+        table.put("Zero width space",
+                "Spazio a larghezza zero");
+        table.put("a font file of your own",
+                "un file del font scelto da te");
+        table.put("a picture behind the lists",
+                "un'immagine dietro le liste");
+        table.put("account deletion",
+                "eliminazione account");
+        table.put("account registration dates",
+                "le date di registrazione degli account");
+        table.put("admin tools in a chat's menu",
+                "gli strumenti di amministrazione nel menu di una chat");
+        table.put("asking before a typed message goes out",
+                "chiedere conferma prima dell'invio di un messaggio scritto");
+        table.put("asking before you join a voice chat",
+                "chiedere conferma prima di entrare in una chat vocale");
+        table.put("attach menu Wallet button",
+                "pulsante Wallet nel menu degli allegati");
+        table.put("audio track and subtitle choice",
+                "la scelta della traccia audio e dei sottotitoli");
+        table.put("automatic downloads on Data Saver",
+                "i download automatici con Risparmio dati");
+        table.put("avatar size in the chat list",
+                "la dimensione degli avatar nella lista chat");
+        table.put("avatar story rings",
+                "anelli delle storie sugli avatar");
+        table.put("avatar story taps",
+                "tocchi sulle storie degli avatar");
+        table.put("banned channels on the web",
+                "canali che ti hanno bloccato sul web");
+        table.put("birthday gift banner",
+                "il banner del regalo di compleanno");
+        table.put("bookmarking messages",
+                "aggiungere segnalibri ai messaggi");
+        table.put("bot shares",
+                "condivisioni dei bot");
+        table.put("bottom bar outline",
+                "il contorno della barra inferiore");
+        table.put("bottom bar size",
+                "dimensione della barra inferiore");
+        table.put("cached proxy channel",
+                "il canale proxy memorizzato");
+        table.put("cached proxy folder entries",
+                "le voci del proxy memorizzate nelle cartelle");
+        table.put("cached recommendations",
+                "suggerimenti salvati");
+        table.put("call debug reports",
+                "segnalazioni di debug delle chiamate");
+        table.put("call log file uploads",
+                "caricamenti di file di registro delle chiamate");
+        table.put("call log reports",
+                "segnalazioni di registro delle chiamate");
+        table.put("call record button",
+                "il pulsante di registrazione della chiamata");
+        table.put("call recording",
+                "la registrazione delle chiamate");
+        table.put("caption text paste",
+                "incolla testo nella didascalia");
+        table.put("channel Gift button",
+                "pulsante Regalo del canale");
+        table.put("channel ads",
+                "annunci nei canali");
+        table.put("channel read metrics",
+                "metriche di lettura dei canali");
+        table.put("channels restricted for copyright or local law",
+                "canali con restrizioni per copyright o legge locale");
+        table.put("chat double-tap reactions",
+                "reazioni al doppio tocco in chat");
+        table.put("chat drafts",
+                "bozze delle chat");
+        table.put("chat list menu Wallet item",
+                "voce Wallet nel menu della lista chat");
+        table.put("chat list ordered by date",
+                "l'ordinamento per data della lista chat");
+    }
+
+    private static void fillIt25(Map<String, String> table) {
+        table.put("chat-list story bar",
+                "barra delle storie della lista chat");
+        table.put("chats hidden from the chat list",
+                "le chat nascoste dalla lista chat");
+        table.put("chats pinned on this phone",
+                "le chat fissate su questo telefono");
+        table.put("chats you're removed from",
+                "le chat da cui vieni rimosso");
+        table.put("checking Also delete for by default",
+                "la spunta predefinita di Elimina anche per\u2026");
+        table.put("compose text paste",
+                "incolla testo nel campo del messaggio");
+        table.put("copied links",
+                "link copiati");
+        table.put("dates on your profile songs",
+                "le date sulle canzoni del tuo profilo");
+        table.put("deleted",
+                "eliminato");
+        table.put("download manager",
+                "il gestore download");
+        table.put("draft syncing",
+                "sincronizzazione delle bozze");
+        table.put("dual camera reports",
+                "i report della doppia fotocamera");
+        table.put("duress passcode",
+                "codice di emergenza");
+        table.put("earlier text of edited messages",
+                "il testo precedente dei messaggi modificati");
+        table.put("editing a copy of a photo",
+                "la modifica di una copia di una foto");
+        table.put("emoji next to the chat list title",
+                "l'emoji accanto al titolo della lista chat");
+        table.put("emoji statuses next to names",
+                "gli stati emoji accanto ai nomi");
+        table.put("external browser routing",
+                "l'apertura nel browser esterno");
+        table.put("file icons and thumbnails in Shared media",
+                "le icone e le miniature dei file nei Media condivisi");
+        table.put("file icons and thumbnails in chats",
+                "le icone e le miniature dei file nelle chat");
+        table.put("forward dates",
+                "le date di primo invio degli inoltri");
+        table.put("full screen video turning either way",
+                "la rotazione del video a schermo intero in entrambi i lati");
+        table.put("gallery folder for saved photos and videos",
+                "la cartella galleria per foto e video salvati");
+        table.put("hidden chats in the unread counts",
+                "le chat nascoste nei contatori dei non letti");
+        table.put("hiding messages for you",
+                "nascondere i messaggi per te");
+        table.put("how files you already have show up",
+                "come vengono mostrati i file che hai gi\u00e0");
+        table.put("instant lock",
+                "blocco istantaneo");
+        table.put("joining new channels and groups",
+                "l'ingresso in nuovi canali e gruppi");
+        table.put("keeping a video upright until full screen",
+                "mantenere un video in verticale fino allo schermo intero");
+        table.put("less than a minute ago",
+                "meno di un minuto fa");
+        table.put("link preview rules",
+                "le regole per le anteprime dei link");
+        table.put("local notification status",
+                "stato locale delle notifiche");
+        table.put("member join dates",
+                "le date di ingresso dei membri");
+        table.put("mentions by ID",
+                "le menzioni per ID");
+        table.put("new message button",
+                "il pulsante nuovo messaggio");
+        table.put("none",
+                "nessuno");
+        table.put("number sharing on new contacts",
+                "la condivisione del numero con i nuovi contatti");
+        table.put("opened link tracking",
+                "il tracciamento dei link aperti");
+        table.put("opening videos in another app",
+                "l'apertura dei video in un'altra app");
+        table.put("other Shadowsocks ciphers",
+                "altri cifrari di Shadowsocks");
+        table.put("pasted links",
+                "link incollati");
+        table.put("photos and videos in their best quality",
+                "foto e video alla massima qualit\u00e0");
+        table.put("pinned message bar in chats",
+                "la barra dei messaggi fissati nelle chat");
+        table.put("poll links",
+                "link dei sondaggi");
+        table.put("powering off accounts",
+                "lo spegnimento degli account");
+        table.put("preview double-tap reactions",
+                "reazioni al doppio tocco nell'anteprima");
+        table.put("profile Gifts tabs",
+                "schede Regali del profilo");
+        table.put("profile local IDs",
+                "ID locali del profilo");
+        table.put("profile menu Send Gram item",
+                "voce Invia Gram nel menu del profilo");
+        table.put("profile menu Send a Gift item",
+                "voce Invia un regalo nel menu del profilo");
+        table.put("promotional suggestions",
+                "i suggerimenti promozionali");
+        table.put("proxy order",
+                "ordine dei proxy");
+        table.put("public search lookups",
+                "ricerche pubbliche");
+        table.put("quiet sign-up",
+                "registrazione silenziosa");
+        table.put("quotes opened on search hits",
+                "citazioni aperte nei risultati di ricerca");
+        table.put("reaction notifications without push",
+                "le notifiche delle reazioni senza push");
+        table.put("reaction rows under messages",
+                "le righe delle reazioni sotto i messaggi");
+        table.put("read receipts and story views",
+                "conferme di lettura e visualizzazioni delle storie");
+        table.put("receive only mode",
+                "la modalit\u00e0 solo ricezione");
+        table.put("red deleted label",
+                "l'etichetta eliminato in rosso");
+    }
+
+    private static void fillIt26(Map<String, String> table) {
+        table.put("remembering where playback stopped",
+                "il ricordo del punto in cui si \u00e8 fermata la riproduzione");
+        table.put("screenshots in chats that don't allow saving",
+                "gli screenshot nelle chat che non consentono il salvataggio");
+        table.put("screenshots of selected messages",
+                "gli screenshot dei messaggi selezionati");
+        table.put("screenshots of view-once and timed media",
+                "gli screenshot dei media a visualizzazione singola e a tempo");
+        table.put("search ads",
+                "annunci nelle ricerche");
+        table.put("search lookups",
+                "interrogazioni di ricerca");
+        table.put("secret chat requests",
+                "richieste di chat segrete");
+        table.put("selecting every loaded message in a chat",
+                "la selezione di tutti i messaggi caricati in una chat");
+        table.put("selecting everything between two messages",
+                "la selezione di tutto tra due messaggi");
+        table.put("selecting everything in shared media",
+                "la selezione di tutto nei contenuti condivisi");
+        table.put("self-destructing secret chat messages",
+                "i messaggi che si autodistruggono nelle chat segrete");
+        table.put("sending a link preview's photo",
+                "l'invio della foto di un'anteprima del link");
+        table.put("share button beside channel posts",
+                "pulsante Condividi accanto ai post dei canali");
+        table.put("share sheet comments",
+                "commenti del menu di condivisione");
+        table.put("shared link tracking",
+                "il tracciamento dei link condivisi");
+        table.put("side menu",
+                "menu laterale");
+        table.put("similar channels and bots",
+                "canali e bot simili");
+        table.put("skipping between voice messages",
+                "il salto tra i messaggi vocali");
+        table.put("sound for reaction notifications",
+                "il suono per le notifiche delle reazioni");
+        table.put("special contacts",
+                "contatti speciali");
+        table.put("spoiler and quote items in the chat menu",
+                "voci spoiler e citazioni nel menu della chat");
+        table.put("story links",
+                "link delle storie");
+        table.put("story list requests",
+                "richieste della lista delle storie");
+        table.put("styled names in search",
+                "i nomi con lettere decorate nella ricerca");
+        table.put("text selection in chats that don't allow saving",
+                "la selezione del testo nelle chat che non consentono il salvataggio");
+        table.put("the Admin folder",
+                "la cartella Admin");
+        table.put("the Administrators filter",
+                "il filtro Amministratori");
+        table.put("the All Chats tab",
+                "la scheda Tutte le chat");
+        table.put("the app passcode for hidden chats",
+                "il codice dell'app per le chat nascoste");
+        table.put("the chat list banner",
+                "il banner della lista chat");
+        table.put("the device in Active sessions",
+                "il dispositivo in Sessioni attive");
+        table.put("the emoji pack line in the message menu",
+                "la riga del pacchetto di emoji nel menu del messaggio");
+        table.put("the fitted folder tabs",
+                "le schede delle cartelle adattate");
+        table.put("the folder tab icons",
+                "le icone delle schede delle cartelle");
+        table.put("the folder tabs at the bottom",
+                "le schede delle cartelle in basso");
+        table.put("the hidden accounts",
+                "gli account nascosti");
+        table.put("the reaction bubble on selected messages",
+                "la bolla delle reazioni sui messaggi selezionati");
+        table.put("the reaction picker in the message menu",
+                "il selettore delle reazioni nel menu del messaggio");
+        table.put("the translation service, its key and the chats you turned translation on for",
+                "il servizio di traduzione, la sua chiave e le chat per cui hai attivato la traduzione");
+        table.put("the voice changer",
+                "il cambio voce");
+        table.put("translate bar in every chat",
+                "la barra di traduzione in ogni chat");
+        table.put("trending packs in the sticker and emoji keyboards",
+                "pacchetti in tendenza nelle tastiere degli sticker e delle emoji");
+        table.put("uploads",
+                "upload");
+        table.put("video ads",
+                "annunci nei video");
+        table.put("videos starting without sound",
+                "avviare i video senza audio");
+        table.put("view-once and timed media",
+                "i media a visualizzazione singola e a tempo");
+        table.put("view-once and timed media shown unblurred",
+                "i media a visualizzazione singola e a tempo mostrati senza sfocatura");
+        table.put("voice playback while locked",
+                "riproduzione vocale con telefono bloccato");
+        table.put("website sign-in tokens",
+                "i token di accesso ai siti web");
+        table.put("where All Chats sits",
+                "la posizione di Tutte le chat");
+        table.put("which folder the chat list opens on",
+                "la cartella in cui si apre la lista chat");
+        table.put("your emoji status on this phone",
+                "il tuo stato emoji su questo telefono");
+        table.put("your own chat list title",
+                "il titolo personalizzato per la lista chat");
     }
 
     private static Map<String, String> buildPt_rBR() {
