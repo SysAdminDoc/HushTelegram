@@ -1118,6 +1118,13 @@ public class HushTelegramPreferenceFragmentTest {
                             + "to Telegram.",
                     String.valueOf(page.findPreference(Settings.LOCAL_EMOJI_STATUS.key).getSummary()));
             assertFalse(((SwitchPreference) page.findPreference(Settings.LOCAL_EMOJI_STATUS.key)).isChecked());
+            assertEquals("Keep emoji statuses moving", String.valueOf(page.findPreference(Settings.MOVING_EMOJI_STATUS.key).getTitle()));
+            assertEquals("Emoji statuses next to names keep playing instead of stopping after two plays. It uses a little "
+                            + "more battery. Restart Telegram to see the change.",
+                    String.valueOf(page.findPreference(Settings.MOVING_EMOJI_STATUS.key).getSummary()));
+            assertFalse(((SwitchPreference) page.findPreference(Settings.MOVING_EMOJI_STATUS.key)).isChecked());
+            assertEquals("right after Emoji status on this phone", page.findPreference(Settings.LOCAL_EMOJI_STATUS.key).getOrder() + 1,
+                    page.findPreference(Settings.MOVING_EMOJI_STATUS.key).getOrder());
             assertEquals("Hide trending packs", String.valueOf(page.findPreference(Settings.HIDE_KEYBOARD_FEATURED.key).getTitle()));
             assertEquals("The sticker keyboard's Trending tab and row and the emoji keyboard's trending packs go away, "
                             + "so both list only packs you've added. Search and the Stickers and Emoji screen still show "

@@ -399,6 +399,9 @@ public final class SelectionCheck {
         require(calls.getOrDefault(OWN + "telegram/misc/LocalEmojiStatus;->documentId", 0) == (localStatus ? 2 : 0));
         require(calls.getOrDefault(OWN + "telegram/misc/LocalEmojiStatus;->premium", 0) == (localStatus ? 2 : 0));
         require(calls.getOrDefault(OWN + "telegram/misc/LocalEmojiStatus;->keep", 0) == (localStatus ? 1 : 0));
+        // AnimatedEmojiDrawable's play count asks once, right after it reads the cache type.
+        require(calls.getOrDefault(OWN + "telegram/misc/LocalEmojiStatus;->statusRepeatType", 0)
+                == (Boolean.TRUE.equals(flags.get("commerceMovingEmojiStatus")) ? 1 : 0));
         // Both sticker targets ask premiumStickersBlocked: the two filters and the keyboard pass,
         // and the effect player's tooltip.
         int blocked = (Boolean.TRUE.equals(flags.get("commercePremiumStickers")) ? 3 : 0)

@@ -25,6 +25,9 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  *
  * <p>Each signed-in account keeps its own pick, by its user id, until the duration picked with a
  * long press runs out or the selected emoji is tapped again to clear it.
+ *
+ * <p>Keep emoji statuses moving, a switch of its own, lets every animated status next to a name
+ * go on playing instead of stopping after two plays ({@link #statusRepeatType}).
  */
 public final class LocalEmojiStatus {
     private LocalEmojiStatus() {}
@@ -34,6 +37,13 @@ public final class LocalEmojiStatus {
 
     /** What the report counts each status kept on this phone instead of sent as. */
     static final String KEPT = "emoji status kept on this phone";
+
+    /** AnimatedEmojiDrawable's cache types for a status next to a name and one in a sheet. */
+    private static final int STATUS_BY_NAME = 7;
+    private static final int STATUS_IN_SHEET = 9;
+
+    /** A cache type AnimatedEmojiDrawable sets no play count for. */
+    private static final int NO_PLAY_COUNT = -1;
 
     static final String PREFS = "hushtelegram_local_emoji_status";
     private static final String UNTIL = ".until";
@@ -105,6 +115,22 @@ public final class LocalEmojiStatus {
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.HIDE_COMMERCE, "keep emoji status", failure);
             return false;
+        }
+    }
+
+    /**
+     * The cache type AnimatedEmojiDrawable sets an image's play count by. A status next to a name
+     * or in a sheet plays twice and stops; while Keep emoji statuses moving is on, its type comes
+     * back as one Telegram sets no count for, so it keeps looping. Any other [type] is Telegram's.
+     */
+    public static int statusRepeatType(int type) {
+        HookStatus.invoked(FamilyNames.HIDE_COMMERCE);
+        if (type != STATUS_BY_NAME && type != STATUS_IN_SHEET) return type;
+        try {
+            return Utils.settingsReady() && Settings.MOVING_EMOJI_STATUS.get() ? NO_PLAY_COUNT : type;
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.HIDE_COMMERCE, "moving emoji status switch", failure);
+            return type;
         }
     }
 

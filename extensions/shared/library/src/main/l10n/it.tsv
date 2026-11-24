@@ -247,6 +247,12 @@ Emoji status on this phone	Stato emoji su questo telefono
 Tap the star next to Telegram at the top of the chat list and pick any emoji status, animated ones too, without Premium. It shows there on this phone only. Nobody else sees it, and nothing is sent to Telegram.	Tocca la stella accanto a Telegram in cima alla lista chat e scegli qualunque stato emoji, anche quelli animati, senza Premium. Compare lì solo su questo telefono. Nessun altro lo vede e non viene inviato nulla a Telegram.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Premium, gifts and Stars that keeps your emoji status on this phone.
 your emoji status on this phone	il tuo stato emoji su questo telefono
+# context: a switch under Hide Premium, gifts and Stars. An emoji status is the emoji a Premium account sets next to its name; use the applied translation of Telegram's term (key PremiumPreviewEmojiStatus, "Emoji Status"), in the plural. Animated statuses play twice and then stop; this switch keeps them playing.
+Keep emoji statuses moving	Mantieni in movimento gli stati emoji
+# context: that switch's summary. A play is one run of a status's animation.
+Emoji statuses next to names keep playing instead of stopping after two plays. It uses a little more battery. Restart Telegram to see the change.	Gli stati emoji accanto ai nomi continuano a riprodursi invece di fermarsi dopo due riproduzioni. Consuma un po' più di batteria. Riavvia Telegram per vedere la modifica.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Premium, gifts and Stars that keeps emoji statuses playing.
+how often emoji statuses play	quante volte si riproducono gli stati emoji
 Hide promotional banners	Nascondi i banner promozionali
 Hides the Premium, birthday and low Stars balance banners above your chat list. Account security notices and other suggestions still show.	Nasconde i banner di Premium, compleanno e saldo basso di Stars sopra la lista chat. Gli avvisi di sicurezza dell'account e altri suggerimenti vengono comunque mostrati.
 promotional suggestions	i suggerimenti promozionali

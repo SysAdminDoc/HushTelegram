@@ -199,9 +199,16 @@ class HideCommerceFixtureTest {
             val title = titleStatus(hosts)
             val send = statusSend(hosts)
             val localBodies = listOf(title, send).associate { it.key() to it.instructions() }
+            // Keep emoji statuses moving asks right after AnimatedEmojiDrawable reads the cache type
+            // it sets an image's play count by. ImageReceiver's setter stays stock.
+            val ladder = statusLadder(hosts)
             val untouched = hosts.flatMap { it.methods.toList() }.filter {
-                (it.definingClass to it.name) !in changed && it.key() !in swapped && it.key() !in iconBodies && it.key() !in localBodies
+                (it.definingClass to it.name) !in changed && it.key() !in swapped && it.key() !in iconBodies && it.key() !in localBodies &&
+                    it.key() != ladder.key()
             }
+            assertTrue("${build.name}: includes ImageReceiver's play count setter", untouched.any { method ->
+                method.origDefiningClass == STATUS_IMAGE_RECEIVER && method.instructions().firstOrNull()?.reference() == STATUS_AUTO_REPEAT
+            })
             assertTrue("${build.name}: includes the Premium page's icon preview", untouched.any { method ->
                 method.instructions().any { it.opcode == Opcode.IGET_BOOLEAN && it.reference() == premiumFlag }
             })
@@ -237,6 +244,8 @@ class HideCommerceFixtureTest {
             assertFact(context, "commerceEmojiStatus", 1)
             assertFact(context, "commercePremiumIcons", 1)
             assertFact(context, "commerceLocalEmojiStatus", 1)
+            assertFact(context, "commerceMovingEmojiStatus", 1)
+            assertStatusMotion(build.name, ladder, context.tgMutableClassDefBy(ladder.definingClass).methods.single { it.key() == ladder.key() })
             assertLocalTitle(build.name, localBodies.getValue(title.key()),
                 context.tgMutableClassDefBy(title.definingClass).methods.single { it.key() == title.key() })
             assertLocalSend(build.name, send, context.tgMutableClassDefBy(CONTROLLER).methods.single { it.key() == send.key() })
@@ -717,6 +726,71 @@ class HideCommerceFixtureTest {
         }
     }
 
+    @Test
+    fun `a build without the status play counts keeps each count and the rest of the patch`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val hosts = hosts(build)
+            val ladder = statusLadder(hosts)
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts.filter { it.type != ladder.definingClass })
+            val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
+            assertEquals("${build.name}: one moving emoji status warning", 1, warnings.size)
+            assertTrue(warnings.single(), warnings.single().endsWith("The patch goes on without the moving emoji status switch."))
+            assertFact(context, "hideCommerce", 1)
+            assertFact(context, "commerceMovingEmojiStatus", 0)
+            assertFact(context, "commerceLocalEmojiStatus", 1)
+            assertFact(context, "commerceEmojiStatus", 1)
+            CommerceTarget.entries.forEach { assertFact(context, it.capability, 1) }
+        }
+    }
+
+    @Test
+    fun `a status that no longer plays twice keeps its count and the rest of the patch`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val hosts = hosts(build)
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts)
+            val ladder = statusLadder(hosts)
+            val method = context.tgMutableClassDefBy(ladder.definingClass).methods.single { it.key() == ladder.key() }
+            val body = method.instructions()
+            // The block a status's 7 and 9 land on loads 2 for the setter call right after it.
+            val twice = body.indices.single { at ->
+                body[at].opcode == Opcode.CONST_4 && (body[at] as NarrowLiteralInstruction).narrowLiteral == 2 &&
+                    body.getOrNull(at + 1)?.opcode == Opcode.INVOKE_VIRTUAL
+            }
+            method.replaceInstruction(twice, "const/4 v${(body[twice] as OneRegisterInstruction).registerA}, 0x3")
+            val changed = method.instructions().map(::operation)
+            val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
+            assertEquals("${build.name}: one moving emoji status warning", 1, warnings.size)
+            assertTrue(warnings.single(), warnings.single().contains("no longer plays twice"))
+            assertTrue(warnings.single(), warnings.single().endsWith("The patch goes on without the moving emoji status switch."))
+            assertFact(context, "commerceMovingEmojiStatus", 0)
+            assertFact(context, "commerceLocalEmojiStatus", 1)
+            assertEquals("${build.name}: the play counts are left as they were", changed, method.instructions().map(::operation))
+        }
+    }
+
+    /**
+     * The cache type read is followed by LocalEmojiStatus.statusRepeatType on it, whose answer goes
+     * back into the register the ladder compares next. Nothing jumps past it, and the rest is stock.
+     */
+    private fun assertStatusMotion(where: String, original: Method, method: Method) {
+        val before = original.instructions()
+        val after = method.instructions()
+        assertEquals("$where: reads the cache type first", Opcode.IGET, after[0].opcode)
+        assertEquals(before[0].reference(), after[0].reference())
+        val type = (after[0] as TwoRegisterInstruction).registerA
+        assertEquals("$where: asks right after the read", LOCAL_STATUS_REPEAT, after[1].reference())
+        assertEquals(Opcode.INVOKE_STATIC_RANGE, after[1].opcode)
+        assertEquals("$where: passes the cache type", listOf(type), after[1].namedRegisters())
+        assertEquals(Opcode.MOVE_RESULT, after[2].opcode)
+        assertEquals("$where: the answer replaces the cache type", type, (after[2] as OneRegisterInstruction).registerA)
+        val flow = ControlFlow.of(method)
+        for (step in 1..3) assertEquals("$where: only the hook reaches $step", listOf(step - 1),
+            after.indices.filter { step in flow.normal[it] || step in flow.exceptional[it] })
+        assertEquals("$where: register allocation stays stock", original.implementation!!.registerCount, method.implementation!!.registerCount)
+        assertEquals("$where: the play counts are otherwise stock", before.map(::stockOperation),
+            after.filterIndexed { index, _ -> index != 1 && index != 2 }.map(::stockOperation))
+    }
+
     /**
      * Each status read in the title is followed by LocalEmojiStatus.documentId on the read's result
      * and user, and each Premium check by LocalEmojiStatus.premium on its answer, each answer going
@@ -892,8 +966,21 @@ class HideCommerceFixtureTest {
             .map { ((it as ReferenceInstruction).reference as FieldReference).type }.toSet()
         // LocaleController holds the getString(int) wrapper whose forwarded call 13.2 inlined into the title sites.
         val kept = FixtureDex.classes(build, setOf(TABS, CONTROLLER, USER_CONFIG, EMOJI_USERS, EMOJI_DIALOGS, MESSAGE_OBJECT,
-            "Lorg/telegram/messenger/LocaleController;") + flags).values
-        return (icons + anchors + title + kept).distinctBy { it.type }
+            "Lorg/telegram/messenger/LocaleController;", STATUS_IMAGE_RECEIVER) + flags).values
+        val motion = FixtureDex.classesWhere(build, { true }) { it.isStatusLadder() }
+        return (icons + anchors + title + kept + motion).distinctBy { it.type }
+    }
+
+    /** AnimatedEmojiDrawable's one method that sets an image's play count by the drawable's cache type. */
+    private fun statusLadder(hosts: List<ClassDef>) = hosts.flatMap { it.methods.toList() }.single { it.isStatusLadder() }
+
+    /** Takes an ImageReceiver, reads an int first and weighs it against a status's cache types, 7 and 9. */
+    private fun Method.isStatusLadder(): Boolean {
+        val body = instructions()
+        return returnType == "V" && parameterTypes.map { it.toString() } == listOf(STATUS_IMAGE_RECEIVER) &&
+            body.firstOrNull()?.opcode == Opcode.IGET && listOf(7, 9).all { type ->
+                body.any { it.opcode in setOf(Opcode.CONST_4, Opcode.CONST_16) && (it as NarrowLiteralInstruction).narrowLiteral == type }
+            }
     }
 
     /** The chat list title's one method that draws the account's status or the Premium star. */

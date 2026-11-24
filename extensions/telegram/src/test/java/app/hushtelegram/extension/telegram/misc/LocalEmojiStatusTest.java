@@ -62,6 +62,8 @@ public class LocalEmojiStatusTest {
         PauseForTests.resume();
         SettingReadsForTests.mend(Settings.LOCAL_EMOJI_STATUS);
         Settings.LOCAL_EMOJI_STATUS.resetToDefault();
+        SettingReadsForTests.mend(Settings.MOVING_EMOJI_STATUS);
+        Settings.MOVING_EMOJI_STATUS.resetToDefault();
         HookStatus.clear();
     }
 
@@ -168,6 +170,34 @@ public class LocalEmojiStatusTest {
         assertFalse(LocalEmojiStatus.keep(CONTROLLER, status(42L, 0)));
         assertEquals(Long.valueOf(5L), LocalEmojiStatus.documentId(5L, USER));
         assertTrue(String.join("\n", HookStatus.report()).contains("keep emoji status"));
+    }
+
+    @Test public void statusesStopAfterTwoPlaysUntilTheMovingSwitchIsOn() {
+        assertFalse(Settings.MOVING_EMOJI_STATUS.get());
+        for (int type : new int[] {7, 9, 10, 5, 17, 0}) assertEquals(type, LocalEmojiStatus.statusRepeatType(type));
+        assertTrue(String.join("\n", HookStatus.report()).contains(FamilyNames.HIDE_COMMERCE));
+
+        Settings.MOVING_EMOJI_STATUS.save(true);
+        assertEquals("a status next to a name", -1, LocalEmojiStatus.statusRepeatType(7));
+        assertEquals("a status in a sheet", -1, LocalEmojiStatus.statusRepeatType(9));
+        // Topic icons, tab strips and the rest keep Telegram's count.
+        for (int type : new int[] {10, 11, 5, 6, 14, 17, 18, 22, 0, -1}) assertEquals(type, LocalEmojiStatus.statusRepeatType(type));
+        assertFalse("its own switch", Settings.LOCAL_EMOJI_STATUS.get());
+    }
+
+    @Test public void pausingAnEarlyStartOrAnUnreadableSwitchKeepsStatusesStoppingAfterTwoPlays() {
+        Settings.MOVING_EMOJI_STATUS.save(true);
+        for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
+            if (reason == HushTelegramPause.Reason.NONE) continue;
+            PauseForTests.pause(reason);
+            assertEquals(reason.name(), 7, LocalEmojiStatus.statusRepeatType(7));
+            assertEquals(reason.name(), 9, LocalEmojiStatus.statusRepeatType(9));
+            PauseForTests.resume();
+        }
+        SettingsContextRule.withoutContext(() -> assertEquals(7, LocalEmojiStatus.statusRepeatType(7)));
+        SettingReadsForTests.breakReads(Settings.MOVING_EMOJI_STATUS);
+        assertEquals(7, LocalEmojiStatus.statusRepeatType(7));
+        assertFalse(HookStatus.missing(FamilyNames.HIDE_COMMERCE).isEmpty());
     }
 
     @Test public void theStubsDoNothingUntilThePatchFillsThem() {

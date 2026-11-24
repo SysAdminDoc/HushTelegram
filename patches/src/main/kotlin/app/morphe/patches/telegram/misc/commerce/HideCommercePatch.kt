@@ -137,6 +137,7 @@ val hideCommercePatch = bytecodePatch(
         val emoji = resolveEmojiStatus()
         val icons = resolvePremiumIcons()
         val local = resolveLocalEmojiStatus()
+        val moving = resolveMovingEmojiStatus()
         shape(plan.hooks.isNotEmpty() || stickers.isNotEmpty(), "no sales presentation target")
         if (plan.giftTabId != null) writeStub(COMMERCE, "giftTabId", 1,
             "const/16 v0, ${plan.giftTabId}\nreturn v0")
@@ -196,6 +197,12 @@ val hideCommercePatch = bytecodePatch(
             enableCapability("commerceLocalEmojiStatus")
         } else {
             patchLog.warning("$PATCH: ${local.missing}. The patch goes on without the local emoji status switch.")
+        }
+        if (moving.missing == null) {
+            moving.apply()
+            enableCapability("commerceMovingEmojiStatus")
+        } else {
+            patchLog.warning("$PATCH: ${moving.missing}. The patch goes on without the moving emoji status switch.")
         }
         enableStatus("hideCommerce")
     }

@@ -20,6 +20,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** New **Hide Downloads button** switch on the Chat list page, off by default. The Downloads button no longer pops up in the bar at the top of the chat list while a file downloads, and your downloads are still in the Downloads tab when you search. (#113)
 * **Telegram:** Chats you pinned with **Pin on this phone** can now go in your own order. Long press one, then hold it again and drag it up or down, the way you move Telegram's own pins. The order stays put when new messages come in and after a restart, and it goes along in a settings file. They only trade places with each other, so Telegram's pins and your other devices aren't touched. (#108)
 * **Telegram:** New **Keep downloaded stickers** switch on the Look and feel page, off by default. Telegram's automatic cache cleanup leaves sticker files alone, so sticker packs you've used don't have to download again. Clearing the cache yourself still removes them. (#110)
+* **Telegram:** New **Keep emoji statuses moving** switch on the Ads page, off by default. Animated emoji statuses next to names keep playing instead of stopping after two plays, which uses a little more battery. Restart Telegram after you change it. (#112)
 
 ### Fixed
 

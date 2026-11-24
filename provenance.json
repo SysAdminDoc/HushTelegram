@@ -361,6 +361,7 @@
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/commerce/EmojiStatusSupport.kt",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/commerce/PremiumIconsSupport.kt",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/commerce/LocalEmojiStatusSupport.kt",
+        "patches/src/main/kotlin/app/morphe/patches/telegram/misc/commerce/EmojiStatusMotionSupport.kt",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/suggestions/HideSuggestionsPatch.kt",
         "patches/src/main/kotlin/app/morphe/patches/telegram/ads/proxy/HideSponsoredProxyPatch.kt",
         "patches/src/main/kotlin/app/morphe/patches/telegram/misc/links/OpenExternalLinksPatch.kt",

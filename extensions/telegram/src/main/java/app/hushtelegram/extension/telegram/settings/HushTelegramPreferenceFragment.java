@@ -526,6 +526,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "and pick any emoji status, animated ones too, without Premium. It shows there on this phone only. "
                                 + "Nobody else sees it, and nothing is sent to Telegram.")));
             }
+            if (PatchFamily.Capability.COMMERCE_MOVING_EMOJI_STATUS.installed()) {
+                on(pages, PatchFamily.HIDE_COMMERCE).addPreference(toggle(context, Settings.MOVING_EMOJI_STATUS,
+                        L10n.t("Keep emoji statuses moving"), L10n.t("Emoji statuses next to names keep playing instead of "
+                                + "stopping after two plays. It uses a little more battery. Restart Telegram to see the change.")));
+            }
         }
         if (build.contains(PatchFamily.HIDE_PROMOTIONAL_BANNERS)) {
             on(pages, PatchFamily.HIDE_PROMOTIONAL_BANNERS).addPreference(toggle(context, Settings.HIDE_PROMOTIONAL_BANNERS, L10n.t("Hide promotional banners"),

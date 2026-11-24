@@ -161,6 +161,7 @@ public class PatchFamilyTest {
         Settings.HIDE_EMOJI_STATUS.resetToDefault();
         Settings.UNLOCK_PREMIUM_ICONS.resetToDefault();
         Settings.LOCAL_EMOJI_STATUS.resetToDefault();
+        Settings.MOVING_EMOJI_STATUS.resetToDefault();
         Settings.HIDE_KEYBOARD_FEATURED.resetToDefault();
         Settings.HIDE_SEND_AS.resetToDefault();
         Settings.HIDE_CONTACTS_TAB.resetToDefault();
@@ -273,7 +274,7 @@ public class PatchFamilyTest {
         PatchFamily family = PatchFamily.HIDE_COMMERCE;
         assertEquals("hideCommerce", family.statusMethod);
         assertEquals(Arrays.asList(Settings.HIDE_COMMERCE, Settings.HIDE_EMOJI_STATUS, Settings.UNLOCK_PREMIUM_ICONS,
-                Settings.LOCAL_EMOJI_STATUS), family.switches);
+                Settings.LOCAL_EMOJI_STATUS, Settings.MOVING_EMOJI_STATUS), family.switches);
         assertTrue(family.expectedCapabilities().contains(PatchFamily.Capability.COMMERCE_EMOJI_STATUS));
         assertEquals("commerceEmojiStatus", PatchFamily.Capability.COMMERCE_EMOJI_STATUS.statusMethod);
         // Off by default, so the patch's own description stays true, and no restart: names redraw.
@@ -302,6 +303,18 @@ public class PatchFamilyTest {
         // Off by default, and no restart: the chat list title asks each time it draws.
         assertFalse(Settings.LOCAL_EMOJI_STATUS.defaultValue);
         assertFalse(Settings.LOCAL_EMOJI_STATUS.rebootApp);
+    }
+
+    @Test
+    public void hidePremiumHasAnOffByDefaultMovingEmojiStatusSwitchThatWaitsForARestart() {
+        PatchFamily family = PatchFamily.HIDE_COMMERCE;
+        assertEquals(family.switches.indexOf(Settings.LOCAL_EMOJI_STATUS) + 1, family.switches.indexOf(Settings.MOVING_EMOJI_STATUS));
+        assertTrue(family.expectedCapabilities().contains(PatchFamily.Capability.COMMERCE_MOVING_EMOJI_STATUS));
+        assertEquals("commerceMovingEmojiStatus", PatchFamily.Capability.COMMERCE_MOVING_EMOJI_STATUS.statusMethod);
+        // Off by default, since it costs battery. Telegram keeps each status's drawable for the
+        // whole run and sets its play count once, so a change shows after a restart.
+        assertFalse(Settings.MOVING_EMOJI_STATUS.defaultValue);
+        assertTrue(Settings.MOVING_EMOJI_STATUS.rebootApp);
     }
 
     @Test

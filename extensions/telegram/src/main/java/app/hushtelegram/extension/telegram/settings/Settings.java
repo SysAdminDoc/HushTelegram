@@ -75,6 +75,13 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting LOCAL_EMOJI_STATUS =
             new BooleanSetting("hushtelegram_local_emoji_status", FALSE);
 
+    /**
+     * Emoji statuses next to names loop instead of stopping after two plays. Telegram keeps each
+     * status's drawable for the whole run and sets its play count once, so a restart shows the change.
+     */
+    public static final BooleanSetting MOVING_EMOJI_STATUS =
+            new BooleanSetting("hushtelegram_moving_emoji_status", FALSE, true);
+
     /** Chat-list promotional presentation only; stored suggestions and account security stay stock. */
     public static final BooleanSetting HIDE_PROMOTIONAL_BANNERS =
             new BooleanSetting("hushtelegram_hide_promotional_banners", TRUE);
