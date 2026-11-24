@@ -492,6 +492,7 @@ public final class HiddenChats {
         FakeTyping.menuItem(list, more);
         RecordChats.menuItem(list, more);
         LocalPins.menuItem(list, more);
+        LocalNames.menuItem(list, more);
     }
 
     /**
@@ -504,6 +505,7 @@ public final class HiddenChats {
         FakeTyping.menuShown(list);
         RecordChats.menuShown(list);
         LocalPins.menuShown(list);
+        LocalNames.menuShown(list);
         try {
             WeakReference<View> held = MENU_ITEMS.get(list);
             View item = held == null ? null : held.get();
@@ -526,6 +528,7 @@ public final class HiddenChats {
         if (id == FakeTyping.MENU_ID) return FakeTyping.menuChoice(listener);
         if (id == RecordChats.MENU_ID) return RecordChats.menuChoice(listener, id);
         if (id == LocalPins.PIN_ID || id == LocalPins.UNPIN_ID) return LocalPins.menuChoice(listener, id);
+        if (id == LocalNames.MENU_ID) return LocalNames.menuChoice(listener, id);
         if (id != MENU_ID) return id;
         try {
             if (SettingsLock.refuses()) return id;

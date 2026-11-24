@@ -64,6 +64,7 @@ import app.hushtelegram.extension.telegram.misc.LinkPreviewRules;
 import app.hushtelegram.extension.telegram.misc.Bookmarks;
 import app.hushtelegram.extension.telegram.misc.ChatListBanner;
 import app.hushtelegram.extension.telegram.misc.ListBackground;
+import app.hushtelegram.extension.telegram.misc.LocalNames;
 import app.hushtelegram.extension.telegram.misc.LocalPins;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.RecordChats;
@@ -491,6 +492,10 @@ public class SettingsBackupPreference extends Preference {
                 // Which order, not which chats: the ids are the person's own chats.
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Order of chats pinned on this phone"),
                         pinOrderLabel(Settings.LOCAL_PINS_ORDER.savedValue()), pinOrderLabel((String) change.getValue())));
+            } else if (change.getKey() == Settings.LOCAL_NAME_LIST) {
+                // How many, not which: the names are the person's own.
+                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Names given on this phone"),
+                        nameCount(Settings.LOCAL_NAME_LIST.savedValue()), nameCount((String) change.getValue())));
             } else if (change.getKey() == Settings.KEPT_REMOVED_CHATS) {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Chats you were removed from"),
                         keptCount(Settings.KEPT_REMOVED_CHATS.savedValue()), keptCount((String) change.getValue())));
@@ -548,6 +553,12 @@ public class SettingsBackupPreference extends Preference {
     /** Newest first while [saved] holds no dragged order, Your own order once it does. */
     private static String pinOrderLabel(String saved) {
         return LocalPins.count(saved) == 0 ? L10n.t("Newest first") : L10n.t("Your own order");
+    }
+
+    /** "2 names" for the names Rename on this phone gave that [saved] holds. */
+    private static String nameCount(String saved) {
+        int count = LocalNames.count(saved);
+        return L10n.quantity(count, "%1$d name", "%1$d names", count);
     }
 
     /** "2 chats" for the chats Keep chats you're removed from kept that [saved] holds. */

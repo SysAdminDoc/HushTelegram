@@ -2308,6 +2308,35 @@ public class HushTelegramPreferenceFragmentTest {
         }
     }
 
+    /** Rename on this phone gets its own switch, off until turned on, only in a build where its hooks went in (#104). */
+    @Test
+    public void renameOnThisPhoneHasItsOwnSwitchWhenItsHooksAreIn() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.SHOW_LOCAL_IDS);
+        try {
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.PROFILE_LOCAL_IDS, PatchFamily.Capability.SPECIAL_CONTACTS);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                assertNull("a build without the hooks has no switch", pageOf(controller).findPreference(Settings.LOCAL_NAMES.key));
+            }
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.PROFILE_LOCAL_IDS, PatchFamily.Capability.SPECIAL_CONTACTS,
+                    PatchFamily.Capability.LOCAL_NAMES);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                HushTelegramPreferenceFragment page = pageOf(controller);
+                SwitchPreference toggle = (SwitchPreference) page.findPreference(Settings.LOCAL_NAMES.key);
+                assertEquals("Rename on this phone", String.valueOf(toggle.getTitle()));
+                assertEquals("A profile's menu and the chat list's long press menu get Rename on this phone. The name you give a "
+                        + "person, bot, group or channel shows in place of theirs everywhere in Telegram on this phone. "
+                        + "Telegram and the other person never see it.", String.valueOf(toggle.getSummary()));
+                assertFalse("off until turned on", toggle.isChecked());
+                // It sits right under Special contacts' list.
+                Preference tracked = page.findPreference(HushTelegramPreferenceFragment.SPECIAL_CONTACTS_ROW);
+                assertSame(tracked.getParent(), toggle.getParent());
+                assertEquals(tracked.getOrder() + 1, toggle.getOrder());
+            }
+        } finally {
+            PatchFamily.capabilitiesForTests = null;
+        }
+    }
+
     /** Pin chats on this phone gets its own switch, off until turned on, only in a build where its selection stub went in (#79). */
     @Test
     public void pinChatsOnThisPhoneHasItsOwnSwitchWhenItsStubIsIn() throws Exception {

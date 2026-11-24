@@ -55,6 +55,7 @@ import app.hushtelegram.extension.telegram.misc.KeepRemoved;
 import app.hushtelegram.extension.telegram.misc.VoiceChanger;
 import app.hushtelegram.extension.telegram.misc.LinkPreviewRules;
 import app.hushtelegram.extension.telegram.misc.ListBackground;
+import app.hushtelegram.extension.telegram.misc.LocalNames;
 import app.hushtelegram.extension.telegram.misc.LocalPins;
 import app.hushtelegram.extension.telegram.misc.SaveDownloads;
 import app.hushtelegram.extension.telegram.misc.StorageFolder;
@@ -138,6 +139,7 @@ public final class SettingsBackup {
             Settings.MEMBER_JOIN_DATES,
             Settings.FORWARD_DATES,
             Settings.SPECIAL_CONTACTS,
+            Settings.LOCAL_NAMES,
             Settings.DISABLE_DOUBLE_TAP_REACTIONS,
             Settings.HIDE_REACTION_ROWS,
             Settings.HIDE_REACTION_PICKER,
@@ -345,14 +347,16 @@ public final class SettingsBackup {
      * The short texts a file carries as they're saved: the emoji beside the chat list's title, the
      * gallery folder choice, the translation language, the folder icon pack, the name of Telegram's
      * own folder, the kinds What to copy leaves out, which calls Record calls saves, the text shown
-     * in place of Telegram's name, the chats pinned on this phone and their order, the link preview rules, the chats
-     * kept after you were removed from them and the chat list banner's choice (never its picture). A
-     * build from before them counts the name as unknown and leaves it out.
+     * in place of Telegram's name, the chats pinned on this phone and their order, the link preview
+     * rules, the chats kept after you were removed from them, the chat list banner's choice (never
+     * its picture) and the names given on this phone. A build from before them counts the name as
+     * unknown and leaves it out.
      */
     static final List<StringSetting> TEXTS = Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER,
             Settings.TRANSLATE_TARGET, Settings.FOLDER_ICON_PACK, Settings.STORAGE_FOLDER_NAME, Settings.SAVE_KINDS_LEFT_OUT,
             Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LOCAL_PINNED_CHATS, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS,
-            Settings.CHAT_LIST_BANNER, Settings.VOICE_CHANGER, Settings.LOCAL_PINS_ORDER);
+            Settings.CHAT_LIST_BANNER, Settings.VOICE_CHANGER, Settings.LOCAL_PINS_ORDER,
+            Settings.LOCAL_NAME_LIST);
 
     /**
      * Bounds for the parser, well past anything this class writes, so a file built to be
@@ -630,7 +634,9 @@ public final class SettingsBackup {
             switches.put(setting.key, setting.savedValue().intValue());
         }
         for (StringSetting setting : TEXTS) {
-            if (allowed(setting, setting.savedValue())) switches.put(setting.key, setting.savedValue());
+            if (!allowed(setting, setting.savedValue())) continue;
+            if (setting == Settings.LOCAL_NAME_LIST) switches.put(setting.key, nameLines(setting.savedValue()));
+            else switches.put(setting.key, setting.savedValue());
         }
         for (StringSetting setting : FILTER_LISTS) {
             List<String> lines = MessageFilters.lines(setting.savedValue());
@@ -761,6 +767,10 @@ public final class SettingsBackup {
                 continue;
             }
             StringSetting shortText = knownTexts.get(name);
+            if (shortText == Settings.LOCAL_NAME_LIST) {
+                foundTexts.put(shortText, nameList(values.opt(name)));
+                continue;
+            }
             if (shortText != null) {
                 Object value = values.opt(name);
                 if (!(value instanceof String) || !allowed(shortText, (String) value)) {
@@ -822,6 +832,38 @@ public final class SettingsBackup {
         return saved;
     }
 
+    /**
+     * The names given on this phone as a file holds them: one string a line, since the whole list
+     * can run past the longest string {@link #LIMITS} lets a file hold (#104).
+     */
+    private static JSONArray nameLines(String text) {
+        JSONArray lines = new JSONArray();
+        if (!text.isEmpty()) {
+            for (String line : text.split("\n", -1)) lines.put(line);
+        }
+        return lines;
+    }
+
+    /** A file's names as Rename on this phone saves them, from its array of lines; anything else is refused. */
+    private static String nameList(Object value) throws Rejected {
+        if (!(value instanceof JSONArray) || ((JSONArray) value).length() > LocalNames.MAX_NAMES) {
+            throw new Rejected(Reason.VALUE, "Not a list of names");
+        }
+        JSONArray array = (JSONArray) value;
+        StringBuilder text = new StringBuilder();
+        for (int i = 0; i < array.length(); i++) {
+            Object line = array.opt(i);
+            if (!(line instanceof String) || ((String) line).indexOf('\n') >= 0) {
+                throw new Rejected(Reason.VALUE, "Not a list of names");
+            }
+            if (i > 0) text.append('\n');
+            text.append((String) line);
+        }
+        String saved = text.toString();
+        if (!LocalNames.allowed(saved)) throw new Rejected(Reason.VALUE, "Not a list of names");
+        return saved;
+    }
+
     /** Whether a number is one of its setting's choices. */
     static boolean allowed(IntegerSetting setting, int value) {
         if (setting == Settings.RECORD_CALLS_KEEP_DAYS) return HushTelegramPreferenceFragment.RECORD_KEEP_DAYS.contains(value);
@@ -845,6 +887,7 @@ public final class SettingsBackup {
         if (setting == Settings.KEPT_REMOVED_CHATS) return KeepRemoved.allowed(value);
         if (setting == Settings.CHAT_LIST_BANNER) return ChatListBanner.allowed(value);
         if (setting == Settings.VOICE_CHANGER) return VoiceChanger.PRESETS.contains(value);
+        if (setting == Settings.LOCAL_NAME_LIST) return LocalNames.allowed(value);
         return setting == Settings.TITLE_EMOJI && TitleEmoji.allowed(value);
     }
 

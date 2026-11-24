@@ -79,6 +79,7 @@ public final class SettingsStatus {
     public static boolean registrationDate() { return false; }
     public static boolean memberJoinDates() { return false; }
     public static boolean forwardDates() { return false; }
+    public static boolean localNames() { return false; }
     public static boolean chatDoubleTapReaction() { return false; }
     public static boolean previewDoubleTapReaction() { return false; }
     public static boolean reactionRows() { return false; }

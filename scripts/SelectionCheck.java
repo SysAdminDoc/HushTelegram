@@ -535,6 +535,7 @@ public final class SelectionCheck {
         hook(calls, flags, "barOutline", "misc/MainTabs", "barGlass", "barOutlineColor", "barOutlineWidth");
         hook(calls, flags, "hideDownloadsButton", "misc/MainTabs", "downloadsButton");
         hook(calls, flags, "forwardDates", "misc/ForwardDates", "header", "compact");
+        hook(calls, flags, "localNames", "misc/LocalNames", "user", "chat", "updates", "storedUser", "storedChat", "outgoing");
         hook(calls, flags, "fasterDownloads", "misc/DownloadSpeed", "fast");
         hook(calls, flags, "dataSaverDownloads", "misc/DataSaverDownloads", "hold", "holdMask");
         hook(calls, flags, "fasterUploads", "misc/UploadSpeed", "requests");

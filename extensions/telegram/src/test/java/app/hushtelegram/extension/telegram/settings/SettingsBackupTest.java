@@ -240,11 +240,12 @@ public class SettingsBackupTest {
         assertEquals(Arrays.asList(Settings.STICKER_SIZE, Settings.RECORD_CALLS_KEEP_DAYS, Settings.CHAT_LIST_AVATAR_SIZE, Settings.LIST_BACKGROUND_DIM,
                 Settings.KEEP_DELETED_DAYS), SettingsBackup.NUMBERS);
         assertEquals(Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET, Settings.FOLDER_ICON_PACK, Settings.STORAGE_FOLDER_NAME,
-                Settings.SAVE_KINDS_LEFT_OUT, Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LOCAL_PINNED_CHATS, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS, Settings.CHAT_LIST_BANNER, Settings.VOICE_CHANGER, Settings.LOCAL_PINS_ORDER), SettingsBackup.TEXTS);
+                Settings.SAVE_KINDS_LEFT_OUT, Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LOCAL_PINNED_CHATS, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS, Settings.CHAT_LIST_BANNER, Settings.VOICE_CHANGER, Settings.LOCAL_PINS_ORDER,
+                Settings.LOCAL_NAME_LIST), SettingsBackup.TEXTS);
         assertEquals(Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_STORIES, Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_KEYBOARD_FEATURED, Settings.HIDE_COMMERCE, Settings.HIDE_EMOJI_STATUS, Settings.UNLOCK_PREMIUM_ICONS, Settings.LOCAL_EMOJI_STATUS, Settings.MOVING_EMOJI_STATUS,
                         Settings.HIDE_PROMOTIONAL_BANNERS, Settings.HIDE_SPONSORED_PROXY, Settings.HIDE_POPULAR_APPS, Settings.SEARCH_ONLY_MY_CHATS, Settings.SEARCH_STYLED_NAMES, Settings.BLOCK_NEW_CHATS, Settings.DISABLE_SECRET_CHATS, Settings.HIDE_CONTACTS_BLOCK,
                         Settings.HIDE_GREETING_STICKERS, Settings.DISABLE_CHAT_SWIPE, Settings.CHAT_PREVIEW_BUTTONS, Settings.DISABLE_CHANNEL_PULL, Settings.DISABLE_TOPIC_PULL, Settings.NORMAL_PASTE, Settings.MENTION_BY_ID, Settings.SHOW_LOCAL_IDS, Settings.PROFILE_DATA_CENTER, Settings.REGISTRATION_DATE, Settings.MEMBER_JOIN_DATES, Settings.FORWARD_DATES,
-                        Settings.SPECIAL_CONTACTS, Settings.DISABLE_DOUBLE_TAP_REACTIONS, Settings.HIDE_REACTION_ROWS, Settings.HIDE_REACTION_PICKER, Settings.HIDE_EMOJI_PACK_NOTE, Settings.QUIET_CONTACTS_NAG, Settings.HOLIDAY_LOOK, Settings.CHAT_LIST_TITLE, Settings.USE_SYSTEM_FONT, Settings.AMOLED_BLACK, Settings.LIST_BACKGROUND,
+                        Settings.SPECIAL_CONTACTS, Settings.LOCAL_NAMES, Settings.DISABLE_DOUBLE_TAP_REACTIONS, Settings.HIDE_REACTION_ROWS, Settings.HIDE_REACTION_PICKER, Settings.HIDE_EMOJI_PACK_NOTE, Settings.QUIET_CONTACTS_NAG, Settings.HOLIDAY_LOOK, Settings.CHAT_LIST_TITLE, Settings.USE_SYSTEM_FONT, Settings.AMOLED_BLACK, Settings.LIST_BACKGROUND,
                         Settings.HIDE_TRANSLATE_BAR, Settings.HIDE_PINNED_BAR, Settings.ALWAYS_SHOW_TRANSLATE_BAR, Settings.EXACT_NUMBERS, Settings.REVEAL_SPOILERS, Settings.REVEAL_MENU, Settings.SEARCH_OPENS_QUOTES, Settings.REVEAL_TIMED_MEDIA, Settings.HIDE_KEYBOARD_ON_SCROLL, Settings.KEEP_VIDEOS_MUTED, Settings.VIDEO_EITHER_LANDSCAPE, Settings.VIDEO_ONLY_FROM_BUTTON, Settings.VIDEO_STARTS_SILENT, Settings.VIDEO_TRACKS, Settings.EXTERNAL_PLAYER, Settings.SWIPE_BACK_ON_PROFILES,
                         Settings.HIDE_PHONE_NUMBER, Settings.SHARE_NUMBER_UNTICKED, Settings.MESSAGE_SECONDS, Settings.ALLOW_CHAT_BLUR, Settings.VOICE_ONE_AT_A_TIME, Settings.LOCKED_VOICE_GUARD, Settings.NO_HAPTICS, Settings.REACTION_EFFECTS_OFF,
                         Settings.HIDE_FOLDER_COUNTERS, Settings.LAUNCH_FOLDER, Settings.HIDE_ALL_CHATS, Settings.MOVE_ALL_CHATS, Settings.HIDDEN_CHATS, Settings.SORT_BY_DATE, Settings.SORT_OLDEST_FIRST, Settings.LOCAL_PINS, Settings.HIDDEN_CHATS_PASSCODE,
@@ -853,7 +854,8 @@ public class SettingsBackupTest {
         Bundle state = snapshot.toBundle();
         state.getBundle("texts").putString(Settings.TITLE_EMOJI.key, tooLong.toString());
         Set<StringSetting> others = new java.util.HashSet<>(Arrays.asList(Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET, Settings.STORAGE_FOLDER_NAME, Settings.FOLDER_ICON_PACK,
-                Settings.SAVE_KINDS_LEFT_OUT, Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LOCAL_PINNED_CHATS, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS, Settings.CHAT_LIST_BANNER, Settings.VOICE_CHANGER, Settings.LOCAL_PINS_ORDER));
+                Settings.SAVE_KINDS_LEFT_OUT, Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LOCAL_PINNED_CHATS, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS, Settings.CHAT_LIST_BANNER, Settings.VOICE_CHANGER, Settings.LOCAL_PINS_ORDER,
+                Settings.LOCAL_NAME_LIST));
         assertEquals(others, SettingsBackup.Snapshot.fromBundle(state).texts.keySet());
         state.getBundle("texts").putInt(Settings.TITLE_EMOJI.key, 1);
         assertEquals(others, SettingsBackup.Snapshot.fromBundle(state).texts.keySet());
@@ -1677,6 +1679,66 @@ public class SettingsBackupTest {
             assertTrue(AbstractPreferenceFragment.restartPending.isEmpty());
         } finally {
             Settings.LOCAL_PINS_ORDER.resetToDefault();
+        }
+    }
+
+    /**
+     * The names given on this phone go out with the switches a line at a time, so no string in the
+     * file runs past what the import reads. They come back only as a list Rename on this phone
+     * would write, and show as a count in the preview, never as names (#104).
+     */
+    @Test
+    public void theNamesGivenOnThisPhoneRoundTripAndShowAsACount() throws Exception {
+        String names = "12\tAnn\n-34\tBook club";
+        Settings.LOCAL_NAME_LIST.save(names);
+        String file = SettingsBackup.create();
+        assertEquals("[\"12\\tAnn\",\"-34\\tBook club\"]",
+                new JSONObject(file).getJSONObject("settings").getJSONArray(Settings.LOCAL_NAME_LIST.key).toString());
+        Settings.LOCAL_NAME_LIST.save("");
+        assertEquals(0, new JSONObject(SettingsBackup.create()).getJSONObject("settings")
+                .getJSONArray(Settings.LOCAL_NAME_LIST.key).length());
+        Settings.LOCAL_NAME_LIST.save(names);
+
+        List<String> tooMany = new ArrayList<>();
+        for (int i = 1; i <= app.hushtelegram.extension.telegram.misc.LocalNames.MAX_NAMES + 1; i++) tooMany.add(i + "\tA");
+        StringBuilder tooLong = new StringBuilder("12\t");
+        for (int i = 0; i <= app.hushtelegram.extension.telegram.misc.LocalNames.MAX_NAME_CHARS; i++) tooLong.append('a');
+        for (Object bad : new Object[]{lines("12\tAnn", "12\tBob"), lines("0\tAnn"), lines("12\t"), lines("12\t Ann"),
+                lines("+12\tAnn"), lines("12Ann"), lines("12\tAnn", ""), lines("4611686018427387904\tSecret"),
+                new org.json.JSONArray(tooMany), lines(tooLong.toString()), lines("12\tAnn\n-34\tBook club"),
+                new org.json.JSONArray(Arrays.asList(12)), names, 12, true}) {
+            JSONObject wrong = new JSONObject(file);
+            wrong.getJSONObject("settings").put(Settings.LOCAL_NAME_LIST.key, bad);
+            assertEquals(String.valueOf(bad), SettingsBackup.Reason.VALUE, reasonFor(wrong.toString()));
+        }
+
+        // The longest list a phone can save still reads back.
+        List<String> longest = new ArrayList<>();
+        String name = new String(new char[app.hushtelegram.extension.telegram.misc.LocalNames.MAX_NAME_CHARS]).replace('\0', 'n');
+        for (int i = 0; i < app.hushtelegram.extension.telegram.misc.LocalNames.MAX_NAMES; i++) {
+            longest.add((-1000000000000L - i) + "\t" + name);
+        }
+        JSONObject full = new JSONObject(file);
+        full.getJSONObject("settings").put(Settings.LOCAL_NAME_LIST.key, new org.json.JSONArray(longest));
+        assertEquals(String.join("\n", longest), SettingsBackup.parse(full.toString()).texts.get(Settings.LOCAL_NAME_LIST));
+        Settings.LOCAL_NAME_LIST.save(String.join("\n", longest));
+        assertEquals(longest.size(), new JSONObject(SettingsBackup.create()).getJSONObject("settings")
+                .getJSONArray(Settings.LOCAL_NAME_LIST.key).length());
+
+        Settings.LOCAL_NAME_LIST.resetToDefault();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
+            deliver(activity, tap(activity, page, IMPORT_ROW), file);
+            AlertDialog preview = shownPreview();
+            assertEquals("Names given on this phone: 0 names to 2 names", String.valueOf(shadowOf(preview).getMessage()));
+            preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertEquals("Settings imported.", ShadowToast.getTextOfLatestToast());
+            assertEquals(names, Settings.LOCAL_NAME_LIST.savedValue());
+            assertTrue(AbstractPreferenceFragment.restartPending.isEmpty());
+        } finally {
+            Settings.LOCAL_NAME_LIST.resetToDefault();
         }
     }
 
@@ -2521,6 +2583,11 @@ public class SettingsBackupTest {
             Utils.awaitBackgroundTasksForTests();
             ShadowLooper.idleMainLooper();
         }
+    }
+
+    /** A list's lines as a file holds them. */
+    private static org.json.JSONArray lines(String... each) {
+        return new org.json.JSONArray(Arrays.asList(each));
     }
 
     private static SettingsBackup.Reason reasonFor(String text) {

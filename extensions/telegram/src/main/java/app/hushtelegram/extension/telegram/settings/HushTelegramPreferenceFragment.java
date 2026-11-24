@@ -1663,6 +1663,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "stays on this phone.")));
                 on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(specialContactsRow(context));
             }
+            if (PatchFamily.Capability.LOCAL_NAMES.installed()) {
+                on(pages, PatchFamily.SHOW_LOCAL_IDS).addPreference(toggle(context, Settings.LOCAL_NAMES, L10n.t("Rename on this phone"),
+                        L10n.t("A profile's menu and the chat list's long press menu get Rename on this phone. The name you give a "
+                                + "person, bot, group or channel shows in place of theirs everywhere in Telegram on this phone. "
+                                + "Telegram and the other person never see it.")));
+            }
         }
         if (build.contains(PatchFamily.HOLIDAY_LOOK)) {
             on(pages, PatchFamily.HOLIDAY_LOOK).addPreference(toggle(context, Settings.HOLIDAY_LOOK, L10n.t("New Year look all year"),

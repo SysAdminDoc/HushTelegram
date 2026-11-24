@@ -197,6 +197,8 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/JoinDates.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/ForwardDates.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/LocalPins.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/LocalNames.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/RenamePrompt.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/DoNotDisturb.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/LinkPreviewRules.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/settings/LinkPreviewRulesEditor.java",

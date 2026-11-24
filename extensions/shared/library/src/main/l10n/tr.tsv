@@ -1572,6 +1572,30 @@ special contacts	özel kişiler
 Track this user	Bu kullanıcıyı izle
 # context: the same profile menu row for someone already tracked, and the button in that person's history that stops tracking them
 Stop tracking	İzlemeyi bırak
+# context: Item in a profile's menu (the three dots) and in the chat list's long press menu, and the title of its switch on the Look and feel page and of its dialog (#104). It gives a person, bot, group or channel a name that only this phone shows
+Rename on this phone	Bu telefonda yeniden adlandır
+# context: Summary under the Rename on this phone switch (#104). Rename on this phone is the menu item's own label
+A profile's menu and the chat list's long press menu get Rename on this phone. The name you give a person, bot, group or channel shows in place of theirs everywhere in Telegram on this phone. Telegram and the other person never see it.	Bir profilin menüsüne ve sohbet listesindeki uzun basma menüsüne Bu telefonda yeniden adlandır eklenir. Bir kişiye, bota, gruba veya kanala verdiğin ad, bu telefonda Telegram'ın her yerinde kendi adının yerine görünür. Telegram ve karşı taraf bunu asla görmez.
+# context: Label of the one text field in the Rename on this phone dialog, which holds the name to show
+Name	Ad
+# context: Note at the top of the Rename on this phone dialog
+Only this phone shows this name. Telegram and the other person never see it.	Bu adı yalnızca bu telefon gösterir. Telegram ve karşı taraf bunu asla görmez.
+# context: Toast after Save in the Rename on this phone dialog. Two short lines at most
+Renamed on this phone.	Bu telefonda yeniden adlandırıldı.
+# context: Toast after Remove (or saving an empty name) in the Rename on this phone dialog: the name from Telegram shows again. Two short lines at most
+Telegram's name is back.	Telegram'daki ad geri geldi.
+# context: Toast when a name from Rename on this phone couldn't be saved. Two short lines at most
+Couldn't save the name. Try again in a moment.	Ad kaydedilemedi. Birazdan tekrar deneyin.
+# context: Toast when Rename on this phone already holds the most names it keeps (%1$d is 50). Two short lines at most
+You can rename up to %1$d chats on this phone.	En fazla %1$d sohbetin adını değiştirebilirsin.
+# context: Label in the settings import preview for the names Rename on this phone gave, shown as a count
+Names given on this phone	Bu telefonda verilen adlar
+# context: Count of names in the settings import preview, one
+%1$d name	%1$d ad
+# context: Count of names in the settings import preview, more than one
+%1$d names	%1$d ad
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Show user and chat IDs that shows names given on this phone
+names given on this phone	bu telefonda verilen adlar
 # context: short message after Stop tracking
 Stopped tracking	İzleme bırakıldı
 # context: short message after Track this user

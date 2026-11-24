@@ -186,6 +186,18 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting SPECIAL_CONTACTS =
             new BooleanSetting("hushtelegram_special_contacts", FALSE);
 
+    /**
+     * A profile's menu and the chat list's long press menu offer Rename on this phone, and the
+     * names picked there show in place of Telegram's on this phone only (#104,
+     * {@link app.hushtelegram.extension.telegram.misc.LocalNames}).
+     */
+    public static final BooleanSetting LOCAL_NAMES =
+            new BooleanSetting("hushtelegram_local_names", FALSE);
+
+    /** The names Rename on this phone gave, one "dialog id, tab, name" line each, the same on every account. */
+    public static final StringSetting LOCAL_NAME_LIST =
+            new StringSetting("hushtelegram_local_name_list", "");
+
     public static final BooleanSetting DISABLE_DOUBLE_TAP_REACTIONS =
             new BooleanSetting("hushtelegram_disable_double_tap_reactions", FALSE);
 

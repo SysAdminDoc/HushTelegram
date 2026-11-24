@@ -1572,6 +1572,30 @@ special contacts	besondere Kontakte
 Track this user	Diesen Benutzer verfolgen
 # context: the same profile menu row for someone already tracked, and the button in that person's history that stops tracking them
 Stop tracking	Nicht mehr verfolgen
+# context: Item in a profile's menu (the three dots) and in the chat list's long press menu, and the title of its switch on the Look and feel page and of its dialog (#104). It gives a person, bot, group or channel a name that only this phone shows
+Rename on this phone	Auf diesem Telefon umbenennen
+# context: Summary under the Rename on this phone switch (#104). Rename on this phone is the menu item's own label
+A profile's menu and the chat list's long press menu get Rename on this phone. The name you give a person, bot, group or channel shows in place of theirs everywhere in Telegram on this phone. Telegram and the other person never see it.	Das Menü eines Profils und das Menü beim langen Drücken in der Chatliste bekommen Auf diesem Telefon umbenennen. Der Name, den du einer Person, einem Bot, einer Gruppe oder einem Kanal gibst, steht auf diesem Telefon überall in Telegram an Stelle des eigenen. Telegram und die andere Person sehen ihn nie.
+# context: Label of the one text field in the Rename on this phone dialog, which holds the name to show
+Name	Name
+# context: Note at the top of the Rename on this phone dialog
+Only this phone shows this name. Telegram and the other person never see it.	Nur dieses Telefon zeigt diesen Namen. Telegram und die andere Person sehen ihn nie.
+# context: Toast after Save in the Rename on this phone dialog. Two short lines at most
+Renamed on this phone.	Auf diesem Telefon umbenannt.
+# context: Toast after Remove (or saving an empty name) in the Rename on this phone dialog: the name from Telegram shows again. Two short lines at most
+Telegram's name is back.	Der Name von Telegram ist zurück.
+# context: Toast when a name from Rename on this phone couldn't be saved. Two short lines at most
+Couldn't save the name. Try again in a moment.	Name nicht gespeichert. Versuch es gleich noch mal.
+# context: Toast when Rename on this phone already holds the most names it keeps (%1$d is 50). Two short lines at most
+You can rename up to %1$d chats on this phone.	Du kannst hier bis zu %1$d Chats umbenennen.
+# context: Label in the settings import preview for the names Rename on this phone gave, shown as a count
+Names given on this phone	Auf diesem Telefon vergebene Namen
+# context: Count of names in the settings import preview, one
+%1$d name	%1$d Name
+# context: Count of names in the settings import preview, more than one
+%1$d names	%1$d Namen
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Show user and chat IDs that shows names given on this phone
+names given on this phone	die auf diesem Telefon vergebenen Namen
 # context: short message after Stop tracking
 Stopped tracking	Wird nicht mehr verfolgt
 # context: short message after Track this user
