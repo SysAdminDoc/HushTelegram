@@ -471,7 +471,7 @@ public final class DuressWipe {
         });
         step("duress saved lists", () -> {
             for (Setting<?> list : new Setting<?>[]{Settings.KEPT_REMOVED_CHATS,
-                    Settings.LOCAL_PINNED_CHATS, Settings.AUTO_FORWARDING_RULES}) {
+                    Settings.LOCAL_PINNED_CHATS, Settings.LOCAL_PINS_ORDER, Settings.AUTO_FORWARDING_RULES}) {
                 list.resetToDefault();
             }
         });

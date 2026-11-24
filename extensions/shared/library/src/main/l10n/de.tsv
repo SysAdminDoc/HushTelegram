@@ -2551,3 +2551,13 @@ Hide Downloads button	Downloads-Button ausblenden
 The Downloads button stays out of the bar at the top of the chat list, even while a file downloads. Your downloads are still in the Downloads tab when you search.	Der Downloads-Button erscheint nicht mehr in der Leiste oben in der Chatliste, auch nicht, während eine Datei geladen wird. Deine Downloads findest du weiter im Tab Downloads, wenn du suchst.
 # context: Lowercase noun phrase in a status line. It names the part of Hide Contacts tab that hides the Downloads button (Telegram key DownloadsTabs) in the chat list's top bar.
 Downloads button	Downloads-Button
+# context: Lowercase noun phrase in a status line. It names the part of Pin on this phone that lets you drag those chats into an order of your own.
+dragging chats pinned on this phone	Ziehen der auf diesem Telefon angepinnten Chats
+# context: Summary of the Pin chats on this phone switch when this build can drag those chats. Pin on this phone is the long press menu item; All Chats is Telegram's folder tab. Same wording as the summary without the drag, plus one sentence on how to drag.
+Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under your pinned chats in All Chats, newest first. To put them in your own order, long press one, then hold it again and drag it up or down. Nothing is sent to Telegram, so your other devices and Telegram's pin limit stay as they are.	Fügt „Auf diesem Telefon anpinnen“ zum Menü hinzu, das langes Drücken in der Chatliste öffnet. Diese Chats stehen in „Alle Chats“ direkt unter deinen angepinnten Chats, die neuesten zuerst. Um sie selbst zu ordnen, drücke lange auf einen, halte ihn dann erneut gedrückt und zieh ihn nach oben oder unten. Es wird nichts an Telegram gesendet, deine anderen Geräte und Telegrams Limit für angepinnte Chats bleiben also, wie sie sind.
+# context: Settings backup preview: the name of the saved order of the chats pinned on this phone, before its old and new values (Newest first, Your own order).
+Order of chats pinned on this phone	Reihenfolge der auf diesem Telefon angepinnten Chats
+# context: Settings backup preview: a value of Order of chats pinned on this phone. Those chats are listed newest first, nothing was dragged.
+Newest first	Neueste zuerst
+# context: Settings backup preview: a value of Order of chats pinned on this phone. You dragged those chats into an order of your own.
+Your own order	Deine eigene Reihenfolge

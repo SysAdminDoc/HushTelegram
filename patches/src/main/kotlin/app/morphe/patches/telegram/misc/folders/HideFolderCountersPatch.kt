@@ -127,6 +127,17 @@ val hideFolderCountersPatch = bytecodePatch(
         } catch (failed: Exception) {
             "the long press pin's stub doesn't build (${failed.javaClass.simpleName}: ${failed.message})"
         } else null
+        // Dragging those chats into an order of your own rides on Pin on this phone and the chat list's own drag.
+        val pinOrder = if (localPinsReady && noLocalPins == null) resolveLocalPinOrder() else null
+        val unordered = pinOrder?.let {
+            it.missing ?: try {
+                it.rehearse()
+                writeLocalPinOrderStubs(it.refs!!)
+                null
+            } catch (failed: Exception) {
+                "the drag's stubs don't build (${failed.javaClass.simpleName}: ${failed.message})"
+            }
+        }
         // So does the passcode that hidden chats can ask for, which reads Telegram's own passcode state.
         val noPasscode = if (unhidden == null) try {
             requireAppPasscodeRuntime()
@@ -233,6 +244,12 @@ val hideFolderCountersPatch = bytecodePatch(
                 if (localPinsReady) {
                     if (noLocalPins == null) {
                         enableCapability("localPins")
+                        if (unordered == null) {
+                            pinOrder!!.apply()
+                            enableCapability("localPinOrder")
+                        } else {
+                            patchLog.warning("Hide folder tab counters: $unordered. Pin on this phone goes on without dragging those chats into your own order.")
+                        }
                     } else {
                         patchLog.warning("Hide folder tab counters: $noLocalPins. Hidden chats go on without Pin on this phone.")
                     }

@@ -936,7 +936,7 @@ public class PatchFamilyTest {
                     || setting == Settings.FOLDER_TAB_ICONS, setting.rebootApp);
         }
         assertEquals(EnumSet.of(PatchFamily.Capability.LAUNCH_FOLDER, PatchFamily.Capability.HIDE_ALL_CHATS, PatchFamily.Capability.ALL_CHATS_PLACE,
-                PatchFamily.Capability.HIDDEN_CHATS, PatchFamily.Capability.SORT_BY_DATE, PatchFamily.Capability.LOCAL_PINS, PatchFamily.Capability.ADMIN_CHATS, PatchFamily.Capability.FIT_TABS, PatchFamily.Capability.BOTTOM_TABS, PatchFamily.Capability.TAB_ICONS, PatchFamily.Capability.HIDDEN_ACCOUNTS, PatchFamily.Capability.HIDDEN_PASSCODE, PatchFamily.Capability.HIDDEN_UNREAD, PatchFamily.Capability.CHAT_LIST_AVATAR), family.expectedCapabilities());
+                PatchFamily.Capability.HIDDEN_CHATS, PatchFamily.Capability.SORT_BY_DATE, PatchFamily.Capability.LOCAL_PINS, PatchFamily.Capability.LOCAL_PIN_ORDER, PatchFamily.Capability.ADMIN_CHATS, PatchFamily.Capability.FIT_TABS, PatchFamily.Capability.BOTTOM_TABS, PatchFamily.Capability.TAB_ICONS, PatchFamily.Capability.HIDDEN_ACCOUNTS, PatchFamily.Capability.HIDDEN_PASSCODE, PatchFamily.Capability.HIDDEN_UNREAD, PatchFamily.Capability.CHAT_LIST_AVATAR), family.expectedCapabilities());
         assertEquals("launchFolder", PatchFamily.Capability.LAUNCH_FOLDER.statusMethod);
         assertEquals("hideAllChats", PatchFamily.Capability.HIDE_ALL_CHATS.statusMethod);
         assertEquals("allChatsPlace", PatchFamily.Capability.ALL_CHATS_PLACE.statusMethod);

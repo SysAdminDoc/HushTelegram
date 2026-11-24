@@ -2317,6 +2317,17 @@ public class HushTelegramPreferenceFragmentTest {
                 // It comes right after the date order's two switches.
                 assertSame(page.findPreference(Settings.SORT_OLDEST_FIRST.key).getParent(), toggle.getParent());
             }
+            // A build whose drag hooks went in says how to put them in your own order (#108).
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.HIDDEN_CHATS, PatchFamily.Capability.SORT_BY_DATE,
+                    PatchFamily.Capability.LOCAL_PINS, PatchFamily.Capability.LOCAL_PIN_ORDER);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                SwitchPreference toggle = (SwitchPreference) pageOf(controller).findPreference(Settings.LOCAL_PINS.key);
+                assertEquals("Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under "
+                        + "your pinned chats in All Chats, newest first. To put them in your own order, long press one, "
+                        + "then hold it again and drag it up or down. Nothing is sent to Telegram, so your other devices "
+                        + "and Telegram's pin limit stay as they are.", String.valueOf(toggle.getSummary()));
+                assertFalse("still off until turned on", toggle.isChecked());
+            }
         } finally {
             PatchFamily.capabilitiesForTests = null;
         }

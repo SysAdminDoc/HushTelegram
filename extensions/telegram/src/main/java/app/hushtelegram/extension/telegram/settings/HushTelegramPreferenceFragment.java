@@ -760,9 +760,14 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
             }
             if (PatchFamily.Capability.LOCAL_PINS.installed()) {
                 SwitchPreference pins = toggle(context, Settings.LOCAL_PINS, L10n.t("Pin chats on this phone"),
-                        L10n.t("Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under your "
-                                + "pinned chats in All Chats, newest first. Nothing is sent to Telegram, so your other devices and "
-                                + "Telegram's pin limit stay as they are."));
+                        PatchFamily.Capability.LOCAL_PIN_ORDER.installed()
+                                ? L10n.t("Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under "
+                                        + "your pinned chats in All Chats, newest first. To put them in your own order, long press one, "
+                                        + "then hold it again and drag it up or down. Nothing is sent to Telegram, so your other devices "
+                                        + "and Telegram's pin limit stay as they are.")
+                                : L10n.t("Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under your "
+                                        + "pinned chats in All Chats, newest first. Nothing is sent to Telegram, so your other devices and "
+                                        + "Telegram's pin limit stay as they are."));
                 pins.setOnPreferenceChangeListener((row, value) -> {
                     // Once the switch is saved, so the chat list sorts by what it says.
                     Utils.runOnMainThreadDelayed(HiddenChats::refreshAll, 0);

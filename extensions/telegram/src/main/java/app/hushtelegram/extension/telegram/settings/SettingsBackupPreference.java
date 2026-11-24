@@ -487,6 +487,10 @@ public class SettingsBackupPreference extends Preference {
                 // How many, not which: the ids are the person's own chats.
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Chats pinned on this phone"),
                         chatCount(Settings.LOCAL_PINNED_CHATS.savedValue()), chatCount((String) change.getValue())));
+            } else if (change.getKey() == Settings.LOCAL_PINS_ORDER) {
+                // Which order, not which chats: the ids are the person's own chats.
+                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Order of chats pinned on this phone"),
+                        pinOrderLabel(Settings.LOCAL_PINS_ORDER.savedValue()), pinOrderLabel((String) change.getValue())));
             } else if (change.getKey() == Settings.KEPT_REMOVED_CHATS) {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Chats you were removed from"),
                         keptCount(Settings.KEPT_REMOVED_CHATS.savedValue()), keptCount((String) change.getValue())));
@@ -539,6 +543,11 @@ public class SettingsBackupPreference extends Preference {
     private static String chatCount(String saved) {
         int count = LocalPins.count(saved);
         return L10n.quantity(count, "%1$d chat", "%1$d chats", count);
+    }
+
+    /** Newest first while [saved] holds no dragged order, Your own order once it does. */
+    private static String pinOrderLabel(String saved) {
+        return LocalPins.count(saved) == 0 ? L10n.t("Newest first") : L10n.t("Your own order");
     }
 
     /** "2 chats" for the chats Keep chats you're removed from kept that [saved] holds. */

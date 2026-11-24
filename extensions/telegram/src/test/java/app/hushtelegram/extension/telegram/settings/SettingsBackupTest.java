@@ -240,7 +240,7 @@ public class SettingsBackupTest {
         assertEquals(Arrays.asList(Settings.STICKER_SIZE, Settings.RECORD_CALLS_KEEP_DAYS, Settings.CHAT_LIST_AVATAR_SIZE, Settings.LIST_BACKGROUND_DIM,
                 Settings.KEEP_DELETED_DAYS), SettingsBackup.NUMBERS);
         assertEquals(Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET, Settings.FOLDER_ICON_PACK, Settings.STORAGE_FOLDER_NAME,
-                Settings.SAVE_KINDS_LEFT_OUT, Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LOCAL_PINNED_CHATS, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS, Settings.CHAT_LIST_BANNER, Settings.VOICE_CHANGER), SettingsBackup.TEXTS);
+                Settings.SAVE_KINDS_LEFT_OUT, Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LOCAL_PINNED_CHATS, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS, Settings.CHAT_LIST_BANNER, Settings.VOICE_CHANGER, Settings.LOCAL_PINS_ORDER), SettingsBackup.TEXTS);
         assertEquals(Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_STORIES, Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_KEYBOARD_FEATURED, Settings.HIDE_COMMERCE, Settings.HIDE_EMOJI_STATUS, Settings.UNLOCK_PREMIUM_ICONS, Settings.LOCAL_EMOJI_STATUS,
                         Settings.HIDE_PROMOTIONAL_BANNERS, Settings.HIDE_SPONSORED_PROXY, Settings.HIDE_POPULAR_APPS, Settings.SEARCH_ONLY_MY_CHATS, Settings.SEARCH_STYLED_NAMES, Settings.BLOCK_NEW_CHATS, Settings.DISABLE_SECRET_CHATS, Settings.HIDE_CONTACTS_BLOCK,
                         Settings.HIDE_GREETING_STICKERS, Settings.DISABLE_CHAT_SWIPE, Settings.CHAT_PREVIEW_BUTTONS, Settings.DISABLE_CHANNEL_PULL, Settings.DISABLE_TOPIC_PULL, Settings.NORMAL_PASTE, Settings.MENTION_BY_ID, Settings.SHOW_LOCAL_IDS, Settings.PROFILE_DATA_CENTER, Settings.REGISTRATION_DATE, Settings.MEMBER_JOIN_DATES, Settings.FORWARD_DATES,
@@ -853,7 +853,7 @@ public class SettingsBackupTest {
         Bundle state = snapshot.toBundle();
         state.getBundle("texts").putString(Settings.TITLE_EMOJI.key, tooLong.toString());
         Set<StringSetting> others = new java.util.HashSet<>(Arrays.asList(Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET, Settings.STORAGE_FOLDER_NAME, Settings.FOLDER_ICON_PACK,
-                Settings.SAVE_KINDS_LEFT_OUT, Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LOCAL_PINNED_CHATS, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS, Settings.CHAT_LIST_BANNER, Settings.VOICE_CHANGER));
+                Settings.SAVE_KINDS_LEFT_OUT, Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LOCAL_PINNED_CHATS, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS, Settings.CHAT_LIST_BANNER, Settings.VOICE_CHANGER, Settings.LOCAL_PINS_ORDER));
         assertEquals(others, SettingsBackup.Snapshot.fromBundle(state).texts.keySet());
         state.getBundle("texts").putInt(Settings.TITLE_EMOJI.key, 1);
         assertEquals(others, SettingsBackup.Snapshot.fromBundle(state).texts.keySet());
@@ -1645,6 +1645,38 @@ public class SettingsBackupTest {
             assertTrue(AbstractPreferenceFragment.restartPending.isEmpty());
         } finally {
             Settings.LOCAL_PINNED_CHATS.resetToDefault();
+        }
+    }
+
+    /**
+     * The order those chats were dragged into goes out and comes back the same way, and the preview
+     * says only whether it's your own order, never which chats (#108).
+     */
+    @Test
+    public void theOrderOfChatsPinnedOnThisPhoneRoundTripsWithoutShowingTheChats() throws Exception {
+        Settings.LOCAL_PINS_ORDER.save("-34,12");
+        String file = SettingsBackup.create();
+        assertEquals("-34,12", new JSONObject(file).getJSONObject("settings").get(Settings.LOCAL_PINS_ORDER.key));
+        for (Object bad : new Object[]{"12,12", "0", "12,abc", "+5", "12,", 12, true}) {
+            JSONObject wrong = new JSONObject(file);
+            wrong.getJSONObject("settings").put(Settings.LOCAL_PINS_ORDER.key, bad);
+            assertEquals(String.valueOf(bad), SettingsBackup.Reason.VALUE, reasonFor(wrong.toString()));
+        }
+
+        Settings.LOCAL_PINS_ORDER.resetToDefault();
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
+            deliver(activity, tap(activity, page, IMPORT_ROW), file);
+            AlertDialog preview = shownPreview();
+            assertEquals("Order of chats pinned on this phone: Newest first to Your own order", String.valueOf(shadowOf(preview).getMessage()));
+            preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            settle();
+            assertEquals("Settings imported.", ShadowToast.getTextOfLatestToast());
+            assertEquals("-34,12", Settings.LOCAL_PINS_ORDER.savedValue());
+            assertTrue(AbstractPreferenceFragment.restartPending.isEmpty());
+        } finally {
+            Settings.LOCAL_PINS_ORDER.resetToDefault();
         }
     }
 

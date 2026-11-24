@@ -2548,3 +2548,13 @@ Hide Downloads button	Ocultar o botão Downloads
 The Downloads button stays out of the bar at the top of the chat list, even while a file downloads. Your downloads are still in the Downloads tab when you search.	O botão Downloads não aparece mais na barra no topo da lista de conversas, nem enquanto um arquivo é baixado. Seus downloads continuam na aba Downloads quando você busca.
 # context: Lowercase noun phrase in a status line. It names the part of Hide Contacts tab that hides the Downloads button (Telegram key DownloadsTabs) in the chat list's top bar.
 Downloads button	botão Downloads
+# context: Lowercase noun phrase in a status line. It names the part of Pin on this phone that lets you drag those chats into an order of your own.
+dragging chats pinned on this phone	arrastar as conversas fixadas neste telefone
+# context: Summary of the Pin chats on this phone switch when this build can drag those chats. Pin on this phone is the long press menu item; All Chats is Telegram's folder tab. Same wording as the summary without the drag, plus one sentence on how to drag.
+Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under your pinned chats in All Chats, newest first. To put them in your own order, long press one, then hold it again and drag it up or down. Nothing is sent to Telegram, so your other devices and Telegram's pin limit stay as they are.	Adiciona Fixar neste telefone ao menu que abre ao tocar e segurar na lista de conversas. Essas conversas ficam logo abaixo das suas conversas fixadas em Todos os Chats, as mais recentes primeiro. Para colocá-las na sua própria ordem, toque e segure uma delas, depois segure de novo e arraste para cima ou para baixo. Nada é enviado ao Telegram, então seus outros dispositivos e o limite de fixadas do Telegram continuam como estão.
+# context: Settings backup preview: the name of the saved order of the chats pinned on this phone, before its old and new values (Newest first, Your own order).
+Order of chats pinned on this phone	Ordem das conversas fixadas neste telefone
+# context: Settings backup preview: a value of Order of chats pinned on this phone. Those chats are listed newest first, nothing was dragged.
+Newest first	Mais recentes primeiro
+# context: Settings backup preview: a value of Order of chats pinned on this phone. You dragged those chats into an order of your own.
+Your own order	Sua própria ordem

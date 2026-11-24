@@ -18,6 +18,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** New **Add Send photo to the link preview menu** switch on the Conversations page, off by default. It comes with Add Repeat to the message menu. When a link preview in the message box has a picture, its menu gets a Send photo row that sends the picture as a normal photo. Your text goes with it as the caption if it fits, otherwise it stays in the box. (#101)
 * **Telegram:** HushTelegram's settings speak Italian now. Switch Telegram to Italian and every HushTelegram page, switch, search result and message follows. (#100)
 * **Telegram:** New **Hide Downloads button** switch on the Chat list page, off by default. The Downloads button no longer pops up in the bar at the top of the chat list while a file downloads, and your downloads are still in the Downloads tab when you search. (#113)
+* **Telegram:** Chats you pinned with **Pin on this phone** can now go in your own order. Long press one, then hold it again and drag it up or down, the way you move Telegram's own pins. The order stays put when new messages come in and after a restart, and it goes along in a settings file. They only trade places with each other, so Telegram's pins and your other devices aren't touched. (#108)
 
 ### Fixed
 

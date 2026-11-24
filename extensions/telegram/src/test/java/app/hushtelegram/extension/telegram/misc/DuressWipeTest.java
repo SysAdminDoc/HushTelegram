@@ -140,6 +140,7 @@ public class DuressWipeTest {
         Settings.BOOKMARKS.resetToDefault();
         Settings.KEPT_REMOVED_CHATS.resetToDefault();
         Settings.LOCAL_PINNED_CHATS.resetToDefault();
+        Settings.LOCAL_PINS_ORDER.resetToDefault();
         Settings.AUTO_FORWARDING_RULES.resetToDefault();
         Settings.RECEIVE_ONLY_ACCOUNTS.resetToDefault();
         Settings.POWERED_OFF_ACCOUNTS.resetToDefault();
@@ -244,6 +245,7 @@ public class DuressWipeTest {
         assertEquals("", Settings.BOOKMARKS.savedValue());
         assertEquals("", Settings.KEPT_REMOVED_CHATS.savedValue());
         assertEquals("", Settings.LOCAL_PINNED_CHATS.savedValue());
+        assertEquals("", Settings.LOCAL_PINS_ORDER.savedValue());
         assertEquals("", Settings.AUTO_FORWARDING_RULES.savedValue());
         assertEquals("", Settings.RECEIVE_ONLY_ACCOUNTS.savedValue());
         assertEquals("", Settings.POWERED_OFF_ACCOUNTS.savedValue());
@@ -401,6 +403,7 @@ public class DuressWipeTest {
         }
         assertEquals(Collections.singleton(42L), GhostChats.chats());
         assertEquals("42", Settings.LOCAL_PINNED_CHATS.savedValue());
+        assertEquals("42", Settings.LOCAL_PINS_ORDER.savedValue());
         assertEquals("1 2 3", Settings.AUTO_FORWARDING_RULES.savedValue());
         assertEquals("0", Settings.RECEIVE_ONLY_ACCOUNTS.savedValue());
         assertEquals("the open account was powered off and isn't now", "", Settings.POWERED_OFF_ACCOUNTS.savedValue());
@@ -435,6 +438,7 @@ public class DuressWipeTest {
         Settings.BOOKMARKS.save("1:2:3");
         Settings.KEPT_REMOVED_CHATS.save("42");
         Settings.LOCAL_PINNED_CHATS.save("42");
+        Settings.LOCAL_PINS_ORDER.save("42");
         Settings.AUTO_FORWARDING_RULES.save("1 2 3");
         Settings.RECEIVE_ONLY_ACCOUNTS.save("0");
         Settings.POWERED_OFF_ACCOUNTS.save("2");

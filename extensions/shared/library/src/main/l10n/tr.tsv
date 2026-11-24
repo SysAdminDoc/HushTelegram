@@ -2551,3 +2551,13 @@ Hide Downloads button	İndir düğmesini gizle
 The Downloads button stays out of the bar at the top of the chat list, even while a file downloads. Your downloads are still in the Downloads tab when you search.	İndir düğmesi, bir dosya inerken bile sohbet listesinin üstündeki çubukta görünmez. İndirdikleriniz, arama yaptığınızda İndir sekmesinde durur.
 # context: Lowercase noun phrase in a status line. It names the part of Hide Contacts tab that hides the Downloads button (Telegram key DownloadsTabs) in the chat list's top bar.
 Downloads button	İndir düğmesi
+# context: Lowercase noun phrase in a status line. It names the part of Pin on this phone that lets you drag those chats into an order of your own.
+dragging chats pinned on this phone	bu telefonda sabitlenen sohbetleri sürükleme
+# context: Summary of the Pin chats on this phone switch when this build can drag those chats. Pin on this phone is the long press menu item; All Chats is Telegram's folder tab. Same wording as the summary without the drag, plus one sentence on how to drag.
+Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under your pinned chats in All Chats, newest first. To put them in your own order, long press one, then hold it again and drag it up or down. Nothing is sent to Telegram, so your other devices and Telegram's pin limit stay as they are.	Sohbet listesinde uzun basınca açılan menüye Bu telefonda sabitle seçeneğini ekler. Bu sohbetler Tüm Sohbetler'de sabitlenmiş sohbetlerinin hemen altında, en yenisi önce olacak şekilde durur. Onları kendi sıralamana koymak için birine uzun bas, sonra yeniden basılı tutup yukarı ya da aşağı sürükle. Telegram'a hiçbir şey gönderilmez, bu yüzden diğer cihazların ve Telegram'ın sabitleme sınırı olduğu gibi kalır.
+# context: Settings backup preview: the name of the saved order of the chats pinned on this phone, before its old and new values (Newest first, Your own order).
+Order of chats pinned on this phone	Bu telefonda sabitlenen sohbetlerin sırası
+# context: Settings backup preview: a value of Order of chats pinned on this phone. Those chats are listed newest first, nothing was dragged.
+Newest first	En yenisi önce
+# context: Settings backup preview: a value of Order of chats pinned on this phone. You dragged those chats into an order of your own.
+Your own order	Kendi sıralaman

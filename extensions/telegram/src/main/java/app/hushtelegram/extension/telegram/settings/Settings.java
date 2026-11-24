@@ -532,6 +532,13 @@ public class Settings extends BaseSettings {
             new StringSetting("hushtelegram_local_pinned_chats", "");
 
     /**
+     * The order those chats were dragged into, the same comma-separated dialog ids, first on top.
+     * Empty keeps them newest first. A chat pinned since the last drag sits above the ordered ones.
+     */
+    public static final StringSetting LOCAL_PINS_ORDER =
+            new StringSetting("hushtelegram_local_pins_order", "");
+
+    /**
      * Chat list avatars show at {@link #CHAT_LIST_AVATAR_SIZE} percent of Telegram's size
      * ({@link app.hushtelegram.extension.telegram.misc.ChatListAvatar}).
      */

@@ -453,6 +453,7 @@ public enum PatchFamily {
         HIDDEN_CHATS(HIDE_FOLDER_COUNTERS, "hiddenChats", "chats hidden from the chat list", true),
         SORT_BY_DATE(HIDE_FOLDER_COUNTERS, "sortByDate", "chat list ordered by date", true),
         LOCAL_PINS(HIDE_FOLDER_COUNTERS, "localPins", "chats pinned on this phone", true),
+        LOCAL_PIN_ORDER(HIDE_FOLDER_COUNTERS, "localPinOrder", "dragging chats pinned on this phone", true),
         ADMIN_CHATS(HIDE_FOLDER_COUNTERS, "adminChats", "the Administrators filter", true),
         ADMIN_TOOLS(MY_MESSAGES, "adminTools", "admin tools in a chat's menu", true),
         ADMIN_FOLDER(CHAT_TYPE_FOLDERS, "adminFolder", "the Admin folder", true),

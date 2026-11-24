@@ -2551,3 +2551,13 @@ Hide Downloads button	隐藏下载按钮
 The Downloads button stays out of the bar at the top of the chat list, even while a file downloads. Your downloads are still in the Downloads tab when you search.	聊天列表顶部栏不再显示下载按钮，即使正在下载文件也是如此。搜索时，你下载的内容仍在“下载”标签中.
 # context: Lowercase noun phrase in a status line. It names the part of Hide Contacts tab that hides the Downloads button (Telegram key DownloadsTabs) in the chat list's top bar.
 Downloads button	下载按钮
+# context: Lowercase noun phrase in a status line. It names the part of Pin on this phone that lets you drag those chats into an order of your own.
+dragging chats pinned on this phone	拖动在这部手机上置顶的聊天
+# context: Summary of the Pin chats on this phone switch when this build can drag those chats. Pin on this phone is the long press menu item; All Chats is Telegram's folder tab. Same wording as the summary without the drag, plus one sentence on how to drag.
+Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under your pinned chats in All Chats, newest first. To put them in your own order, long press one, then hold it again and drag it up or down. Nothing is sent to Telegram, so your other devices and Telegram's pin limit stay as they are.	在聊天列表的长按菜单中加入“在这部手机上置顶”。这些聊天会排在“所有聊天”中你的置顶聊天下方，最新的在前。要按你自己的顺序排列，先长按其中一个，然后再次按住并上下拖动。不会向 Telegram 发送任何内容，所以你的其他设备和 Telegram 的置顶数量上限都保持不变.
+# context: Settings backup preview: the name of the saved order of the chats pinned on this phone, before its old and new values (Newest first, Your own order).
+Order of chats pinned on this phone	在这部手机上置顶的聊天的顺序
+# context: Settings backup preview: a value of Order of chats pinned on this phone. Those chats are listed newest first, nothing was dragged.
+Newest first	最新的在前
+# context: Settings backup preview: a value of Order of chats pinned on this phone. You dragged those chats into an order of your own.
+Your own order	你自己的顺序

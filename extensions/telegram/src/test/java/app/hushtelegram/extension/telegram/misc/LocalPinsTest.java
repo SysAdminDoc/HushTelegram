@@ -53,6 +53,7 @@ public class LocalPinsTest {
 
     private HiddenChatsForTests.Fake telegram;
     private final Map<Long, Integer> dates = new HashMap<>();
+    private LocalPins.Drag stockDrag;
 
     @Before public void setUp() {
         // All Chats as Telegram sorts it: the archive row, two server pins (11, 12), then 13 to 17 newest first.
@@ -79,8 +80,10 @@ public class LocalPinsTest {
         };
         PatchFamilyForTests.installed(PatchFamily.Capability.LOCAL_PINS);
         LocalPins.selection = list -> telegram.picked;
+        stockDrag = LocalPins.drag;
         Settings.LOCAL_PINS.resetToDefault();
         Settings.LOCAL_PINNED_CHATS.resetToDefault();
+        Settings.LOCAL_PINS_ORDER.resetToDefault();
         Settings.SORT_BY_DATE.resetToDefault();
         Settings.SORT_OLDEST_FIRST.resetToDefault();
         Settings.HIDDEN_CHATS.resetToDefault();
@@ -92,6 +95,8 @@ public class LocalPinsTest {
         PauseForTests.resume();
         PatchFamilyForTests.resetCapabilities();
         LocalPins.selection = LocalPins::selectedOf;
+        LocalPins.drag = stockDrag;
+        Settings.LOCAL_PINS_ORDER.resetToDefault();
         ChatSort.telegram = new ChatSort.Telegram() {
             @Override public int lastDate(Object dialog) { return ChatSort.lastDate(dialog); }
             @Override public boolean isFolder(Object dialog) { return ChatSort.isFolder(dialog); }
@@ -345,6 +350,163 @@ public class LocalPinsTest {
         ids.add("21");
         assertFalse(LocalPins.allowed(String.join(",", ids)));
         assertEquals("12,-34", LocalPins.join(LocalPins.parse("12,-34")));
+    }
+
+    /** Telegram's side of a drag: its own pins, the page shown and its note that its pins moved. */
+    private final class FakeDrag implements LocalPins.Drag {
+        int page = 0;
+        final List<Object> told = new ArrayList<>();
+
+        @Override public boolean pinned(Object activity, Object dialog) { return telegram.pinned(dialog); }
+        @Override public int page(Object activity) { return page; }
+        @Override public void changed(Object activity) { told.add(activity); }
+    }
+
+    private FakeDrag drag() {
+        FakeDrag drag = new FakeDrag();
+        LocalPins.drag = drag;
+        PatchFamilyForTests.installed(PatchFamily.Capability.LOCAL_PINS, PatchFamily.Capability.LOCAL_PIN_ORDER);
+        // Telegram's getDialogs(0) is the same list the sort puts in order.
+        telegram.chats.put("0/0", telegram.folders.get(0));
+        return drag;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Object> list() {
+        return (List<Object>) telegram.folders.get(0);
+    }
+
+    private Object chat(long id) {
+        for (Object dialog : list()) if (((HiddenChatsForTests.Dialog) dialog).id == id) return dialog;
+        throw new AssertionError("no chat " + id);
+    }
+
+    /** What Telegram's onMove does once both answers are yes: the two chats trade places, then it notes the move. */
+    private void move(Object activity, long from, long to) {
+        Collections.swap(list(), list().indexOf(chat(from)), list().indexOf(chat(to)));
+        LocalPins.moved(activity);
+    }
+
+    @Test public void aChatPinnedHereDragsOnlyOntoAnotherAndItsOrderOutlastsNewMessages() {
+        FakeDrag drag = drag();
+        Settings.LOCAL_PINS.save(true);
+        Settings.LOCAL_PINNED_CHATS.save("13,15,16");
+        HiddenChats.prune(new Object());
+        assertEquals("[99, 11, 12, 13, 15, 16, 14, 17]", all());
+        Object activity = new Object();
+        assertTrue(LocalPins.dragFrom(activity, chat(16)));
+        // Telegram's pins, chats not pinned here and the archive's row never trade places with it.
+        assertFalse(LocalPins.dropOn(activity, chat(12)));
+        assertFalse(LocalPins.dropOn(activity, chat(14)));
+        assertFalse(LocalPins.dropOn(activity, chat(ARCHIVE)));
+        assertTrue(LocalPins.dropOn(activity, chat(15)));
+        move(activity, 16, 15);
+        assertTrue(LocalPins.dropOn(activity, chat(13)));
+        move(activity, 16, 13);
+        assertEquals("[99, 11, 12, 16, 13, 15, 14, 17]", all());
+        assertEquals("16,13,15", Settings.LOCAL_PINS_ORDER.get());
+        assertTrue("Telegram isn't told: none of its pins moved", drag.told.isEmpty());
+        assertTrue(report(), report().contains(LocalPins.DRAGGED));
+        // A newer message no longer moves it among the ones pinned here.
+        dates.put(15L, 900);
+        HiddenChats.prune(new Object());
+        assertEquals("[99, 11, 12, 16, 13, 15, 14, 17]", all());
+    }
+
+    @Test public void telegramsOwnPinsDragAsTheyAlwaysDid() {
+        FakeDrag drag = drag();
+        Settings.LOCAL_PINS.save(true);
+        Settings.LOCAL_PINNED_CHATS.save("13,15");
+        HiddenChats.prune(new Object());
+        Object activity = new Object();
+        assertTrue(LocalPins.dragFrom(activity, chat(11)));
+        assertTrue(LocalPins.dropOn(activity, chat(12)));
+        assertFalse("a chat pinned here isn't one of Telegram's", LocalPins.dropOn(activity, chat(13)));
+        move(activity, 11, 12);
+        assertEquals(Collections.singletonList(activity), drag.told);
+        assertEquals("", Settings.LOCAL_PINS_ORDER.get());
+        // A chat nobody pinned can't be dragged at all.
+        assertFalse(LocalPins.dragFrom(activity, chat(14)));
+    }
+
+    @Test public void folderTabsTheArchiveAndAnOffSwitchLeaveTheDragToTelegram() {
+        FakeDrag drag = drag();
+        Settings.LOCAL_PINS.save(true);
+        Settings.LOCAL_PINNED_CHATS.save("13,15,16");
+        Object activity = new Object();
+        drag.page = 7;
+        assertFalse("a folder tab keeps Telegram's own pins", LocalPins.dragFrom(activity, chat(16)));
+        drag.page = 0;
+        // The archive's 13 is pinned here too, but the archive keeps Telegram's order.
+        assertFalse(LocalPins.dragFrom(activity, ((List<?>) telegram.folders.get(1)).get(0)));
+        Settings.LOCAL_PINS.save(false);
+        assertFalse(LocalPins.dragFrom(activity, chat(16)));
+        Settings.LOCAL_PINS.save(true);
+        for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
+            if (reason == HushTelegramPause.Reason.NONE) continue;
+            PauseForTests.pause(reason);
+            assertFalse(reason.name(), LocalPins.dragFrom(activity, chat(16)));
+            PauseForTests.resume();
+        }
+        PatchFamilyForTests.installed(PatchFamily.Capability.LOCAL_PINS);
+        assertFalse("a build without the drag hooks", LocalPins.dragFrom(activity, chat(16)));
+        PatchFamilyForTests.installed(PatchFamily.Capability.LOCAL_PINS, PatchFamily.Capability.LOCAL_PIN_ORDER);
+        SettingReadsForTests.breakReads(Settings.LOCAL_PINS);
+        assertFalse(LocalPins.dragFrom(activity, chat(16)));
+        assertTrue("Telegram's own pins still drag", LocalPins.dragFrom(activity, chat(11)));
+        // Each of those left the move to Telegram, so it's told as before.
+        move(activity, 11, 12);
+        assertEquals(Collections.singletonList(activity), drag.told);
+        assertEquals("", Settings.LOCAL_PINS_ORDER.get());
+    }
+
+    @Test public void aChatPinnedSinceTheLastDragSitsAboveTheOrderedOnes() {
+        Settings.LOCAL_PINS.save(true);
+        Settings.LOCAL_PINNED_CHATS.save("15,16,17");
+        Settings.LOCAL_PINS_ORDER.save("17,16");
+        HiddenChats.prune(new Object());
+        assertEquals("[99, 11, 12, 15, 17, 16, 13, 14]", all());
+        // Two new ones sit newest first above them, and a value this never wrote is no order at all.
+        Settings.LOCAL_PINNED_CHATS.save("13,15,16,17");
+        HiddenChats.prune(new Object());
+        assertEquals("[99, 11, 12, 13, 15, 17, 16, 14]", all());
+        Settings.LOCAL_PINS_ORDER.save("17,abc");
+        HiddenChats.prune(new Object());
+        assertEquals("[99, 11, 12, 13, 15, 16, 17, 14]", all());
+    }
+
+    @Test public void unpinningTakesTheChatOutOfTheOrderAndOtherListsKeepTheirPlaces() throws Exception {
+        drag();
+        Settings.LOCAL_PINS.save(true);
+        // 40 is pinned here from another account's chat list.
+        Settings.LOCAL_PINNED_CHATS.save("13,15,16,40");
+        Settings.LOCAL_PINS_ORDER.save("40,16,15,13");
+        HiddenChats.prune(new Object());
+        assertEquals("[99, 11, 12, 16, 15, 13, 14, 17]", all());
+        Object activity = new Object();
+        assertTrue(LocalPins.dragFrom(activity, chat(13)));
+        assertTrue(LocalPins.dropOn(activity, chat(15)));
+        move(activity, 13, 15);
+        assertEquals("16,13,15,40", Settings.LOCAL_PINS_ORDER.get());
+        telegram.picked.add(13L);
+        tap(LocalPins.UNPIN_ID);
+        assertEquals("15,16,40", Settings.LOCAL_PINNED_CHATS.get());
+        assertEquals("16,15,40", Settings.LOCAL_PINS_ORDER.get());
+        // Pinned again, it starts above the ordered ones.
+        tap(LocalPins.PIN_ID);
+        HiddenChats.prune(new Object());
+        assertEquals("[99, 11, 12, 13, 16, 15, 14, 17]", all());
+    }
+
+    @Test public void theDraggedOrderPutsNewPicksFirstThenTheOrder() {
+        Map<String, Long> ids = new HashMap<>();
+        for (String each : new String[]{"a", "b", "c", "d"}) ids.put(each, (long) each.charAt(0));
+        List<String> list = new ArrayList<>(Arrays.asList("a", "b", "c", "d"));
+        LinkedHashSet<Long> order = new LinkedHashSet<>(Arrays.asList((long) 'c', (long) 'a'));
+        list.sort(LocalPins.<String>dragged(order, ids::get, java.util.Comparator.<String>reverseOrder()));
+        assertEquals(Arrays.asList("d", "b", "c", "a"), list);
+        list.sort(LocalPins.<String>dragged(Collections.<Long>emptySet(), ids::get, java.util.Comparator.<String>naturalOrder()));
+        assertEquals(Arrays.asList("a", "b", "c", "d"), list);
     }
 
     @Test public void theToastsFitTwoLinesInEveryLanguage() {

@@ -2551,3 +2551,13 @@ Hide Downloads button	Sembunyikan tombol Unduhan
 The Downloads button stays out of the bar at the top of the chat list, even while a file downloads. Your downloads are still in the Downloads tab when you search.	Tombol Unduhan tidak muncul di bilah atas daftar obrolan, bahkan saat file sedang diunduh. Unduhan Anda tetap ada di tab Unduhan saat Anda mencari.
 # context: Lowercase noun phrase in a status line. It names the part of Hide Contacts tab that hides the Downloads button (Telegram key DownloadsTabs) in the chat list's top bar.
 Downloads button	tombol Unduhan
+# context: Lowercase noun phrase in a status line. It names the part of Pin on this phone that lets you drag those chats into an order of your own.
+dragging chats pinned on this phone	menyeret chat yang disematkan di ponsel ini
+# context: Summary of the Pin chats on this phone switch when this build can drag those chats. Pin on this phone is the long press menu item; All Chats is Telegram's folder tab. Same wording as the summary without the drag, plus one sentence on how to drag.
+Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under your pinned chats in All Chats, newest first. To put them in your own order, long press one, then hold it again and drag it up or down. Nothing is sent to Telegram, so your other devices and Telegram's pin limit stay as they are.	Menambahkan Sematkan di ponsel ini ke menu tekan lama di daftar obrolan. Chat itu berada tepat di bawah chat yang Anda sematkan di Semua Obrolan, yang terbaru lebih dulu. Untuk menyusunnya sesuai urutan Anda sendiri, tekan lama salah satunya, lalu tahan lagi dan seret ke atas atau ke bawah. Tidak ada yang dikirim ke Telegram, jadi perangkat Anda yang lain dan batas sematan Telegram tetap seperti biasa.
+# context: Settings backup preview: the name of the saved order of the chats pinned on this phone, before its old and new values (Newest first, Your own order).
+Order of chats pinned on this phone	Urutan chat yang disematkan di ponsel ini
+# context: Settings backup preview: a value of Order of chats pinned on this phone. Those chats are listed newest first, nothing was dragged.
+Newest first	Terbaru lebih dulu
+# context: Settings backup preview: a value of Order of chats pinned on this phone. You dragged those chats into an order of your own.
+Your own order	Urutan Anda sendiri
