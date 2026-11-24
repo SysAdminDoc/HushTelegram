@@ -144,6 +144,7 @@ public class PatchFamilyTest {
         Settings.CHANGE_STICKER_SIZE.resetToDefault();
         Settings.KEEP_STICKER_CACHE.resetToDefault();
         Settings.STICKER_SIZE.resetToDefault();
+        Settings.STICKER_PANEL_SIZE.resetToDefault();
         Settings.IGNORE_MUTED_MENTIONS.resetToDefault();
         Settings.HIDE_BLOCKED_IN_GROUPS.resetToDefault();
         Settings.HIDE_BY_KEYWORD.resetToDefault();
@@ -611,7 +612,13 @@ public class PatchFamilyTest {
         assertEquals(75, (int) Settings.STICKER_SIZE.defaultValue);
         assertEquals(50, Settings.STICKER_SIZE.minimum());
         assertEquals(150, Settings.STICKER_SIZE.maximum());
-        assertEquals(EnumSet.of(PatchFamily.Capability.KEEP_STICKER_CACHE), family.expectedCapabilities());
+        assertEquals(72, (int) Settings.STICKER_PANEL_SIZE.defaultValue);
+        assertEquals(72, Settings.STICKER_PANEL_SIZE.minimum());
+        assertEquals(120, Settings.STICKER_PANEL_SIZE.maximum());
+        assertEquals(EnumSet.of(PatchFamily.Capability.KEEP_STICKER_CACHE, PatchFamily.Capability.STICKER_PANEL_SIZE),
+                family.expectedCapabilities());
+        assertEquals("stickerPanelSize", PatchFamily.Capability.STICKER_PANEL_SIZE.statusMethod);
+        assertTrue(PatchFamily.Capability.STICKER_PANEL_SIZE.rowOnly);
         assertOnItsPage(family);
     }
 

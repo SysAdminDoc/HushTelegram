@@ -535,6 +535,10 @@ public class SettingsBackupPreference extends Preference {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Avatar size"),
                         percent.format(ChatListAvatar.percent(Settings.CHAT_LIST_AVATAR_SIZE.savedValue()) / 100.0),
                         percent.format(((Integer) change.getValue()) / 100.0)));
+            } else if (change.getKey() == Settings.STICKER_PANEL_SIZE) {
+                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Sticker panel size"),
+                        HushTelegramPreferenceFragment.stickerPanelLabel(Settings.STICKER_PANEL_SIZE.savedValue()),
+                        HushTelegramPreferenceFragment.stickerPanelLabel((Integer) change.getValue())));
             } else if (change.getKey() == Settings.LIST_BACKGROUND_DIM) {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Background dim"),
                         HushTelegramPreferenceFragment.percent(Settings.LIST_BACKGROUND_DIM.savedValue()),

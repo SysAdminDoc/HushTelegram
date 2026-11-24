@@ -300,6 +300,7 @@ public class SettingsNavigationTest {
         assertEquals(position(Settings.KEEP_SECRET_TIMED.key) + 1, position(Settings.KEEP_REMOVED_CHATS.key));
         page.navigation.navigate(PatchFamily.Page.LOOK.title);
         assertEquals(position(Settings.CHANGE_STICKER_SIZE.key) + 1, position(HushTelegramPreferenceFragment.STICKER_SIZE_ROW));
+        assertEquals(position(Settings.KEEP_STICKER_CACHE.key) + 1, position(HushTelegramPreferenceFragment.STICKER_PANEL_ROW));
         assertEquals(position(Settings.HOLIDAY_LOOK.key) + 1, position(TitleEmojiEditor.KEY));
         assertEquals(position(TitleEmojiEditor.KEY) + 1, position(Settings.CHAT_LIST_TITLE.key));
         assertEquals(position(Settings.CHAT_LIST_TITLE.key) + 1, position(TitleEmojiEditor.TITLE_KEY));
@@ -1832,7 +1833,8 @@ public class SettingsNavigationTest {
             // emoji and title text, the translation service and language, the push app, Open a chat by ID, the proxy
             // lists, the V2Ray links and server, the device in Active sessions and the link preview rules. The background
             // picture row takes Android 13, so HushTelegramPreferenceFragmentTest tries it locked there.
-            for (String key : Arrays.asList(HushTelegramPreferenceFragment.STICKER_SIZE_ROW, HushTelegramPreferenceFragment.AVATAR_SIZE_ROW,
+            for (String key : Arrays.asList(HushTelegramPreferenceFragment.STICKER_SIZE_ROW, HushTelegramPreferenceFragment.STICKER_PANEL_ROW,
+                    HushTelegramPreferenceFragment.AVATAR_SIZE_ROW,
                     HushTelegramPreferenceFragment.CHAT_LIST_BANNER_ROW,
                     HushTelegramPreferenceFragment.FONT_FILE_ROW, FilterEditor.GROUPS,
                     FilterEditor.CHANNELS, TitleEmojiEditor.KEY, TitleEmojiEditor.TITLE_KEY, StorageFolderEditor.KEY, TranslateServiceEditor.KEY, TranslateTargetPicker.KEY,
@@ -1849,6 +1851,8 @@ public class SettingsNavigationTest {
             }
             page.showStickerSizes(controller.get(), page.findPreference(HushTelegramPreferenceFragment.STICKER_SIZE_ROW));
             assertSame("sticker sizes opened while locked", shown, org.robolectric.shadows.ShadowDialog.getLatestDialog());
+            page.showStickerPanelSizes(controller.get(), page.findPreference(HushTelegramPreferenceFragment.STICKER_PANEL_ROW));
+            assertSame("sticker panel sizes opened while locked", shown, org.robolectric.shadows.ShadowDialog.getLatestDialog());
             page.showAvatarSizes(controller.get(), page.findPreference(HushTelegramPreferenceFragment.AVATAR_SIZE_ROW));
             assertSame("avatar sizes opened while locked", shown, org.robolectric.shadows.ShadowDialog.getLatestDialog());
             // Every setting that was loaded when the lock went on holds what it held then.

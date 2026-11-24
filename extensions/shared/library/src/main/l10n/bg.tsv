@@ -2599,3 +2599,15 @@ Keep downloaded stickers	Запазване на изтеглените стик
 Telegram's automatic cache cleanup leaves sticker files alone, so sticker packs you've used don't download again. Clearing the cache yourself still removes them.	Автоматичното почистване на кеша в Telegram не пипа файловете със стикери, така че пакетите със стикери, които си използвал, не се изтеглят отново. Ако изчистиш кеша сам, те пак се премахват.
 # context: Lowercase noun phrase in a status line. It names the part of Change sticker size that keeps sticker files through Telegram's automatic cache cleanup.
 sticker files kept through cache cleanup	файловете със стикери, запазени при почистването на кеша
+# context: Look and feel page row title and its dialog's title, under Change sticker size. It picks how big stickers show in the sticker panel below the message box, where you pick a sticker to send, and in that panel's search.
+Sticker panel size	Размер в панела със стикери
+# context: A choice in the Sticker panel size dialog and the row's summary: the panel as Telegram ships it.
+Telegram's size	Размерът на Telegram
+# context: A choice in the Sticker panel size dialog: bigger stickers than Telegram's, fewer to a row.
+Large	Голям
+# context: A choice in the Sticker panel size dialog: bigger again than Large.
+Larger	По-голям
+# context: The Sticker panel size row's summary. %1$s is the size picked: Telegram's size, Large or Larger.
+%1$s. A bigger size shows fewer, bigger stickers in the sticker panel and its search. A chat picks this up the next time you open it.	%1$s. По-големият размер показва по-малко, но по-големи стикери в панела със стикери и в търсенето му. Чатът го отчита при следващото отваряне.
+# context: Lowercase noun phrase in a status line. It names the part of Change sticker size that sets how big stickers show in the sticker panel.
+sticker size in the sticker panel	размер на стикерите в панела със стикери

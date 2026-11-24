@@ -681,6 +681,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_keep_sticker_cache", FALSE);
 
     /**
+     * How wide the sticker panel's columns are, in dp: one of StickerPanel.CHOICES. Telegram's 72
+     * leaves the panel as it ships; a bigger one shows fewer, bigger stickers there and in its search
+     * ({@link app.hushtelegram.extension.telegram.misc.StickerPanel}).
+     */
+    public static final IntegerSetting STICKER_PANEL_SIZE =
+            new IntegerSetting("hushtelegram_sticker_panel_size", 72).withRange(72, 120);
+
+    /**
      * A mention or a reply to you in a muted group or channel stays as quiet as the rest of the chat.
      */
     public static final BooleanSetting IGNORE_MUTED_MENTIONS =

@@ -995,6 +995,11 @@ public class HushTelegramPreferenceFragmentTest {
                     String.valueOf(page.findPreference(Settings.KEEP_STICKER_CACHE.key).getSummary()));
             // The cleanup takes stickers as before until the switch is turned on.
             assertFalse(((SwitchPreference) page.findPreference(Settings.KEEP_STICKER_CACHE.key)).isChecked());
+            assertEquals("Sticker panel size", String.valueOf(page.findPreference(HushTelegramPreferenceFragment.STICKER_PANEL_ROW).getTitle()));
+            // The panel keeps Telegram's sizes until a bigger one is picked.
+            assertEquals("Telegram's size. A bigger size shows fewer, bigger stickers in the sticker panel and its search. "
+                    + "A chat picks this up the next time you open it.",
+                    String.valueOf(page.findPreference(HushTelegramPreferenceFragment.STICKER_PANEL_ROW).getSummary()));
             assertEquals("Ignore mentions in muted chats", String.valueOf(page.findPreference(Settings.IGNORE_MUTED_MENTIONS.key).getTitle()));
             assertEquals("Mentions and replies in groups or channels you've muted no longer notify you. Chats you "
                     + "haven't muted notify as before.",
@@ -1618,6 +1623,53 @@ public class HushTelegramPreferenceFragmentTest {
             assertFalse("picking a size leaves the switch alone", Settings.CHANGE_STICKER_SIZE.savedValue());
         } finally {
             Settings.STICKER_SIZE.resetToDefault();
+        }
+    }
+
+    /**
+     * Change sticker size brings a Sticker panel size row as its last row when the panel's hooks
+     * went in (#110). A tap lists Telegram's size, Large and Larger with the saved one checked, and
+     * a pick saves it at once and closes the list. A build whose panel couldn't take the hooks has
+     * no row.
+     */
+    @Test
+    public void theStickerPanelSizeRowListsTheSizesAndSavesThePick() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.CHANGE_STICKER_SIZE);
+        PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.KEEP_STICKER_CACHE);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            assertNull(pageOf(controller).findPreference(HushTelegramPreferenceFragment.STICKER_PANEL_ROW));
+        }
+        PatchFamily.capabilitiesForTests = EnumSet.allOf(PatchFamily.Capability.class);
+        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+            List<Preference> rows = new ArrayList<>();
+            collect(pageOf(controller).getPreferenceScreen(), rows);
+            int cache = indexOfKey(rows, Settings.KEEP_STICKER_CACHE.key);
+            Preference panel = rows.get(cache + 1);
+            assertEquals(HushTelegramPreferenceFragment.STICKER_PANEL_ROW, panel.getKey());
+            assertEquals("Look and feel", String.valueOf(panel.getParent().getTitle()));
+            assertFalse("it stores nothing itself", panel.isPersistent());
+
+            assertTrue(panel.getOnPreferenceClickListener().onPreferenceClick(panel));
+            ShadowLooper.idleMainLooper();
+            AlertDialog list = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            assertTrue(list.isShowing());
+            assertEquals("Sticker panel size", String.valueOf(shadowOf(list).getTitle()));
+            ListView choices = list.getListView();
+            List<String> labels = new ArrayList<>();
+            for (int i = 0; i < choices.getCount(); i++) labels.add(String.valueOf(choices.getAdapter().getItem(i)));
+            assertEquals(Arrays.asList("Telegram's size", "Large", "Larger"), labels);
+            assertEquals("the saved size is checked", 0, choices.getCheckedItemPosition());
+
+            shadowOf(list).clickOnItem(2);
+            settle();
+            assertFalse(list.isShowing());
+            assertEquals(120, (int) Settings.STICKER_PANEL_SIZE.savedValue());
+            assertEquals("Larger. A bigger size shows fewer, bigger stickers in the sticker panel and its search. "
+                    + "A chat picks this up the next time you open it.", String.valueOf(panel.getSummary()));
+            assertFalse("picking a size leaves the switch alone", Settings.CHANGE_STICKER_SIZE.savedValue());
+            assertEquals(Integer.valueOf(75), Settings.STICKER_SIZE.savedValue());
+        } finally {
+            Settings.STICKER_PANEL_SIZE.resetToDefault();
         }
     }
 

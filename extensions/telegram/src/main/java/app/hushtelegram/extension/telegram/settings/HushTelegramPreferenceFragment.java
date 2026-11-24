@@ -119,6 +119,7 @@ import app.hushtelegram.extension.telegram.misc.VoiceChanger;
 import app.hushtelegram.extension.telegram.misc.SaveDownloads;
 import app.hushtelegram.extension.telegram.misc.SavedPicture;
 import app.hushtelegram.extension.telegram.misc.SpecialContacts;
+import app.hushtelegram.extension.telegram.misc.StickerPanel;
 import app.hushtelegram.extension.telegram.misc.StickerSize;
 import app.hushtelegram.extension.telegram.misc.StorageFolder;
 import app.hushtelegram.extension.telegram.misc.BottomFolderTabs;
@@ -163,6 +164,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
     static final String CLEAR_EDITS = "action_clear_edit_history";
     /** The Sticker size row's key. The size itself is saved under {@link Settings#STICKER_SIZE}. */
     static final String STICKER_SIZE_ROW = "action_sticker_size";
+    /** The Sticker panel size row's key. The size itself is saved under {@link Settings#STICKER_PANEL_SIZE}. */
+    static final String STICKER_PANEL_ROW = "action_sticker_panel_size";
     /** The Avatar size row's key. The size itself is saved under {@link Settings#CHAT_LIST_AVATAR_SIZE}. */
     static final String AVATAR_SIZE_ROW = "action_chat_list_avatar_size";
     /** The Gallery folder row's key. The choice itself is saved under {@link Settings#GALLERY_FOLDER}. */
@@ -411,6 +414,8 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
         if (size != null) size.setSummary(stickerSizeSummary());
         Preference avatarSize = findPreference(AVATAR_SIZE_ROW);
         if (avatarSize != null) avatarSize.setSummary(avatarSizeSummary());
+        Preference panelSize = findPreference(STICKER_PANEL_ROW);
+        if (panelSize != null) panelSize.setSummary(stickerPanelSummary());
         Preference emoji = findPreference(TitleEmojiEditor.KEY);
         if (emoji != null) emoji.setSummary(TitleEmojiEditor.summary(Settings.TITLE_EMOJI.savedValue()));
         Preference ownTitle = findPreference(TitleEmojiEditor.TITLE_KEY);
@@ -1773,6 +1778,7 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("Telegram's automatic cache cleanup leaves sticker files alone, so sticker packs you've used don't "
                                 + "download again. Clearing the cache yourself still removes them.")));
             }
+            if (PatchFamily.Capability.STICKER_PANEL_SIZE.installed()) page.addPreference(stickerPanelRow(context));
         }
         if (build.contains(PatchFamily.HIDE_CHANNEL_BUTTONS)) {
             on(pages, PatchFamily.HIDE_CHANNEL_BUTTONS).addPreference(toggle(context, Settings.HIDE_CHANNEL_BUTTONS, L10n.t("Hide channel bar buttons"),
@@ -2831,6 +2837,72 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
 
     static String stickerSizeSummary() {
         return L10n.f("%1$s of Telegram's size", percent(StickerSize.percent(Settings.STICKER_SIZE.savedValue())));
+    }
+
+    /**
+     * How big stickers show in the sticker panel and its search (#110): the row says the size
+     * picked, and a tap lists the others.
+     */
+    private Preference stickerPanelRow(Context context) {
+        Row row = new Row(context);
+        row.setKey(STICKER_PANEL_ROW);
+        row.setTitle(L10n.t("Sticker panel size"));
+        row.setPersistent(false);
+        row.setSummary(stickerPanelSummary());
+        row.setOnPreferenceClickListener(p -> {
+            showStickerPanelSizes(context, p);
+            return true;
+        });
+        return row;
+    }
+
+    /** The sticker panel sizes, picked the way {@link #showStickerSizes} picks a sticker size. */
+    void showStickerPanelSizes(Context context, Preference row) {
+        if (SettingsLock.refuses()) return;
+        CharSequence[] labels = new CharSequence[StickerPanel.CHOICES.length];
+        for (int i = 0; i < labels.length; i++) labels[i] = stickerPanelLabel(StickerPanel.CHOICES[i]);
+        show(new AlertDialog.Builder(context)
+                .setTitle(L10n.t("Sticker panel size"))
+                .setSingleChoiceItems(labels, savedStickerPanelChoice(), (dialog, which) -> {
+                    boolean started = save((AlertDialog) dialog,
+                            () -> Settings.STICKER_PANEL_SIZE.saveCommitted(StickerPanel.CHOICES[which]), landed -> {
+                                if (landed) {
+                                    row.setSummary(stickerPanelSummary());
+                                    dialog.dismiss();
+                                } else {
+                                    checkSavedStickerPanelSize((AlertDialog) dialog);
+                                    Utils.showToastLong(L10n.t("Couldn't save the size. Try again in a moment."));
+                                }
+                            });
+                    if (!started) checkSavedStickerPanelSize((AlertDialog) dialog);
+                })
+                .setNegativeButton(L10n.t("Cancel"), null));
+    }
+
+    /** Where the saved panel size sits among the choices. One that's none of them reads as Telegram's. */
+    static int savedStickerPanelChoice() {
+        int saved = StickerPanel.choice(Settings.STICKER_PANEL_SIZE.savedValue());
+        for (int i = 0; i < StickerPanel.CHOICES.length; i++) {
+            if (StickerPanel.CHOICES[i] == saved) return i;
+        }
+        return -1;
+    }
+
+    private static void checkSavedStickerPanelSize(AlertDialog dialog) {
+        dialog.getListView().setItemChecked(savedStickerPanelChoice(), true);
+    }
+
+    static String stickerPanelSummary() {
+        return L10n.f("%1$s. A bigger size shows fewer, bigger stickers in the sticker panel and its search. "
+                + "A chat picks this up the next time you open it.", stickerPanelLabel(Settings.STICKER_PANEL_SIZE.savedValue()));
+    }
+
+    /** A panel size's name: Telegram's size, Large or Larger. One that isn't a choice reads as Telegram's. */
+    static String stickerPanelLabel(int size) {
+        int choice = StickerPanel.choice(size);
+        if (choice == StickerPanel.CHOICES[1]) return L10n.t("Large");
+        if (choice == StickerPanel.CHOICES[2]) return L10n.t("Larger");
+        return L10n.t("Telegram's size");
     }
 
     /** The size chat list avatars show at: the row says the one picked, and a tap lists the others. */

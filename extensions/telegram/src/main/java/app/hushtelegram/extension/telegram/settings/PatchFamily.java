@@ -460,6 +460,7 @@ public enum PatchFamily {
         LOCAL_PINS(HIDE_FOLDER_COUNTERS, "localPins", "chats pinned on this phone", true),
         LOCAL_PIN_ORDER(HIDE_FOLDER_COUNTERS, "localPinOrder", "dragging chats pinned on this phone", true),
         KEEP_STICKER_CACHE(CHANGE_STICKER_SIZE, "keepStickerCache", "sticker files kept through cache cleanup", true),
+        STICKER_PANEL_SIZE(CHANGE_STICKER_SIZE, "stickerPanelSize", "sticker size in the sticker panel", true),
         ADMIN_CHATS(HIDE_FOLDER_COUNTERS, "adminChats", "the Administrators filter", true),
         ADMIN_TOOLS(MY_MESSAGES, "adminTools", "admin tools in a chat's menu", true),
         ADMIN_FOLDER(CHAT_TYPE_FOLDERS, "adminFolder", "the Admin folder", true),

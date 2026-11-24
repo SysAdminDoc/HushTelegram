@@ -61,6 +61,7 @@ import app.hushtelegram.extension.telegram.misc.SaveDownloads;
 import app.hushtelegram.extension.telegram.misc.StorageFolder;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.OutsideTranslate;
+import app.hushtelegram.extension.telegram.misc.StickerPanel;
 import app.hushtelegram.extension.telegram.misc.StickerSize;
 import app.hushtelegram.extension.telegram.misc.TitleEmoji;
 import app.hushtelegram.extension.telegram.misc.TranslateTarget;
@@ -338,11 +339,11 @@ public final class SettingsBackup {
     /**
      * The numbers a file carries, each one of a few choices: the sticker size, how many days call
      * recordings stay, the chat list's avatar size, how much the picture behind the lists is
-     * dimmed and how many days kept deleted messages stay. A build from before them counts the name
-     * as unknown and leaves it out.
+     * dimmed, how many days kept deleted messages stay and the sticker panel's size. A build from
+     * before them counts the name as unknown and leaves it out.
      */
     static final List<IntegerSetting> NUMBERS = Arrays.asList(Settings.STICKER_SIZE, Settings.RECORD_CALLS_KEEP_DAYS,
-            Settings.CHAT_LIST_AVATAR_SIZE, Settings.LIST_BACKGROUND_DIM, Settings.KEEP_DELETED_DAYS);
+            Settings.CHAT_LIST_AVATAR_SIZE, Settings.LIST_BACKGROUND_DIM, Settings.KEEP_DELETED_DAYS, Settings.STICKER_PANEL_SIZE);
 
     /**
      * The short texts a file carries as they're saved: the emoji beside the chat list's title, the
@@ -871,6 +872,7 @@ public final class SettingsBackup {
         if (setting == Settings.KEEP_DELETED_DAYS) return KeepDeleted.DAYS.contains(value);
         if (setting == Settings.CHAT_LIST_AVATAR_SIZE) return ChatListAvatar.percent(value) == value;
         if (setting == Settings.LIST_BACKGROUND_DIM) return ListBackground.dimOffered(value);
+        if (setting == Settings.STICKER_PANEL_SIZE) return StickerPanel.choice(value) == value;
         return setting == Settings.STICKER_SIZE && StickerSize.percent(value) == value;
     }
 
