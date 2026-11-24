@@ -168,7 +168,7 @@ The Maps key is for the location picker. Make one in a Google Cloud project with
 
 If sign-in fails with `API_ID_PUBLISHED_FLOOD`, Telegram has refused the API ID that ships with the app, and HushTelegram says so on that screen. Register your own app (the steps are below), tap **Enter your API ID** in that message and type its `App api_id` and `App api_hash`. Telegram restarts and asks for the login code with your ID, no repatching needed. If that pair gets refused too, the same message comes back, and its box has **Remove** to go back to the app's own ID. Telegram still picks which login methods you get (a code in Telegram, SMS, email and so on), so keep any copy that's already signed in.
 
-You can also build your pair into the APK: patch with Use registered Telegram API credentials and fill in `apiId` and `apiHash`. On the Morphe command line, quote the ID as `-O "apiId='12345'"`, since a bare number never reaches the option. The result installs over your current HushTelegram build.
+You can also build your pair into the APK. In Morphe Manager, turn on **Settings > Advanced > Expert mode**, select Use registered Telegram API credentials, open its options, paste the two values into `apiId` and `apiHash` and patch. The result installs over your current HushTelegram build. On the Morphe command line, quote the ID as `-O "apiId='12345'"`, since a bare number never reaches the option.
 
 Filling in the form at [my.telegram.org/apps](https://my.telegram.org/apps):
 
@@ -178,7 +178,7 @@ Filling in the form at [my.telegram.org/apps](https://my.telegram.org/apps):
 4. **Platform:** Android. URL and Description can stay empty.
 5. Tap Create application, then copy `App api_id` and `App api_hash` into the app (or into the patch's options).
 
-A bare "ERROR" page usually goes away with your VPN or ad blocker off, in a private browser window. Typed into the app, your ID and hash stay on the phone, out of settings exports and diagnostic reports. Patched in, they end up inside the APK and in Morphe's patching report. Keep both private either way.
+A bare "ERROR" page usually goes away with your VPN or ad blocker off, in a private browser window. Telegram gives each account one app, so if you made one before with the same number, the page shows it with its `App api_id` and `App api_hash` instead of the form. Typed into the app, your ID and hash stay on the phone, out of settings exports and diagnostic reports. Patched in, they end up inside the APK and in Morphe's patching report. Keep both private either way.
 
 **Can Telegram tell?** Assume it can. Your patched copy is signed with your key, and Telegram reports a fingerprint of that key to its servers. **Could my account be limited?** Nobody can promise it won't be, so try a second account first if that worries you. **More than one account?** Switches belong to the app, so they apply to every account you've added. Your chats and calls still go through Telegram's servers, and HushTelegram doesn't send, read, forward or delete messages on your behalf.
 
