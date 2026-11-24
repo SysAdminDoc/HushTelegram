@@ -989,6 +989,12 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("Sticker size", String.valueOf(page.findPreference(HushTelegramPreferenceFragment.STICKER_SIZE_ROW).getTitle()));
             assertEquals("75% of Telegram's size",
                     String.valueOf(page.findPreference(HushTelegramPreferenceFragment.STICKER_SIZE_ROW).getSummary()));
+            assertEquals("Keep downloaded stickers", String.valueOf(page.findPreference(Settings.KEEP_STICKER_CACHE.key).getTitle()));
+            assertEquals("Telegram's automatic cache cleanup leaves sticker files alone, so sticker packs you've used don't "
+                    + "download again. Clearing the cache yourself still removes them.",
+                    String.valueOf(page.findPreference(Settings.KEEP_STICKER_CACHE.key).getSummary()));
+            // The cleanup takes stickers as before until the switch is turned on.
+            assertFalse(((SwitchPreference) page.findPreference(Settings.KEEP_STICKER_CACHE.key)).isChecked());
             assertEquals("Ignore mentions in muted chats", String.valueOf(page.findPreference(Settings.IGNORE_MUTED_MENTIONS.key).getTitle()));
             assertEquals("Mentions and replies in groups or channels you've muted no longer notify you. Chats you "
                     + "haven't muted notify as before.",

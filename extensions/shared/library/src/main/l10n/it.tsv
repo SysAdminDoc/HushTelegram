@@ -2560,3 +2560,9 @@ Order of chats pinned on this phone	Ordine delle chat fissate su questo telefono
 Newest first	Dalla più recente
 # context: Settings backup preview: a value of Order of chats pinned on this phone. You dragged those chats into an order of your own.
 Your own order	Il tuo ordine
+# context: Look and feel page switch title, under Change sticker size. When on, Telegram's automatic cache cleanup no longer deletes sticker files, so sticker packs don't download again.
+Keep downloaded stickers	Conserva gli sticker scaricati
+# context: that switch's summary. The cleanup is the one Telegram runs by itself (Keep media and the cache size limit); clearing the cache by hand is the person's own action.
+Telegram's automatic cache cleanup leaves sticker files alone, so sticker packs you've used don't download again. Clearing the cache yourself still removes them.	La pulizia automatica della cache di Telegram lascia stare i file degli sticker, così i pacchetti che hai usato non vengono scaricati di nuovo. Se svuoti la cache tu, vengono comunque rimossi.
+# context: Lowercase noun phrase in a status line. It names the part of Change sticker size that keeps sticker files through Telegram's automatic cache cleanup.
+sticker files kept through cache cleanup	file degli sticker conservati nella pulizia della cache

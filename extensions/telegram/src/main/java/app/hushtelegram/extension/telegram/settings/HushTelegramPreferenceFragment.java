@@ -1751,6 +1751,11 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.CHANGE_STICKER_SIZE.coverageSummary(L10n.t("Stickers in chats show at the size you pick below. "
                             + "Animated emoji and dice keep Telegram's size. A chat picks this up the next time you open it."))));
             page.addPreference(stickerSizeRow(context));
+            if (PatchFamily.Capability.KEEP_STICKER_CACHE.installed()) {
+                page.addPreference(toggle(context, Settings.KEEP_STICKER_CACHE, L10n.t("Keep downloaded stickers"),
+                        L10n.t("Telegram's automatic cache cleanup leaves sticker files alone, so sticker packs you've used don't "
+                                + "download again. Clearing the cache yourself still removes them.")));
+            }
         }
         if (build.contains(PatchFamily.HIDE_CHANNEL_BUTTONS)) {
             on(pages, PatchFamily.HIDE_CHANNEL_BUTTONS).addPreference(toggle(context, Settings.HIDE_CHANNEL_BUTTONS, L10n.t("Hide channel bar buttons"),

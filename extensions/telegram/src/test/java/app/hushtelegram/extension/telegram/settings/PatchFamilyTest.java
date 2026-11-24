@@ -141,6 +141,7 @@ public class PatchFamilyTest {
         Settings.HIDE_GALLERY_CAMERA_TILE.resetToDefault();
         Settings.HIDE_STICKER_TIME.resetToDefault();
         Settings.CHANGE_STICKER_SIZE.resetToDefault();
+        Settings.KEEP_STICKER_CACHE.resetToDefault();
         Settings.STICKER_SIZE.resetToDefault();
         Settings.IGNORE_MUTED_MENTIONS.resetToDefault();
         Settings.HIDE_BLOCKED_IN_GROUPS.resetToDefault();
@@ -588,13 +589,15 @@ public class PatchFamilyTest {
     public void changeStickerSizeHasItsOwnOffByDefaultSwitchAndASizeOfThreeQuarters() {
         PatchFamily family = PatchFamily.CHANGE_STICKER_SIZE;
         assertEquals("Change sticker size", family.patchName);
-        assertEquals(Collections.singletonList(Settings.CHANGE_STICKER_SIZE), family.switches);
+        assertEquals(Arrays.asList(Settings.CHANGE_STICKER_SIZE, Settings.KEEP_STICKER_CACHE), family.switches);
         assertFalse(Settings.CHANGE_STICKER_SIZE.defaultValue);
         assertFalse(Settings.CHANGE_STICKER_SIZE.rebootApp);
+        assertFalse(Settings.KEEP_STICKER_CACHE.defaultValue);
+        assertFalse(Settings.KEEP_STICKER_CACHE.rebootApp);
         assertEquals(75, (int) Settings.STICKER_SIZE.defaultValue);
         assertEquals(50, Settings.STICKER_SIZE.minimum());
         assertEquals(150, Settings.STICKER_SIZE.maximum());
-        assertTrue(family.expectedCapabilities().isEmpty());
+        assertEquals(EnumSet.of(PatchFamily.Capability.KEEP_STICKER_CACHE), family.expectedCapabilities());
         assertOnItsPage(family);
     }
 

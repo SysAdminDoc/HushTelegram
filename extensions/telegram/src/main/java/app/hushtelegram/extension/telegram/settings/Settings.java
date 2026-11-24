@@ -647,6 +647,13 @@ public class Settings extends BaseSettings {
             new IntegerSetting("hushtelegram_sticker_size", 75).withRange(50, 150);
 
     /**
+     * Telegram's automatic cache cleanup leaves sticker files alone
+     * ({@link app.hushtelegram.extension.telegram.misc.StickerCache}).
+     */
+    public static final BooleanSetting KEEP_STICKER_CACHE =
+            new BooleanSetting("hushtelegram_keep_sticker_cache", FALSE);
+
+    /**
      * A mention or a reply to you in a muted group or channel stays as quiet as the rest of the chat.
      */
     public static final BooleanSetting IGNORE_MUTED_MENTIONS =
