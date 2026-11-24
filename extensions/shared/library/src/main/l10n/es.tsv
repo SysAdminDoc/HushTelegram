@@ -2587,6 +2587,12 @@ Hide Downloads button	Ocultar el botón Descargas
 The Downloads button stays out of the bar at the top of the chat list, even while a file downloads. Your downloads are still in the Downloads tab when you search.	El botón Descargas ya no aparece en la barra superior de la lista de chats, ni siquiera mientras se descarga un archivo. Tus descargas siguen en la pestaña Descargas cuando buscas.
 # context: Lowercase noun phrase in a status line. It names the part of Hide Contacts tab that hides the Downloads button (Telegram key DownloadsTabs) in the chat list's top bar.
 Downloads button	botón Descargas
+# context: Chat list page switch title, under Hide Downloads button. When on, the Downloads button in the top bar of the chat list (Telegram key DownloadsTabs; use its applied translation) shows even when nothing downloads.
+Always show Downloads button	Mostrar siempre el botón Descargas
+# context: that switch's summary. Downloads is the button (Telegram key DownloadsTabs; use its applied translation). Hide Downloads button is the switch of that name, which overrules this one; use its translation from this table.
+The Downloads button stays in the bar at the top of the chat list even when nothing is downloading, so your downloads are one tap away. Hide Downloads button wins.	El botón Descargas se queda en la barra superior de la lista de chats aunque no se esté descargando nada, así tus descargas están a un toque. Ocultar el botón Descargas tiene prioridad.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Contacts tab that keeps the Downloads button (Telegram key DownloadsTabs) in the chat list's top bar all the time.
+showing the Downloads button all the time	mostrar siempre el botón Descargas
 # context: Lowercase noun phrase in a status line. It names the part of Pin on this phone that lets you drag those chats into an order of your own.
 dragging chats pinned on this phone	arrastrar los chats fijados en este teléfono
 # context: Summary of the Pin chats on this phone switch when this build can drag those chats. Pin on this phone is the long press menu item; All Chats is Telegram's folder tab. Same wording as the summary without the drag, plus one sentence on how to drag.

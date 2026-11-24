@@ -394,7 +394,8 @@ public class PatchFamilyTest {
         assertEquals("hideContactsTab", family.statusMethod);
         // The compact bar and the side menu start off too and work with or without the first.
         assertEquals(Arrays.asList(Settings.HIDE_CONTACTS_TAB, Settings.COMPACT_TAB_BAR, Settings.SIDE_MENU,
-                Settings.HIDE_NEW_MESSAGE, Settings.BAR_OUTLINE, Settings.HIDE_DOWNLOADS_BUTTON), family.switches);
+                Settings.HIDE_NEW_MESSAGE, Settings.BAR_OUTLINE, Settings.HIDE_DOWNLOADS_BUTTON,
+                Settings.ALWAYS_SHOW_DOWNLOADS_BUTTON), family.switches);
         for (BooleanSetting setting : family.switches) assertFalse(setting.key, setting.defaultValue);
         // Telegram builds the bar with the main screen, so a change to it shows after a restart.
         assertTrue(Settings.HIDE_CONTACTS_TAB.rebootApp);
@@ -407,9 +408,11 @@ public class PatchFamilyTest {
         assertTrue(Settings.BAR_OUTLINE.rebootApp);
         // The chat list works out the Downloads button again each time it comes back, so no restart.
         assertFalse(Settings.HIDE_DOWNLOADS_BUTTON.rebootApp);
+        assertFalse(Settings.ALWAYS_SHOW_DOWNLOADS_BUTTON.rebootApp);
         assertEquals(EnumSet.of(PatchFamily.Capability.COMPACT_TAB_BAR, PatchFamily.Capability.SIDE_MENU,
                 PatchFamily.Capability.HIDE_NEW_MESSAGE, PatchFamily.Capability.BAR_OUTLINE,
-                PatchFamily.Capability.HIDE_DOWNLOADS_BUTTON), family.expectedCapabilities());
+                PatchFamily.Capability.HIDE_DOWNLOADS_BUTTON, PatchFamily.Capability.ALWAYS_SHOW_DOWNLOADS_BUTTON),
+                family.expectedCapabilities());
         assertOnItsPage(family);
         // The bar sits under the chat list, beside its folder switches.
         assertEquals(PatchFamily.Page.CHAT_LIST, PatchFamily.Page.of(family));

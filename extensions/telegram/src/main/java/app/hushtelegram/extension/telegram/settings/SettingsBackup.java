@@ -235,6 +235,7 @@ public final class SettingsBackup {
             Settings.HIDE_NEW_MESSAGE,
             Settings.BAR_OUTLINE,
             Settings.HIDE_DOWNLOADS_BUTTON,
+            Settings.ALWAYS_SHOW_DOWNLOADS_BUTTON,
             Settings.TEST_SERVER_SIGN_IN,
             Settings.BOT_TOKEN_SIGN_IN,
             SettingsRoutes.SETTINGS_ROW,

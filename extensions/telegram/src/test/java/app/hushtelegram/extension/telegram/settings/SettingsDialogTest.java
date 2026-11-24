@@ -28,6 +28,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import app.hushtelegram.extension.shared.SettingsContextRule;
+import app.hushtelegram.extension.telegram.misc.MainTabs;
+import app.hushtelegram.extension.telegram.misc.MainTabsForTests;
 import app.hushtelegram.extension.telegram.misc.TranslateBar;
 import app.hushtelegram.extension.telegram.misc.TranslateBarForTests;
 
@@ -134,6 +136,25 @@ public class SettingsDialogTest {
         } finally {
             TranslateBarForTests.restore();
             Settings.HIDE_PINNED_BAR.resetToDefault();
+        }
+    }
+
+    @Test
+    public void closingTheSettingsHasTheChatListUnderThemDrawItsDownloadsButtonAgain() {
+        Object chats = new Object();
+        List<Object> redrawn = new ArrayList<>();
+        MainTabsForTests.redrawWith(redrawn::add);
+        try {
+            MainTabs.downloadsDrawn(chats, new Object());
+            SettingsDialog dialog = show(controller.get());
+            Settings.HIDE_DOWNLOADS_BUTTON.save(true);
+            assertEquals("nothing draws while the settings are open", List.of(), redrawn);
+            dialog.getDialog().dismiss();
+            ShadowLooper.idleMainLooper();
+            assertEquals(List.of(chats), redrawn);
+        } finally {
+            MainTabsForTests.restore();
+            Settings.HIDE_DOWNLOADS_BUTTON.resetToDefault();
         }
     }
 

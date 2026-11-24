@@ -954,6 +954,15 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_hide_downloads_button", FALSE);
 
     /**
+     * The chat list's top bar keeps its Downloads button even when nothing downloads or waits, so
+     * your downloads are one tap away. Search and the bar's other animations still hide it the way
+     * they hide it for a download, and {@link #HIDE_DOWNLOADS_BUTTON} wins. The chat list asks
+     * again each time it comes back, so no restart is needed.
+     */
+    public static final BooleanSetting ALWAYS_SHOW_DOWNLOADS_BUTTON =
+            new BooleanSetting("hushtelegram_always_show_downloads_button", FALSE);
+
+    /**
      * The bar at the bottom of the main screen gets a thin Telegram blue outline. Its glass reads the
      * outline when the main screen is built, so a restart shows the change.
      */

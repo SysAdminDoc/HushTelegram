@@ -2587,6 +2587,12 @@ Hide Downloads button	İndir düğmesini gizle
 The Downloads button stays out of the bar at the top of the chat list, even while a file downloads. Your downloads are still in the Downloads tab when you search.	İndir düğmesi, bir dosya inerken bile sohbet listesinin üstündeki çubukta görünmez. İndirdikleriniz, arama yaptığınızda İndir sekmesinde durur.
 # context: Lowercase noun phrase in a status line. It names the part of Hide Contacts tab that hides the Downloads button (Telegram key DownloadsTabs) in the chat list's top bar.
 Downloads button	İndir düğmesi
+# context: Chat list page switch title, under Hide Downloads button. When on, the Downloads button in the top bar of the chat list (Telegram key DownloadsTabs; use its applied translation) shows even when nothing downloads.
+Always show Downloads button	İndir düğmesini her zaman göster
+# context: that switch's summary. Downloads is the button (Telegram key DownloadsTabs; use its applied translation). Hide Downloads button is the switch of that name, which overrules this one; use its translation from this table.
+The Downloads button stays in the bar at the top of the chat list even when nothing is downloading, so your downloads are one tap away. Hide Downloads button wins.	İndir düğmesi, hiçbir şey inmezken bile sohbet listesinin üstündeki çubukta kalır, böylece indirdiklerinize tek dokunuşla ulaşırsınız. İndir düğmesini gizle önceliklidir.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Contacts tab that keeps the Downloads button (Telegram key DownloadsTabs) in the chat list's top bar all the time.
+showing the Downloads button all the time	İndir düğmesinin her zaman gösterilmesini
 # context: Lowercase noun phrase in a status line. It names the part of Pin on this phone that lets you drag those chats into an order of your own.
 dragging chats pinned on this phone	bu telefonda sabitlenen sohbetleri sürükleme
 # context: Summary of the Pin chats on this phone switch when this build can drag those chats. Pin on this phone is the long press menu item; All Chats is Telegram's folder tab. Same wording as the summary without the drag, plus one sentence on how to drag.

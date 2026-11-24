@@ -121,11 +121,13 @@ val hideContactsTabPatch = bytecodePatch(
         requireStatusMethod("hideNewMessage")
         requireStatusMethod("barOutline")
         requireStatusMethod("hideDownloadsButton")
+        requireStatusMethod("alwaysShowDownloadsButton")
         val compact = resolveCompactBar(plan)
         val side = resolveSideMenu(plan)
         val newMessage = resolveNewMessageButton()
         val outline = resolveBarOutline(plan)
         val downloads = resolveDownloadsButton()
+        val shown = resolveDownloadsShown(downloads)
         // Assembled on copies first, so a refusal leaves the app untouched.
         plan.insert { target, apply -> apply(MutableMethod(ImmutableMethod.of(target))) }
         compact.rehearse()
@@ -133,6 +135,8 @@ val hideContactsTabPatch = bytecodePatch(
         newMessage.rehearse()
         outline.rehearse()
         downloads.rehearse()
+        shown.rehearse()
+        downloads.redrawStub()?.let { writeStub(MAIN_TABS, "redrawDownloads", 1, it, install = false) }
         writeMainTabsStubs(plan)
         plan.insert { target, apply -> apply(target) }
         // Each extra switch's own targets: a build where one changed keeps the Contacts switch.
@@ -162,9 +166,23 @@ val hideContactsTabPatch = bytecodePatch(
         }
         if (downloads.missing == null) {
             downloads.apply()
+            // The chat list under the settings draws its button again as they close, for both Downloads switches.
+            val redraw = downloads.redrawStub()
+            if (redraw != null) {
+                writeStub(MAIN_TABS, "redrawDownloads", 1, redraw)
+            } else {
+                patchLog.warning("$PATCH: ${downloads.redrawMissing}. The Downloads switches go on from the chat list's next update.")
+            }
             enableCapability("hideDownloadsButton")
         } else {
             patchLog.warning("$PATCH: ${downloads.missing}. The patch goes on without the Downloads switch.")
+        }
+        // After the Downloads switch's call, which sits further down the same method.
+        if (shown.missing == null) {
+            shown.apply()
+            enableCapability("alwaysShowDownloadsButton")
+        } else {
+            patchLog.warning("$PATCH: ${shown.missing}. The patch goes on without Always show Downloads button.")
         }
         enableStatus("hideContactsTab")
     }

@@ -877,6 +877,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("The Downloads button stays out of the bar at the top of the chat list, even while a file "
                                 + "downloads. Your downloads are still in the Downloads tab when you search.")));
             }
+            if (PatchFamily.Capability.ALWAYS_SHOW_DOWNLOADS_BUTTON.installed()) {
+                on(pages, PatchFamily.HIDE_CONTACTS_TAB).addPreference(toggle(context, Settings.ALWAYS_SHOW_DOWNLOADS_BUTTON,
+                        L10n.t("Always show Downloads button"),
+                        L10n.t("The Downloads button stays in the bar at the top of the chat list even when nothing is "
+                                + "downloading, so your downloads are one tap away. Hide Downloads button wins.")));
+            }
         }
         if (build.contains(PatchFamily.PROXY_MENU)) {
             on(pages, PatchFamily.PROXY_MENU).addPreference(toggle(context, Settings.PROXY_MENU, L10n.t("Proxy in the chat list menu"),
