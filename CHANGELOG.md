@@ -24,6 +24,7 @@ Every HushTelegram release, newest first.
 
 ### Changed
 
+* **Telegram:** Patching for a root mount in Morphe Manager now starts with Repair Firebase push registration off. A mount keeps Telegram's own certificate, which is the thing that patch stands in for. You can still turn it on, and every other install starts with it on as before.
 * **Tooling:** The GitHub release notes leave the Tooling bullets out now and no longer end with What was checked. Those bullets stay here in the changelog, and the publish stage doesn't take `-Validation` anymore.
 
 ## 0.0.26 (2026-11-17)
