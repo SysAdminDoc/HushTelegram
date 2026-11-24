@@ -391,8 +391,8 @@ class KeepVideosMutedFixtureTest {
             assertTrue("$name: the viewer's player", refs.viewerPlayer in calls("player"))
             assertTrue("$name: the choice goes back to the player's selector", refs.setParameters in calls("apply"))
             assertTrue("$name: an override for the track picked", refs.overrideInit in calls("override"))
-            if (name == "telegram-web-13.2.2-73039.apk") {
-                assertEquals("Lorg/telegram/ui/ActionBar/t0;->e(IILjava/lang/CharSequence;)Lorg/telegram/ui/ActionBar/b1;", refs.addSubItem)
+            if (name == "telegram-web-13.3.1-73469.apk") {
+                assertEquals("Lorg/telegram/ui/ActionBar/q0;->e(IILjava/lang/CharSequence;)Lorg/telegram/ui/ActionBar/z0;", refs.addSubItem)
             }
             assertEquals(1L, status(context, "videoTracks"))
         }
