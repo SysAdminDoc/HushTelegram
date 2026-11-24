@@ -16,7 +16,9 @@ import app.morphe.patches.telegram.misc.extension.PatchLogCapture
 import app.morphe.patches.telegram.misc.extension.SETTINGS_STATUS
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
+import app.morphe.util.ControlFlow
 import app.morphe.util.namedRegisters
+import app.morphe.util.writesReaching
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -123,14 +125,18 @@ class ChatTypeFoldersFixtureTest {
         val telegram = savers.flatMap { it.methods }.flatMap { m ->
             val b = m.controlBody()
             b.indices.filter { b[it].readsStorageQueue() &&
-                ((b.getOrNull(it + 1) as? ReferenceInstruction)?.reference as? TypeReference)?.type == lambda }.map { b to it }
+                ((b.getOrNull(it + 1) as? ReferenceInstruction)?.reference as? TypeReference)?.type == lambda }.map { Triple(m, b, it) }
         }
-        assertTrue("$name: $stub posts what Telegram posts", telegram.any { (b, at) ->
+        assertTrue("$name: $stub posts what Telegram posts", telegram.any { (m, b, at) ->
             val (theirCall, theirCopies, theirLiterals) = posting(b, at) ?: return@any false
             val args = b[theirCall].namedRegisters().map { theirCopies[it] ?: it }
+            // 13.3.1 loads the case once, further up, and reuses it: the one constant every path brings counts too.
+            val theirKey = theirLiterals[args[keyAt]] ?: ControlFlow.of(m).writesReaching(theirCall, b[theirCall].namedRegisters()[keyAt])
+                .map { w -> b.getOrNull(w)?.takeIf { it.opcode in CONSTANTS }?.let { (it as NarrowLiteralInstruction).narrowLiteral } }
+                .distinct().singleOrNull()
             b[theirCall].call().toString() == init.toString() && b.getOrNull(theirCall + 1)?.call().toString() == posted.call().toString() &&
                 args.size == passed.size && args.indices.all { n -> (args[n] == (b[at] as TwoRegisterInstruction).registerB) == (passed[n] == storage) } &&
-                theirLiterals[args[keyAt]] == key
+                theirKey == key
         })
         // The folder goes in at the one object place left.
         val objects = init.parameterTypes.indices.filter { init.parameterTypes[it].startsWith("L") && passed[it + 1] != storage }
@@ -167,6 +173,7 @@ class ChatTypeFoldersFixtureTest {
     }
 
     private val MOVES = setOf(Opcode.MOVE, Opcode.MOVE_FROM16, Opcode.MOVE_16, Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16)
+    private val CONSTANTS = setOf(Opcode.CONST_4, Opcode.CONST_16, Opcode.CONST)
 
     /** The storage's internal save, with Plus's second flag or without. */
     private val SAVE_INTERNAL = setOf(listOf(LOCAL_FILTER, "Z"), listOf(LOCAL_FILTER, "Z", "Z"))
