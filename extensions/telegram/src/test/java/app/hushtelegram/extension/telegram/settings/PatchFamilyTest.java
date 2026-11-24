@@ -143,6 +143,7 @@ public class PatchFamilyTest {
         Settings.HIDE_STICKER_TIME.resetToDefault();
         Settings.CHANGE_STICKER_SIZE.resetToDefault();
         Settings.KEEP_STICKER_CACHE.resetToDefault();
+        Settings.KEEP_MORE_FAVORITES.resetToDefault();
         Settings.STICKER_SIZE.resetToDefault();
         Settings.STICKER_PANEL_SIZE.resetToDefault();
         Settings.IGNORE_MUTED_MENTIONS.resetToDefault();
@@ -604,21 +605,26 @@ public class PatchFamilyTest {
     public void changeStickerSizeHasItsOwnOffByDefaultSwitchAndASizeOfThreeQuarters() {
         PatchFamily family = PatchFamily.CHANGE_STICKER_SIZE;
         assertEquals("Change sticker size", family.patchName);
-        assertEquals(Arrays.asList(Settings.CHANGE_STICKER_SIZE, Settings.KEEP_STICKER_CACHE), family.switches);
+        assertEquals(Arrays.asList(Settings.CHANGE_STICKER_SIZE, Settings.KEEP_STICKER_CACHE, Settings.KEEP_MORE_FAVORITES),
+                family.switches);
         assertFalse(Settings.CHANGE_STICKER_SIZE.defaultValue);
         assertFalse(Settings.CHANGE_STICKER_SIZE.rebootApp);
         assertFalse(Settings.KEEP_STICKER_CACHE.defaultValue);
         assertFalse(Settings.KEEP_STICKER_CACHE.rebootApp);
+        assertFalse(Settings.KEEP_MORE_FAVORITES.defaultValue);
+        assertFalse(Settings.KEEP_MORE_FAVORITES.rebootApp);
         assertEquals(75, (int) Settings.STICKER_SIZE.defaultValue);
         assertEquals(50, Settings.STICKER_SIZE.minimum());
         assertEquals(150, Settings.STICKER_SIZE.maximum());
         assertEquals(72, (int) Settings.STICKER_PANEL_SIZE.defaultValue);
         assertEquals(72, Settings.STICKER_PANEL_SIZE.minimum());
         assertEquals(120, Settings.STICKER_PANEL_SIZE.maximum());
-        assertEquals(EnumSet.of(PatchFamily.Capability.KEEP_STICKER_CACHE, PatchFamily.Capability.STICKER_PANEL_SIZE),
-                family.expectedCapabilities());
+        assertEquals(EnumSet.of(PatchFamily.Capability.KEEP_STICKER_CACHE, PatchFamily.Capability.STICKER_PANEL_SIZE,
+                PatchFamily.Capability.KEEP_MORE_FAVORITES), family.expectedCapabilities());
         assertEquals("stickerPanelSize", PatchFamily.Capability.STICKER_PANEL_SIZE.statusMethod);
         assertTrue(PatchFamily.Capability.STICKER_PANEL_SIZE.rowOnly);
+        assertEquals("keepMoreFavorites", PatchFamily.Capability.KEEP_MORE_FAVORITES.statusMethod);
+        assertTrue(PatchFamily.Capability.KEEP_MORE_FAVORITES.rowOnly);
         assertOnItsPage(family);
     }
 

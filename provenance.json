@@ -224,6 +224,7 @@
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/StickerSize.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/StickerCache.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/StickerPanel.java",
+        "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/KeptFavorites.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/MutedMentions.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/BlockedSenders.java",
         "extensions/telegram/src/main/java/app/hushtelegram/extension/telegram/misc/FeaturesInvite.java",

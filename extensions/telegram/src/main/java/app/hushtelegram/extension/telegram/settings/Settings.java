@@ -689,6 +689,13 @@ public class Settings extends BaseSettings {
             new IntegerSetting("hushtelegram_sticker_panel_size", 72).withRange(72, 120);
 
     /**
+     * A favorite sticker Telegram drops at its limit stays on this phone, after Telegram's own in
+     * the favorites ({@link app.hushtelegram.extension.telegram.misc.KeptFavorites}).
+     */
+    public static final BooleanSetting KEEP_MORE_FAVORITES =
+            new BooleanSetting("hushtelegram_keep_more_favorites", FALSE);
+
+    /**
      * A mention or a reply to you in a muted group or channel stays as quiet as the rest of the chat.
      */
     public static final BooleanSetting IGNORE_MUTED_MENTIONS =

@@ -516,6 +516,7 @@ public final class SelectionCheck {
         hook(calls, flags, "stickerSize", "misc/StickerSize", "size");
         hook(calls, flags, "keepStickerCache", "misc/StickerCache", "kept");
         hook(calls, flags, "stickerPanelSize", "misc/StickerPanel", "column", "cell", "height", "cap");
+        hook(calls, flags, "keepMoreFavorites", "misc/KeptFavorites", "faving", "dropped", "listed", "favorite", "referenceParent");
         hook(calls, flags, "ignoreMutedMentions", "misc/MutedMentions", "notifyDialog");
         hook(calls, flags, "hideBlockedInGroups", "misc/BlockedSenders", "type", "hideReply");
         hook(calls, flags, "hideFeaturesAndInvite", "misc/FeaturesInvite", "addFeaturesRow", "listShown");

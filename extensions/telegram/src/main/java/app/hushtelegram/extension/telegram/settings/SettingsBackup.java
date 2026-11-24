@@ -210,6 +210,7 @@ public final class SettingsBackup {
             Settings.HIDE_STICKER_TIME,
             Settings.CHANGE_STICKER_SIZE,
             Settings.KEEP_STICKER_CACHE,
+            Settings.KEEP_MORE_FAVORITES,
             Settings.IGNORE_MUTED_MENTIONS,
             Settings.HIDE_BLOCKED_IN_GROUPS,
             Settings.HIDE_BY_KEYWORD,

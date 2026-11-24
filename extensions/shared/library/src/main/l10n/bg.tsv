@@ -2611,3 +2611,9 @@ Larger	По-голям
 %1$s. A bigger size shows fewer, bigger stickers in the sticker panel and its search. A chat picks this up the next time you open it.	%1$s. По-големият размер показва по-малко, но по-големи стикери в панела със стикери и в търсенето му. Чатът го отчита при следващото отваряне.
 # context: Lowercase noun phrase in a status line. It names the part of Change sticker size that sets how big stickers show in the sticker panel.
 sticker size in the sticker panel	размер на стикерите в панела със стикери
+# context: Look and feel page switch title, under Change sticker size. When on, a favorite sticker Telegram drops because its favorites limit (5, or 10 with Premium) was reached stays on this phone. Favorites is Telegram's FavoriteStickers label, the sticker panel's section of favorite stickers.
+Keep more favorite stickers	Запазване на още любими стикери
+# context: that switch's summary. Favorites (Telegram's FavoriteStickers label) is the sticker panel's section of favorite stickers; the kept ones show after Telegram's own there. Removing a kept one changes nothing on Telegram's side.
+A favorite sticker Telegram drops when you add one past its limit stays on this phone, after Telegram's own in your favorites. Removing one from favorites removes it from this phone only.	Стикер, който Telegram маха от Любими, когато добавиш нов над ограничението, остава на този телефон, след тези на Telegram в Любими. Ако го махнеш от Любими, той се маха само от този телефон.
+# context: Lowercase noun phrase in a status line. It names the part of Change sticker size that keeps favorite stickers past Telegram's limit on this phone.
+favorite stickers kept on this phone	любими стикери, запазени на този телефон

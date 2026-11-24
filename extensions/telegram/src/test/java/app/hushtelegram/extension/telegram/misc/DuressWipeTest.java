@@ -111,7 +111,8 @@ public class DuressWipeTest {
             "hushtelegram_hidden_chats", "hushtelegram_hidden_messages", "hushtelegram_hidden_accounts",
             "hushtelegram_ghost_exceptions", "hushtelegram_record_chats", "hushtelegram_saved_downloads",
             "hushtelegram_song_dates", "hushtelegram_local_emoji_status", "hushtelegram_launch_folders",
-            "hushtelegram_all_chats_place", "hushtelegram_admin_folder", "hushtelegram_chat_type_folders"};
+            "hushtelegram_all_chats_place", "hushtelegram_admin_folder", "hushtelegram_chat_type_folders",
+            "hushtelegram_kept_favorites"};
 
     private final HookedTelegram hooked = new HookedTelegram(REAL);
     private final FakeTelegram telegram = new FakeTelegram();

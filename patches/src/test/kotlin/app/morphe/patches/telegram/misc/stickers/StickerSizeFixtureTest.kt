@@ -49,7 +49,8 @@ class StickerSizeFixtureTest {
     @Test fun `the extension gets a sticker's largest side right after the bubble works it out`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
-            val context = PatchContexts.of((ExtensionDex.classes() + sizeHosts(build) + cacheHosts(build) + panelHosts(build)).distinctBy { it.type })
+            val context = PatchContexts.of((ExtensionDex.classes() + sizeHosts(build) + cacheHosts(build) + panelHosts(build) +
+                favoriteHosts(build)).distinctBy { it.type })
             val plan = context.resolveStickerSize()
             val old = ImmutableMethod.of(plan.method)
             assertEquals(emptyList<String>(), PatchLogCapture.warnings { stickerSizePatch.execute(context) })
@@ -85,6 +86,7 @@ class StickerSizeFixtureTest {
             assertEquals(1L, statusOf(context, "stickerSize"))
             assertEquals(1L, statusOf(context, "keepStickerCache"))
             assertEquals(1L, statusOf(context, "stickerPanelSize"))
+            assertEquals(1L, statusOf(context, "keepMoreFavorites"))
         }
     }
 
@@ -183,7 +185,7 @@ class StickerSizeFixtureTest {
     @Test fun `a sticker cell that no longer caps its sticker leaves only Sticker panel size out`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
-            val others = sizeHosts(build) + cacheHosts(build)
+            val others = sizeHosts(build) + cacheHosts(build) + favoriteHosts(build)
             // The bubble that sizes chat stickers also sizes things with dp(72) on some builds, and its hook still goes in.
             val hosts = panelHosts(build).filter { cls -> others.none { it.type == cls.type } }
             val context = PatchContexts.of((ExtensionDex.classes() + others + hosts).distinctBy { it.type })
@@ -200,6 +202,7 @@ class StickerSizeFixtureTest {
             assertEquals(1L, statusOf(context, "stickerSize"))
             assertEquals(1L, statusOf(context, "keepStickerCache"))
             assertEquals(0L, statusOf(context, "stickerPanelSize"))
+            assertEquals(1L, statusOf(context, "keepMoreFavorites"))
             for (cls in hosts) {
                 assertEquals("$name: ${cls.type} stays as it was", stock.getValue(cls.type),
                     context.tgMutableClassDefBy(cls.type).methods.map { m -> m.controlBody().map(::operands) })
@@ -248,7 +251,8 @@ class StickerSizeFixtureTest {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val hosts = cacheHosts(build)
-            val context = PatchContexts.of((ExtensionDex.classes() + sizeHosts(build) + hosts + panelHosts(build)).distinctBy { it.type })
+            val context = PatchContexts.of((ExtensionDex.classes() + sizeHosts(build) + hosts + panelHosts(build) +
+                favoriteHosts(build)).distinctBy { it.type })
             val walk =hosts.flatMap { cls -> context.tgMutableClassDefBy(cls.type).methods.filter { it.isWalk() } }.single()
             val ask = walk.controlBody().indexOfFirst { it.controlRef() == SET_CONTAINS_REF }
             val (set, path) = walk.controlBody()[ask].namedRegisters()
@@ -260,10 +264,131 @@ class StickerSizeFixtureTest {
             assertEquals(1L, statusOf(context, "stickerSize"))
             assertEquals(0L, statusOf(context, "keepStickerCache"))
             assertEquals(1L, statusOf(context, "stickerPanelSize"))
+            assertEquals(1L, statusOf(context, "keepMoreFavorites"))
             for (cls in hosts) {
                 assertEquals("$name: ${cls.type} stays as it was", stock.getValue(cls.type),
                     context.tgMutableClassDefBy(cls.type).methods.map { m -> m.controlBody().map(::operands) })
             }
+        }
+    }
+
+    @Test fun `the favorites ask the runtime where Telegram adds, drops, lists and checks a favorite sticker`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = PatchContexts.of((ExtensionDex.classes() + favoriteHosts(build)).distinctBy { it.type })
+            val plan = context.resolveKeptFavorites()
+            assertNull("$name: ${plan.missing}", plan.missing)
+            val methods = plan.edits.map { it.method }.distinct()
+            assertEquals("$name: addRecentSticker, getRecentStickers, isStickerInFavorites and requestReference", 4, methods.size)
+            val stubs = context.tgMutableClassDefBy(KEPT_FAVORITES)
+            val stockStubs = stubs.methods.map { m -> m.controlBody().map(::operands) }
+            val stockBodies = methods.associateWith { it.controlBody() }
+            val stockFlow = methods.associateWith { ControlFlow.of(it) }
+            plan.rehearse(context)
+            for (m in methods) assertEquals("$name: a rehearsal edits nothing", stockBodies.getValue(m).map(::operands), m.controlBody().map(::operands))
+            assertEquals("$name: nor the stubs", stockStubs, stubs.methods.map { m -> m.controlBody().map(::operands) })
+            plan.apply(context)
+
+            val seen = mutableMapOf<String, Int>()
+            var jumpedOnto = false
+            for (m in methods) {
+                val after = m.controlBody()
+                val hooks = after.indices.filter { after[it].controlRef() in FAVORITE_HOOKS }
+                // The hooks that answer hand it back through a move-result right after them.
+                val added = hooks.flatMap { if (after[it].controlRef() in ANSWERING_HOOKS) listOf(it, it + 1) else listOf(it) }.toSet()
+                val stockBody = stockBodies.getValue(m)
+                val stockReal = stockBody.indices.filter { stockBody[it].opcode != Opcode.NOP }
+                val kept = after.indices.filter { it !in added && after[it].opcode != Opcode.NOP }
+                assertEquals("$name: ${m.name} keeps Telegram's code in order", stockReal.map { kind(stockBody[it]) }, kept.map { kind(after[it]) })
+                val moved = stockReal.zip(kept).toMap()
+                val back = moved.entries.associate { (stock, now) -> now to stock }
+                val self = m.localRegisterCount()
+                val flow = ControlFlow.of(m)
+                for (at in hooks) {
+                    val hook = after[at].controlRef()!!
+                    seen[hook] = (seen[hook] ?: 0) + 1
+                    val registers = after[at].namedRegisters()
+                    val into = flow.normal.indices.filter { at in flow.normal[it] }
+                    when (hook) {
+                        FAVE_FAVING -> {
+                            assertEquals("$name: first thing in addRecentSticker", 0, at)
+                            assertEquals("$name: this and all five parameters", (self..self + 5).toList(), registers)
+                        }
+                        FAVE_DROPPED -> {
+                            assertEquals(name, Opcode.MOVE_RESULT_OBJECT, after[at - 1].opcode)
+                            assertEquals("$name: the sticker taken off the list", after[at - 1].namedRegisters(), registers)
+                            assertEquals("$name: before its cast", listOf(Opcode.CHECK_CAST, registers, FAVE_DOCUMENT), operands(after[at + 1]))
+                        }
+                        FAVE_LISTED -> {
+                            assertEquals(name, COPY_REF, after[at - 1].controlRef())
+                            assertEquals(name, SUB_LIST_REF, after[at - 3].controlRef())
+                            assertEquals("$name: this, the list copied from and the copy",
+                                listOf(self, after[at - 3].namedRegisters().first(), after[at - 1].namedRegisters().first()), registers)
+                        }
+                        FAVE_FAVORITE -> {
+                            val answer = after[at + 2].namedRegisters().single()
+                            assertEquals("$name: this, the sticker and Telegram's no", listOf(self, self + 1, answer), registers)
+                            assertEquals(name, listOf(Opcode.MOVE_RESULT, listOf(answer)), listOf(after[at + 1].opcode, after[at + 1].namedRegisters()))
+                            assertEquals(name, Opcode.RETURN, after[at + 2].opcode)
+                        }
+                        FAVE_REFERENCE -> {
+                            assertEquals("$name: first thing in requestReference", 0, at)
+                            assertEquals("$name: this, what's asked again for and the parent", (self..self + 2).toList(), registers)
+                            assertEquals("$name: the answer is the parent", listOf(Opcode.MOVE_RESULT_OBJECT, listOf(self + 2)),
+                                listOf(after[1].opcode, after[1].namedRegisters()))
+                        }
+                    }
+                    if (hook == FAVE_FAVORITE) {
+                        // Whatever reached Telegram's no now reaches the hook, and only the hook reaches the no.
+                        val no = back.getValue(at + 2)
+                        val before = stockFlow.getValue(m).let { stockAt -> stockAt.normal.indices.filter { no in stockAt.normal[it] } }
+                        assertEquals("$name: ${m.name} $at", before.map { moved.getValue(it) }, into)
+                        assertEquals("$name: ${m.name} $at", listOf(at + 1), flow.normal.indices.filter { at + 2 in flow.normal[it] })
+                        if (into.any { it != at - 1 }) jumpedOnto = true
+                    } else {
+                        assertEquals("$name: ${m.name} $at runs only on the way from the instruction before it",
+                            if (at == 0) emptyList() else listOf(at - 1), into)
+                    }
+                }
+            }
+            assertEquals("$name: one of each, and both of isStickerInFavorites' noes",
+                mapOf(FAVE_FAVING to 1, FAVE_DROPPED to 1, FAVE_LISTED to 1, FAVE_FAVORITE to 2, FAVE_REFERENCE to 1), seen)
+            assertTrue("$name: the loop that finds no favorite jumps onto its hook", jumpedOnto)
+
+            fun stub(method: String) = context.tgMutableClassDefBy(KEPT_FAVORITES).methods.single { it.origName == method }
+                .controlBody().mapNotNull { it.controlRef() }
+            assertTrue(name, "Lorg/telegram/messenger/UserConfig;->getClientUserId()J" in stub("account"))
+            assertTrue(name, FAVE_RECENT_STICKERS in stub("favoritesOf"))
+            assertTrue(name, "$FAVE_DOCUMENT->id:J" in stub("documentId"))
+            assertTrue(name, "Lorg/telegram/tgnet/TLObject;->serializeToStream(Lorg/telegram/tgnet/OutputSerializedData;)V" in stub("serialized"))
+            assertTrue(name, "$FAVE_DOCUMENT->TLdeserialize(Lorg/telegram/tgnet/InputSerializedData;IZ)$FAVE_DOCUMENT" in stub("deserialized"))
+        }
+    }
+
+    @Test fun `favorites no longer copied in one place leave only Keep more favorite stickers out`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val favorites = favoriteHosts(build)
+            val context = PatchContexts.of((ExtensionDex.classes() + sizeHosts(build) + cacheHosts(build) + panelHosts(build) +
+                favorites).distinctBy { it.type })
+            val list = context.tgMutableClassDefBy(FAVE_MEDIA_DATA).methods.single { it.origName == "getRecentStickers" }
+            val sub = list.controlBody().indexOfFirst { it.controlRef() == SUB_LIST_REF }
+            val (owner, from, to) = list.controlBody()[sub].namedRegisters()
+            list.replaceInstruction(sub, "invoke-virtual {v$owner, v$from, v$to}, Ljava/util/AbstractList;->subList(II)Ljava/util/List;")
+            val stock = favorites.associate { cls -> cls.type to context.tgMutableClassDefBy(cls.type).methods.map { m -> m.controlBody().map(::operands) } }
+
+            assertEquals(name, listOf("Change sticker size: getRecentStickers no longer copies a list in one place (0). " +
+                "The patch goes on without Keep more favorite stickers."), PatchLogCapture.warnings { stickerSizePatch.execute(context) })
+            assertEquals(1L, statusOf(context, "stickerSize"))
+            assertEquals(1L, statusOf(context, "keepStickerCache"))
+            assertEquals(1L, statusOf(context, "stickerPanelSize"))
+            assertEquals(0L, statusOf(context, "keepMoreFavorites"))
+            for (cls in favorites) {
+                assertEquals("$name: ${cls.type} stays as it was", stock.getValue(cls.type),
+                    context.tgMutableClassDefBy(cls.type).methods.map { m -> m.controlBody().map(::operands) })
+            }
+            val account = context.tgMutableClassDefBy(KEPT_FAVORITES).methods.single { it.origName == "account" }
+            assertTrue("$name: the stubs stay stubs", account.controlBody().none { it.controlRef()?.startsWith("Lorg/telegram/") == true })
         }
     }
 
@@ -299,6 +424,11 @@ class StickerSizeFixtureTest {
         (sized + building).distinctBy { it.type }
     }
 
+    /** MediaDataController and FileRefController, and the classes the favorites' stubs reach. */
+    private fun favoriteHosts(build: File): List<ClassDef> = favoriteSlices.hostsOf(build) {
+        FixtureDex.classes(build, FAVORITE_TYPES).values.toList()
+    }
+
     /** [operands], with a goto an insert pushed out of reach and widened read as the goto it was. */
     private fun kind(instruction: Instruction): List<Any?> = operands(instruction).let { shape ->
         if (instruction.opcode == Opcode.GOTO_16 || instruction.opcode == Opcode.GOTO_32) listOf(Opcode.GOTO) + shape.drop(1) else shape
@@ -332,5 +462,13 @@ class StickerSizeFixtureTest {
         val PANEL_LITERALS = listOf(COLUMN_DP, HEIGHT_DP, CAP_DP)
         val PANEL_HOOKS = setOf(PANEL_COLUMN, PANEL_CELL, PANEL_HEIGHT, PANEL_CAP)
         val panelSlices = mutableMapOf<File, List<ClassDef>>()
+        const val COPY_REF = "Ljava/util/ArrayList;-><init>(Ljava/util/Collection;)V"
+        const val SUB_LIST_REF = "Ljava/util/ArrayList;->subList(II)Ljava/util/List;"
+        val FAVORITE_HOOKS = setOf(FAVE_FAVING, FAVE_DROPPED, FAVE_LISTED, FAVE_FAVORITE, FAVE_REFERENCE)
+        val ANSWERING_HOOKS = setOf(FAVE_FAVORITE, FAVE_REFERENCE)
+        val FAVORITE_TYPES = setOf(FAVE_MEDIA_DATA, FAVE_FILE_REF, "Lorg/telegram/messenger/BaseController;",
+            "Lorg/telegram/messenger/UserConfig;", FAVE_DOCUMENT, "Lorg/telegram/tgnet/TLObject;", "Lorg/telegram/tgnet/SerializedData;",
+            "Lorg/telegram/tgnet/AbstractSerializedData;", "Lorg/telegram/tgnet/InputSerializedData;", "Lorg/telegram/tgnet/OutputSerializedData;")
+        val favoriteSlices = mutableMapOf<File, List<ClassDef>>()
     }
 }

@@ -301,6 +301,7 @@ public class SettingsNavigationTest {
         page.navigation.navigate(PatchFamily.Page.LOOK.title);
         assertEquals(position(Settings.CHANGE_STICKER_SIZE.key) + 1, position(HushTelegramPreferenceFragment.STICKER_SIZE_ROW));
         assertEquals(position(Settings.KEEP_STICKER_CACHE.key) + 1, position(HushTelegramPreferenceFragment.STICKER_PANEL_ROW));
+        assertEquals(position(HushTelegramPreferenceFragment.STICKER_PANEL_ROW) + 1, position(Settings.KEEP_MORE_FAVORITES.key));
         assertEquals(position(Settings.HOLIDAY_LOOK.key) + 1, position(TitleEmojiEditor.KEY));
         assertEquals(position(TitleEmojiEditor.KEY) + 1, position(Settings.CHAT_LIST_TITLE.key));
         assertEquals(position(Settings.CHAT_LIST_TITLE.key) + 1, position(TitleEmojiEditor.TITLE_KEY));
