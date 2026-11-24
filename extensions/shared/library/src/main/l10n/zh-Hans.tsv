@@ -864,8 +864,6 @@ Telegram is still answering. Try again in a moment.	Telegram 仍在响应。请�
 # context: Toast on Telegram's login email screen when the Google button fails, pointing at the email box above it (#19). The login still works with a typed email.
 Google sign-in failed. Type your email above.	Google 登录失败。请在上方输入你的邮箱.
 Telegram refused this app's ID	Telegram 拒绝了这个应用的 ID
-Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.	Telegram 拒绝了这个应用登录所用的 API ID，所以没有发送登录验证码。请使用“Use registered Telegram API credentials”和你在 my.telegram.org/apps 获取的 ID 重新为 HushTelegram 打补丁。指南会一步步带你完成.
-Telegram didn't accept the API ID and hash this app was patched with, so no login code was sent. Copy both again from my.telegram.org/apps and patch once more.	Telegram 不接受这个应用打补丁时使用的 API ID 和哈希值，所以没有发送登录验证码。请从 my.telegram.org/apps 重新复制这两项，再打一次补丁.
 Open the guide	打开指南
 %1$s turns on	%1$s 将开启
 %1$s turns off	%1$s 将关闭
@@ -2527,3 +2525,23 @@ New	新增
 view-once and timed media shown unblurred	不模糊显示仅查看一次和阅后即焚的媒体
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names one part of a patch that couldn't go in on this Telegram version.
 screenshots of view-once and timed media	仅查看一次和阅后即焚媒体的截屏
+# context: Title of the box that asks for an API ID and hash, and the button on the sign-in refusal that opens it. The two sign-in messages below name this button.
+Enter your API ID	输入你的 API ID
+# context: App api_id and App api_hash are the labels on my.telegram.org/apps, which is in English only, so they stay as they are.
+Type App api_id and App api_hash from my.telegram.org/apps. They stay on this phone, and Telegram restarts to sign in with them.	输入 my.telegram.org/apps 上的 App api_id 和 App api_hash。它们只保存在这部手机上，Telegram 会重启并用它们登录.
+# context: Field label, kept in English: the label on my.telegram.org/apps.
+App api_id	App api_id
+# context: Field label, kept in English: the label on my.telegram.org/apps.
+App api_hash	App api_hash
+# context: Toast and the line under the field when the API ID isn't a number.
+An API ID is only digits, like 1234567.	API ID 只包含数字，例如 1234567.
+# context: Toast and the line under the field when the API hash isn't 32 hex characters.
+An API hash is 32 letters and numbers.	API 哈希值由 32 个字母和数字组成.
+# context: Toast after Save, right before the app restarts.
+Saved. Telegram restarts now.	已保存。Telegram 现在重启.
+# context: Toast after Remove, right before the app restarts.
+Removed. Telegram restarts now.	已移除。Telegram 现在重启.
+# context: Sign-in refusal for API_ID_PUBLISHED_FLOOD. Names the Enter your API ID button by its translated label.
+Telegram turned down the API ID this app signs in with, so no login code was sent. Register your own app at my.telegram.org/apps, then tap Enter your API ID and type its App api_id and App api_hash. The guide walks you through it.	Telegram 拒绝了这个应用登录所用的 API ID，所以没有发送登录验证码。请在 my.telegram.org/apps 注册你自己的应用，然后点按“输入你的 API ID”，填入它的 App api_id 和 App api_hash。指南会一步步带你完成.
+# context: Sign-in refusal for API_ID_INVALID. Names the Enter your API ID button by its translated label.
+Telegram didn't accept the API ID and hash this app signs in with, so no login code was sent. Copy both again from my.telegram.org/apps and tap Enter your API ID.	Telegram 不接受这个应用登录所用的 API ID 和哈希值，所以没有发送登录验证码。请从 my.telegram.org/apps 重新复制这两项，然后点按“输入你的 API ID”.

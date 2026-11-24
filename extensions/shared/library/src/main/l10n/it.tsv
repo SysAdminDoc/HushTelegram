@@ -896,8 +896,6 @@ Telegram is still answering. Try again in a moment.	Telegram sta ancora risponde
 # context: Toast on Telegram's login email screen when the Google button fails, pointing at the email box above it (#19). The login still works with a typed email.
 Google sign-in failed. Type your email above.	Accesso Google non riuscito. Scrivi l'email sopra.
 Telegram refused this app's ID	Telegram ha rifiutato l'ID di questa app
-Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.	Telegram ha rifiutato l'ID API con cui questa app accede, quindi non è stato inviato alcun codice di accesso. Applica di nuovo le patch a HushTelegram con Use registered Telegram API credentials e il tuo ID da my.telegram.org/apps. La guida ti spiega come fare.
-Telegram didn't accept the API ID and hash this app was patched with, so no login code was sent. Copy both again from my.telegram.org/apps and patch once more.	Telegram non ha accettato l'ID API e l'hash con cui è stata modificata questa app, quindi non è stato inviato alcun codice di accesso. Copia di nuovo entrambi da my.telegram.org/apps e applica ancora una volta le patch.
 Open the guide	Apri la guida
 %1$s turns on	%1$s si attiva
 %1$s turns off	%1$s si disattiva
@@ -2526,3 +2524,23 @@ New	Nuovo
 view-once and timed media shown unblurred	i media a visualizzazione singola e a tempo mostrati senza sfocatura
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names one part of a patch that couldn't go in on this Telegram version.
 screenshots of view-once and timed media	gli screenshot dei media a visualizzazione singola e a tempo
+# context: Title of the box that asks for an API ID and hash, and the button on the sign-in refusal that opens it. The two sign-in messages below name this button.
+Enter your API ID	Inserisci il tuo ID API
+# context: App api_id and App api_hash are the labels on my.telegram.org/apps, which is in English only, so they stay as they are.
+Type App api_id and App api_hash from my.telegram.org/apps. They stay on this phone, and Telegram restarts to sign in with them.	Scrivi App api_id e App api_hash da my.telegram.org/apps. Restano su questo telefono, e Telegram si riavvia per accedere con questi dati.
+# context: Field label, kept in English: the label on my.telegram.org/apps.
+App api_id	App api_id
+# context: Field label, kept in English: the label on my.telegram.org/apps.
+App api_hash	App api_hash
+# context: Toast and the line under the field when the API ID isn't a number.
+An API ID is only digits, like 1234567.	Un ID API è fatto solo di cifre, come 1234567.
+# context: Toast and the line under the field when the API hash isn't 32 hex characters.
+An API hash is 32 letters and numbers.	Un hash API ha 32 lettere e numeri.
+# context: Toast after Save, right before the app restarts.
+Saved. Telegram restarts now.	Salvato. Telegram si riavvia ora.
+# context: Toast after Remove, right before the app restarts.
+Removed. Telegram restarts now.	Rimosso. Telegram si riavvia ora.
+# context: Sign-in refusal for API_ID_PUBLISHED_FLOOD. Names the Enter your API ID button by its translated label.
+Telegram turned down the API ID this app signs in with, so no login code was sent. Register your own app at my.telegram.org/apps, then tap Enter your API ID and type its App api_id and App api_hash. The guide walks you through it.	Telegram ha rifiutato l'ID API con cui questa app accede, quindi non è stato inviato alcun codice di accesso. Registra una tua app su my.telegram.org/apps, poi tocca Inserisci il tuo ID API e scrivi i suoi App api_id e App api_hash. La guida ti spiega come fare.
+# context: Sign-in refusal for API_ID_INVALID. Names the Enter your API ID button by its translated label.
+Telegram didn't accept the API ID and hash this app signs in with, so no login code was sent. Copy both again from my.telegram.org/apps and tap Enter your API ID.	Telegram non ha accettato l'ID API e l'hash con cui questa app accede, quindi non è stato inviato alcun codice di accesso. Copia di nuovo entrambi da my.telegram.org/apps e tocca Inserisci il tuo ID API.

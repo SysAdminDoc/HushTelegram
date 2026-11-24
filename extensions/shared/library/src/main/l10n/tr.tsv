@@ -896,8 +896,6 @@ Telegram is still answering. Try again in a moment.	Telegram hâlâ yanıt veriy
 # context: Toast on Telegram's login email screen when the Google button fails, pointing at the email box above it (#19). The login still works with a typed email.
 Google sign-in failed. Type your email above.	Google girişi başarısız. E-postanı yukarıya yaz.
 Telegram refused this app's ID	Telegram bu uygulamanın kimliğini reddetti
-Telegram turned down the API ID this app signs in with, so no login code was sent. Patch HushTelegram again with Use registered Telegram API credentials and your own ID from my.telegram.org/apps. The guide walks you through it.	Telegram bu uygulamanın giriş için kullandığı API kimliğini reddetti, bu yüzden giriş kodu gönderilmedi. HushTelegram'ı Use registered Telegram API credentials ve my.telegram.org/apps adresinden aldığınız kendi kimliğinizle yeniden yamalayın. Rehber adım adım anlatıyor.
-Telegram didn't accept the API ID and hash this app was patched with, so no login code was sent. Copy both again from my.telegram.org/apps and patch once more.	Telegram bu uygulamanın yamalandığı API kimliğini ve hash değerini kabul etmedi, bu yüzden giriş kodu gönderilmedi. İkisini my.telegram.org/apps adresinden yeniden kopyalayın ve tekrar yamalayın.
 Open the guide	Rehberi aç
 %1$s turns on	%1$s açılacak
 %1$s turns off	%1$s kapanacak
@@ -2527,3 +2525,23 @@ New	Yeni
 view-once and timed media shown unblurred	tek görüntülemelik ve süreli medyaların bulanıklaştırılmadan gösterilmesini
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names one part of a patch that couldn't go in on this Telegram version.
 screenshots of view-once and timed media	tek görüntülemelik ve süreli medyaların ekran görüntülerini
+# context: Title of the box that asks for an API ID and hash, and the button on the sign-in refusal that opens it. The two sign-in messages below name this button.
+Enter your API ID	API kimliğinizi girin
+# context: App api_id and App api_hash are the labels on my.telegram.org/apps, which is in English only, so they stay as they are.
+Type App api_id and App api_hash from my.telegram.org/apps. They stay on this phone, and Telegram restarts to sign in with them.	my.telegram.org/apps adresindeki App api_id ve App api_hash değerlerini yazın. Bu telefonda kalırlar ve Telegram onlarla giriş yapmak için yeniden başlar.
+# context: Field label, kept in English: the label on my.telegram.org/apps.
+App api_id	App api_id
+# context: Field label, kept in English: the label on my.telegram.org/apps.
+App api_hash	App api_hash
+# context: Toast and the line under the field when the API ID isn't a number.
+An API ID is only digits, like 1234567.	API kimliği yalnızca rakamdır, örneğin 1234567.
+# context: Toast and the line under the field when the API hash isn't 32 hex characters.
+An API hash is 32 letters and numbers.	API hash değeri 32 harf ve rakamdır.
+# context: Toast after Save, right before the app restarts.
+Saved. Telegram restarts now.	Kaydedildi. Telegram yeniden başlıyor.
+# context: Toast after Remove, right before the app restarts.
+Removed. Telegram restarts now.	Kaldırıldı. Telegram yeniden başlıyor.
+# context: Sign-in refusal for API_ID_PUBLISHED_FLOOD. Names the Enter your API ID button by its translated label.
+Telegram turned down the API ID this app signs in with, so no login code was sent. Register your own app at my.telegram.org/apps, then tap Enter your API ID and type its App api_id and App api_hash. The guide walks you through it.	Telegram bu uygulamanın giriş için kullandığı API kimliğini reddetti, bu yüzden giriş kodu gönderilmedi. my.telegram.org/apps adresinde kendi uygulamanızı kaydedin, ardından API kimliğinizi girin düğmesine dokunup App api_id ve App api_hash değerlerini yazın. Rehber adım adım anlatıyor.
+# context: Sign-in refusal for API_ID_INVALID. Names the Enter your API ID button by its translated label.
+Telegram didn't accept the API ID and hash this app signs in with, so no login code was sent. Copy both again from my.telegram.org/apps and tap Enter your API ID.	Telegram bu uygulamanın giriş için kullandığı API kimliğini ve hash değerini kabul etmedi, bu yüzden giriş kodu gönderilmedi. İkisini my.telegram.org/apps adresinden yeniden kopyalayın ve API kimliğinizi girin düğmesine dokunun.
