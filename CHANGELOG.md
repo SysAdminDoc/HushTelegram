@@ -33,6 +33,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** HushTelegram now patches Telegram 13.3.1, telegram.org's build (version code 73469) and the Google Play build (73461). Plus Messenger stays on 13.2.2.1.
 * **Telegram:** HushTelegram now builds on Morphe patcher 2.5.0, the one in Morphe Manager 2.7.0 and morphe-desktop 2.3.0. Manager won't load a bundle made with a newer patcher than its own, so update Manager to 2.7.0 or newer before you add this release.
 * **Tooling:** The GitHub release notes leave the Tooling bullets out now and no longer end with What was checked. Those bullets stay here in the changelog, and the publish stage doesn't take `-Validation` anymore.
+* **Tooling:** The resource table check in `verify-all-patches.ps1`, the patch selection test and `name-table.ps1` work with morphe-desktop 2.2.0 and newer again. The ARSCLib inside those jars dropped calls the three scripts used, so none of them compiled.
 
 ## 0.0.26 (2026-11-17)
 
