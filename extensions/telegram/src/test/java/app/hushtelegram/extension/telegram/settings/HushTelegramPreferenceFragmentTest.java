@@ -2432,6 +2432,40 @@ public class HushTelegramPreferenceFragmentTest {
     }
 
     /**
+     * Open Saved Messages on its media sits on the Chat list page after the avatar size, off until
+     * turned on, only in a build where its hook went in (#103).
+     */
+    @Test
+    public void savedMessagesOnItsMediaHasItsSwitchWhenItsHookIsIn() throws Exception {
+        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_FOLDER_COUNTERS);
+        try {
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.CHAT_LIST_AVATAR);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                assertNull("a build without the hook has no switch", pageOf(controller).findPreference(Settings.SAVED_MEDIA_FIRST.key));
+            }
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.CHAT_LIST_AVATAR,
+                    PatchFamily.Capability.SAVED_MEDIA_FIRST);
+            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
+                HushTelegramPreferenceFragment page = pageOf(controller);
+                List<Preference> rows = new ArrayList<>();
+                collect(page.getPreferenceScreen(), rows);
+                int at = indexOfKey(rows, Settings.SAVED_MEDIA_FIRST.key);
+                SwitchPreference toggle = (SwitchPreference) rows.get(at);
+                assertEquals("Open Saved Messages on its media", String.valueOf(toggle.getTitle()));
+                assertEquals("Tapping Saved Messages in the chat list opens its shared media page, with your saved chats, "
+                        + "media, files, links, music and voice messages. To open the chat itself, tap the menu on the "
+                        + "Chats tab and pick View as Messages.", String.valueOf(toggle.getSummary()));
+                assertFalse("off until turned on", toggle.isChecked());
+                assertEquals("it comes after Avatar size", HushTelegramPreferenceFragment.AVATAR_SIZE_ROW, rows.get(at - 1).getKey());
+                assertEquals(HushTelegramPreferenceFragment.FOLDER_ICON_ROW, rows.get(at + 1).getKey());
+                assertSame(page.findPreference(Settings.CHAT_LIST_AVATAR.key).getParent(), toggle.getParent());
+            }
+        } finally {
+            PatchFamily.capabilitiesForTests = null;
+        }
+    }
+
+    /**
      * Do Not Disturb in the chat list menu sits under Proxy in the chat list menu, off until turned
      * on, only in a build where its hooks went in, and each change of it starts with Do Not Disturb
      * off (#79).

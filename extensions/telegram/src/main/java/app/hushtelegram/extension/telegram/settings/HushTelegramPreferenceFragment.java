@@ -792,6 +792,12 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 folderTabs.addPreference(avatars);
                 folderTabs.addPreference(avatarSizeRow(context));
             }
+            if (PatchFamily.Capability.SAVED_MEDIA_FIRST.installed()) {
+                folderTabs.addPreference(toggle(context, Settings.SAVED_MEDIA_FIRST, L10n.t("Open Saved Messages on its media"),
+                        L10n.t("Tapping Saved Messages in the chat list opens its shared media page, with your saved chats, "
+                                + "media, files, links, music and voice messages. To open the chat itself, tap the menu on "
+                                + "the Chats tab and pick View as Messages.")));
+            }
             folderTabs.addPreference(folderIconRow(context));
         }
         if (build.contains(PatchFamily.CHAT_TYPE_FOLDERS)) {

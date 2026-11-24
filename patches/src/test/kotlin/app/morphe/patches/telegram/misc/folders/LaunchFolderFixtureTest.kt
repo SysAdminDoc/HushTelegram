@@ -328,8 +328,12 @@ class LaunchFolderFixtureTest {
             val context = PatchContexts.of((ExtensionDex.classes() + folderCounterHosts(build)).distinctBy { it.type })
             val warnings = PatchLogCapture.warnings { hideFolderCountersPatch.execute(context) }
             // Without Telegram's MessagesController the hidden chats and the All Chats place are left out too, each with its own
-            // warning, and without ImageReceiver so is the avatar size, refused before the chat row is touched.
-            assertEquals(build.name, 4, warnings.size)
+            // warning, and without ImageReceiver so is the avatar size, refused before the chat row is touched. Saved
+            // Messages on its media has no chat list to ask in.
+            assertEquals(build.name, 5, warnings.size)
+            val savedMedia = warnings.single { it.contains("without Open Saved Messages on its media") }
+            assertTrue(savedMedia, savedMedia.contains("the chat list's open of Saved Messages is missing or ambiguous (0 found)"))
+            assertEquals(0, statusOf(context, "savedMediaFirst"))
             val launch = warnings.single { it.contains("without opening a folder at launch") }
             assertTrue(launch, launch.contains("the folder tabs' build is missing or ambiguous"))
             assertTrue(warnings.toString(), warnings.any { it.contains("without hiding chats") })

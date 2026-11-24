@@ -296,6 +296,14 @@ val hideFolderCountersPatch = bytecodePatch(
         } else {
             patchLog.warning("Hide folder tab counters: $unsized. The patch goes on without Change avatar size.")
         }
+        // Saved Messages on its media (#103) asks the extension at the chat list's two reads of View as Chats.
+        val (savedMedia, noSavedMedia) = resolveSavedMediaFirst()
+        if (savedMedia != null) {
+            savedMedia.apply()
+            enableCapability("savedMediaFirst")
+        } else {
+            patchLog.warning("Hide folder tab counters: $noSavedMedia. The patch goes on without Open Saved Messages on its media.")
+        }
     }
 }
 

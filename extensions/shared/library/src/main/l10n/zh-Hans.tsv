@@ -2166,6 +2166,12 @@ chats pinned on this phone	在这部手机上置顶的聊天
 Change avatar size	更改头像大小
 # context: Summary of Change avatar size. The size is picked in the Avatar size row right below it; each chat list row keeps its height and the picture shrinks or grows around its own center
 Chat pictures in the chat list show at the size you pick below. Each row keeps its height, and the picture stays centered where Telegram puts it.	聊天列表中的聊天头像以你在下方选择的大小显示。每一行保持原有高度，头像仍居中在 Telegram 原来放置的位置.
+# context: Switch title on the Chat list page under Hide folder tab counters, off by default (#103). With it on, tapping Saved Messages in the chat list opens its shared media page instead of the chat. Saved Messages is Telegram's own name for the chat with yourself (key SavedMessages); use its applied translation
+Open Saved Messages on its media	以媒体页打开我的收藏
+# context: Summary of Open Saved Messages on its media (#103). Saved Messages (key SavedMessages), the Chats tab of its media page (key SavedDialogsTab) and the View as Messages menu item (key SavedViewAsMessages) are Telegram's own labels; use their applied translations, or Telegram's English where the language has none (Bulgarian has none for the last two)
+Tapping Saved Messages in the chat list opens its shared media page, with your saved chats, media, files, links, music and voice messages. To open the chat itself, tap the menu on the Chats tab and pick View as Messages.	在聊天列表中点按“我的收藏”会打开它的共享媒体页，里面有你收藏的聊天、媒体、文件、链接、音乐和语音消息。要打开聊天本身，请点按“聊天”标签页上的菜单并选择“以消息模式查看”.
+# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that opens Saved Messages (key SavedMessages) on its shared media page
+Saved Messages opening on its media	以媒体页打开我的收藏
 # context: Row title and dialog title. The person picks the chat list's avatar size as a percent of Telegram's own size (70%, 80%, 90%, 110% or 120%); the row's summary reads "%1$s of Telegram's size"
 Avatar size	头像大小
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that changes the size of chat pictures in the chat list

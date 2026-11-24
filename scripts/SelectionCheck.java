@@ -505,6 +505,7 @@ public final class SelectionCheck {
         hook(calls, flags, "hiddenChats", "misc/HiddenChats", "prune");
         hook(calls, flags, "hiddenUnread", "misc/HiddenChats", "uncounted");
         hook(calls, flags, "localPinOrder", "misc/LocalPins", "dragFrom", "dropOn", "moved");
+        hook(calls, flags, "savedMediaFirst", "misc/SavedMedia", "viewAsChats");
         hook(calls, flags, "forwardHideSender", "misc/ForwardSender", "starts");
         hook(calls, flags, "voiceMusicPlayer", "misc/VoicePlayer", "music");
         hook(calls, flags, "silenceNonContacts", "misc/NonContacts", "silenced");

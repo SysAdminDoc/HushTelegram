@@ -51,7 +51,7 @@ class HideFolderCountersFixtureTest {
                 assertEquals("$name: stock $i", listOf(before[i].opcode, before[i].namedRegisters(), before[i].origRef()),
                     listOf(after[i + 5].opcode, after[i + 5].namedRegisters(), after[i + 5].origRef()))
             }
-            for (flag in listOf("hideFolderCounters", "launchFolder", "hideAllChats", "hiddenChats", "sortByDate", "localPins", "localPinOrder", "hiddenPasscode", "adminChats", "fitTabs", "tabIcons", "bottomTabs", "hiddenAccounts", "hiddenUnread", "chatListAvatar")) {
+            for (flag in listOf("hideFolderCounters", "launchFolder", "hideAllChats", "hiddenChats", "sortByDate", "localPins", "localPinOrder", "hiddenPasscode", "adminChats", "fitTabs", "tabIcons", "bottomTabs", "hiddenAccounts", "hiddenUnread", "chatListAvatar", "savedMediaFirst")) {
                 val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == flag }.controlBody()
                 // Plus Messenger draws folder tab icons of its own and has its own tabs at the bottom, so ours stay off there.
                 val gap = when (flag) {

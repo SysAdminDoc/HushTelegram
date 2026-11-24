@@ -569,6 +569,14 @@ public class Settings extends BaseSettings {
             new IntegerSetting("hushtelegram_chat_list_avatar_size", 80).withRange(70, 120);
 
     /**
+     * A tap on Saved Messages in the chat list opens its shared media page, as Telegram's View as
+     * Chats does, without changing that choice
+     * ({@link app.hushtelegram.extension.telegram.misc.SavedMedia}).
+     */
+    public static final BooleanSetting SAVED_MEDIA_FIRST =
+            new BooleanSetting("hushtelegram_saved_media_first", FALSE);
+
+    /**
      * Forwards start with Telegram's Hide sender's name option turned on.
      */
     public static final BooleanSetting FORWARD_HIDE_SENDER =

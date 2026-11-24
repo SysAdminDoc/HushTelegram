@@ -190,6 +190,7 @@ public final class SettingsBackup {
             Settings.FOLDER_TABS_BOTTOM,
             Settings.FOLDER_TAB_ICONS,
             Settings.CHAT_LIST_AVATAR,
+            Settings.SAVED_MEDIA_FIRST,
             Settings.FORWARD_HIDE_SENDER,
             Settings.VOICE_MUSIC_PLAYER,
             Settings.PLAYBACK_POSITION,
