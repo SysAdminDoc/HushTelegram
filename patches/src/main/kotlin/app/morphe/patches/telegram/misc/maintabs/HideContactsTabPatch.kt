@@ -120,16 +120,19 @@ val hideContactsTabPatch = bytecodePatch(
         requireStatusMethod("sideMenu")
         requireStatusMethod("hideNewMessage")
         requireStatusMethod("barOutline")
+        requireStatusMethod("hideDownloadsButton")
         val compact = resolveCompactBar(plan)
         val side = resolveSideMenu(plan)
         val newMessage = resolveNewMessageButton()
         val outline = resolveBarOutline(plan)
+        val downloads = resolveDownloadsButton()
         // Assembled on copies first, so a refusal leaves the app untouched.
         plan.insert { target, apply -> apply(MutableMethod(ImmutableMethod.of(target))) }
         compact.rehearse()
         side.rehearse()
         newMessage.rehearse()
         outline.rehearse()
+        downloads.rehearse()
         writeMainTabsStubs(plan)
         plan.insert { target, apply -> apply(target) }
         // Each extra switch's own targets: a build where one changed keeps the Contacts switch.
@@ -156,6 +159,12 @@ val hideContactsTabPatch = bytecodePatch(
             enableCapability("barOutline")
         } else {
             patchLog.warning("$PATCH: ${outline.missing}. The patch goes on without the bar outline.")
+        }
+        if (downloads.missing == null) {
+            downloads.apply()
+            enableCapability("hideDownloadsButton")
+        } else {
+            patchLog.warning("$PATCH: ${downloads.missing}. The patch goes on without the Downloads switch.")
         }
         enableStatus("hideContactsTab")
     }

@@ -17,6 +17,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** New **Always show translate bar** switch on the Conversations page, off by default. The translate bar now shows up in chats where Telegram didn't spot another language, which helps with things like Hindi typed in Latin letters. Without Premium it works through **Translate with an outside service**. If **Hide translate bar** is on too, the bar stays hidden. (#98)
 * **Telegram:** New **Add Send photo to the link preview menu** switch on the Conversations page, off by default. It comes with Add Repeat to the message menu. When a link preview in the message box has a picture, its menu gets a Send photo row that sends the picture as a normal photo. Your text goes with it as the caption if it fits, otherwise it stays in the box. (#101)
 * **Telegram:** HushTelegram's settings speak Italian now. Switch Telegram to Italian and every HushTelegram page, switch, search result and message follows. (#100)
+* **Telegram:** New **Hide Downloads button** switch on the Chat list page, off by default. The Downloads button no longer pops up in the bar at the top of the chat list while a file downloads, and your downloads are still in the Downloads tab when you search. (#113)
 
 ### Fixed
 

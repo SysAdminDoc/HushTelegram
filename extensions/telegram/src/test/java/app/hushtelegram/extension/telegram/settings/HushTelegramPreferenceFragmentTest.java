@@ -1159,6 +1159,12 @@ public class HushTelegramPreferenceFragmentTest {
                     String.valueOf(page.findPreference(Settings.HIDE_NEW_MESSAGE.key).getSummary()));
             // The pencil button stays until the switch is turned on.
             assertFalse(((SwitchPreference) page.findPreference(Settings.HIDE_NEW_MESSAGE.key)).isChecked());
+            assertEquals("Hide Downloads button", String.valueOf(page.findPreference(Settings.HIDE_DOWNLOADS_BUTTON.key).getTitle()));
+            assertEquals("The Downloads button stays out of the bar at the top of the chat list, even while a file "
+                            + "downloads. Your downloads are still in the Downloads tab when you search.",
+                    String.valueOf(page.findPreference(Settings.HIDE_DOWNLOADS_BUTTON.key).getSummary()));
+            // The Downloads button shows while a file downloads until the switch is turned on.
+            assertFalse(((SwitchPreference) page.findPreference(Settings.HIDE_DOWNLOADS_BUTTON.key)).isChecked());
             assertEquals("Test server sign-in", String.valueOf(page.findPreference(Settings.TEST_SERVER_SIGN_IN.key).getTitle()));
             assertEquals("Signing in or adding an account shows Telegram's Test Backend box on the phone number screen. "
                             + "Tick it to sign that account in on Telegram's test servers, kept apart from your other accounts.",

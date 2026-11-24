@@ -890,6 +890,14 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_hide_new_message", FALSE, true);
 
     /**
+     * The Downloads button the chat list's top bar shows while a file downloads or one you haven't
+     * looked at yet is waiting stays hidden. The chat list asks again each time it comes back, so
+     * no restart is needed.
+     */
+    public static final BooleanSetting HIDE_DOWNLOADS_BUTTON =
+            new BooleanSetting("hushtelegram_hide_downloads_button", FALSE);
+
+    /**
      * The bar at the bottom of the main screen gets a thin Telegram blue outline. Its glass reads the
      * outline when the main screen is built, so a restart shows the change.
      */

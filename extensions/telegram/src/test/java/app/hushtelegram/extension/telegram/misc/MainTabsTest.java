@@ -44,6 +44,8 @@ public class MainTabsTest {
         Settings.HIDE_NEW_MESSAGE.resetToDefault();
         SettingReadsForTests.mend(Settings.BAR_OUTLINE);
         Settings.BAR_OUTLINE.resetToDefault();
+        SettingReadsForTests.mend(Settings.HIDE_DOWNLOADS_BUTTON);
+        Settings.HIDE_DOWNLOADS_BUTTON.resetToDefault();
         MainTabs.clearNewMessageButtonsForTests();
         HookStatus.clear();
     }
@@ -313,6 +315,38 @@ public class MainTabsTest {
         SettingsContextRule.withoutContext(() -> assertFalse(hidden(button)));
         SettingReadsForTests.breakReads(Settings.HIDE_NEW_MESSAGE);
         assertFalse(hidden(button));
+        assertFalse(HookStatus.missing(FamilyNames.HIDE_CONTACTS_TAB).isEmpty());
+    }
+
+    @Test public void theDownloadsButtonKeepsTelegramsFactorUntilTheSwitchIsOn() {
+        assertFalse(Settings.HIDE_DOWNLOADS_BUTTON.get());
+        for (float stock : new float[] {0f, 0.25f, 1f}) assertEquals(stock, MainTabs.downloadsButton(stock), 0f);
+        assertTrue(report().contains(FamilyNames.HIDE_CONTACTS_TAB));
+        assertFalse(report().contains("Downloads button hidden"));
+    }
+
+    @Test public void theSwitchFadesTheDownloadsButtonOutEvenMidDownload() {
+        Settings.HIDE_DOWNLOADS_BUTTON.save(true);
+        assertEquals(0f, MainTabs.downloadsButton(1f), 0f);
+        assertEquals(0f, MainTabs.downloadsButton(0.5f), 0f);
+        assertEquals(0f, MainTabs.downloadsButton(0f), 0f);
+        assertTrue(report().contains("Downloads button hidden"));
+        // The chat list asks again as it comes back, so turning it off brings the button back.
+        Settings.HIDE_DOWNLOADS_BUTTON.save(false);
+        assertEquals(1f, MainTabs.downloadsButton(1f), 0f);
+    }
+
+    @Test public void pausingAnEarlyStartOrAnUnreadableSwitchKeepsTheDownloadsButton() {
+        Settings.HIDE_DOWNLOADS_BUTTON.save(true);
+        for (HushTelegramPause.Reason reason : HushTelegramPause.Reason.values()) {
+            if (reason == HushTelegramPause.Reason.NONE) continue;
+            PauseForTests.pause(reason);
+            assertEquals(reason.name(), 1f, MainTabs.downloadsButton(1f), 0f);
+            PauseForTests.resume();
+        }
+        SettingsContextRule.withoutContext(() -> assertEquals(1f, MainTabs.downloadsButton(1f), 0f));
+        SettingReadsForTests.breakReads(Settings.HIDE_DOWNLOADS_BUTTON);
+        assertEquals(0.75f, MainTabs.downloadsButton(0.75f), 0f);
         assertFalse(HookStatus.missing(FamilyNames.HIDE_CONTACTS_TAB).isEmpty());
     }
 

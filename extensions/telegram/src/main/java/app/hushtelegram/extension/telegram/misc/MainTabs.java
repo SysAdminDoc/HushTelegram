@@ -132,6 +132,27 @@ public final class MainTabs {
     }
 
     /**
+     * How visible the chat list's Downloads button should be, from 0 (gone) to 1. Telegram works the
+     * factor out from whether a download runs or waits and its own animations, then hands it to
+     * the button's animator; the switch answers 0 so the button fades out the way Telegram fades it.
+     * The chat list asks again as it comes back, so turning the switch off shows it again then.
+     *
+     * @param stock the factor Telegram worked out
+     */
+    public static float downloadsButton(float stock) {
+        HookStatus.invoked(FamilyNames.HIDE_CONTACTS_TAB);
+        try {
+            if (Utils.settingsReady() && Settings.HIDE_DOWNLOADS_BUTTON.get()) {
+                if (stock > 0f) HookStatus.counted(FamilyNames.HIDE_CONTACTS_TAB, "Downloads button hidden");
+                return 0f;
+            }
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.HIDE_CONTACTS_TAB, "Downloads button", failure);
+        }
+        return stock;
+    }
+
+    /**
      * Replaces only the floating-button animator's visibility write. Its story, progress and other
      * screen views aren't registered here, so their requested visibility passes through unchanged.
      * Keep the native value even while hidden, including GONE during search or a transition.

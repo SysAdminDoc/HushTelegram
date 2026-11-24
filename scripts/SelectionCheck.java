@@ -496,6 +496,7 @@ public final class SelectionCheck {
         hook(calls, flags, "sideMenu", "misc/SideMenu", "swipeStarts", "back");
         hook(calls, flags, "hideNewMessage", "misc/MainTabs", "newMessageButton");
         hook(calls, flags, "barOutline", "misc/MainTabs", "barGlass", "barOutlineColor", "barOutlineWidth");
+        hook(calls, flags, "hideDownloadsButton", "misc/MainTabs", "downloadsButton");
         hook(calls, flags, "forwardDates", "misc/ForwardDates", "header", "compact");
         hook(calls, flags, "fasterDownloads", "misc/DownloadSpeed", "fast");
         hook(calls, flags, "dataSaverDownloads", "misc/DataSaverDownloads", "hold", "holdMask");

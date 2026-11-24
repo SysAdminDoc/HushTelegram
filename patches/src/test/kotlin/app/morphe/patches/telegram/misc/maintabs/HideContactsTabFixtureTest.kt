@@ -558,13 +558,73 @@ class HideContactsTabFixtureTest {
         }
     }
 
+    @Test fun `the Downloads button's one animated visibility call asks the runtime for its factor first`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val found = context.resolveDownloadsButton()
+            assertNull("$name: ${found.missing}", found.missing)
+            val method = found.method!!
+            val stock = ImmutableMethod.of(method).controlBody()
+            val label = context.tgMutableClassDefBy(method.definingClass).methods.single { m ->
+                m.controlBody().any { it.controlRef() == DOWNLOADS_TABS }
+            }
+            val labelStock = label.controlBody().map(::operands)
+            // Telegram reads the button off the chat list and hands it, with the factor, to the animator.
+            val read = stock[found.at - 1]
+            assertEquals(name, Opcode.IGET_OBJECT, read.opcode)
+            assertEquals("$name: the chat list's own button", method.localRegisterCount(), read.namedRegisters()[1])
+            assertEquals("$name: the button and its factor", listOf(read.namedRegisters()[0], found.factor), stock[found.at].namedRegisters())
+            assertEquals(name, listOf("Landroid/view/View;", "F"), stock[found.at].call()!!.parameterTypes.map { it.toString() })
+            assertEquals(name, compactWarnings(build), PatchLogCapture.warnings { hideContactsTabPatch.execute(context) })
+
+            val after = method.controlBody()
+            assertEquals("$name: one call and its answer", stock.count { it.opcode != Opcode.NOP } + 2, after.count { it.opcode != Opcode.NOP })
+            assertEquals(name, Opcode.INVOKE_STATIC_RANGE, after[found.at].opcode)
+            assertEquals(name, DOWNLOADS_BUTTON, after[found.at].controlRef())
+            assertEquals(name, listOf(found.factor), after[found.at].namedRegisters())
+            assertEquals(name, Opcode.MOVE_RESULT, after[found.at + 1].opcode)
+            assertEquals(name, listOf(found.factor), after[found.at + 1].namedRegisters())
+            assertStock(name, stock, after) { it + if (it >= found.at) 2 else 0 }
+            assertEquals("$name: the button's label stays Telegram's", labelStock, label.controlBody().map(::operands))
+            for ((flag, value) in listOf("hideContactsTab" to 1L, "hideNewMessage" to 1L, "barOutline" to 1L, "hideDownloadsButton" to 1L)) {
+                val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == flag }.controlBody()
+                assertEquals("$name: $flag", value, (status.first() as WideLiteralInstruction).wideLiteral)
+            }
+        }
+    }
+
+    @Test fun `a Downloads button that no longer animates leaves only the Downloads switch out`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = PatchContexts.of(ExtensionDex.classes() + hosts(build))
+            val found = context.resolveDownloadsButton()
+            assertNull("$name: ${found.missing}", found.missing)
+            val method = found.method!!
+            val view = method.controlBody()[found.at].namedRegisters().first()
+            method.replaceInstruction(found.at, "invoke-virtual {v$view}, Landroid/view/View;->getVisibility()I")
+            val before = method.controlBody().map(::operands)
+            assertEquals(name, compactWarnings(build) + listOf("Hide Contacts tab: the Downloads button no longer shows through one " +
+                "animated visibility call (0). The patch goes on without the Downloads switch."),
+                PatchLogCapture.warnings { hideContactsTabPatch.execute(context) })
+            assertEquals("$name: the chat list stays Telegram's", before, method.controlBody().map(::operands))
+            for ((flag, value) in listOf("hideContactsTab" to 1L, "compactTabBar" to compactStatus(build), "sideMenu" to 1L,
+                "hideNewMessage" to 1L, "barOutline" to 1L, "hideDownloadsButton" to 0L)) {
+                val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == flag }.controlBody()
+                assertEquals("$name: $flag", value, (status.first() as WideLiteralInstruction).wideLiteral)
+            }
+        }
+    }
+
     @Test fun `a build with no chat list keeps the other three switches`() {
         for (build in Fixtures.declaredBuilds()) {
             val name = build.name
             val context = PatchContexts.of(ExtensionDex.classes() + hosts(build, withChatList = false))
             assertEquals(name, compactWarnings(build) + listOf("Hide Contacts tab: the chat list no longer sets its new message button in one place (0). " +
-                "The patch goes on without the new message switch."), PatchLogCapture.warnings { hideContactsTabPatch.execute(context) })
-            for ((flag, value) in listOf("hideContactsTab" to 1L, "compactTabBar" to compactStatus(build), "sideMenu" to 1L, "hideNewMessage" to 0L)) {
+                "The patch goes on without the new message switch.", "Hide Contacts tab: the chat list no longer labels one Downloads button (0). " +
+                "The patch goes on without the Downloads switch."), PatchLogCapture.warnings { hideContactsTabPatch.execute(context) })
+            for ((flag, value) in listOf("hideContactsTab" to 1L, "compactTabBar" to compactStatus(build), "sideMenu" to 1L, "hideNewMessage" to 0L,
+                "hideDownloadsButton" to 0L)) {
                 val status = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == flag }.controlBody()
                 assertEquals("$name: $flag", value, (status.first() as WideLiteralInstruction).wideLiteral)
             }
