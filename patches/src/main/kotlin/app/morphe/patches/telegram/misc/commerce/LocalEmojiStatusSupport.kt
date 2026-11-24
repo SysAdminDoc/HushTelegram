@@ -32,6 +32,9 @@ internal const val LOCAL_STATUS = "$EXTENSION_PACKAGE/misc/LocalEmojiStatus;"
 internal const val LOCAL_STATUS_ID = "$LOCAL_STATUS->documentId(Ljava/lang/Long;Ljava/lang/Object;)Ljava/lang/Long;"
 internal const val LOCAL_STATUS_PREMIUM = "$LOCAL_STATUS->premium(I)Z"
 internal const val LOCAL_STATUS_KEEP = "$LOCAL_STATUS->keep(Ljava/lang/Object;Ljava/lang/Object;)Z"
+internal const val LOCAL_STATUS_REFRESH = "$LOCAL_STATUS->refresh(Ljava/lang/Object;)V"
+internal const val LOCAL_STATUS_ACCOUNT = "Lorg/telegram/messenger/UserConfig;->selectedAccount:I"
+internal const val LOCAL_STATUS_CONTROLLER = "Lorg/telegram/messenger/MessagesController;->getInstance(I)Lorg/telegram/messenger/MessagesController;"
 private const val STATUS_USER = "Lorg/telegram/tgnet/TLRPC\$User;"
 internal const val USER_STATUS_ID = "$EMOJI_USERS->$EMOJI_GETTER($STATUS_USER)Ljava/lang/Long;"
 internal const val IS_PREMIUM_USER = "$STICKER_CONTROLLER->isPremiumUser($STATUS_USER)Z"
@@ -96,6 +99,7 @@ internal fun BytecodePatchContext.resolveLocalEmojiStatus(): LocalEmojiStatusPla
     controlHook(LOCAL_STATUS, "documentId", listOf("Ljava/lang/Long;", "Ljava/lang/Object;"), "Ljava/lang/Long;")
     controlHook(LOCAL_STATUS, "premium", listOf("I"), "Z")
     controlHook(LOCAL_STATUS, "keep", listOf("Ljava/lang/Object;", "Ljava/lang/Object;"), "Z")
+    controlHook(LOCAL_STATUS, "refreshSelected", emptyList(), "V")
     requireStatusMethod("commerceLocalEmojiStatus")
     fun missing(why: String) = LocalEmojiStatusPlan(null, null, why)
 
@@ -179,6 +183,14 @@ private fun BytecodePatchContext.writeStatusStubs() {
         aput-object v0, v3, v4
         invoke-virtual {v1, v2, v3}, $STATUS_NOTIFICATIONS->postNotificationName(I[Ljava/lang/Object;)V
         :done
+        return-void
+    """)
+    // What the Hush settings call when they close on a flipped switch: the same redraw, for the account on screen.
+    writeStub(LOCAL_STATUS, "refreshSelected", 1, """
+        sget v0, $LOCAL_STATUS_ACCOUNT
+        invoke-static {v0}, $LOCAL_STATUS_CONTROLLER
+        move-result-object v0
+        invoke-static {v0}, $LOCAL_STATUS_REFRESH
         return-void
     """)
 }

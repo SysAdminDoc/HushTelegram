@@ -54,6 +54,7 @@ public class LocalEmojiStatusTest {
         stockClock = LocalEmojiStatus.clock;
         LocalEmojiStatus.telegram = telegram;
         LocalEmojiStatus.clock = () -> now;
+        LocalEmojiStatus.heard = null;
         prefs().edit().clear().commit();
         restore();
     }
@@ -172,6 +173,47 @@ public class LocalEmojiStatusTest {
         assertTrue(String.join("\n", HookStatus.report()).contains("keep emoji status"));
     }
 
+    @Test public void closingTheSettingsRedrawsATitleThatHeardTheSwitchTheOtherWayRound() {
+        // The title drew with the switch off, as it does on a chat list left open under the settings.
+        assertFalse(LocalEmojiStatus.premium(0));
+        LocalEmojiStatus.settingsClosed();
+        assertEquals("nothing changed, nothing to redraw", 0, telegram.reselected);
+
+        Settings.LOCAL_EMOJI_STATUS.save(true);
+        LocalEmojiStatus.settingsClosed();
+        assertEquals("the star shows without a restart", 1, telegram.reselected);
+        // Telegram's redraw asks again, and the title now knows.
+        assertTrue(LocalEmojiStatus.premium(0));
+        LocalEmojiStatus.settingsClosed();
+        assertEquals(1, telegram.reselected);
+
+        Settings.LOCAL_EMOJI_STATUS.save(false);
+        LocalEmojiStatus.settingsClosed();
+        assertEquals("and goes the same way", 2, telegram.reselected);
+        assertFalse(Settings.LOCAL_EMOJI_STATUS.rebootApp);
+    }
+
+    @Test public void aPremiumAccountsTitleIsRedrawnTooSinceItsKeptEmojiChanges() {
+        assertTrue(LocalEmojiStatus.premium(1));
+        Settings.LOCAL_EMOJI_STATUS.save(true);
+        LocalEmojiStatus.settingsClosed();
+        assertEquals(1, telegram.reselected);
+    }
+
+    @Test public void closingTheSettingsLeavesATitleThatNeverAskedAlone() {
+        Settings.LOCAL_EMOJI_STATUS.save(true);
+        LocalEmojiStatus.settingsClosed();
+        assertEquals(0, telegram.reselected);
+    }
+
+    @Test public void aFailingRedrawAfterTheSettingsIsReportedAndNothingElse() {
+        assertFalse(LocalEmojiStatus.premium(0));
+        Settings.LOCAL_EMOJI_STATUS.save(true);
+        telegram.broken = true;
+        LocalEmojiStatus.settingsClosed();
+        assertTrue(String.join("\n", HookStatus.report()).contains("emoji status after settings"));
+    }
+
     @Test public void statusesStopAfterTwoPlaysUntilTheMovingSwitchIsOn() {
         assertFalse(Settings.MOVING_EMOJI_STATUS.get());
         for (int type : new int[] {7, 9, 10, 5, 17, 0}) assertEquals(type, LocalEmojiStatus.statusRepeatType(type));
@@ -206,6 +248,7 @@ public class LocalEmojiStatusTest {
         assertEquals(-1, LocalEmojiStatus.statusDocument(new Object()));
         assertEquals(0, LocalEmojiStatus.statusUntil(new Object()));
         LocalEmojiStatus.refresh(CONTROLLER);
+        LocalEmojiStatus.refreshSelected();
     }
 
     private static SharedPreferences prefs() {
@@ -219,6 +262,7 @@ public class LocalEmojiStatusTest {
     private static final class Telegram implements LocalEmojiStatus.Telegram {
         final Map<Object, Long> users = new HashMap<>();
         final List<Object> refreshed = new ArrayList<>();
+        int reselected;
         boolean broken;
 
         Telegram() { users.put(USER, ME); }
@@ -231,5 +275,9 @@ public class LocalEmojiStatusTest {
         @Override public long statusDocument(Object status) { return ((long[]) status)[0]; }
         @Override public int statusUntil(Object status) { return (int) ((long[]) status)[1]; }
         @Override public void refresh(Object controller) { refreshed.add(controller); }
+        @Override public void refreshSelected() {
+            if (broken) throw new IllegalStateException("no UserConfig");
+            reselected++;
+        }
     }
 }

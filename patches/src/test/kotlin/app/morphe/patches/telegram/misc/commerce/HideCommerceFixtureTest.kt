@@ -249,6 +249,9 @@ class HideCommerceFixtureTest {
             assertLocalTitle(build.name, localBodies.getValue(title.key()),
                 context.tgMutableClassDefBy(title.definingClass).methods.single { it.key() == title.key() })
             assertLocalSend(build.name, send, context.tgMutableClassDefBy(CONTROLLER).methods.single { it.key() == send.key() })
+            val reselect = context.tgMutableClassDefBy(LOCAL_STATUS).methods.single { it.origName == "refreshSelected" }.instructions()
+            assertEquals("${build.name}: closing the settings redraws the title of the account on screen",
+                listOf(LOCAL_STATUS_ACCOUNT, LOCAL_STATUS_CONTROLLER, LOCAL_STATUS_REFRESH), reselect.mapNotNull { it.reference() })
             for ((key, before) in iconBodies) {
                 val after = context.tgMutableClassDefBy(key.substringBefore("->")).methods.single { it.key() == key }
                     .instructions().filter { it.opcode != Opcode.NOP }

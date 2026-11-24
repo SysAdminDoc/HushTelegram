@@ -26,6 +26,10 @@ import app.hushtelegram.extension.telegram.settings.Settings;
  * <p>Each signed-in account keeps its own pick, by its user id, until the duration picked with a
  * long press runs out or the selected emoji is tapped again to clear it.
  *
+ * <p>The title only asks when Telegram redraws it, which the switch itself never causes. So when
+ * the Hush settings close on a switch the title last heard the other way round, the title is told
+ * to draw again ({@link #settingsClosed()}) and the star comes or goes without a restart.
+ *
  * <p>Keep emoji statuses moving, a switch of its own, lets every animated status next to a name
  * go on playing instead of stopping after two plays ({@link #statusRepeatType}).
  */
@@ -56,6 +60,9 @@ public final class LocalEmojiStatus {
     /** Telegram's side, through the stubs below. A test answers it itself. */
     static Telegram telegram = new Stubs();
 
+    /** The switch as the chat list title last heard it, or null until it has asked. */
+    static volatile Boolean heard;
+
     /** The emoji the chat list title draws for [user]: the one kept on this phone while the switch is on, else Telegram's [stock]. */
     public static Long documentId(Long stock, Object user) {
         HookStatus.invoked(FamilyNames.HIDE_COMMERCE);
@@ -77,12 +84,27 @@ public final class LocalEmojiStatus {
     /** Whether the chat list title counts its account as Premium: Telegram's answer (non-zero for yes), or yes while the switch is on. */
     public static boolean premium(int stock) {
         HookStatus.invoked(FamilyNames.HIDE_COMMERCE);
-        if (stock != 0) return true;
         try {
-            return on();
+            boolean on = on();
+            heard = on;
+            return stock != 0 || on;
         } catch (Throwable failure) {
             HookStatus.threw(FamilyNames.HIDE_COMMERCE, "local emoji status switch", failure);
-            return false;
+            return stock != 0;
+        }
+    }
+
+    /**
+     * The Hush settings closed. A title that last heard the switch the other way round draws again,
+     * so the star and the kept emoji come or go at once. A title that never asked is left alone.
+     */
+    public static void settingsClosed() {
+        try {
+            Boolean last = heard;
+            if (last == null || last == on()) return;
+            telegram.refreshSelected();
+        } catch (Throwable failure) {
+            HookStatus.threw(FamilyNames.HIDE_COMMERCE, "emoji status after settings", failure);
         }
     }
 
@@ -156,6 +178,8 @@ public final class LocalEmojiStatus {
         int statusUntil(Object status);
 
         void refresh(Object controller);
+
+        void refreshSelected();
     }
 
     private static final class Stubs implements Telegram {
@@ -164,6 +188,7 @@ public final class LocalEmojiStatus {
         @Override public long statusDocument(Object status) { return LocalEmojiStatus.statusDocument(status); }
         @Override public int statusUntil(Object status) { return LocalEmojiStatus.statusUntil(status); }
         @Override public void refresh(Object controller) { LocalEmojiStatus.refresh(controller); }
+        @Override public void refreshSelected() { LocalEmojiStatus.refreshSelected(); }
     }
 
     // Stubs. The patch gives each one Telegram's code; until then they do nothing.
@@ -182,4 +207,7 @@ public final class LocalEmojiStatus {
 
     /** Posts {@code userEmojiStatusUpdated} with the controller's current user, which redraws the chat list title. */
     public static void refresh(Object controller) {}
+
+    /** {@link #refresh} with {@code MessagesController.getInstance(UserConfig.selectedAccount)}. */
+    public static void refreshSelected() {}
 }
