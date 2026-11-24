@@ -90,6 +90,55 @@ class LocalNamesFixtureTest {
         }
     }
 
+    @Test fun `a mention and the phone's contacts get Telegram's name and the stock code runs on`() {
+        for (build in Fixtures.declaredBuilds()) {
+            val name = build.name
+            val context = context(build)
+            val (found, missing) = context.resolveLocalNames()
+            assertNull("$name: $missing", missing)
+            val mentions = mentions(context, build)
+            assertTrue("$name: Telegram's mentions", mentions.size >= 2)
+            val phoneBook = context.tgMutableClassDefBy(LN_CONTACTS).methods.single { it.origName == "applyContactToPhoneBook" }
+            val stock = (mentions.map { it.first } + phoneBook).distinct().associateWith { ImmutableMethod.of(it) }
+            found!!.applyTo()
+
+            // Each mention asks the hook for its text where it asked Telegram's first name call, with the same user and flag.
+            for ((method, sites) in mentions.groupBy({ it.first }, { it.second })) {
+                val case = "$name: ${method.definingClass}->${method.name}"
+                val old = stock.getValue(method)
+                assertEquals("$case: register count", old.implementation!!.registerCount, method.implementation!!.registerCount)
+                val before = old.controlBody()
+                val after = method.controlBody()
+                val expected = shape(old, IntRange.EMPTY).toMutableList()
+                for (at in sites) {
+                    assertEquals("$case: the hook at $at", LN_MENTION_HOOK, after[at].origRef())
+                    assertEquals("$case: the hook at $at", before[at].opcode, after[at].opcode)
+                    assertEquals("$case: the user and flag at $at", before[at].namedRegisters(), after[at].namedRegisters())
+                    val place = before.take(at).count { it.opcode != Opcode.NOP }
+                    expected[place] = expected[place].toMutableList().also { it[2] = LN_MENTION_HOOK }
+                }
+                assertEquals("$case: everything else as it was", expected, shape(method, IntRange.EMPTY))
+                assertEquals("$case: handlers", handlers(old), handlers(method))
+            }
+            assertEquals("$name: no mention still takes Telegram's first name", emptyList<String>(),
+                mentions(context, build).map { (method, at) -> "${method.definingClass}->${method.name} at $at" })
+
+            // The phone's contacts are written from what the hook hands back, first thing.
+            val case = "$name: applyContactToPhoneBook"
+            assertEquals("$case: register count", stock.getValue(phoneBook).implementation!!.registerCount, phoneBook.implementation!!.registerCount)
+            val body = phoneBook.controlBody()
+            val p0 = phoneBook.implementation!!.registerCount - ins(phoneBook)
+            assertEquals("$case: the hook", listOf(Opcode.INVOKE_STATIC_RANGE, Opcode.MOVE_RESULT_OBJECT, Opcode.CHECK_CAST), body.take(3).map { it.opcode })
+            assertEquals("$case: the hook", LN_PHONE_BOOK_HOOK, body[0].origRef())
+            assertEquals("$case: this, the writes and the user", listOf(p0, p0 + 1, p0 + 2), body[0].namedRegisters())
+            assertEquals("$case: the answer goes back where the user was", listOf(p0 + 2), body[1].namedRegisters())
+            assertEquals("$case: and is cast as the user was", listOf(p0 + 2), body[2].namedRegisters())
+            assertEquals("$case: and is cast as the user was", DC_USER, body[2].origRef())
+            assertStockKept(case, stock.getValue(phoneBook), phoneBook, 0..2)
+            assertEquals("$case: the hook sits outside every try block", emptyList<Int>(), ControlFlow.of(phoneBook).exceptional[0])
+        }
+    }
+
     @Test fun `in the patch Special contacts still reads first`() {
         for (build in Fixtures.declaredBuilds()) {
             val context = context(build)
@@ -164,24 +213,39 @@ class LocalNamesFixtureTest {
             "jumps into MessagesStorage.putUsersInternal" to { c -> jumpTo(c, LN_STORAGE, "putUsersInternal") { body ->
                 body.indexOfFirst { it.opcode == Opcode.CHECK_CAST && it.origRef() == DC_USER } + 1 } },
             "request sends" to { c -> c.tgMutableClassDefBy(CONNECTIONS_MANAGER).methods.removeAll { it.origName == SEND_REQUEST_INTERNAL } },
+            "mentionName runtime hook" to { c -> c.tgMutableClassDefBy(LOCAL_NAMES).methods.removeAll { it.origName == "mentionName" } },
+            "phoneBookUser runtime hook" to { c -> c.tgMutableClassDefBy(LOCAL_NAMES).methods.removeAll { it.origName == "phoneBookUser" } },
+            "ContactsController.applyContactToPhoneBook is missing" to { c ->
+                c.tgMutableClassDefBy(LN_CONTACTS).methods.removeAll { it.origName == "applyContactToPhoneBook" } },
+            "jumps back to the start of ContactsController.applyContactToPhoneBook" to { c -> jumpTo(c, LN_CONTACTS, "applyContactToPhoneBook") { 0 } },
+            "no mention of a person" to { c ->
+                val hosts = mutableListOf<String>()
+                c.classDefForEach { cls -> if (cls.methods.any { mentionCalls(it).isNotEmpty() }) hosts += cls.type }
+                hosts.forEach { type -> c.tgMutableClassDefBy(type).methods.removeAll { mentionCalls(it).isNotEmpty() } }
+            },
         )
         for (build in Fixtures.declaredBuilds()) for ((why, change) in cases) {
             val context = context(build)
             change(context)
-            val before = state(context)
+            val before = state(context, build)
             val (hook, missing) = context.resolveLocalNames()
             assertNull("${build.name}: $why", hook)
             assertNotNull("${build.name}: $why", missing)
             assertTrue("${build.name}: expected \"$why\" in \"$missing\"", why in missing!!)
-            assertEquals("${build.name}: $why leaves every method as it was", before, state(context))
+            assertEquals("${build.name}: $why leaves every method as it was", before, state(context, build))
         }
     }
 
     private fun context(build: File): BytecodePatchContext {
-        val types = setOf(SC_CONTROLLER, SC_BASE, DC_USER, LN_CHAT, LN_STORAGE, CONNECTIONS_MANAGER)
+        val types = setOf(SC_CONTROLLER, SC_BASE, DC_USER, LN_CHAT, LN_STORAGE, CONNECTIONS_MANAGER, LN_CONTACTS)
         val telegram = FixtureDex.classes(build, types)
         assertEquals("${build.name}: every class the hooks read", types, telegram.keys)
-        return PatchContexts.of(ExtensionDex.classes() + telegram.values)
+        return PatchContexts.of((ExtensionDex.classes() + telegram.values + mentionHosts(build)).distinctBy { it.type })
+    }
+
+    /** Every mention in [c]'s classes that make one, as its method and where it asks for the name. */
+    private fun mentions(c: BytecodePatchContext, build: File): List<Pair<Method, Int>> = mentionHosts(build).flatMap { host ->
+        c.tgMutableClassDefBy(host.type).methods.flatMap { method -> mentionCalls(method).map { method to it } }
     }
 
     /** Registers the method's parameters take, this included. */
@@ -244,7 +308,8 @@ class LocalNamesFixtureTest {
         method.replaceInstruction(at, "const-string v$register, \"INSERT INTO other VALUES(?)\"")
     }
 
-    private fun state(c: BytecodePatchContext) = listOf(SC_CONTROLLER, SC_BASE, LN_STORAGE, CONNECTIONS_MANAGER, SETTINGS_STATUS, LOCAL_NAMES)
+    private fun state(c: BytecodePatchContext, build: File) =
+        (listOf(SC_CONTROLLER, SC_BASE, LN_STORAGE, CONNECTIONS_MANAGER, LN_CONTACTS, SETTINGS_STATUS, LOCAL_NAMES) + mentionHosts(build).map { it.type })
         .associateWith { type ->
             val owner = c.tgMutableClassDefBy(type)
             listOf(owner.fields.map { "$it" }.sorted(), owner.methods.associate { method ->
@@ -252,4 +317,27 @@ class LocalNamesFixtureTest {
                     method.controlBody().map { listOf(it.opcode, it.namedRegisters(), it.origRef()) })
             })
         }
+}
+
+private val MENTION_HOSTS = HashMap<String, List<ClassDef>>()
+
+/** Each build's classes that make a mention, read once, since finding them reads the whole app. */
+internal fun mentionHosts(build: File): List<ClassDef> = synchronized(MENTION_HOSTS) {
+    MENTION_HOSTS.getOrPut(FixtureDex.inputIdentity(build)) {
+        FixtureDex.classesWhere(build, { true }) { mentionCalls(it).isNotEmpty() }
+            .also { assertTrue("${build.name}: classes that make a mention", it.isNotEmpty()) }
+    }
+}
+
+/**
+ * Where [method] asks Telegram's first name call for a user's name and makes a SpannableString of
+ * it right after: the text a mention puts in the message being typed. Read more loosely than the
+ * patch reads it, so a build that moves a mention around a little still turns up here, unhooked.
+ */
+internal fun mentionCalls(method: Method): List<Int> {
+    val body = method.controlBody()
+    return body.indices.filter { at ->
+        body[at].origRef() == LN_FIRST_NAME &&
+            body.subList(at + 1, minOf(body.size, at + 9)).any { it.origRef()?.startsWith("Landroid/text/SpannableString;") == true }
+    }
 }

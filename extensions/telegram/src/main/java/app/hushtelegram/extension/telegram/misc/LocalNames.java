@@ -47,10 +47,11 @@ import app.hushtelegram.extension.telegram.settings.SettingsLock;
  *
  * <p>The name goes on Telegram's own user and chat objects as MessagesController stores them, so
  * every screen that reads a name reads it, and the server's name waits in {@link #KEPT} so Remove
- * or the switch can put it back. Nothing leaves the phone: Telegram's database is handed a copy
- * with the server's name, and the requests that carry a name Telegram took from those objects
- * (adding a contact, a group or channel title, a shared contact, a bot's name, a contacts import)
- * get the server's name back before they go out. Your own accounts are never renamed. The names
+ * or the switch can put it back. Nothing leaves the phone: Telegram's database and the phone's
+ * contacts are handed a copy with the server's name, a mention typed into a message is made of the
+ * server's name, and the requests that carry a name Telegram took from those objects (adding a
+ * contact, a group or channel title, a shared contact, a bot's name, a contacts import) get the
+ * server's name back before they go out. Your own accounts are never renamed. The names
  * are kept by dialog id, the same peer on every account, so one list in the settings covers them
  * all and the settings file carries it.
  */
@@ -370,14 +371,67 @@ public final class LocalNames {
             Key key = new Key(true, Accounts.indexOf(storage), number(read(user, "id")));
             Kept kept = KEPT.get(key);
             if (kept == null || !kept.alias.equals(read(user, "first_name")) || !isEmpty(read(user, "last_name"))) return user;
-            Object copy = copy(user);
-            write(copy, "first_name", kept.first);
-            write(copy, "last_name", kept.last);
-            return copy;
+            return withServerName(user, kept);
         } catch (Throwable failure) {
             HookStatus.threw(FAMILY, "local names stored user", failure);
             return user;
         }
+    }
+
+    /**
+     * Called in place of Telegram's UserObject.getFirstName where a mention goes into the message
+     * being typed, picked from the @ list or from a long press on someone's picture. The mention's
+     * text goes out to everyone in the chat, so a renamed user is mentioned by the server's name.
+     */
+    public static String mentionName(Object user, int allowShort) {
+        Kept kept = null;
+        try {
+            kept = user == null || KEPT.isEmpty() ? null : shownOn(user);
+            if (kept != null) return telegram.firstName(withServerName(user, kept), allowShort != 0);
+        } catch (Throwable failure) {
+            HookStatus.threw(FAMILY, "local names mention", failure);
+            // Never the given name: the server's, as it is, without Telegram's rule for a short one.
+            if (kept != null) return isEmpty(kept.first) ? orEmpty(kept.last) : orEmpty(kept.first);
+        }
+        return telegram.firstName(user, allowShort != 0);
+    }
+
+    /**
+     * Called first thing in ContactsController.applyContactToPhoneBook, which writes a Telegram
+     * contact into the phone's contacts under Telegram's account: a renamed user goes in as a copy
+     * with the server's name, so the given name never reaches the phone's contacts, or Telegram's
+     * own copy of them when it reads them back.
+     */
+    public static Object phoneBookUser(Object contacts, Object operations, Object user) {
+        if (contacts == null || user == null || KEPT.isEmpty()) return user;
+        try {
+            Kept kept = KEPT.get(new Key(true, Accounts.indexOf(contacts), number(read(user, "id"))));
+            if (kept == null || !kept.alias.equals(read(user, "first_name")) || !isEmpty(read(user, "last_name"))) return user;
+            return withServerName(user, kept);
+        } catch (Throwable failure) {
+            HookStatus.threw(FAMILY, "local names phone book", failure);
+            return user;
+        }
+    }
+
+    /** What [user] shows a name given here from, on whichever account; null when it shows its own. */
+    @Nullable
+    private static Kept shownOn(Object user) throws IllegalAccessException {
+        Object first = read(user, "first_name");
+        if (!(first instanceof String) || !isEmpty(read(user, "last_name"))) return null;
+        long id = number(read(user, "id"));
+        for (Map.Entry<Key, Kept> each : KEPT.entrySet()) {
+            if (each.getKey().user && each.getKey().id == id && each.getValue().alias.equals(first)) return each.getValue();
+        }
+        return null;
+    }
+
+    /** A copy of [user] with the server's name [kept] holds; [user] keeps showing the given one. */
+    private static Object withServerName(Object user, Kept kept) throws ReflectiveOperationException {
+        Object copy = copy(user);
+        write(copy, "first_name", kept.first);
+        write(copy, "last_name", kept.last);
+        return copy;
     }
 
     /** {@link #storedUser} for MessagesStorage.putChatsInternal and a chat's title. */
@@ -830,11 +884,18 @@ public final class LocalNames {
 
         @Nullable
         String peerName(int account, long dialog);
+
+        /** Telegram's own first name of [user] (UserObject.getFirstName), the text a mention is made of. */
+        String firstName(@Nullable Object user, boolean allowShort);
     }
 
     private static final class Reflected implements Telegram {
         private static final String CONTROLLER = "org.telegram.messenger.MessagesController";
         private static final String NOTIFICATION_CENTER = "org.telegram.messenger.NotificationCenter";
+        private static final String USER_OBJECT = "org.telegram.messenger.UserObject";
+        private static final String USER = "org.telegram.tgnet.TLRPC$User";
+
+        private static volatile Method firstName;
 
         @Nullable
         private static Object controller(int account) throws ReflectiveOperationException {
@@ -891,6 +952,28 @@ public final class LocalNames {
 
         @Override public String peerName(int account, long dialog) {
             return HiddenChats.telegram.peerName(account, dialog);
+        }
+
+        @Override public String firstName(Object user, boolean allowShort) {
+            try {
+                Method found = firstName;
+                if (found == null) {
+                    found = HostNames.method(Class.forName(USER_OBJECT), "getFirstName", Class.forName(USER), boolean.class);
+                    firstName = found;
+                }
+                Object name = found.invoke(null, user, allowShort);
+                if (name instanceof String) return (String) name;
+            } catch (ReflectiveOperationException | RuntimeException failure) {
+                HookStatus.threw(FAMILY, "local names mention name", failure);
+            }
+            // Telegram's rule, short of its fallbacks: the first name, or the last one when there's none.
+            try {
+                if (user == null) return "";
+                Object first = read(user, "first_name");
+                return isEmpty(first) ? orEmpty(read(user, "last_name")) : (String) first;
+            } catch (IllegalAccessException | RuntimeException failure) {
+                return "";
+            }
         }
     }
 }

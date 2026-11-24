@@ -190,6 +190,7 @@ public class LocalNamesTest {
         final List<Integer> signedIn = new ArrayList<>(Collections.singletonList(0));
         final List<List<Integer>> redrawn = new ArrayList<>();
         final Map<Long, String> names = new HashMap<>();
+        final List<Boolean> shortNames = new ArrayList<>();
 
         @Override public Object user(int account, long id) { return users.get(account + ":" + id); }
         @Override public Object chat(int account, long id) { return chats.get(account + ":" + id); }
@@ -197,6 +198,14 @@ public class LocalNamesTest {
         @Override public List<Integer> accounts() { return signedIn; }
         @Override public void redraw(List<Integer> accounts) { redrawn.add(new ArrayList<>(accounts)); }
         @Override public String peerName(int account, long dialog) { return names.get(dialog); }
+
+        /** UserObject.getFirstName's rule, short of its fallbacks. */
+        @Override public String firstName(Object user, boolean allowShort) {
+            shortNames.add(allowShort);
+            if (user == null) return "DELETED";
+            TL_user each = (TL_user) user;
+            return each.first_name == null || each.first_name.isEmpty() ? each.last_name : each.first_name;
+        }
     }
 
     @Before public void setUp() {
@@ -315,6 +324,56 @@ public class LocalNamesTest {
         assertEquals("Ann", fresh.first_name);
         assertEquals("Anna", LocalNames.KEPT.get(new LocalNames.Key(true, 0, ANN)).first);
         assertTrue(report(), report().contains(LocalNames.RENAMED));
+        assertFalse(report(), report().contains("threw"));
+    }
+
+    @Test public void aMentionPutsInTelegramsNameAndTheChatKeepsTheGivenOne() {
+        named("5\tAnn");
+        TL_user ann = new TL_user(ANN, "Annabel", "Lee");
+        LocalNames.user(controller, ann);
+        assertEquals("Ann", ann.first_name);
+
+        // The mention's text goes out to everyone in the chat, so it's Telegram's name for them.
+        assertEquals("Annabel", LocalNames.mentionName(ann, 0));
+        assertEquals("Annabel", LocalNames.mentionName(ann, 1));
+        assertEquals("Telegram's own rule picks the name, asked as the chat asked", Arrays.asList(false, true), telegram.shortNames);
+        assertEquals("the chat still shows the given name", "Ann", ann.first_name);
+        assertEquals("", ann.last_name);
+        // The same person on a second account is mentioned by the server's name there too.
+        TL_user second = new TL_user(ANN, "Annabel", "Lee");
+        LocalNames.user(new Controller(1), second);
+        assertEquals("Ann", second.first_name);
+        assertEquals("Annabel", LocalNames.mentionName(second, 0));
+
+        // Someone with no given name, someone else who happens to show the same text, and no user at all go as Telegram names them.
+        assertEquals("Bob", LocalNames.mentionName(new TL_user(6, "Bob", "Stone"), 0));
+        assertEquals("Ann", LocalNames.mentionName(new TL_user(6, "Ann", ""), 0));
+        assertEquals("DELETED", LocalNames.mentionName(null, 0));
+        assertFalse(report(), report().contains("threw"));
+    }
+
+    @Test public void thePhonesAddressBookGetsTheServersName() {
+        named("5\tAnn");
+        TL_user ann = new TL_user(ANN, "Annabel", "Lee");
+        ann.phone = "15550100";
+        LocalNames.user(controller, ann);
+        ArrayList<Object> operations = new ArrayList<>();
+
+        // ContactsController writes a copy with the server's name into the phone's contacts.
+        Object written = LocalNames.phoneBookUser(new Controller(0), operations, ann);
+        assertNotSame(ann, written);
+        assertEquals("Annabel", ((TL_user) written).first_name);
+        assertEquals("Lee", ((TL_user) written).last_name);
+        assertEquals("15550100", ((TL_user) written).phone);
+        assertEquals(ANN, ((TL_user) written).id);
+        assertEquals("the chat still shows the given name", "Ann", ann.first_name);
+        assertTrue("nothing is written for it", operations.isEmpty());
+
+        // Another account's copy, anyone else and no user at all go through as they are.
+        assertSame(ann, LocalNames.phoneBookUser(new Controller(1), operations, ann));
+        TL_user bob = new TL_user(6, "Bob", null);
+        assertSame(bob, LocalNames.phoneBookUser(new Controller(0), operations, bob));
+        assertNull(LocalNames.phoneBookUser(new Controller(0), operations, null));
         assertFalse(report(), report().contains("threw"));
     }
 

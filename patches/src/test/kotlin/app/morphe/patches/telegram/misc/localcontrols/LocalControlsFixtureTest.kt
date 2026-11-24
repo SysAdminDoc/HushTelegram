@@ -654,7 +654,11 @@ class LocalControlsFixtureTest {
         // Use normal paste also reads the entities method Mention by ID hooks. LocaleController holds the
         // getString(int) wrapper whose forwarded call 13.2 inlined into the profile's Send Gram title.
         result.putAll(FixtureDex.classes(build, setOf(boundMenu, "Lorg/telegram/messenger/R\$drawable;", "Lorg/telegram/messenger/MediaDataController;",
-            "Lorg/telegram/messenger/LocaleController;", LN_STORAGE, "Lorg/telegram/tgnet/ConnectionsManager;") + PROFILE_DC_TYPES + JD_TYPES + setOf(FD_MESSAGE, FD_TL_MESSAGE, FD_FWD_HEADER)))
+            "Lorg/telegram/messenger/LocaleController;", LN_STORAGE, LN_CONTACTS, "Lorg/telegram/tgnet/ConnectionsManager;") + PROFILE_DC_TYPES + JD_TYPES + setOf(FD_MESSAGE, FD_TL_MESSAGE, FD_FWD_HEADER)))
+        // Rename on this phone's mentions, with only the methods that make one: the rest of the chat
+        // screen's classes would hand the other patches here places whose own classes this slice leaves out.
+        for (host in mentionHosts(build)) result.putIfAbsent(host.type, ImmutableClassDef(host.type, host.accessFlags, host.superclass,
+            host.interfaces, host.sourceFile, host.annotations, host.fields, host.methods.filter { mentionCalls(it).isNotEmpty() }))
         loadAncestors(build, result)
         // 13.2 declares the row factory on the menu item's superclass and takes the title as a CharSequence.
         val menuLine = generateSequence(result.getValue(boundMenu)) { menu -> menu.superclass?.let { result[it] } }.toList()

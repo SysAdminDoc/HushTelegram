@@ -12,19 +12,26 @@ import app.morphe.patches.telegram.misc.extension.SendRequestGate
 import app.morphe.patches.telegram.misc.extension.requireStatusMethod
 import app.morphe.patches.telegram.misc.extension.requireThisIntact
 import app.morphe.patches.telegram.misc.extension.resolveSendRequestGate
+import app.morphe.patches.telegram.misc.localcontrols.Mention
 import app.morphe.patches.telegram.misc.localcontrols.controlBody
 import app.morphe.patches.telegram.misc.localcontrols.controlHook
 import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.patches.telegram.misc.localcontrols.controlString
+import app.morphe.patches.telegram.misc.localcontrols.forEachClassMentioning
 import app.morphe.util.ControlFlow
+import app.morphe.util.namedRegisters
 import app.morphe.util.names.addInstructions
 import app.morphe.util.names.origName
 import app.morphe.util.names.origParameterTypes
 import app.morphe.util.names.origReturnType
+import app.morphe.util.names.origType
+import app.morphe.util.names.replaceInstruction
 import app.morphe.util.names.tgClassDefByOrNull
+import app.morphe.util.names.tgMutableClassDefBy
 import app.morphe.util.names.tgMutableClassDefByOrNull
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 internal const val LOCAL_NAMES = "$EXTENSION_PACKAGE/misc/LocalNames;"
@@ -37,9 +44,18 @@ internal const val LN_UPDATES_HOOK = "$LOCAL_NAMES->updates(Ljava/lang/Object;Lj
 internal const val LN_STORED_USER = "$LOCAL_NAMES->storedUser(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"
 internal const val LN_STORED_CHAT = "$LOCAL_NAMES->storedChat(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"
 internal const val LN_OUTGOING = "$LOCAL_NAMES->outgoing(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z"
+internal const val LN_MENTION_HOOK = "$LOCAL_NAMES->mentionName(Ljava/lang/Object;I)Ljava/lang/String;"
+internal const val LN_PHONE_BOOK_HOOK = "$LOCAL_NAMES->phoneBookUser(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"
+internal const val LN_FIRST_NAME = "Lorg/telegram/messenger/UserObject;->getFirstName(Lorg/telegram/tgnet/TLRPC\$User;Z)Ljava/lang/String;"
+internal const val LN_CONTACTS = "Lorg/telegram/messenger/ContactsController;"
 internal const val LN_USERS_STATEMENT = "REPLACE INTO users VALUES("
 internal const val LN_CHATS_STATEMENT = "REPLACE INTO chats VALUES("
 private const val LN_LIST_GET = "Ljava/util/List;->get(I)Ljava/lang/Object;"
+private const val LN_SPANNABLE = "Landroid/text/SpannableString;"
+private const val LN_SET_SPAN = "$LN_SPANNABLE->setSpan(Ljava/lang/Object;III)V"
+private const val LN_USER_ID = "Lorg/telegram/tgnet/TLRPC\$User;->id:J"
+/** How far past the first name call a mention's span, keyed by the user's id, goes over the name. */
+private const val LN_MENTION_REACH = 32
 private const val OBJECT = "Ljava/lang/Object;"
 
 /**
@@ -58,16 +74,36 @@ internal class StoredSite(val method: MutableMethod, val cast: Int, val register
     }
 }
 
+/**
+ * Where a mention goes into the message being typed: Telegram's first name call at [at], whose
+ * answer becomes the mention's text. The hook takes the call's place with the same registers, so
+ * nothing around it moves.
+ */
+internal class MentionSite(val method: MutableMethod, val at: Int) {
+    fun apply() {
+        val call = method.controlBody()[at]
+        val registers = call.namedRegisters()
+        method.replaceInstruction(at, if (call.opcode == Opcode.INVOKE_STATIC_RANGE) {
+            "invoke-static/range {v${registers.first()} .. v${registers.last()}}, $LN_MENTION_HOOK"
+        } else {
+            "invoke-static {${registers.joinToString { "v$it" }}}, $LN_MENTION_HOOK"
+        })
+    }
+}
+
 /** Every place Rename on this phone (#104) goes in, found before anything changes. */
 internal class LocalNamesHook(
     val putUser: MutableMethod,
     val putChat: MutableMethod,
     val updates: MutableMethod,
+    val phoneBook: MutableMethod,
     val stored: List<StoredSite>,
+    val mentions: List<MentionSite>,
     val gate: SendRequestGate,
 ) {
     /** The host methods this changes. */
-    val methods get() = listOf(putUser, putChat, updates) + stored.map { it.method } + listOfNotNull(gate.method)
+    val methods get() = (listOf(putUser, putChat, updates, phoneBook) + stored.map { it.method } + mentions.map { it.method } +
+        listOfNotNull(gate.method)).distinct()
 
     /** Goes in before Special contacts, whose hooks then go in front, so it still reads the server's names. */
     fun applyTo() {
@@ -76,7 +112,14 @@ internal class LocalNamesHook(
         putChat.addInstructions(0, "invoke-static/range {p0 .. p1}, $LN_CHAT_HOOK")
         // processUpdateArray(updates, users, chats, fromGetDifference, date): the controller and the updates.
         updates.addInstructions(0, "invoke-static/range {p0 .. p1}, $LN_UPDATES_HOOK")
+        // applyContactToPhoneBook(operations, user): the phone's contacts get the user the hook hands back.
+        phoneBook.addInstructions(0, """
+            invoke-static/range {p0 .. p2}, $LN_PHONE_BOOK_HOOK
+            move-result-object p2
+            check-cast p2, $DC_USER
+        """)
         stored.forEach { it.apply() }
+        mentions.forEach { it.apply() }
         gate.apply(LN_OUTGOING)
     }
 }
@@ -90,9 +133,10 @@ private fun namesNeeded(ok: Boolean, why: String) {
 /**
  * Rename on this phone puts a name on Telegram's own user and chat objects where MessagesController
  * stores them (putUser, putChat), keeps a new server name from an update (processUpdateArray), hands
- * MessagesStorage's two writers a copy with the server's name, and gives a request that carries a
- * name the server's back at ConnectionsManager's one send. A build where any of those, the account
- * field or the hooks can't be found keeps the rest of the patch.
+ * MessagesStorage's two writers and ContactsController's phone contacts writer a copy with the
+ * server's name, makes a mention typed into a message of the server's name, and gives a request
+ * that carries a name the server's back at ConnectionsManager's one send. A build where any of
+ * those, the account field or the hooks can't be found keeps the rest of the patch.
  *
  * @return the hook, and null; or null and why there's none
  */
@@ -112,6 +156,8 @@ private fun BytecodePatchContext.localNamesHook(): LocalNamesHook {
     controlHook(LOCAL_NAMES, "storedUser", listOf(OBJECT, OBJECT), OBJECT)
     controlHook(LOCAL_NAMES, "storedChat", listOf(OBJECT, OBJECT), OBJECT)
     controlHook(LOCAL_NAMES, "outgoing", listOf(OBJECT, OBJECT, OBJECT), "Z")
+    controlHook(LOCAL_NAMES, "mentionName", listOf(OBJECT, "I"), "Ljava/lang/String;")
+    controlHook(LOCAL_NAMES, "phoneBookUser", listOf(OBJECT, OBJECT, OBJECT), OBJECT)
     val base = tgClassDefByOrNull(SC_BASE)
     namesNeeded(base != null && base.fields.any { it.origName == "currentAccount" && it.type == "I" && !AccessFlags.STATIC.isSet(it.accessFlags) },
         "$SC_BASE->currentAccount is no longer the account a controller serves")
@@ -135,9 +181,66 @@ private fun BytecodePatchContext.localNamesHook(): LocalNamesHook {
     }
     val stored = listOf(storedSite("putUsersInternal", LN_USERS_STATEMENT, DC_USER, LN_STORED_USER),
         storedSite("putChatsInternal", LN_CHATS_STATEMENT, LN_CHAT, LN_STORED_CHAT))
+    val phoneBook = phoneBookWriter()
+    val mentions = mentionSites()
     val gate = resolveSendRequestGate(LN_OUTGOING)
     gate.missing?.let { throw NoLocalNames(it) }
-    return LocalNamesHook(putUser, putChat, updates, stored, gate)
+    return LocalNamesHook(putUser, putChat, updates, phoneBook, stored, mentions, gate)
+}
+
+/**
+ * ContactsController.applyContactToPhoneBook(operations, user), which writes a Telegram contact
+ * into the phone's contacts. Contact sync reads those back into Telegram's own copy of the phone's
+ * contacts, so a given name written there would come back as one the phone holds.
+ */
+private fun BytecodePatchContext.phoneBookWriter(): MutableMethod {
+    val contacts = tgMutableClassDefByOrNull(LN_CONTACTS)
+    namesNeeded(contacts != null, "ContactsController is missing")
+    val method = contacts!!.methods.filter {
+        it.origName == "applyContactToPhoneBook" && it.origParameterTypes == listOf("Ljava/util/ArrayList;", DC_USER) &&
+            it.origReturnType == "V" && !AccessFlags.STATIC.isSet(it.accessFlags) && it.implementation != null
+    }.let { found ->
+        namesNeeded(found.size == 1, "ContactsController.applyContactToPhoneBook is missing or ambiguous")
+        found.single()
+    }
+    // The hook's answer goes back into the user's own register, which move-result-object reaches up to v255.
+    namesNeeded(method.implementation!!.registerCount <= 256, "ContactsController.applyContactToPhoneBook keeps its user past v255")
+    val flow = ControlFlow.of(method)
+    namesNeeded(flow.normal.none { 0 in it } && flow.exceptional.none { 0 in it },
+        "something jumps back to the start of ContactsController.applyContactToPhoneBook")
+    method.requireThisIntact("Rename on this phone", listOf(0))
+    return method
+}
+
+/**
+ * Every place a mention of a person goes into the message being typed (picked from the @ list, or
+ * from a long press on their picture): Telegram's first name call whose answer becomes the
+ * mention's text. That text goes out to everyone in the chat, so it must never be a given name.
+ */
+private fun BytecodePatchContext.mentionSites(): List<MentionSite> {
+    val sites = mutableListOf<MentionSite>()
+    forEachClassMentioning(Mention.reference(LN_FIRST_NAME) and Mention.type(LN_SPANNABLE)) { cls ->
+        if (cls.origType.startsWith("Lapp/hushtelegram/") || cls.methods.none { mentionNameCalls(it.controlBody()).isNotEmpty() }) {
+            return@forEachClassMentioning
+        }
+        for (method in tgMutableClassDefBy(cls.type).methods) {
+            for (at in mentionNameCalls(method.controlBody())) sites += MentionSite(method, at)
+        }
+    }
+    namesNeeded(sites.isNotEmpty(), "no mention of a person in the message being typed takes its name from UserObject.getFirstName")
+    return sites
+}
+
+/**
+ * In [body], each first name call a mention is made from: its answer becomes a SpannableString
+ * right away, and a span keyed by the user's id goes over it.
+ */
+private fun mentionNameCalls(body: List<Instruction>): List<Int> = body.indices.filter { at ->
+    body[at].controlRef() == LN_FIRST_NAME && body.getOrNull(at + 1)?.opcode == Opcode.MOVE_RESULT_OBJECT &&
+        body.getOrNull(at + 2)?.let { it.opcode == Opcode.NEW_INSTANCE && it.controlRef() == LN_SPANNABLE } == true &&
+        body.subList(at + 3, minOf(body.size, at + LN_MENTION_REACH)).let { next ->
+            next.any { it.controlRef() == LN_USER_ID } && next.any { it.controlRef() == LN_SET_SPAN }
+        }
 }
 
 /**
