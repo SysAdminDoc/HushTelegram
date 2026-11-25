@@ -41,7 +41,7 @@ public final class ExternalVideoService extends Service {
     /** Starts it, or throws when Android can't run it in front, before any promise is made. */
     static void start(Context context) {
         ComponentName name = new ComponentName(context, ExternalVideoService.class);
-        if (Build.VERSION.SDK_INT >= 34 && !declared(context, name)) {
+        if (!declared(context, name)) {
             throw new IllegalStateException("the media playback service type isn't declared");
         }
         if (context.startForegroundService(new Intent().setComponent(name)) == null) {
@@ -51,6 +51,8 @@ public final class ExternalVideoService extends Service {
 
     /** Android 14 throws from startForeground for an undeclared type, and by then the promise is made. */
     private static boolean declared(Context context, ComponentName name) {
+        // Only Android 14 and newer ask; the guard sits here so lint sees it on the API 29 call.
+        if (Build.VERSION.SDK_INT < 34) return true;
         try {
             ServiceInfo info = context.getPackageManager().getServiceInfo(name, 0);
             return (info.getForegroundServiceType() & ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK) != 0
