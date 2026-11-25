@@ -38,9 +38,6 @@ Every HushTelegram release, newest first.
 * **Tooling:** The GitHub release notes leave the Tooling bullets out now and no longer end with What was checked. Those bullets stay here in the changelog, and the publish stage doesn't take `-Validation` anymore.
 * **Tooling:** The resource table check in `verify-all-patches.ps1`, the patch selection test and `name-table.ps1` work with morphe-desktop 2.2.0 and newer again. The ARSCLib inside those jars dropped calls the three scripts used, so none of them compiled.
 * **Tooling:** The release scripts now treat Plus Messenger as a build most patches cover, not a release target, so a catalog that declares it no longer stops them at the first step. Release targets are still the builds every patch declares, telegram.org's and Google Play's.
-
-### Removed
-
 * **Telegram:** Remove the Unlock Premium features patch.
 * **Telegram:** Remove the **Add Save to Gallery to stories** switch from Add Repeat to the message menu.
 * **Telegram:** Remove the **Emoji status on this phone** switch from Hide Premium, gifts and Stars.
