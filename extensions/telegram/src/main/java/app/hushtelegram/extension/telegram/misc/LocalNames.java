@@ -72,7 +72,7 @@ public final class LocalNames {
     /** The longest list a write makes: per name a dialog id of up to 20 characters, a tab, the name and a line break. */
     public static final int MAX_TEXT = MAX_NAMES * (20 + 1 + MAX_NAME_CHARS + 1);
 
-    /** The long press menu's Rename on this phone, after Pin on this phone's ids. */
+    /** The long press menu's Rename on this phone, past the two ids the removed Pin on this phone had. */
     static final int MENU_ID = 0x48544807;
 
     /** MessagesController's UPDATE_MASK_NAME, UPDATE_MASK_AVATAR and UPDATE_MASK_CHAT_NAME: what a redraw covers. */
@@ -567,7 +567,7 @@ public final class LocalNames {
     /** Each chat list's Rename on this phone item, so it can follow the switch and the selection. Main thread only. */
     private static final Map<Object, WeakReference<View>> ITEMS = new WeakHashMap<>();
 
-    /** Called by {@link HiddenChats#menuItem} after Pin on this phone: adds Rename on this phone. */
+    /** Called by {@link HiddenChats#menuItem} after Record calls here: adds Rename on this phone. */
     static void menuItem(Object list, Object more) {
         try {
             Context context = Utils.getContext();
@@ -587,7 +587,7 @@ public final class LocalNames {
         if (item == null) return;
         boolean shown = false;
         try {
-            shown = ready() && single(LocalPins.selection.apply(list)) != 0;
+            shown = ready() && single(HiddenChats.telegram.selectedOf(list)) != 0;
         } catch (Throwable failure) {
             HookStatus.threw(FAMILY, "rename on this phone item", failure);
         }

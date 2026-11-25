@@ -19,7 +19,6 @@ Every HushTelegram release, newest first.
 * **Telegram:** HushTelegram's settings speak Italian now. Switch Telegram to Italian and every HushTelegram page, switch, search result and message follows. (#100)
 * **Telegram:** New **Hide Downloads button** switch on the Chat list page, off by default. The Downloads button no longer pops up in the bar at the top of the chat list while a file downloads, and your downloads are still in the Downloads tab when you search. (#113)
 * **Telegram:** New **Always show Downloads button** switch on the Chat list page, off by default. The Downloads button stays in the bar at the top of the chat list even when nothing is downloading, so your downloads are one tap away. It still steps aside while you search, and turning the switch off takes it away again without a restart. If **Hide Downloads button** is on too, the button stays hidden. Both Downloads switches take hold as soon as you close HushTelegram settings. (#113)
-* **Telegram:** Chats you pinned with **Pin on this phone** can now go in your own order. Long press one, then hold it again and drag it up or down, the way you move Telegram's own pins. The order stays put when new messages come in and after a restart, and it goes along in a settings file. They only trade places with each other, so Telegram's pins and your other devices aren't touched. (#108)
 * **Telegram:** New **Keep downloaded stickers** switch on the Look and feel page, off by default. Telegram's automatic cache cleanup leaves sticker files alone, so sticker packs you've used don't have to download again. Clearing the cache yourself still removes them. (#110)
 * **Telegram:** New **Sticker panel size** row on the Look and feel page, set to Telegram's size until you change it. Large and Larger show fewer, bigger stickers in the sticker panel and in its search results. A chat picks up a new size the next time you open it. (#110)
 * **Telegram:** New **Keep emoji statuses moving** switch on the Ads page, off by default. Animated emoji statuses next to names keep playing instead of stopping after two plays, which uses a little more battery. Restart Telegram after you change it. (#112)
@@ -47,6 +46,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** Remove the **Emoji status on this phone** switch from Hide Premium, gifts and Stars.
 * **Telegram:** Remove the **Unlock Premium app icons** switch from Hide Premium, gifts and Stars.
 * **Telegram:** Remove the **Move All Chats** switch from Hide folder tab counters.
+* **Telegram:** Remove the **Pin chats on this phone** switch from Hide folder tab counters.
 
 ## 0.0.26 (2026-11-17)
 

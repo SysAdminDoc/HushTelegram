@@ -472,10 +472,13 @@ public final class DuressWipe {
             }
         });
         step("duress saved lists", () -> {
-            for (Setting<?> list : new Setting<?>[]{Settings.KEPT_REMOVED_CHATS,
-                    Settings.LOCAL_PINNED_CHATS, Settings.LOCAL_PINS_ORDER, Settings.AUTO_FORWARDING_RULES,
+            for (Setting<?> list : new Setting<?>[]{Settings.KEPT_REMOVED_CHATS, Settings.AUTO_FORWARDING_RULES,
                     Settings.LOCAL_NAME_LIST}) {
                 list.resetToDefault();
+            }
+            // Pin chats on this phone is gone, but a phone that used it still holds the chats it pinned and their order.
+            for (String key : new String[]{"hushtelegram_local_pinned_chats", "hushtelegram_local_pins_order"}) {
+                Setting.preferences.removeKey(key);
             }
         });
     }

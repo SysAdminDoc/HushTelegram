@@ -65,7 +65,6 @@ import app.hushtelegram.extension.telegram.misc.Bookmarks;
 import app.hushtelegram.extension.telegram.misc.ChatListBanner;
 import app.hushtelegram.extension.telegram.misc.ListBackground;
 import app.hushtelegram.extension.telegram.misc.LocalNames;
-import app.hushtelegram.extension.telegram.misc.LocalPins;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
 import app.hushtelegram.extension.telegram.misc.RecordChats;
 import app.hushtelegram.extension.telegram.misc.VoiceChanger;
@@ -484,14 +483,6 @@ public class SettingsBackupPreference extends Preference {
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Calls to record"),
                         HushTelegramPreferenceFragment.recordWhichLabel(RecordChats.scope()),
                         HushTelegramPreferenceFragment.recordWhichLabel((String) change.getValue())));
-            } else if (change.getKey() == Settings.LOCAL_PINNED_CHATS) {
-                // How many, not which: the ids are the person's own chats.
-                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Chats pinned on this phone"),
-                        chatCount(Settings.LOCAL_PINNED_CHATS.savedValue()), chatCount((String) change.getValue())));
-            } else if (change.getKey() == Settings.LOCAL_PINS_ORDER) {
-                // Which order, not which chats: the ids are the person's own chats.
-                lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Order of chats pinned on this phone"),
-                        pinOrderLabel(Settings.LOCAL_PINS_ORDER.savedValue()), pinOrderLabel((String) change.getValue())));
             } else if (change.getKey() == Settings.LOCAL_NAME_LIST) {
                 // How many, not which: the names are the person's own.
                 lines.add(L10n.f("%1$s: %2$s to %3$s", L10n.t("Names given on this phone"),
@@ -546,17 +537,6 @@ public class SettingsBackupPreference extends Preference {
             }
         }
         return lines;
-    }
-
-    /** "3 chats" for the chats pinned on this phone that [saved] holds. */
-    private static String chatCount(String saved) {
-        int count = LocalPins.count(saved);
-        return L10n.quantity(count, "%1$d chat", "%1$d chats", count);
-    }
-
-    /** Newest first while [saved] holds no dragged order, Your own order once it does. */
-    private static String pinOrderLabel(String saved) {
-        return LocalPins.count(saved) == 0 ? L10n.t("Newest first") : L10n.t("Your own order");
     }
 
     /** "2 names" for the names Rename on this phone gave that [saved] holds. */

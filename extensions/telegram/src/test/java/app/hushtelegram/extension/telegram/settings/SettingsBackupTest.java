@@ -240,7 +240,7 @@ public class SettingsBackupTest {
         assertEquals(Arrays.asList(Settings.STICKER_SIZE, Settings.RECORD_CALLS_KEEP_DAYS, Settings.CHAT_LIST_AVATAR_SIZE, Settings.LIST_BACKGROUND_DIM,
                 Settings.KEEP_DELETED_DAYS, Settings.STICKER_PANEL_SIZE), SettingsBackup.NUMBERS);
         assertEquals(Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET, Settings.FOLDER_ICON_PACK, Settings.STORAGE_FOLDER_NAME,
-                Settings.SAVE_KINDS_LEFT_OUT, Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LOCAL_PINNED_CHATS, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS, Settings.CHAT_LIST_BANNER, Settings.VOICE_CHANGER, Settings.LOCAL_PINS_ORDER,
+                Settings.SAVE_KINDS_LEFT_OUT, Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS, Settings.CHAT_LIST_BANNER, Settings.VOICE_CHANGER,
                 Settings.LOCAL_NAME_LIST), SettingsBackup.TEXTS);
         assertEquals(Arrays.asList(Settings.HIDE_ADS, Settings.HIDE_STORIES, Settings.HIDE_RECOMMENDATIONS, Settings.HIDE_KEYBOARD_FEATURED, Settings.HIDE_COMMERCE, Settings.HIDE_EMOJI_STATUS, Settings.MOVING_EMOJI_STATUS,
                         Settings.HIDE_PROMOTIONAL_BANNERS, Settings.HIDE_SPONSORED_PROXY, Settings.HIDE_POPULAR_APPS, Settings.SEARCH_ONLY_MY_CHATS, Settings.SEARCH_STYLED_NAMES, Settings.BLOCK_NEW_CHATS, Settings.DISABLE_SECRET_CHATS, Settings.HIDE_CONTACTS_BLOCK,
@@ -248,7 +248,7 @@ public class SettingsBackupTest {
                         Settings.SPECIAL_CONTACTS, Settings.LOCAL_NAMES, Settings.DISABLE_DOUBLE_TAP_REACTIONS, Settings.HIDE_REACTION_ROWS, Settings.HIDE_REACTION_PICKER, Settings.HIDE_EMOJI_PACK_NOTE, Settings.QUIET_CONTACTS_NAG, Settings.HOLIDAY_LOOK, Settings.CHAT_LIST_TITLE, Settings.USE_SYSTEM_FONT, Settings.AMOLED_BLACK, Settings.LIST_BACKGROUND,
                         Settings.HIDE_TRANSLATE_BAR, Settings.HIDE_PINNED_BAR, Settings.ALWAYS_SHOW_TRANSLATE_BAR, Settings.EXACT_NUMBERS, Settings.REVEAL_SPOILERS, Settings.REVEAL_MENU, Settings.SEARCH_OPENS_QUOTES, Settings.REVEAL_TIMED_MEDIA, Settings.HIDE_KEYBOARD_ON_SCROLL, Settings.KEEP_VIDEOS_MUTED, Settings.VIDEO_EITHER_LANDSCAPE, Settings.VIDEO_ONLY_FROM_BUTTON, Settings.VIDEO_STARTS_SILENT, Settings.VIDEO_TRACKS, Settings.EXTERNAL_PLAYER, Settings.SWIPE_BACK_ON_PROFILES,
                         Settings.HIDE_PHONE_NUMBER, Settings.SHARE_NUMBER_UNTICKED, Settings.MESSAGE_SECONDS, Settings.ALLOW_CHAT_BLUR, Settings.VOICE_ONE_AT_A_TIME, Settings.LOCKED_VOICE_GUARD, Settings.NO_HAPTICS, Settings.REACTION_EFFECTS_OFF,
-                        Settings.HIDE_FOLDER_COUNTERS, Settings.LAUNCH_FOLDER, Settings.HIDE_ALL_CHATS, Settings.HIDDEN_CHATS, Settings.SORT_BY_DATE, Settings.SORT_OLDEST_FIRST, Settings.LOCAL_PINS, Settings.HIDDEN_CHATS_PASSCODE,
+                        Settings.HIDE_FOLDER_COUNTERS, Settings.LAUNCH_FOLDER, Settings.HIDE_ALL_CHATS, Settings.HIDDEN_CHATS, Settings.SORT_BY_DATE, Settings.SORT_OLDEST_FIRST, Settings.HIDDEN_CHATS_PASSCODE,
                         Settings.ADMIN_CHATS, Settings.HIDE_ACCOUNTS, Settings.HIDDEN_ACCOUNTS_LOCK, Settings.FIT_ALL_TABS, Settings.FOLDER_TABS_BOTTOM, Settings.FOLDER_TAB_ICONS, Settings.CHAT_LIST_AVATAR, Settings.SAVED_MEDIA_FIRST, Settings.FORWARD_HIDE_SENDER, Settings.VOICE_MUSIC_PLAYER, Settings.PLAYBACK_POSITION, Settings.VOICE_SKIP, Settings.LYRICS, Settings.SONG_DATES, Settings.SELECT_BETWEEN, Settings.SELECTION_SCREENSHOT, Settings.SELECT_ALL,
                         Settings.SILENCE_NON_CONTACTS, Settings.REACTION_ALERTS, Settings.REACTION_SOUND, Settings.DISABLE_ARCHIVE_PULL, Settings.REAR_CAMERA_FIRST, Settings.HIDE_GALLERY_CAMERA_TILE, Settings.HIDE_STICKER_TIME, Settings.CHANGE_STICKER_SIZE, Settings.KEEP_STICKER_CACHE,
                         Settings.IGNORE_MUTED_MENTIONS, Settings.HIDE_BLOCKED_IN_GROUPS, Settings.HIDE_BY_KEYWORD, Settings.HIDE_FEATURES_AND_INVITE, Settings.MESSAGE_MENU_REPEAT, Settings.KEEP_DELETED_MESSAGES, Settings.RED_DELETED_LABEL, Settings.KEEP_OWN_DELETED, Settings.KEEP_EDIT_HISTORY,
@@ -855,7 +855,7 @@ public class SettingsBackupTest {
         Bundle state = snapshot.toBundle();
         state.getBundle("texts").putString(Settings.TITLE_EMOJI.key, tooLong.toString());
         Set<StringSetting> others = new java.util.HashSet<>(Arrays.asList(Settings.GALLERY_FOLDER, Settings.TRANSLATE_TARGET, Settings.STORAGE_FOLDER_NAME, Settings.FOLDER_ICON_PACK,
-                Settings.SAVE_KINDS_LEFT_OUT, Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LOCAL_PINNED_CHATS, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS, Settings.CHAT_LIST_BANNER, Settings.VOICE_CHANGER, Settings.LOCAL_PINS_ORDER,
+                Settings.SAVE_KINDS_LEFT_OUT, Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS, Settings.CHAT_LIST_BANNER, Settings.VOICE_CHANGER,
                 Settings.LOCAL_NAME_LIST));
         assertEquals(others, SettingsBackup.Snapshot.fromBundle(state).texts.keySet());
         state.getBundle("texts").putInt(Settings.TITLE_EMOJI.key, 1);
@@ -1110,10 +1110,11 @@ public class SettingsBackupTest {
         assertFalse("a file turned on debug logging", BaseSettings.DEBUG.savedValue());
     }
 
-    /** Keys of switches that unlocked paid Telegram features, which no build has any more. */
+    /** Keys of switches that unlocked paid Telegram features, and the lists they kept, which no build has any more. */
     private static final List<String> REMOVED_PAID_SWITCHES = Arrays.asList(
             "hushtelegram_unlock_premium", "hushtelegram_story_save_button", "hushtelegram_local_emoji_status",
-            "hushtelegram_unlock_premium_icons", "hushtelegram_move_all_chats", "hushtelegram_keep_more_favorites");
+            "hushtelegram_unlock_premium_icons", "hushtelegram_move_all_chats", "hushtelegram_keep_more_favorites",
+            "hushtelegram_local_pins", "hushtelegram_local_pinned_chats", "hushtelegram_local_pins_order");
 
     /**
      * A file saved while the paid-feature switches still existed imports: their names are left out
@@ -1666,73 +1667,6 @@ public class SettingsBackupTest {
         } finally {
             Settings.LIST_BACKGROUND.resetToDefault();
             Settings.LIST_BACKGROUND_DIM.resetToDefault();
-        }
-    }
-
-    /**
-     * The chats pinned on this phone go out with the switches, come back only as a list Pin on this
-     * phone would write, and show as a count in the preview, never as chat ids (#79).
-     */
-    @Test
-    public void theChatsPinnedOnThisPhoneRoundTripAndShowAsACount() throws Exception {
-        Settings.LOCAL_PINNED_CHATS.save("12,-34");
-        String file = SettingsBackup.create();
-        assertEquals("12,-34", new JSONObject(file).getJSONObject("settings").get(Settings.LOCAL_PINNED_CHATS.key));
-
-        StringBuilder tooMany = new StringBuilder("1");
-        for (int i = 2; i <= 21; i++) tooMany.append(',').append(i);
-        for (Object bad : new Object[]{"12,12", "0", "12,abc", "+5", "12,", tooMany.toString(), 12, true}) {
-            JSONObject wrong = new JSONObject(file);
-            wrong.getJSONObject("settings").put(Settings.LOCAL_PINNED_CHATS.key, bad);
-            assertEquals(String.valueOf(bad), SettingsBackup.Reason.VALUE, reasonFor(wrong.toString()));
-        }
-
-        Settings.LOCAL_PINNED_CHATS.resetToDefault();
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            Activity activity = controller.get();
-            HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
-            deliver(activity, tap(activity, page, IMPORT_ROW), file);
-            AlertDialog preview = shownPreview();
-            assertEquals("Chats pinned on this phone: 0 chats to 2 chats", String.valueOf(shadowOf(preview).getMessage()));
-            preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
-            settle();
-            assertEquals("Settings imported.", ShadowToast.getTextOfLatestToast());
-            assertEquals("12,-34", Settings.LOCAL_PINNED_CHATS.savedValue());
-            assertTrue(AbstractPreferenceFragment.restartPending.isEmpty());
-        } finally {
-            Settings.LOCAL_PINNED_CHATS.resetToDefault();
-        }
-    }
-
-    /**
-     * The order those chats were dragged into goes out and comes back the same way, and the preview
-     * says only whether it's your own order, never which chats (#108).
-     */
-    @Test
-    public void theOrderOfChatsPinnedOnThisPhoneRoundTripsWithoutShowingTheChats() throws Exception {
-        Settings.LOCAL_PINS_ORDER.save("-34,12");
-        String file = SettingsBackup.create();
-        assertEquals("-34,12", new JSONObject(file).getJSONObject("settings").get(Settings.LOCAL_PINS_ORDER.key));
-        for (Object bad : new Object[]{"12,12", "0", "12,abc", "+5", "12,", 12, true}) {
-            JSONObject wrong = new JSONObject(file);
-            wrong.getJSONObject("settings").put(Settings.LOCAL_PINS_ORDER.key, bad);
-            assertEquals(String.valueOf(bad), SettingsBackup.Reason.VALUE, reasonFor(wrong.toString()));
-        }
-
-        Settings.LOCAL_PINS_ORDER.resetToDefault();
-        try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-            Activity activity = controller.get();
-            HushTelegramPreferenceFragment page = SettingsL10nTest.pageOf(SettingsL10nTest.show(activity));
-            deliver(activity, tap(activity, page, IMPORT_ROW), file);
-            AlertDialog preview = shownPreview();
-            assertEquals("Order of chats pinned on this phone: Newest first to Your own order", String.valueOf(shadowOf(preview).getMessage()));
-            preview.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
-            settle();
-            assertEquals("Settings imported.", ShadowToast.getTextOfLatestToast());
-            assertEquals("-34,12", Settings.LOCAL_PINS_ORDER.savedValue());
-            assertTrue(AbstractPreferenceFragment.restartPending.isEmpty());
-        } finally {
-            Settings.LOCAL_PINS_ORDER.resetToDefault();
         }
     }
 

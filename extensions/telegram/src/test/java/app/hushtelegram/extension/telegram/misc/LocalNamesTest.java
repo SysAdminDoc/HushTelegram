@@ -220,7 +220,6 @@ public class LocalNamesTest {
         LocalNames.KEPT.clear();
         controller = new Controller(0);
         PatchFamilyForTests.installed(PatchFamily.Capability.LOCAL_NAMES);
-        LocalPins.selection = list -> chats.picked;
         Settings.LOCAL_NAMES.resetToDefault();
         Settings.LOCAL_NAME_LIST.resetToDefault();
         HookStatus.clear();
@@ -230,7 +229,6 @@ public class LocalNamesTest {
         HiddenChatsForTests.restore();
         PauseForTests.resume();
         PatchFamilyForTests.resetCapabilities();
-        LocalPins.selection = LocalPins::selectedOf;
         LocalNames.telegram = savedTelegram;
         LocalNames.mine = savedMine;
         LocalNames.KEPT.clear();
@@ -631,7 +629,7 @@ public class LocalNamesTest {
         LocalNames.menuShown(list);
         assertEquals("a group or channel", View.VISIBLE, item.getVisibility());
         PatchFamilyForTests.resetCapabilities();
-        PatchFamilyForTests.installed(PatchFamily.Capability.LOCAL_PINS);
+        PatchFamilyForTests.installed(PatchFamily.Capability.HIDDEN_CHATS);
         LocalNames.menuShown(list);
         assertEquals("a build without the hooks", View.GONE, item.getVisibility());
         assertFalse(report(), report().contains("threw"));

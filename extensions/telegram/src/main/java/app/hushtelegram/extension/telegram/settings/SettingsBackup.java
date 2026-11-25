@@ -56,7 +56,6 @@ import app.hushtelegram.extension.telegram.misc.VoiceChanger;
 import app.hushtelegram.extension.telegram.misc.LinkPreviewRules;
 import app.hushtelegram.extension.telegram.misc.ListBackground;
 import app.hushtelegram.extension.telegram.misc.LocalNames;
-import app.hushtelegram.extension.telegram.misc.LocalPins;
 import app.hushtelegram.extension.telegram.misc.SaveDownloads;
 import app.hushtelegram.extension.telegram.misc.StorageFolder;
 import app.hushtelegram.extension.telegram.misc.MessageFilters;
@@ -179,7 +178,6 @@ public final class SettingsBackup {
             Settings.HIDDEN_CHATS,
             Settings.SORT_BY_DATE,
             Settings.SORT_OLDEST_FIRST,
-            Settings.LOCAL_PINS,
             Settings.HIDDEN_CHATS_PASSCODE,
             Settings.ADMIN_CHATS,
             Settings.HIDE_ACCOUNTS,
@@ -345,16 +343,14 @@ public final class SettingsBackup {
      * The short texts a file carries as they're saved: the emoji beside the chat list's title, the
      * gallery folder choice, the translation language, the folder icon pack, the name of Telegram's
      * own folder, the kinds What to copy leaves out, which calls Record calls saves, the text shown
-     * in place of Telegram's name, the chats pinned on this phone and their order, the link preview
-     * rules, the chats kept after you were removed from them, the chat list banner's choice (never
-     * its picture) and the names given on this phone. A build from before them counts the name as
-     * unknown and leaves it out.
+     * in place of Telegram's name, the link preview rules, the chats kept after you were removed
+     * from them, the chat list banner's choice (never its picture) and the names given on this
+     * phone. A build from before them counts the name as unknown and leaves it out.
      */
     static final List<StringSetting> TEXTS = Arrays.asList(Settings.TITLE_EMOJI, Settings.GALLERY_FOLDER,
             Settings.TRANSLATE_TARGET, Settings.FOLDER_ICON_PACK, Settings.STORAGE_FOLDER_NAME, Settings.SAVE_KINDS_LEFT_OUT,
-            Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LOCAL_PINNED_CHATS, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS,
-            Settings.CHAT_LIST_BANNER, Settings.VOICE_CHANGER, Settings.LOCAL_PINS_ORDER,
-            Settings.LOCAL_NAME_LIST);
+            Settings.RECORD_CALLS_WHICH, Settings.CHAT_LIST_TITLE_TEXT, Settings.LINK_PREVIEW_RULE_LIST, Settings.KEPT_REMOVED_CHATS,
+            Settings.CHAT_LIST_BANNER, Settings.VOICE_CHANGER, Settings.LOCAL_NAME_LIST);
 
     /**
      * Bounds for the parser, well past anything this class writes, so a file built to be
@@ -881,7 +877,6 @@ public final class SettingsBackup {
         if (setting == Settings.SAVE_KINDS_LEFT_OUT) return SaveDownloads.allowedLeftOut(value);
         if (setting == Settings.RECORD_CALLS_WHICH) return HushTelegramPreferenceFragment.recordScopes().contains(value);
         if (setting == Settings.CHAT_LIST_TITLE_TEXT) return TitleEmoji.titleAllowed(value);
-        if (setting == Settings.LOCAL_PINNED_CHATS || setting == Settings.LOCAL_PINS_ORDER) return LocalPins.allowed(value);
         if (setting == Settings.LINK_PREVIEW_RULE_LIST) return LinkPreviewRules.allowed(value);
         if (setting == Settings.KEPT_REMOVED_CHATS) return KeepRemoved.allowed(value);
         if (setting == Settings.CHAT_LIST_BANNER) return ChatListBanner.allowed(value);

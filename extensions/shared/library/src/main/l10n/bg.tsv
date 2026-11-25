@@ -2118,22 +2118,6 @@ Show when members joined	Показване кога са се присъеди�
 A group's member lists, on its profile and its Members page, also show when each person joined, next to their last seen. The date comes with the list, so nothing more is asked of Telegram. Admins and the owner keep their role.	Списъците с членове на група, в профила ѝ и на страницата Членове, показват и кога се е присъединил всеки човек, до последното му посещение. Датата идва със списъка, така че от Telegram не се иска нищо повече. Администраторите и собственикът запазват ролята си.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Show user and chat IDs that shows when each person joined a group
 member join dates	датите на присъединяване на членовете
-# context: Item in the chat list's long press menu (the three dots, under Hide from chat list), shown while Pin chats on this phone is on (#79). It pins the selected chats on this phone only, without Telegram's own pin
-Pin on this phone	Закачи на този телефон
-# context: Item in the chat list's long press menu in place of Pin on this phone when every selected chat is already pinned that way (#79). It takes them off this phone's pins
-Unpin on this phone	Откачи на този телефон
-# context: Toast after Pin on this phone. All Chats is Telegram's name for the first folder tab (Telegram key FilterAllChats); use the name Telegram shows in that language. Two short lines at most
-Pinned in All Chats on this phone.	Закачено в „All Chats“ на този телефон.
-# context: Toast after Unpin on this phone. Two short lines at most
-Unpinned on this phone.	Откачено на този телефон.
-# context: Toast when Pin on this phone would go past the limit. %1$d is the most chats one phone keeps pinned this way, 20 today. Two short lines at most
-You can pin up to %1$d chats on this phone.	Можеш да закачиш до %1$d чата на този телефон.
-# context: Switch title on the Chat list page under Hide folder tab counters, off by default (#79). With it on, the long press menu offers Pin on this phone
-Pin chats on this phone	Закачане на чатове на този телефон
-# context: Summary of Pin chats on this phone. Pin on this phone is the long press menu item above; All Chats is Telegram's first folder tab (Telegram key FilterAllChats); the pin limit is how many chats Telegram lets you pin
-Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under your pinned chats in All Chats, newest first. Nothing is sent to Telegram, so your other devices and Telegram's pin limit stay as they are.	Добавя „Закачи на този телефон“ в менюто при продължително натискане в списъка с чатове. Тези чатове стоят точно под закачените ти чатове в „All Chats“, най-новите първи. Нищо не се изпраща към Telegram, така че другите ти устройства и ограничението на Telegram за закачени чатове остават същите.
-# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that pins chats on this phone only
-chats pinned on this phone	чатовете, закачени на този телефон
 # context: Switch title on the Chat list page under Hide folder tab counters, off by default (#89). With it on, chat pictures (avatars) in the chat list show at the size picked under Avatar size, a percent of Telegram's own size
 Change avatar size	Промяна на размера на аватарите
 # context: Summary of Change avatar size. The size is picked in the Avatar size row right below it; each chat list row keeps its height and the picture shrinks or grows around its own center
@@ -2148,8 +2132,6 @@ Saved Messages opening on its media	отварянето на Запазени �
 Avatar size	Размер на аватарите
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide folder tab counters that changes the size of chat pictures in the chat list
 avatar size in the chat list	размера на аватарите в списъка с чатове
-# context: Name of the list Pin on this phone keeps, in the import preview line "%1$s: %2$s to %3$s", where the counts follow
-Chats pinned on this phone	Чатове, закачени на този телефон
 # context: Count of chats in the import preview, singular form. %1$d is the number
 %1$d chat	%1$d чат
 # context: Count of chats in the import preview, plural form. %1$d is the number
@@ -2565,16 +2547,6 @@ Always show Downloads button	Постоянно показване на буто
 The Downloads button stays in the bar at the top of the chat list even when nothing is downloading, so your downloads are one tap away. Hide Downloads button wins.	Бутонът Изтегляния остава в лентата най-горе в списъка с чатове, дори когато нищо не се изтегля, така че изтеглянията ви са на едно докосване. „Скриване на бутона Изтегляния“ има предимство.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Contacts tab that keeps the Downloads button (Telegram key DownloadsTabs) in the chat list's top bar all the time.
 showing the Downloads button all the time	постоянното показване на бутона Изтегляния
-# context: Lowercase noun phrase in a status line. It names the part of Pin on this phone that lets you drag those chats into an order of your own.
-dragging chats pinned on this phone	плъзгане на чатовете, закачени на този телефон
-# context: Summary of the Pin chats on this phone switch when this build can drag those chats. Pin on this phone is the long press menu item; All Chats is Telegram's folder tab. Same wording as the summary without the drag, plus one sentence on how to drag.
-Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under your pinned chats in All Chats, newest first. To put them in your own order, long press one, then hold it again and drag it up or down. Nothing is sent to Telegram, so your other devices and Telegram's pin limit stay as they are.	Добавя „Закачи на този телефон“ в менюто при продължително натискане в списъка с чатове. Тези чатове стоят точно под закачените ти чатове в „All Chats“, най-новите първи. За да ги подредиш сам, натисни продължително един от тях, после го задръж отново и го плъзни нагоре или надолу. Нищо не се изпраща към Telegram, така че другите ти устройства и ограничението на Telegram за закачени чатове остават същите.
-# context: Settings backup preview: the name of the saved order of the chats pinned on this phone, before its old and new values (Newest first, Your own order).
-Order of chats pinned on this phone	Ред на чатовете, закачени на този телефон
-# context: Settings backup preview: a value of Order of chats pinned on this phone. Those chats are listed newest first, nothing was dragged.
-Newest first	Най-новите първи
-# context: Settings backup preview: a value of Order of chats pinned on this phone. You dragged those chats into an order of your own.
-Your own order	Твоят ред
 # context: Look and feel page switch title, under Change sticker size. When on, Telegram's automatic cache cleanup no longer deletes sticker files, so sticker packs don't download again.
 Keep downloaded stickers	Запазване на изтеглените стикери
 # context: that switch's summary. The cleanup is the one Telegram runs by itself (Keep media and the cache size limit); clearing the cache by hand is the person's own action.

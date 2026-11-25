@@ -126,8 +126,6 @@ public final class SettingsStatus {
     public static boolean hideAllChats() { return false; }
     public static boolean hiddenChats() { return false; }
     public static boolean sortByDate() { return false; }
-    public static boolean localPins() { return false; }
-    public static boolean localPinOrder() { return false; }
     public static boolean fitTabs() { return false; }
     public static boolean tabIcons() { return false; }
     public static boolean bottomTabs() { return false; }

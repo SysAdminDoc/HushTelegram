@@ -753,23 +753,6 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                 folderTabs.addPreference(sort);
                 folderTabs.addPreference(oldest);
             }
-            if (PatchFamily.Capability.LOCAL_PINS.installed()) {
-                SwitchPreference pins = toggle(context, Settings.LOCAL_PINS, L10n.t("Pin chats on this phone"),
-                        PatchFamily.Capability.LOCAL_PIN_ORDER.installed()
-                                ? L10n.t("Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under "
-                                        + "your pinned chats in All Chats, newest first. To put them in your own order, long press one, "
-                                        + "then hold it again and drag it up or down. Nothing is sent to Telegram, so your other devices "
-                                        + "and Telegram's pin limit stay as they are.")
-                                : L10n.t("Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under your "
-                                        + "pinned chats in All Chats, newest first. Nothing is sent to Telegram, so your other devices and "
-                                        + "Telegram's pin limit stay as they are."));
-                pins.setOnPreferenceChangeListener((row, value) -> {
-                    // Once the switch is saved, so the chat list sorts by what it says.
-                    Utils.runOnMainThreadDelayed(HiddenChats::refreshAll, 0);
-                    return true;
-                });
-                folderTabs.addPreference(pins);
-            }
             if (PatchFamily.Capability.CHAT_LIST_AVATAR.installed()) {
                 SwitchPreference avatars = toggle(context, Settings.CHAT_LIST_AVATAR, L10n.t("Change avatar size"),
                         L10n.t("Chat pictures in the chat list show at the size you pick below. Each row keeps its height, "

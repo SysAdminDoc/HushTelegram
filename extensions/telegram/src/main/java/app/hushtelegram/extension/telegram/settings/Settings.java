@@ -529,25 +529,6 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_sort_oldest_first", FALSE);
 
     /**
-     * The chat list's long press menu offers Pin on this phone, and the chats picked with it sit
-     * right under the pinned chats in All Chats ({@link app.hushtelegram.extension.telegram.misc.LocalPins}).
-     * Nothing goes to Telegram.
-     */
-    public static final BooleanSetting LOCAL_PINS =
-            new BooleanSetting("hushtelegram_local_pins", FALSE);
-
-    /** The chats Pin on this phone picked, as comma-separated dialog ids, the same on every account. */
-    public static final StringSetting LOCAL_PINNED_CHATS =
-            new StringSetting("hushtelegram_local_pinned_chats", "");
-
-    /**
-     * The order those chats were dragged into, the same comma-separated dialog ids, first on top.
-     * Empty keeps them newest first. A chat pinned since the last drag sits above the ordered ones.
-     */
-    public static final StringSetting LOCAL_PINS_ORDER =
-            new StringSetting("hushtelegram_local_pins_order", "");
-
-    /**
      * Chat list avatars show at {@link #CHAT_LIST_AVATAR_SIZE} percent of Telegram's size
      * ({@link app.hushtelegram.extension.telegram.misc.ChatListAvatar}).
      */

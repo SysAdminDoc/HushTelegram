@@ -118,26 +118,6 @@ val hideFolderCountersPatch = bytecodePatch(
         } catch (failed: Exception) {
             "the date order's stubs don't build (${failed.javaClass.simpleName}: ${failed.message})"
         } else null
-        // Pin on this phone needs all three: the sort hook, the date order's stubs and the long press item.
-        val localPinsReady = unhidden == null && noMenu == null && noSort == null
-        val noLocalPins = if (localPinsReady) try {
-            requireLocalPinsRuntime()
-            writeLocalPinsStubs(menu!!.refs!!)
-            null
-        } catch (failed: Exception) {
-            "the long press pin's stub doesn't build (${failed.javaClass.simpleName}: ${failed.message})"
-        } else null
-        // Dragging those chats into an order of your own rides on Pin on this phone and the chat list's own drag.
-        val pinOrder = if (localPinsReady && noLocalPins == null) resolveLocalPinOrder() else null
-        val unordered = pinOrder?.let {
-            it.missing ?: try {
-                it.rehearse()
-                writeLocalPinOrderStubs(it.refs!!)
-                null
-            } catch (failed: Exception) {
-                "the drag's stubs don't build (${failed.javaClass.simpleName}: ${failed.message})"
-            }
-        }
         // So does the passcode that hidden chats can ask for, which reads Telegram's own passcode state.
         val noPasscode = if (unhidden == null) try {
             requireAppPasscodeRuntime()
@@ -241,19 +221,6 @@ val hideFolderCountersPatch = bytecodePatch(
             }
             if (noMenu == null) {
                 menu!!.apply()
-                if (localPinsReady) {
-                    if (noLocalPins == null) {
-                        enableCapability("localPins")
-                        if (unordered == null) {
-                            pinOrder!!.apply()
-                            enableCapability("localPinOrder")
-                        } else {
-                            patchLog.warning("Hide folder tab counters: $unordered. Pin on this phone goes on without dragging those chats into your own order.")
-                        }
-                    } else {
-                        patchLog.warning("Hide folder tab counters: $noLocalPins. Hidden chats go on without Pin on this phone.")
-                    }
-                }
             } else {
                 patchLog.warning("Hide folder tab counters: $noMenu. Hidden chats go on without Hide from chat list in the long press menu.")
             }

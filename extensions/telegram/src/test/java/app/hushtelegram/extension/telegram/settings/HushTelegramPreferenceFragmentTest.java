@@ -2386,44 +2386,6 @@ public class HushTelegramPreferenceFragmentTest {
         }
     }
 
-    /** Pin chats on this phone gets its own switch, off until turned on, only in a build where its selection stub went in (#79). */
-    @Test
-    public void pinChatsOnThisPhoneHasItsOwnSwitchWhenItsStubIsIn() throws Exception {
-        PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_FOLDER_COUNTERS);
-        try {
-            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.HIDDEN_CHATS, PatchFamily.Capability.SORT_BY_DATE);
-            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-                assertNull("a build without the stub has no switch", pageOf(controller).findPreference(Settings.LOCAL_PINS.key));
-            }
-            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.HIDDEN_CHATS, PatchFamily.Capability.SORT_BY_DATE,
-                    PatchFamily.Capability.LOCAL_PINS);
-            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-                HushTelegramPreferenceFragment page = pageOf(controller);
-                SwitchPreference toggle = (SwitchPreference) page.findPreference(Settings.LOCAL_PINS.key);
-                assertEquals("Pin chats on this phone", String.valueOf(toggle.getTitle()));
-                assertEquals("Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under your "
-                        + "pinned chats in All Chats, newest first. Nothing is sent to Telegram, so your other devices and "
-                        + "Telegram's pin limit stay as they are.", String.valueOf(toggle.getSummary()));
-                assertFalse("off until turned on", toggle.isChecked());
-                // It comes right after the date order's two switches.
-                assertSame(page.findPreference(Settings.SORT_OLDEST_FIRST.key).getParent(), toggle.getParent());
-            }
-            // A build whose drag hooks went in says how to put them in your own order (#108).
-            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.HIDDEN_CHATS, PatchFamily.Capability.SORT_BY_DATE,
-                    PatchFamily.Capability.LOCAL_PINS, PatchFamily.Capability.LOCAL_PIN_ORDER);
-            try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
-                SwitchPreference toggle = (SwitchPreference) pageOf(controller).findPreference(Settings.LOCAL_PINS.key);
-                assertEquals("Adds Pin on this phone to the long press menu of the chat list. Those chats sit right under "
-                        + "your pinned chats in All Chats, newest first. To put them in your own order, long press one, "
-                        + "then hold it again and drag it up or down. Nothing is sent to Telegram, so your other devices "
-                        + "and Telegram's pin limit stay as they are.", String.valueOf(toggle.getSummary()));
-                assertFalse("still off until turned on", toggle.isChecked());
-            }
-        } finally {
-            PatchFamily.capabilitiesForTests = null;
-        }
-    }
-
     /**
      * Change avatar size gets its own switch, off until turned on, and its Avatar size row right
      * under it, only in a build where the avatar hook went in. A pick saves at once (#89).
@@ -2432,13 +2394,13 @@ public class HushTelegramPreferenceFragmentTest {
     public void changeAvatarSizeHasItsSwitchAndSizeRowWhenItsHookIsIn() throws Exception {
         PatchFamily.inBuildForTests = EnumSet.of(PatchFamily.HIDE_FOLDER_COUNTERS);
         try {
-            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.HIDDEN_CHATS, PatchFamily.Capability.LOCAL_PINS);
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.HIDDEN_CHATS, PatchFamily.Capability.SORT_BY_DATE);
             try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
                 HushTelegramPreferenceFragment page = pageOf(controller);
                 assertNull("a build without the hook has no switch", page.findPreference(Settings.CHAT_LIST_AVATAR.key));
                 assertNull("and no size row", page.findPreference(HushTelegramPreferenceFragment.AVATAR_SIZE_ROW));
             }
-            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.HIDDEN_CHATS, PatchFamily.Capability.LOCAL_PINS,
+            PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.HIDDEN_CHATS, PatchFamily.Capability.SORT_BY_DATE,
                     PatchFamily.Capability.CHAT_LIST_AVATAR);
             try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
                 HushTelegramPreferenceFragment page = pageOf(controller);
@@ -2450,7 +2412,7 @@ public class HushTelegramPreferenceFragmentTest {
                 assertEquals("Chat pictures in the chat list show at the size you pick below. Each row keeps its height, "
                         + "and the picture stays centered where Telegram puts it.", String.valueOf(toggle.getSummary()));
                 assertFalse("off until turned on", toggle.isChecked());
-                assertSame("it comes after Pin chats on this phone", page.findPreference(Settings.LOCAL_PINS.key), rows.get(at - 1));
+                assertSame("it comes after the date order's switches", page.findPreference(Settings.SORT_OLDEST_FIRST.key), rows.get(at - 1));
                 Preference size = rows.get(at + 1);
                 assertEquals(HushTelegramPreferenceFragment.AVATAR_SIZE_ROW, size.getKey());
                 assertEquals("Avatar size", String.valueOf(size.getTitle()));

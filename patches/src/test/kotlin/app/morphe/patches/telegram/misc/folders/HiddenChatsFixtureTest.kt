@@ -29,7 +29,6 @@ import app.morphe.patches.telegram.misc.localcontrols.controlRef
 import app.morphe.util.ControlFlow
 import app.morphe.util.RegisterLiveness
 import app.morphe.util.namedRegisters
-import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
@@ -39,7 +38,6 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
-import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -446,8 +444,8 @@ class HiddenChatsFixtureTest {
                 val calls = body.mapNotNull { it.ref() }
                 for (reference in want.second) assertTrue("$name: $stub reaches $reference", reference in calls)
             }
-            // Pin on this phone reads the selection straight off the chat list the menu hooks hand it.
-            val selectedOf = context.tgMutableClassDefBy(LOCAL_PINS).methods.single { it.name == "selectedOf" }.body()
+            // Rename on this phone reads the selection straight off the chat list the menu hooks hand it.
+            val selectedOf = stubs.getValue("selectedOf").body()
             assertEquals("$name: selectedOf", listOf(Opcode.CHECK_CAST, Opcode.IGET_OBJECT, Opcode.RETURN_OBJECT), selectedOf.map { it.opcode })
             assertEquals("$name: selectedOf", listOf(refs.selected.substringBefore("->"), refs.selected), selectedOf.take(2).map { it.ref() })
             // sortDialogs(null): the argument is a zero.
@@ -464,16 +462,6 @@ class HiddenChatsFixtureTest {
             assertEquals(1L, statusOf(context, "hiddenChats"))
             assertEquals(1L, statusOf(context, "hiddenUnread"))
             assertEquals(1L, statusOf(context, "sortByDate"))
-            assertEquals(1L, statusOf(context, "localPins"))
-            assertEquals(1L, statusOf(context, "localPinOrder"))
-            // The drag's three stubs, each whole.
-            val dragStubs = context.tgMutableClassDefBy(LOCAL_PINS).methods.associateBy { it.name }
-            assertEquals("$name: stockPinned", listOf(Opcode.CHECK_CAST, Opcode.CHECK_CAST, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT, Opcode.RETURN),
-                dragStubs.getValue("stockPinned").body().map { it.opcode })
-            assertEquals("$name: shownType", listOf(Opcode.CHECK_CAST, Opcode.IGET_OBJECT, Opcode.CONST_4, Opcode.AGET_OBJECT, Opcode.IGET, Opcode.RETURN),
-                dragStubs.getValue("shownType").body().map { it.opcode })
-            assertEquals("$name: markMoved", listOf(Opcode.CHECK_CAST, Opcode.CONST_4, Opcode.IPUT_BOOLEAN, Opcode.RETURN_VOID),
-                dragStubs.getValue("markMoved").body().map { it.opcode })
             assertEquals(1L, statusOf(context, "hiddenPasscode"))
             assertEquals(1L, statusOf(context, "adminChats"))
             assertEquals(1L, statusOf(context, "hiddenAccounts"))
@@ -521,123 +509,12 @@ class HiddenChatsFixtureTest {
             val stubs = context.tgMutableClassDefBy(HIDDEN_CHATS).methods.associateBy { it.name }
             assertTrue("$name: addMenuItem stays a stub", stubs.getValue("addMenuItem").body().none { it.ref() == refs.addSubItem })
             assertTrue("$name: selectedChats stays a stub", stubs.getValue("selectedChats").body().none { it.ref() == refs.selected })
-            // Pin on this phone rides on the item, so it's left out with it and adds no warning of its own.
-            assertEquals(0L, statusOf(context, "localPins"))
-            assertEquals(0L, statusOf(context, "localPinOrder"))
-            assertTrue("$name: selectedOf stays a stub", context.tgMutableClassDefBy(LOCAL_PINS).methods.single { it.name == "selectedOf" }
-                .body().none { it.ref() == refs.selected })
+            assertTrue("$name: selectedOf stays a stub", stubs.getValue("selectedOf").body().none { it.ref() == refs.selected })
             for (hook in listOf(MENU_ITEM, MENU_SHOWN, MENU_CHOICE)) {
                 val calls = hosts.filter { !it.origType.startsWith("Lapp/hushtelegram/") }
                     .sumOf { cls -> context.tgMutableClassDefBy(cls.type).methods.sumOf { m -> m.body().count { it.ref() == hook } } }
                 assertEquals("$name: $hook", 0, calls)
             }
-        }
-    }
-
-    @Test fun `a selection stub that changed leaves only Pin on this phone out`() {
-        for (build in Fixtures.declaredBuilds()) {
-            val name = build.name
-            val extension = ExtensionDex.classes().map { cls ->
-                if (cls.type != LOCAL_PINS) cls
-                else ImmutableClassDef(cls.type, cls.accessFlags, cls.superclass, cls.interfaces, cls.sourceFile,
-                    cls.annotations, cls.fields, cls.methods.filter { it.name != "selectedOf" })
-            }
-            val hosts = (folderCounterHosts(build) + launchFolderHosts(build) + menuHosts(build) + accountListHosts(build) + chatListAvatarHosts(build) + bottomTabsHosts(build)).distinctBy { it.type }
-            val context = PatchContexts.of((extension + hosts).distinctBy { it.type })
-            val warnings = beyondStock(build, PatchLogCapture.warnings { hideFolderCountersPatch.execute(context) })
-            assertEquals("$name: $warnings", 1, warnings.size)
-            assertTrue("$name: ${warnings.single()}", "selectedOf runtime hook" in warnings.single() && "without Pin on this phone" in warnings.single())
-            assertEquals(0L, statusOf(context, "localPins"))
-            assertEquals(0L, statusOf(context, "localPinOrder"))
-            // Everything it rides on goes in as before.
-            assertEquals(1L, statusOf(context, "hiddenChats"))
-            assertEquals(1L, statusOf(context, "sortByDate"))
-            for (hook in listOf(MENU_ITEM, MENU_SHOWN, MENU_CHOICE)) {
-                val calls = hosts.filter { !it.origType.startsWith("Lapp/hushtelegram/") }
-                    .sumOf { cls -> context.tgMutableClassDefBy(cls.type).methods.sumOf { m -> m.body().count { it.ref() == hook } } }
-                assertEquals("$name: $hook", 1, calls)
-            }
-        }
-    }
-
-    @Test fun `a chat pinned on this phone drags through the runtime at both pin checks and its move note`() {
-        for (build in Fixtures.declaredBuilds()) {
-            val name = build.name
-            val context = menuContext(build)
-            val callback = context.tgMutableClassDefBy(menuHosts(build).single { cls -> cls.methods.any { it.isPinDrag() } }.type)
-            val move = callback.methods.single { it.isPinDrag() }
-            val stockMove = move.body().map(::operands)
-            fun flagBodies() = callback.methods.filter { it.isPinFlags() }.associate { it.toString() to it.body().map(::operands) }
-            val stockFlags = flagBodies()
-            val plan = context.resolveLocalPinOrder()
-            assertNull("$name: ${plan.missing}", plan.missing)
-            plan.rehearse()
-            assertEquals("$name: a rehearsal edits nothing", stockMove, move.body().map(::operands))
-            assertEquals("$name: a rehearsal edits nothing", stockFlags, flagBodies())
-            plan.apply()
-
-            // onMove: its one pin check before the swap asks dropOn with the same registers, and its note after the swap goes to moved.
-            val moved = move.body().map(::operands)
-            assertEquals(name, stockMove.size, moved.size)
-            val changed = stockMove.indices.filter { stockMove[it] != moved[it] }
-            assertEquals("$name: $changed", 2, changed.size)
-            val (dropAt, movedAt) = changed
-            val swap = stockMove.indexOfFirst { it[2] == "Ljava/util/Collections;->swap(Ljava/util/List;II)V" }
-            assertTrue("$name: the pin check comes before the swap and the note after it", dropAt < swap && swap < movedAt)
-            val check = stockMove[dropAt]
-            assertEquals(name, Opcode.INVOKE_VIRTUAL, check[0])
-            assertTrue("$name: ${check[2]}", (check[2] as String).endsWith("(Lorg/telegram/tgnet/TLRPC\$Dialog;)Z"))
-            assertEquals(name, listOf(Opcode.INVOKE_STATIC, check[1], LOCAL_PIN_DROP_ON), moved[dropAt])
-            assertEquals("$name: the answer still lands where Telegram's did", Opcode.MOVE_RESULT, moved[dropAt + 1][0])
-            val note = stockMove[movedAt]
-            assertEquals(name, Opcode.IPUT_BOOLEAN, note[0])
-            assertEquals(name, listOf(Opcode.INVOKE_STATIC_RANGE, listOf((note[1] as List<*>)[1]), LOCAL_PIN_MOVED), moved[movedAt])
-
-            // getMovementFlags: its one ask of the same check goes to dragFrom, and the rest stays.
-            val flagged = flagBodies()
-            val grabs = stockFlags.flatMap { (method, body) ->
-                assertEquals("$name: $method", body.size, flagged.getValue(method).size)
-                body.indices.filter { body[it] != flagged.getValue(method)[it] }.map { method to it }
-            }
-            assertEquals("$name: $grabs", 1, grabs.size)
-            val (method, grabAt) = grabs.single()
-            val grab = stockFlags.getValue(method)[grabAt]
-            assertEquals(name, listOf(Opcode.INVOKE_VIRTUAL, check[2]), listOf(grab[0], grab[2]))
-            assertEquals(name, listOf(Opcode.INVOKE_STATIC, grab[1], LOCAL_PIN_DRAG_FROM), flagged.getValue(method)[grabAt])
-
-            // The stubs read what onMove reads: the check itself, viewPages[0].dialogsType and movingWas.
-            context.writeLocalPinOrderStubs(plan.refs!!)
-            val stubs = context.tgMutableClassDefBy(LOCAL_PINS).methods.associateBy { it.name }
-            assertEquals(name, check[2], stubs.getValue("stockPinned").body()[2].ref())
-            val shown = stubs.getValue("shownType").body()
-            assertTrue("$name: ${shown[1].ref()}", stockMove.drop(swap).any { it[0] == Opcode.IGET_OBJECT && it[2] == shown[1].ref() })
-            assertTrue("$name: ${shown[4].ref()}", stockMove.drop(swap).any { it[0] == Opcode.IGET && it[2] == shown[4].ref() })
-            assertEquals(name, note[2], stubs.getValue("markMoved").body()[2].ref())
-        }
-    }
-
-    @Test fun `a drag that no longer notes its move leaves only the order of chats pinned here out`() {
-        for (build in Fixtures.declaredBuilds()) {
-            val name = build.name
-            val hosts = (folderCounterHosts(build) + launchFolderHosts(build) + menuHosts(build) + accountListHosts(build) + chatListAvatarHosts(build) + bottomTabsHosts(build)).distinctBy { it.type }
-            val context = PatchContexts.of((ExtensionDex.classes() + hosts).distinctBy { it.type })
-            val callback = context.tgMutableClassDefBy(hosts.single { cls -> cls.methods.any { it.isPinDrag() } }.type)
-            val move = callback.methods.single { it.isPinDrag() }
-            val list = launchFolderList(build)
-            val note = move.body().indexOfLast { it.opcode == Opcode.IPUT_BOOLEAN && ((it as ReferenceInstruction).reference as FieldReference).definingClass == list }
-            move.replaceInstruction(note, "nop")
-            val stockMove = move.body().map(::operands)
-            fun flagBodies() = callback.methods.filter { it.isPinFlags() }.map { m -> m.body().map(::operands) }
-            val stockFlags = flagBodies()
-            val warnings = beyondStock(build, PatchLogCapture.warnings { hideFolderCountersPatch.execute(context) })
-            assertEquals(name, listOf("Hide folder tab counters: the chat list's drag no longer notes once that its pins moved (0). " +
-                "Pin on this phone goes on without dragging those chats into your own order."), warnings)
-            assertEquals(1L, statusOf(context, "localPins"))
-            assertEquals(0L, statusOf(context, "localPinOrder"))
-            assertEquals("$name: onMove stays as it was", stockMove, move.body().map(::operands))
-            assertEquals("$name: getMovementFlags stays as it was", stockFlags, flagBodies())
-            assertTrue("$name: markMoved stays a stub", context.tgMutableClassDefBy(LOCAL_PINS).methods.single { it.name == "markMoved" }
-                .body().none { it.opcode == Opcode.IPUT_BOOLEAN })
         }
     }
 
@@ -875,8 +752,7 @@ private val MENU_HOSTS = mutableMapOf<String, List<ClassDef>>()
 
 /**
  * The chat list's hosts, the more menu's class and every (I)V handler that holds a chat list, as
- * candidates for the click handler. Also the item touch callback that drags its pinned chats, with
- * the page class its pin check reads, for Pin on this phone's own order.
+ * candidates for the click handler.
  */
 internal fun menuHosts(build: File, clicks: Boolean = true): List<ClassDef> = MENU_HOSTS.hostsOf("${build.path} $clicks") {
     val list = launchFolderList(build)
@@ -887,24 +763,11 @@ internal fun menuHosts(build: File, clicks: Boolean = true): List<ClassDef> = ME
     }
     val more = adds.filterNotNull().first().controlRef()!!.substringBefore("->")
     val found = FixtureDex.classesWhere(build, { true }) { m ->
-        m.isPinDrag() || clicks && m.origDefiningClass != list && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
+        clicks && m.origDefiningClass != list && m.origReturnType == "V" && m.parameterTypes.map(CharSequence::toString) == listOf("I") &&
             m.controlBody().any { it.opcode == Opcode.IGET_OBJECT && it.controlRef()?.endsWith(":$list") == true }
     }
-    val pages = found.filter { cls -> cls.methods.any { it.isPinDrag() } }.flatMap { cls -> cls.methods.flatMap { it.controlBody() } }
-        .mapNotNull { ((it as? ReferenceInstruction)?.reference as? FieldReference)?.type }
-        .filter { it.startsWith("[Lorg/telegram/ui/") }.map { it.trimStart('[') }.toSet()
-    (launchFolderHosts(build) + found + FixtureDex.classes(build, setOf(more) + pages).values).distinctBy { it.type }
+    (launchFolderHosts(build) + found + FixtureDex.classes(build, setOf(more)).values).distinctBy { it.type }
 }
-
-/** An item touch callback's onMove(RecyclerView, ViewHolder, ViewHolder) that swaps two chats and their pin numbers. */
-internal fun Method.isPinDrag() = !AccessFlags.STATIC.isSet(accessFlags) && returnType == "Z" && parameterTypes.size == 3 &&
-    parameterTypes[0].toString() == "Landroidx/recyclerview/widget/RecyclerView;" &&
-    controlBody().any { it.controlRef() == "Ljava/util/Collections;->swap(Ljava/util/List;II)V" } &&
-    controlBody().any { it.opcode == Opcode.IGET && it.controlRef() == DIALOG_PIN_NUM }
-
-/** The same callback's getMovementFlags(RecyclerView, ViewHolder). */
-internal fun Method.isPinFlags() = !AccessFlags.STATIC.isSet(accessFlags) && returnType == "I" && parameterTypes.size == 2 &&
-    parameterTypes[0].toString() == "Landroidx/recyclerview/widget/RecyclerView;"
 
 private fun Method.isCreateActionMode() = parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/String;") &&
     controlBody().any { it.controlRef() == "Lorg/telegram/messenger/R\$drawable;->msg_block:I" }
