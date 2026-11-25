@@ -117,7 +117,6 @@ public final class SettingsBackup {
             Settings.HIDE_COMMERCE,
             Settings.HIDE_EMOJI_STATUS,
             Settings.UNLOCK_PREMIUM_ICONS,
-            Settings.LOCAL_EMOJI_STATUS,
             Settings.MOVING_EMOJI_STATUS,
             Settings.HIDE_PROMOTIONAL_BANNERS,
             Settings.HIDE_SPONSORED_PROXY,

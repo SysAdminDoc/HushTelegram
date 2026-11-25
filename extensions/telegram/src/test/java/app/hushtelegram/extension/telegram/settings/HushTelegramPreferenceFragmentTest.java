@@ -1122,18 +1122,12 @@ public class HushTelegramPreferenceFragmentTest {
                             + "Premium sheet. Only the icon on your home screen changes.",
                     String.valueOf(page.findPreference(Settings.UNLOCK_PREMIUM_ICONS.key).getSummary()));
             assertFalse(((SwitchPreference) page.findPreference(Settings.UNLOCK_PREMIUM_ICONS.key)).isChecked());
-            assertEquals("Emoji status on this phone", String.valueOf(page.findPreference(Settings.LOCAL_EMOJI_STATUS.key).getTitle()));
-            assertEquals("Tap the star next to Telegram at the top of the chat list and pick any emoji status, animated ones "
-                            + "too, without Premium. It shows there on this phone only. Nobody else sees it, and nothing is sent "
-                            + "to Telegram.",
-                    String.valueOf(page.findPreference(Settings.LOCAL_EMOJI_STATUS.key).getSummary()));
-            assertFalse(((SwitchPreference) page.findPreference(Settings.LOCAL_EMOJI_STATUS.key)).isChecked());
             assertEquals("Keep emoji statuses moving", String.valueOf(page.findPreference(Settings.MOVING_EMOJI_STATUS.key).getTitle()));
             assertEquals("Emoji statuses next to names keep playing instead of stopping after two plays. It uses a little "
                             + "more battery. Restart Telegram to see the change.",
                     String.valueOf(page.findPreference(Settings.MOVING_EMOJI_STATUS.key).getSummary()));
             assertFalse(((SwitchPreference) page.findPreference(Settings.MOVING_EMOJI_STATUS.key)).isChecked());
-            assertEquals("right after Emoji status on this phone", page.findPreference(Settings.LOCAL_EMOJI_STATUS.key).getOrder() + 1,
+            assertEquals("right after Unlock Premium app icons", page.findPreference(Settings.UNLOCK_PREMIUM_ICONS.key).getOrder() + 1,
                     page.findPreference(Settings.MOVING_EMOJI_STATUS.key).getOrder());
             assertEquals("Hide trending packs", String.valueOf(page.findPreference(Settings.HIDE_KEYBOARD_FEATURED.key).getTitle()));
             assertEquals("The sticker keyboard's Trending tab and row and the emoji keyboard's trending packs go away, "

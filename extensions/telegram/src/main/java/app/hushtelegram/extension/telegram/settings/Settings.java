@@ -71,10 +71,6 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting UNLOCK_PREMIUM_ICONS =
             new BooleanSetting("hushtelegram_unlock_premium_icons", FALSE);
 
-    /** The chat list title's status picker works without Premium and keeps its pick on this phone; nothing is sent. */
-    public static final BooleanSetting LOCAL_EMOJI_STATUS =
-            new BooleanSetting("hushtelegram_local_emoji_status", FALSE);
-
     /**
      * Emoji statuses next to names loop instead of stopping after two plays. Telegram keeps each
      * status's drawable for the whole run and sets its play count once, so a restart shows the change.

@@ -241,10 +241,6 @@ Unlock Premium app icons	Sblocca le icone Premium dell'app
 Premium, Turbo and Nox in Telegram's App Icon list work without Premium, with no lock and no Premium sheet. Only the icon on your home screen changes.	Premium, Turbo e Nera nell'elenco Icona app di Telegram funzionano senza Premium, senza lucchetto e senza la pagina Premium. Cambia solo l'icona nella schermata Home.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Premium, gifts and Stars that unlocks the Premium app icons.
 Premium icons in the App Icon list	le icone Premium nell'elenco Icona app
-# context: a switch under Hide Premium, gifts and Stars. An emoji status is the emoji a Premium account sets next to its name; use the applied translation of Telegram's term (key PremiumPreviewEmojiStatus, "Emoji Status"), in the singular.
-Emoji status on this phone	Stato emoji su questo telefono
-# context: that switch's summary. Telegram is the title at the top of the chat list; the star next to it is Telegram's Premium star, which opens the emoji status picker.
-Tap the star next to Telegram at the top of the chat list and pick any emoji status, animated ones too, without Premium. It shows there on this phone only. Nobody else sees it, and nothing is sent to Telegram.	Tocca la stella accanto a Telegram in cima alla lista chat e scegli qualunque stato emoji, anche quelli animati, senza Premium. Compare lì solo su questo telefono. Nessun altro lo vede e non viene inviato nulla a Telegram.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Premium, gifts and Stars that keeps your emoji status on this phone.
 your emoji status on this phone	il tuo stato emoji su questo telefono
 # context: a switch under Hide Premium, gifts and Stars. An emoji status is the emoji a Premium account sets next to its name; use the applied translation of Telegram's term (key PremiumPreviewEmojiStatus, "Emoji Status"), in the plural. Animated statuses play twice and then stop; this switch keeps them playing.

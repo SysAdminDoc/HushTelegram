@@ -525,12 +525,6 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                         L10n.t("Unlock Premium app icons"), L10n.t("Premium, Turbo and Nox in Telegram's App Icon list work without "
                                 + "Premium, with no lock and no Premium sheet. Only the icon on your home screen changes.")));
             }
-            if (PatchFamily.Capability.COMMERCE_LOCAL_EMOJI_STATUS.installed()) {
-                on(pages, PatchFamily.HIDE_COMMERCE).addPreference(toggle(context, Settings.LOCAL_EMOJI_STATUS,
-                        L10n.t("Emoji status on this phone"), L10n.t("Tap the star next to Telegram at the top of the chat list "
-                                + "and pick any emoji status, animated ones too, without Premium. It shows there on this phone only. "
-                                + "Nobody else sees it, and nothing is sent to Telegram.")));
-            }
             if (PatchFamily.Capability.COMMERCE_MOVING_EMOJI_STATUS.installed()) {
                 on(pages, PatchFamily.HIDE_COMMERCE).addPreference(toggle(context, Settings.MOVING_EMOJI_STATUS,
                         L10n.t("Keep emoji statuses moving"), L10n.t("Emoji statuses next to names keep playing instead of "

@@ -230,7 +230,7 @@ class NativeSettingsFixtureTest {
                 "commerceProfileSendGram" to 0, "commerceAddressSendGram" to 0, "commerceTransferSendGram" to 0,
                 "commerceProfileGiftMenu" to 0,
                 "commercePremiumStickers" to 0, "commercePremiumEffects" to 0, "commercePremiumEmojiPacks" to 0,
-                "commerceEmojiStatus" to 0, "commercePremiumIcons" to 0, "commerceLocalEmojiStatus" to 0,
+                "commerceEmojiStatus" to 0, "commercePremiumIcons" to 0,
                 "commerceMovingEmojiStatus" to 0)) {
                 val flag = context.tgMutableClassDefBy(SETTINGS_STATUS).methods.single { it.origName == name }
                 assertEquals(expected, (flag.body().first() as NarrowLiteralInstruction).narrowLiteral)

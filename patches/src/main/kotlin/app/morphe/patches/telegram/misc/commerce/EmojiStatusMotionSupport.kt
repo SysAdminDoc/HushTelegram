@@ -28,7 +28,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
-internal const val LOCAL_STATUS_REPEAT = "$LOCAL_STATUS->statusRepeatType(I)I"
+internal const val STATUS_REPEAT = "$EMOJI_STATUS->statusRepeatType(I)I"
 internal const val STATUS_IMAGE_RECEIVER = "Lorg/telegram/messenger/ImageReceiver;"
 /** How many more times an image plays. ImageReceiver's setter writes it first thing. */
 internal const val STATUS_AUTO_REPEAT = "$STATUS_IMAGE_RECEIVER->autoRepeatCount:I"
@@ -48,7 +48,7 @@ internal class MovingEmojiStatusPlan(
 ) {
     fun apply() {
         if (missing != null) return
-        ladder!!.addInstructions(1, "invoke-static/range {v$type .. v$type}, $LOCAL_STATUS_REPEAT\n" +
+        ladder!!.addInstructions(1, "invoke-static/range {v$type .. v$type}, $STATUS_REPEAT\n" +
             "move-result v$type")
     }
 }
@@ -57,13 +57,13 @@ internal class MovingEmojiStatusPlan(
  * AnimatedEmojiDrawable draws an emoji status, and one of its methods sets how many times the
  * status's image plays, from the cache type the drawable was made with: a status next to a name
  * (7) or in a sheet (9) plays twice and stops, like a topic icon (10). The method reads the cache
- * type first thing and weighs it against each type in turn, so LocalEmojiStatus answers right
+ * type first thing and weighs it against each type in turn, so EmojiStatus answers right
  * after that read. With the switch on, a status's type comes back as -1, which nothing matches:
  * the method returns without setting a count and the image keeps ImageReceiver's own, which loops.
  * Topic icons and every other type keep Telegram's count.
  */
 internal fun BytecodePatchContext.resolveMovingEmojiStatus(): MovingEmojiStatusPlan {
-    controlHook(LOCAL_STATUS, "statusRepeatType", listOf("I"), "I")
+    controlHook(EMOJI_STATUS, "statusRepeatType", listOf("I"), "I")
     requireStatusMethod("commerceMovingEmojiStatus")
     fun missing(why: String) = MovingEmojiStatusPlan(null, 0, why)
 
@@ -78,7 +78,7 @@ internal fun BytecodePatchContext.resolveMovingEmojiStatus(): MovingEmojiStatusP
         if (ladders.isEmpty()) "AnimatedEmojiDrawable no longer sets a status's play count by its cache type"
         else "${ladders.size} places set an emoji status's play count by its cache type")
     val body = ladder.controlBody()
-    if (body.getOrNull(1)?.controlRef() == LOCAL_STATUS_REPEAT) return missing("emoji statuses already keep moving")
+    if (body.getOrNull(1)?.controlRef() == STATUS_REPEAT) return missing("emoji statuses already keep moving")
     if (STATUS_CACHE_TYPES.any { ladder.playsFor(it, setter) != STATUS_PLAYS }) return missing("an emoji status no longer plays twice")
     val flow = ControlFlow.of(ladder)
     if (body.indices.any { at -> at != 0 && (1 in flow.normal[at] || 1 in flow.exceptional[at]) }) {

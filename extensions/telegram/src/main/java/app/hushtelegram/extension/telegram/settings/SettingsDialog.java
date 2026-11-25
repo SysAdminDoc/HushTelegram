@@ -42,7 +42,6 @@ import androidx.annotation.Nullable;
 import app.hushtelegram.extension.shared.L10n;
 import app.hushtelegram.extension.shared.Logger;
 import app.hushtelegram.extension.shared.ui.ShimmerTitle;
-import app.hushtelegram.extension.telegram.misc.LocalEmojiStatus;
 import app.hushtelegram.extension.telegram.misc.MainTabs;
 import app.hushtelegram.extension.telegram.misc.TranslateBar;
 
@@ -432,7 +431,6 @@ public final class SettingsDialog extends DialogFragment {
     @Override
     public void onDismiss(android.content.DialogInterface dialog) {
         super.onDismiss(dialog);
-        LocalEmojiStatus.settingsClosed();
         TranslateBar.settingsClosed();
         MainTabs.settingsClosed();
     }

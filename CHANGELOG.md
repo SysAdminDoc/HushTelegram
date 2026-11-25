@@ -31,7 +31,6 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** With **Bypass channel restrictions** on, forwarding a protected video or photo you haven't downloaded yet works better. Videos that come in several qualities were waiting on the wrong file and never went out. A download that stops now starts again, a stuck forward no longer holds up the next one, and HushTelegram tells you when it's downloading first and when the download fails. Photos that aren't on your phone download too, and **Save to Downloads** finds the quality you're watching. (#84)
 * **Telegram:** **Hide pinned message bar** now reaches a chat left open under HushTelegram settings as soon as the settings close. That chat used to keep its old bar until you left the app or opened the chat again. (#85)
-* **Telegram:** **Emoji status on this phone** now takes effect as soon as you close HushTelegram settings. The star at the top of the chat list used to show up only after Telegram was restarted, and nothing told you so.
 
 ### Changed
 
@@ -46,6 +45,7 @@ Every HushTelegram release, newest first.
 
 * **Telegram:** Remove the Unlock Premium features patch.
 * **Telegram:** Remove the **Add Save to Gallery to stories** switch from Add Repeat to the message menu.
+* **Telegram:** Remove the **Emoji status on this phone** switch from Hide Premium, gifts and Stars.
 
 ## 0.0.26 (2026-11-17)
 
