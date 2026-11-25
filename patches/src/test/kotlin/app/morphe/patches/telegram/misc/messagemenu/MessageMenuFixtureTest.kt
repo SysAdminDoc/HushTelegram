@@ -74,7 +74,7 @@ class MessageMenuFixtureTest {
                 AccessFlags.STATIC.isSet(m.accessFlags) && params == listOf("I", "I", list, list) && m.origReturnType == "V" ||
                 // 13.2's label helper also takes the icon and returns it boxed.
                 AccessFlags.STATIC.isSet(m.accessFlags) && params == listOf("I", list, "I", list, "I") && m.origReturnType == "Ljava/lang/Integer;" ||
-                m.origName == "getParentActivity" && params.isEmpty() || m.isSelectionCanCopy() || m.isStorySaveMenu() || m.isScreenshotSlice() || m.isLinkPreviewMenu() ||
+                m.origName == "getParentActivity" && params.isEmpty() || m.isSelectionCanCopy() || m.isScreenshotSlice() || m.isLinkPreviewMenu() ||
                 m.controlBody().map { it.controlRef() }.let { IS_PREMIUM in it && FORWARDS in it && NAME_HIDE in it }
         }
         return (FixtureDex.classes(build, fixed).values + found).distinctBy { it.type }.map(ImmutableClassDef::of)

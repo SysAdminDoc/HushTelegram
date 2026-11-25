@@ -87,7 +87,6 @@ public final class SettingsStatus {
     public static boolean reactionSelection() { return false; }
     public static boolean emojiPackNote() { return false; }
     public static boolean copySelection() { return false; }
-    public static boolean storySave() { return false; }
     public static boolean allowScreenshots() { return false; }
     public static boolean timedScreenshots() { return false; }
     public static boolean quietContactsNag() { return false; }

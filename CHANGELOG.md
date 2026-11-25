@@ -45,6 +45,7 @@ Every HushTelegram release, newest first.
 ### Removed
 
 * **Telegram:** Remove the Unlock Premium features patch.
+* **Telegram:** Remove the **Add Save to Gallery to stories** switch from Add Repeat to the message menu.
 
 ## 0.0.26 (2026-11-17)
 

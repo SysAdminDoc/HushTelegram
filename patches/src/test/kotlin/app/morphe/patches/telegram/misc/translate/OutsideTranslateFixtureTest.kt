@@ -105,7 +105,7 @@ class OutsideTranslateFixtureTest {
             next = loaded.mapNotNull { it.superclass }.filter { it.startsWith("Lorg/telegram/") }.toSet() - bases.map { it.type }.toSet()
         }
         val base = (FixtureDex.classes(build, types).values + found + bases).distinctBy { it.type }.map(ImmutableClassDef::of)
-        // The message menu reads its tools' and story save's classes too, so the neighbours take its whole slice.
+        // The message menu reads its tools' classes too, so the neighbours take its whole slice.
         return if (neighbours) (base + MessageMenuFixtureTest().hosts(build)).distinctBy { it.type } else base
     }
 

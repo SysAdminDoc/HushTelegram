@@ -128,7 +128,6 @@ val messageMenuPatch = bytecodePatch(
     execute {
         val site = resolveMessageMenu()
         val selection = resolveSelectionCopy()
-        val story = resolveStorySave()
         val screenshots = resolveScreenshots()
         val timedViewer = resolveTimedViewer()
         // Assembled on copies first, so a refusal leaves the app untouched.
@@ -142,12 +141,6 @@ val messageMenuPatch = bytecodePatch(
             enableCapability("copySelection")
         } else {
             patchLog.warning("Add Repeat to the message menu: ${selection.missing}. The patch goes on without selecting text in chats that don't allow saving.")
-        }
-        if (story.missing == null) {
-            story.apply()
-            enableCapability("storySave")
-        } else {
-            patchLog.warning("Add Repeat to the message menu: ${story.missing}. The patch goes on without Save to Gallery in stories.")
         }
         if (screenshots.missing == null) {
             screenshots.apply()
@@ -266,9 +259,6 @@ internal class MessageMenuSite(
 internal fun BytecodePatchContext.resolveMessageMenu(): MessageMenuSite {
     requireStatusMethod("messageMenuRepeat")
     requireStatusMethod("copySelection")
-    requireStatusMethod("storySave")
-    controlHook(STORY_SAVE, "shareable", listOf("I"), "Z")
-    controlHook(STORY_SAVE, "premium", listOf("I"), "Z")
     requireStatusMethod("allowScreenshots")
     controlHook(SCREENSHOTS, "protectedContent", listOf("I"), "Z")
     controlHook(SCREENSHOTS, "storyAllowed", listOf("I"), "Z")

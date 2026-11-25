@@ -266,7 +266,6 @@ public final class SettingsBackup {
             Settings.MESSAGE_MENU_COPY_PROTECTED,
             Settings.MESSAGE_MENU_SAVE_PROTECTED,
             Settings.MESSAGE_MENU_FORWARD_COPY,
-            Settings.STORY_SAVE_BUTTON,
             Settings.ALLOW_SCREENSHOTS,
             Settings.SECRET_CHAT_SCREENSHOTS,
             Settings.TIMED_MEDIA_SCREENSHOTS,

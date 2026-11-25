@@ -1156,9 +1156,6 @@ public class Settings extends BaseSettings {
     /** A downloaded file in a chat that doesn't allow saving gets Save to Downloads in its long-press menu (#29). */
     public static final BooleanSetting MESSAGE_MENU_SAVE_PROTECTED =
             new BooleanSetting("hushtelegram_message_menu_save_protected", FALSE);
-    /** A story's three-dot menu gets Save to Gallery without Premium, on stories that don't allow saving too (#52). */
-    public static final BooleanSetting STORY_SAVE_BUTTON =
-            new BooleanSetting("hushtelegram_story_save_button", FALSE);
     /** Screenshots and screen recording work in chats, profiles, photos and stories that don't allow saving (Discussion #34). */
     public static final BooleanSetting ALLOW_SCREENSHOTS =
             new BooleanSetting("hushtelegram_allow_screenshots", FALSE);
