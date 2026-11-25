@@ -2,7 +2,7 @@
 
 Every HushTelegram release, newest first.
 
-## Unreleased
+## 0.0.27 (2026-11-25)
 
 ### Added
 
