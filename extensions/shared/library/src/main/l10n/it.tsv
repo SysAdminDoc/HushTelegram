@@ -235,10 +235,6 @@ Hide emoji statuses	Nascondi stati emoji
 The emoji a Premium account puts next to its name goes away in chats, the chat list and profiles, and the Premium star shows instead. Your own status hides too but stays set for everyone else. A chat picks this up the next time you open it.	Lo stato emoji che un account Premium mette accanto al nome scompare nelle chat, nella lista chat e nei profili, e al suo posto appare la stella Premium. Anche il tuo stato viene nascosto, ma resta impostato per tutti gli altri. Una chat lo recepisce la prossima volta che la apri.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Premium, gifts and Stars that hides emoji statuses.
 emoji statuses next to names	gli stati emoji accanto ai nomi
-# context: a switch under Hide Premium, gifts and Stars. App Icon is Telegram's list of launcher icons in its appearance settings; use the applied translations of its title (key AppIcon, "App Icon") and of the icon names (keys AppIconPremium, AppIconTurbo, AppIconNox).
-Unlock Premium app icons	Sblocca le icone Premium dell'app
-# context: that switch's summary. Premium, Turbo and Nox are three icons in that list (keys AppIconPremium, AppIconTurbo, AppIconNox; Nox is applied as Noche). The Premium sheet is the page Telegram opens to sell Premium when a locked icon is tapped.
-Premium, Turbo and Nox in Telegram's App Icon list work without Premium, with no lock and no Premium sheet. Only the icon on your home screen changes.	Premium, Turbo e Nera nell'elenco Icona app di Telegram funzionano senza Premium, senza lucchetto e senza la pagina Premium. Cambia solo l'icona nella schermata Home.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Premium, gifts and Stars that unlocks the Premium app icons.
 Premium icons in the App Icon list	le icone Premium nell'elenco Icona app
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Premium, gifts and Stars that keeps your emoji status on this phone.

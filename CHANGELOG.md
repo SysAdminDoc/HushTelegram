@@ -46,6 +46,7 @@ Every HushTelegram release, newest first.
 * **Telegram:** Remove the Unlock Premium features patch.
 * **Telegram:** Remove the **Add Save to Gallery to stories** switch from Add Repeat to the message menu.
 * **Telegram:** Remove the **Emoji status on this phone** switch from Hide Premium, gifts and Stars.
+* **Telegram:** Remove the **Unlock Premium app icons** switch from Hide Premium, gifts and Stars.
 
 ## 0.0.26 (2026-11-17)
 

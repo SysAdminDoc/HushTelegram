@@ -422,9 +422,6 @@ public final class SelectionCheck {
         hook(calls, flags, "commercePremiumEffects", "misc/Commerce", "skipPremiumEffect");
         hook(calls, flags, "commercePremiumEmojiPacks", "misc/Commerce", "dropLockedEmojiPacks");
         hook(calls, flags, "commerceEmojiStatus", "misc/EmojiStatus", "hide");
-        // The App Icon list's tap, lock and filter each ask after reading an icon's Premium flag.
-        require(calls.getOrDefault(OWN + "telegram/misc/AppIcons;->premium", 0)
-                == (Boolean.TRUE.equals(flags.get("commercePremiumIcons")) ? 3 : 0));
         // AnimatedEmojiDrawable's play count asks once, right after it reads the cache type.
         require(calls.getOrDefault(OWN + "telegram/misc/EmojiStatus;->statusRepeatType", 0)
                 == (Boolean.TRUE.equals(flags.get("commerceMovingEmojiStatus")) ? 1 : 0));

@@ -37,7 +37,6 @@ import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
-import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
@@ -187,8 +186,8 @@ class HideCommerceFixtureTest {
             assertTrue("${build.name}: the admin log keeps the real status", keepers.any { it.origDefiningClass == MESSAGE_OBJECT })
             val swapped = (getters + keepers).map { it.key() }.toSet()
             val originalBodies = (getters + keepers).associate { it.key() to it.instructions().map(::operation) }
-            // Unlock Premium app icons asks after the flag read in the icon list's tap, lock and
-            // filter. The Premium page's preview reads the flag too and stays stock.
+            // The App Icon list's tap, lock and filter weigh an icon's Premium flag against Premium,
+            // and so does the Premium page's preview. All of them stay as Telegram has them.
             val premiumFlag = iconFlag(hosts)
             val iconBodies = iconReaders(hosts).associate { it.key() to it.instructions() }
             assertEquals("${build.name}: the icon list's tap, lock and filter", 3, iconBodies.size)
@@ -200,10 +199,12 @@ class HideCommerceFixtureTest {
             // it sets an image's play count by. ImageReceiver's setter stays stock.
             val ladder = statusLadder(hosts)
             val untouched = hosts.flatMap { it.methods.toList() }.filter {
-                (it.definingClass to it.name) !in changed && it.key() !in swapped && it.key() !in iconBodies &&
+                (it.definingClass to it.name) !in changed && it.key() !in swapped &&
                     it.key() != ladder.key()
             }
             assertTrue("${build.name}: includes the chat list title's status and Premium star", untouched.any { it.key() == title.key() })
+            assertEquals("${build.name}: includes the icon list's tap, lock and filter", iconBodies.keys,
+                untouched.map { it.key() }.filter { it in iconBodies }.toSet())
             assertTrue("${build.name}: includes ImageReceiver's play count setter", untouched.any { method ->
                 method.origDefiningClass == STATUS_IMAGE_RECEIVER && method.instructions().firstOrNull()?.reference() == STATUS_AUTO_REPEAT
             })
@@ -240,23 +241,8 @@ class HideCommerceFixtureTest {
             CommerceTarget.entries.forEach { assertFact(context, it.capability, 1) }
             PremiumStickerTarget.entries.forEach { assertFact(context, it.capability, 1) }
             assertFact(context, "commerceEmojiStatus", 1)
-            assertFact(context, "commercePremiumIcons", 1)
             assertFact(context, "commerceMovingEmojiStatus", 1)
             assertStatusMotion(build.name, ladder, context.tgMutableClassDefBy(ladder.definingClass).methods.single { it.key() == ladder.key() })
-            for ((key, before) in iconBodies) {
-                val after = context.tgMutableClassDefBy(key.substringBefore("->")).methods.single { it.key() == key }
-                    .instructions().filter { it.opcode != Opcode.NOP }
-                val read = after.indices.single { after[it].opcode == Opcode.IGET_BOOLEAN && after[it].reference() == premiumFlag }
-                val register = (after[read] as TwoRegisterInstruction).registerA
-                val call = after[read + 1] as RegisterRangeInstruction
-                assertEquals("${build.name}: $key asks AppIcons right after the read", ICON_PREMIUM, after[read + 1].reference())
-                assertEquals(listOf(register, 1), listOf(call.startRegister, call.registerCount))
-                assertEquals(Opcode.MOVE_RESULT, after[read + 2].opcode)
-                assertEquals(register, (after[read + 2] as OneRegisterInstruction).registerA)
-                // A goto past the new code can widen, which is still the same jump.
-                assertEquals("${build.name}: $key is otherwise stock", before.filter { it.opcode != Opcode.NOP }.map(::stockOperation),
-                    after.filterIndexed { index, _ -> index != read + 1 && index != read + 2 }.map(::stockOperation))
-            }
             for (getter in getters) {
                 val owner = context.tgMutableClassDefBy(getter.definingClass)
                 val stockName = if (getter.origDefiningClass == EMOJI_USERS) STOCK_USER_STATUS else STOCK_DIALOG_STATUS
@@ -674,28 +660,6 @@ class HideCommerceFixtureTest {
     }
 
     @Test
-    fun `a build without the App Icon list's enum keeps every icon locked and the rest of the patch`() {
-        for (build in Fixtures.declaredBuilds()) {
-            val hosts = hosts(build)
-            val icons = iconFlag(hosts).substringBefore("->")
-            val readers = iconReaders(hosts).associate { it.key() to it.instructions().map(::operation) }
-            assertEquals("${build.name}: the fixture still weighs icons against Premium", 3, readers.size)
-            val context = PatchContexts.of(ExtensionDex.classes() + hosts.filter { it.origType != icons })
-            val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
-            assertEquals("${build.name}: one Premium app icon warning", 1, warnings.size)
-            assertTrue(warnings.single(), warnings.single().endsWith("The patch goes on without the Premium app icon switch."))
-            assertFact(context, "hideCommerce", 1)
-            assertFact(context, "commercePremiumIcons", 0)
-            assertFact(context, "commerceEmojiStatus", 1)
-            CommerceTarget.entries.forEach { assertFact(context, it.capability, 1) }
-            for ((key, before) in readers) {
-                val after = context.tgMutableClassDefBy(key.substringBefore("->")).methods.single { it.key() == key }
-                assertEquals("${build.name}: $key is stock", before, after.instructions().map(::operation))
-            }
-        }
-    }
-
-    @Test
     fun `a build without the status play counts keeps each count and the rest of the patch`() {
         for (build in Fixtures.declaredBuilds()) {
             val hosts = hosts(build)
@@ -1003,6 +967,7 @@ class HideCommerceFixtureTest {
         const val CONTROLLER = "Lorg/telegram/messenger/MessagesController;"
         const val USER_CONFIG = "Lorg/telegram/messenger/UserConfig;"
         const val USER = "Lorg/telegram/tgnet/TLRPC\$User;"
+        const val PREMIUM_ON_ACCOUNTS = "Lorg/telegram/messenger/UserConfig;->hasPremiumOnAccounts()Z"
         const val LIST_STAR = "Lorg/telegram/messenger/R\$drawable;->msg_premium_liststar:I"
         const val USER_STATUS_ID = "$EMOJI_USERS->$EMOJI_GETTER($USER)Ljava/lang/Long;"
         const val IS_PREMIUM_USER = "$STICKER_CONTROLLER->isPremiumUser($USER)Z"

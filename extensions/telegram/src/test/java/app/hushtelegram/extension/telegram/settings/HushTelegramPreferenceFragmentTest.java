@@ -1117,17 +1117,12 @@ public class HushTelegramPreferenceFragmentTest {
                             + "everyone else. A chat picks this up the next time you open it.",
                     String.valueOf(page.findPreference(Settings.HIDE_EMOJI_STATUS.key).getSummary()));
             assertFalse(((SwitchPreference) page.findPreference(Settings.HIDE_EMOJI_STATUS.key)).isChecked());
-            assertEquals("Unlock Premium app icons", String.valueOf(page.findPreference(Settings.UNLOCK_PREMIUM_ICONS.key).getTitle()));
-            assertEquals("Premium, Turbo and Nox in Telegram's App Icon list work without Premium, with no lock and no "
-                            + "Premium sheet. Only the icon on your home screen changes.",
-                    String.valueOf(page.findPreference(Settings.UNLOCK_PREMIUM_ICONS.key).getSummary()));
-            assertFalse(((SwitchPreference) page.findPreference(Settings.UNLOCK_PREMIUM_ICONS.key)).isChecked());
             assertEquals("Keep emoji statuses moving", String.valueOf(page.findPreference(Settings.MOVING_EMOJI_STATUS.key).getTitle()));
             assertEquals("Emoji statuses next to names keep playing instead of stopping after two plays. It uses a little "
                             + "more battery. Restart Telegram to see the change.",
                     String.valueOf(page.findPreference(Settings.MOVING_EMOJI_STATUS.key).getSummary()));
             assertFalse(((SwitchPreference) page.findPreference(Settings.MOVING_EMOJI_STATUS.key)).isChecked());
-            assertEquals("right after Unlock Premium app icons", page.findPreference(Settings.UNLOCK_PREMIUM_ICONS.key).getOrder() + 1,
+            assertEquals("right after Hide emoji statuses", page.findPreference(Settings.HIDE_EMOJI_STATUS.key).getOrder() + 1,
                     page.findPreference(Settings.MOVING_EMOJI_STATUS.key).getOrder());
             assertEquals("Hide trending packs", String.valueOf(page.findPreference(Settings.HIDE_KEYBOARD_FEATURED.key).getTitle()));
             assertEquals("The sticker keyboard's Trending tab and row and the emoji keyboard's trending packs go away, "
