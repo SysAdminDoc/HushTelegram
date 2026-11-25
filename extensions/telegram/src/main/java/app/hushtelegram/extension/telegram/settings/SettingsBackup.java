@@ -176,7 +176,6 @@ public final class SettingsBackup {
             Settings.HIDE_FOLDER_COUNTERS,
             Settings.LAUNCH_FOLDER,
             Settings.HIDE_ALL_CHATS,
-            Settings.MOVE_ALL_CHATS,
             Settings.HIDDEN_CHATS,
             Settings.SORT_BY_DATE,
             Settings.SORT_OLDEST_FIRST,

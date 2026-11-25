@@ -42,7 +42,7 @@ class BottomTabsFixtureTest {
 
     private fun wholePatch(build: File, withListView: Boolean): BytecodePatchContext {
         val listView = bottomTabsHosts(build)
-        val others = folderCounterHosts(build) + menuHosts(build) + allChatsPlaceHosts(build) + accountListHosts(build) +
+        val others = folderCounterHosts(build) + menuHosts(build) + accountListHosts(build) +
             chatListAvatarHosts(build)
         // Another patch's slice can carry the view too, so leaving it out means taking it out.
         val hosts = if (withListView) others + listView else others.filterNot { host -> listView.any { it.type == host.type } }

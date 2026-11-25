@@ -35,7 +35,7 @@ class HideFolderCountersFixtureTest {
                 m.origReturnType == "I" && m.controlBody().map { it.controlRef() }.let { it.any(::isMainUnread) && FILTER_UNREAD in it }
             }.map(ImmutableClassDef::of)
             // The chat list too: the patch's folder at launch switch goes in with the counters, and warns without it.
-            val context = PatchContexts.of((ExtensionDex.classes() + hosts + menuHosts(build) + allChatsPlaceHosts(build) + accountListHosts(build) + chatListAvatarHosts(build) + bottomTabsHosts(build)).distinctBy { it.type })
+            val context = PatchContexts.of((ExtensionDex.classes() + hosts + menuHosts(build) + accountListHosts(build) + chatListAvatarHosts(build) + bottomTabsHosts(build)).distinctBy { it.type })
             val counter = context.resolveHideFolderCounters()
             val old = ImmutableMethod.of(counter)
             assertEquals(name, stockWarnings(build), PatchLogCapture.warnings { hideFolderCountersPatch.execute(context) })

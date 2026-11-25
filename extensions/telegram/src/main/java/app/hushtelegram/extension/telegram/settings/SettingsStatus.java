@@ -124,7 +124,6 @@ public final class SettingsStatus {
     public static boolean hideFolderCounters() { return false; }
     public static boolean launchFolder() { return false; }
     public static boolean hideAllChats() { return false; }
-    public static boolean allChatsPlace() { return false; }
     public static boolean hiddenChats() { return false; }
     public static boolean sortByDate() { return false; }
     public static boolean localPins() { return false; }

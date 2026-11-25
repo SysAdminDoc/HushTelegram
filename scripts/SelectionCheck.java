@@ -491,7 +491,6 @@ public final class SelectionCheck {
         hook(calls, flags, "hideFolderCounters", "misc/FolderTabs", "countersHidden");
         hook(calls, flags, "launchFolder", "misc/LaunchFolder", "firstTabs");
         hook(calls, flags, "hideAllChats", "misc/LaunchFolder", "allChatsTab", "tabsAdded", "editing", "skipsDone");
-        hook(calls, flags, "allChatsPlace", "misc/AllChatsPlace", "keeps", "serverOrder", "loaded", "lockOrder");
         hook(calls, flags, "hiddenChats", "misc/HiddenChats", "prune");
         hook(calls, flags, "hiddenUnread", "misc/HiddenChats", "uncounted");
         hook(calls, flags, "localPinOrder", "misc/LocalPins", "dragFrom", "dropOn", "moved");
