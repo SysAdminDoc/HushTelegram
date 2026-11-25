@@ -1552,15 +1552,6 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hushtelegram_suppress_screenshot_notification", FALSE);
 
     /**
-     * The app behaves as if the account has Telegram Premium, locally only. The server still knows
-     * the real status, so server-enforced limits stay. Unlocks client-side Premium features like
-     * doubled limits, extra reactions, no ads and faster downloads
-     * ({@link app.hushtelegram.extension.telegram.misc.PremiumUnlock}).
-     */
-    public static final BooleanSetting UNLOCK_PREMIUM =
-            new BooleanSetting("hushtelegram_unlock_premium", FALSE);
-
-    /**
      * Content restrictions on channels and chats (no forwards, no saving) are bypassed locally.
      * Forwarding, copying and saving work as if the restriction was never set
      * ({@link app.hushtelegram.extension.telegram.misc.ChannelRestrictions}).

@@ -260,7 +260,7 @@ public class SettingsBackupTest {
                         Settings.MESSAGE_MENU_SAVE_ART, Settings.MESSAGE_MENU_CLEAR_CACHE, Settings.MESSAGE_MENU_HIDE, Settings.MESSAGE_MENU_PLAIN_FORWARD, Settings.MESSAGE_MENU_DELETE_FOR_THEM, Settings.MESSAGE_MENU_BOOKMARKS, Settings.MESSAGE_MENU_EDIT_COPY, Settings.LINK_PREVIEW_PHOTO, Settings.ALSO_DELETE_CHECKED, Settings.DISABLE_ANALYTICS, Settings.GHOST_MODE, Settings.GHOST_READS, Settings.GHOST_STORIES, Settings.GHOST_TYPING, Settings.GHOST_ONLINE, Settings.GHOST_BUTTON, Settings.GHOST_READ_AFTER_SEND, Settings.GHOST_READS_BUTTON, Settings.GHOST_CHATS, Settings.FAKE_TYPING,
                         Settings.RECEIVE_ONLY, Settings.POWER_OFF_ACCOUNTS, Settings.INSTANT_LOCK, Settings.QUIET_SIGN_UP, Settings.DISABLE_CALL_DEBUG, Settings.RECORD_CALLS, Settings.RECORD_CALL_BUTTON, Settings.RECORD_CALLS_NOTIFY, Settings.RECORD_CALLS_OPUS, Settings.DISABLE_DRAFT_PREVIEWS, Settings.LOCAL_DRAFTS, Settings.LOCAL_SEARCH, Settings.LINK_PREVIEW_RULES,
                         Settings.GALLERY_CAMERA_ON_TAP, Settings.OPEN_EXTERNAL_LINKS, Settings.MINI_APP_LOCATION_OFF, Settings.STRIP_LINK_TRACKING, Settings.SKIP_AUTOLOGIN, Settings.STRIP_LINK_COPY_PASTE, Settings.DISABLE_UPDATE_CHECKS, Settings.REPAIR_FIREBASE_PUSH, Settings.KEEP_ALIVE_RUNNING,
-                        Settings.SUPPRESS_SCREENSHOT_NOTIFICATION, Settings.UNLOCK_PREMIUM, Settings.BYPASS_CHANNEL_RESTRICTIONS,
+                        Settings.SUPPRESS_SCREENSHOT_NOTIFICATION, Settings.BYPASS_CHANNEL_RESTRICTIONS,
                         Settings.OPEN_RESTRICTED_CHATS, Settings.BYPASS_INTEGRITY_CHECK, Settings.AUTO_FORWARDING, Settings.CROP_GUARD, Settings.CAPTION_ORDER, Settings.PROXY_MENU,
                         Settings.DND_MENU, Settings.SIGN_IN_PROXY, Settings.MY_MESSAGES, Settings.ADMIN_TOOLS, Settings.TEXT_DIRECTION),
                 SettingsBackup.ALLOWLIST);
@@ -1108,6 +1108,27 @@ public class SettingsBackupTest {
         assertFalse(Settings.DISABLE_ANALYTICS.savedValue());
         assertFalse("a file paused HushTelegram", BaseSettings.PAUSED.savedValue());
         assertFalse("a file turned on debug logging", BaseSettings.DEBUG.savedValue());
+    }
+
+    /** Keys of switches that unlocked paid Telegram features, which no build has any more. */
+    private static final List<String> REMOVED_PAID_SWITCHES = Arrays.asList(
+            "hushtelegram_unlock_premium");
+
+    /**
+     * A file saved while the paid-feature switches still existed imports: their names are left out
+     * like any unknown one, nothing writes them, and every other value in the file lands.
+     */
+    @Test
+    public void aFileWithTheRemovedPaidSwitchesStillImports() throws Exception {
+        JSONObject file = new JSONObject(fileWith(Settings.DISABLE_ANALYTICS, false, Settings.HIDE_ADS, false));
+        for (String removed : REMOVED_PAID_SWITCHES) file.getJSONObject("settings").put(removed, true);
+        SettingsBackup.Snapshot snapshot = SettingsBackup.parse(file.toString());
+        assertEquals(REMOVED_PAID_SWITCHES.size(), snapshot.unknown);
+        assertEquals(2, SettingsBackup.apply(snapshot));
+        assertFalse(Settings.DISABLE_ANALYTICS.savedValue());
+        assertFalse(Settings.HIDE_ADS.savedValue());
+        Map<String, ?> saved = store();
+        for (String removed : REMOVED_PAID_SWITCHES) assertFalse(removed + " was written", saved.containsKey(removed));
     }
 
     @Test

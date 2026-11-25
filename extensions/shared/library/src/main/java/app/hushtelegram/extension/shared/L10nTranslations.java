@@ -66,7 +66,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildBg() {
-        Map<String, String> table = new HashMap<>(3324);
+        Map<String, String> table = new HashMap<>(3320);
         fillBg0(table);
         fillBg1(table);
         fillBg2(table);
@@ -2550,17 +2550,15 @@ public final class L10nTranslations {
                 "Telegram \u0437\u0430\u043f\u0430\u0437\u0438 \u043f\u0430\u043f\u043a\u0430\u0442\u0430 \u201e\u0410\u0434\u043c\u0438\u043d\u201c. \u041e\u043f\u0438\u0442\u0430\u0439\u0442\u0435 \u043e\u0442\u043d\u043e\u0432\u043e \u043f\u043e-\u043a\u044a\u0441\u043d\u043e.");
         table.put("Telegram no longer tells the other person in a secret chat when you take a screenshot.",
                 "Telegram \u0432\u0435\u0447\u0435 \u043d\u0435 \u043a\u0430\u0437\u0432\u0430 \u043d\u0430 \u0434\u0440\u0443\u0433\u0438\u044f \u0447\u043e\u0432\u0435\u043a \u0432 \u0442\u0430\u0439\u043d\u0438\u044f \u0447\u0430\u0442, \u043a\u043e\u0433\u0430\u0442\u043e \u043d\u0430\u043f\u0440\u0430\u0432\u0438\u0442\u0435 \u0435\u043a\u0440\u0430\u043d\u043d\u0430 \u0441\u043d\u0438\u043c\u043a\u0430.");
-        table.put("Telegram on this phone treats your account as Premium, so the parts the app itself locks open up. Telegram's servers still know your real plan, so their limits stay the same.",
-                "Telegram \u043d\u0430 \u0442\u043e\u0437\u0438 \u0442\u0435\u043b\u0435\u0444\u043e\u043d \u0441\u043c\u044f\u0442\u0430 \u0430\u043a\u0430\u0443\u043d\u0442\u0430 \u0442\u0438 \u0437\u0430 Premium, \u0442\u0430\u043a\u0430 \u0447\u0435 \u0447\u0430\u0441\u0442\u0438\u0442\u0435, \u043a\u043e\u0438\u0442\u043e \u0441\u0430\u043c\u043e\u0442\u043e \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0437\u0430\u043a\u043b\u044e\u0447\u0432\u0430, \u0441\u0435 \u043e\u0442\u043a\u043b\u044e\u0447\u0432\u0430\u0442. \u0421\u044a\u0440\u0432\u044a\u0440\u0438\u0442\u0435 \u043d\u0430 Telegram \u043f\u0430\u043a \u0437\u043d\u0430\u044f\u0442 \u0438\u0441\u0442\u0438\u043d\u0441\u043a\u0438\u044f \u0442\u0438 \u043f\u043b\u0430\u043d, \u0442\u0430\u043a\u0430 \u0447\u0435 \u0442\u0435\u0445\u043d\u0438\u0442\u0435 \u043e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u0438\u044f \u043e\u0441\u0442\u0430\u0432\u0430\u0442 \u0441\u044a\u0449\u0438\u0442\u0435.");
         table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
                 "Telegram \u0440\u0430\u0437\u043c\u0430\u0437\u0432\u0430 \u0437\u0430\u0433\u043b\u0430\u0432\u043d\u0438\u0442\u0435 \u0447\u0430\u0441\u0442\u0438 \u0438 \u043f\u0430\u043d\u0435\u043b\u0438\u0442\u0435 \u043d\u0430 \u0447\u0430\u0442\u0430 \u0441\u0430\u043c\u043e \u043d\u0430 \u0431\u044a\u0440\u0437\u0438 \u0442\u0435\u043b\u0435\u0444\u043e\u043d\u0438. \u0422\u043e\u0432\u0430 \u043f\u043e\u0437\u0432\u043e\u043b\u044f\u0432\u0430 \u043d\u0430 \u0432\u0441\u0435\u043a\u0438 \u0442\u0435\u043b\u0435\u0444\u043e\u043d \u0434\u0430 \u0433\u043e \u043f\u0440\u0430\u0432\u0438, \u043a\u043e\u0433\u0430\u0442\u043e \u201eBlur in chat\u201c \u0435 \u0432\u043a\u043b\u044e\u0447\u0435\u043d\u043e \u0432 \u201ePower Saving\u201c.");
         table.put("Telegram passcode",
                 "\u041f\u0430\u0440\u043e\u043b\u0430 \u0437\u0430 Telegram");
+        table.put("Telegram refused it: %1$s",
+                "Telegram \u043e\u0442\u043a\u0430\u0437\u0430: %1$s");
     }
 
     private static void fillBg20(Map<String, String> table) {
-        table.put("Telegram refused it: %1$s",
-                "Telegram \u043e\u0442\u043a\u0430\u0437\u0430: %1$s");
         table.put("Telegram refused this app's ID",
                 "Telegram \u043e\u0442\u0445\u0432\u044a\u0440\u043b\u0438 ID \u043d\u0430 \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435\u0442\u043e");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
@@ -2679,11 +2677,11 @@ public final class L10nTranslations {
                 "\u0410\u0434\u0440\u0435\u0441\u044a\u0442 \u0442\u0440\u044f\u0431\u0432\u0430 \u0434\u0430 \u0437\u0430\u043f\u043e\u0447\u0432\u0430 \u0441 https://.");
         table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
                 "\u0420\u0435\u0448\u0435\u0442\u043a\u0430\u0442\u0430 \u0441\u044a\u0441 \u0441\u043d\u0438\u043c\u043a\u0438 \u0432 \u043c\u0435\u043d\u044e\u0442\u043e \u0437\u0430 \u043f\u0440\u0438\u043a\u0430\u0447\u0432\u0430\u043d\u0435 \u0437\u0430\u043f\u043e\u0447\u0432\u0430 \u0441 \u0432\u0430\u0448\u0438\u0442\u0435 \u0441\u043d\u0438\u043c\u043a\u0438 \u0432\u043c\u0435\u0441\u0442\u043e \u0441 \u043f\u043b\u043e\u0447\u043a\u0430 \u043d\u0430 \u043a\u0430\u043c\u0435\u0440\u0430\u0442\u0430 \u043d\u0430 \u0436\u0438\u0432\u043e. \u0427\u0430\u0442\u044a\u0442 \u0433\u043e \u043e\u0442\u0447\u0438\u0442\u0430 \u043f\u0440\u0438 \u0441\u043b\u0435\u0434\u0432\u0430\u0449\u043e\u0442\u043e \u043e\u0442\u0432\u0430\u0440\u044f\u043d\u0435.");
+        table.put("The bar at the bottom of a channel you've joined goes away, along with its Mute button and the Search and Info buttons beside it. Channels you haven't joined still show Join. To mute a channel, open its info. A channel picks this up the next time you open it.",
+                "\u041b\u0435\u043d\u0442\u0430\u0442\u0430 \u0432 \u0434\u043e\u043b\u043d\u0430\u0442\u0430 \u0447\u0430\u0441\u0442 \u043d\u0430 \u043a\u0430\u043d\u0430\u043b, \u043a\u044a\u043c \u043a\u043e\u0439\u0442\u043e \u0441\u0442\u0435 \u0441\u0435 \u043f\u0440\u0438\u0441\u044a\u0435\u0434\u0438\u043d\u0438\u043b\u0438, \u0438\u0437\u0447\u0435\u0437\u0432\u0430 \u0437\u0430\u0435\u0434\u043d\u043e \u0441 \u0431\u0443\u0442\u043e\u043d\u0430 \u201e\u0417\u0430\u0433\u043b\u0443\u0448\u0430\u0432\u0430\u043d\u0435\u201c \u0438 \u0431\u0443\u0442\u043e\u043d\u0438\u0442\u0435 \u201e\u0422\u044a\u0440\u0441\u0435\u043d\u0435\u201c \u0438 \u201e\u0418\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u044f\u201c \u0434\u043e \u043d\u0435\u0433\u043e. \u041a\u0430\u043d\u0430\u043b\u0438\u0442\u0435, \u043a\u044a\u043c \u043a\u043e\u0438\u0442\u043e \u043d\u0435 \u0441\u0442\u0435 \u0441\u0435 \u043f\u0440\u0438\u0441\u044a\u0435\u0434\u0438\u043d\u0438\u043b\u0438, \u043f\u0430\u043a \u043f\u043e\u043a\u0430\u0437\u0432\u0430\u0442 \u201e\u041f\u0440\u0438\u0441\u044a\u0435\u0434\u0438\u043d\u044f\u0432\u0430\u043d\u0435\u201c. \u0417\u0430 \u0434\u0430 \u0437\u0430\u0433\u043b\u0443\u0448\u0438\u0442\u0435 \u043a\u0430\u043d\u0430\u043b, \u043e\u0442\u0432\u043e\u0440\u0435\u0442\u0435 \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u044f\u0442\u0430 \u0437\u0430 \u043d\u0435\u0433\u043e. \u041a\u0430\u043d\u0430\u043b\u044a\u0442 \u0433\u043e \u043e\u0442\u0447\u0438\u0442\u0430 \u043f\u0440\u0438 \u0441\u043b\u0435\u0434\u0432\u0430\u0449\u043e\u0442\u043e \u043e\u0442\u0432\u0430\u0440\u044f\u043d\u0435.");
     }
 
     private static void fillBg21(Map<String, String> table) {
-        table.put("The bar at the bottom of a channel you've joined goes away, along with its Mute button and the Search and Info buttons beside it. Channels you haven't joined still show Join. To mute a channel, open its info. A channel picks this up the next time you open it.",
-                "\u041b\u0435\u043d\u0442\u0430\u0442\u0430 \u0432 \u0434\u043e\u043b\u043d\u0430\u0442\u0430 \u0447\u0430\u0441\u0442 \u043d\u0430 \u043a\u0430\u043d\u0430\u043b, \u043a\u044a\u043c \u043a\u043e\u0439\u0442\u043e \u0441\u0442\u0435 \u0441\u0435 \u043f\u0440\u0438\u0441\u044a\u0435\u0434\u0438\u043d\u0438\u043b\u0438, \u0438\u0437\u0447\u0435\u0437\u0432\u0430 \u0437\u0430\u0435\u0434\u043d\u043e \u0441 \u0431\u0443\u0442\u043e\u043d\u0430 \u201e\u0417\u0430\u0433\u043b\u0443\u0448\u0430\u0432\u0430\u043d\u0435\u201c \u0438 \u0431\u0443\u0442\u043e\u043d\u0438\u0442\u0435 \u201e\u0422\u044a\u0440\u0441\u0435\u043d\u0435\u201c \u0438 \u201e\u0418\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u044f\u201c \u0434\u043e \u043d\u0435\u0433\u043e. \u041a\u0430\u043d\u0430\u043b\u0438\u0442\u0435, \u043a\u044a\u043c \u043a\u043e\u0438\u0442\u043e \u043d\u0435 \u0441\u0442\u0435 \u0441\u0435 \u043f\u0440\u0438\u0441\u044a\u0435\u0434\u0438\u043d\u0438\u043b\u0438, \u043f\u0430\u043a \u043f\u043e\u043a\u0430\u0437\u0432\u0430\u0442 \u201e\u041f\u0440\u0438\u0441\u044a\u0435\u0434\u0438\u043d\u044f\u0432\u0430\u043d\u0435\u201c. \u0417\u0430 \u0434\u0430 \u0437\u0430\u0433\u043b\u0443\u0448\u0438\u0442\u0435 \u043a\u0430\u043d\u0430\u043b, \u043e\u0442\u0432\u043e\u0440\u0435\u0442\u0435 \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u044f\u0442\u0430 \u0437\u0430 \u043d\u0435\u0433\u043e. \u041a\u0430\u043d\u0430\u043b\u044a\u0442 \u0433\u043e \u043e\u0442\u0447\u0438\u0442\u0430 \u043f\u0440\u0438 \u0441\u043b\u0435\u0434\u0432\u0430\u0449\u043e\u0442\u043e \u043e\u0442\u0432\u0430\u0440\u044f\u043d\u0435.");
         table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
                 "\u041b\u0435\u043d\u0442\u0430\u0442\u0430 \u0432 \u0434\u043e\u043b\u043d\u0430\u0442\u0430 \u0447\u0430\u0441\u0442 \u043d\u0430 \u0433\u043b\u0430\u0432\u043d\u0438\u044f \u0435\u043a\u0440\u0430\u043d \u0441\u0442\u0430\u0432\u0430 \u043f\u043e-\u043d\u0438\u0441\u043a\u0430 \u0438 \u0441\u0430\u043c\u043e \u0442\u043e\u043b\u043a\u043e\u0432\u0430 \u0448\u0438\u0440\u043e\u043a\u0430, \u043a\u043e\u043b\u043a\u043e\u0442\u043e \u0435 \u043d\u0443\u0436\u043d\u043e \u043d\u0430 \u0440\u0430\u0437\u0434\u0435\u043b\u0438\u0442\u0435 \u045d. \u0420\u0430\u0437\u0434\u0435\u043b\u0438\u0442\u0435 \u0437\u0430\u043f\u0430\u0437\u0432\u0430\u0442 \u043f\u044a\u043b\u043d\u0430\u0442\u0430 \u0441\u0438 \u0432\u0438\u0441\u043e\u0447\u0438\u043d\u0430, \u0442\u0430\u043a\u0430 \u0447\u0435 \u0441\u0435 \u0434\u043e\u043a\u043e\u0441\u0432\u0430\u0442 \u0441\u044a\u0449\u043e \u0442\u043e\u043b\u043a\u043e\u0432\u0430 \u043b\u0435\u0441\u043d\u043e. \u0420\u0435\u0441\u0442\u0430\u0440\u0442\u0438\u0440\u0430\u0439\u0442\u0435 Telegram, \u0437\u0430 \u0434\u0430 \u0432\u0438\u0434\u0438\u0442\u0435 \u043f\u0440\u043e\u043c\u044f\u043d\u0430\u0442\u0430.");
         table.put("The bar under a chat's top bar that shows pinned messages is gone, along with its counter and list button. Messages stay pinned and nothing is marked as read.",
@@ -2802,11 +2800,11 @@ public final class L10nTranslations {
                 "\u0422\u0435\u043b\u0435\u0444\u043e\u043d\u044a\u0442 \u043d\u044f\u043c\u0430 \u0438\u0437\u0431\u043e\u0440 \u043e\u0442 \u0433\u0430\u043b\u0435\u0440\u0438\u044f\u0442\u0430.");
         table.put("This song is instrumental.",
                 "\u0422\u0430\u0437\u0438 \u043f\u0435\u0441\u0435\u043d \u0435 \u0438\u043d\u0441\u0442\u0440\u0443\u043c\u0435\u043d\u0442\u0430\u043b\u043d\u0430.");
+        table.put("Those chats already have a rule.",
+                "\u0417\u0430 \u0442\u0435\u0437\u0438 \u0447\u0430\u0442\u043e\u0432\u0435 \u0432\u0435\u0447\u0435 \u0438\u043c\u0430 \u043f\u0440\u0430\u0432\u0438\u043b\u043e.");
     }
 
     private static void fillBg22(Map<String, String> table) {
-        table.put("Those chats already have a rule.",
-                "\u0417\u0430 \u0442\u0435\u0437\u0438 \u0447\u0430\u0442\u043e\u0432\u0435 \u0432\u0435\u0447\u0435 \u0438\u043c\u0430 \u043f\u0440\u0430\u0432\u0438\u043b\u043e.");
         table.put("Those messages aren't all loaded",
                 "\u041d\u0435 \u0432\u0441\u0438\u0447\u043a\u0438 \u0441\u0430 \u0437\u0430\u0440\u0435\u0434\u0435\u043d\u0438");
         table.put("Tick at least one kind of file.",
@@ -2925,19 +2923,17 @@ public final class L10nTranslations {
                 "\u041e\u0442\u043c\u044f\u043d\u0430 \u043d\u0430 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0430\u0442\u0430 \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430");
         table.put("UnifiedPush notifications",
                 "\u0418\u0437\u0432\u0435\u0441\u0442\u0438\u044f \u043f\u0440\u0435\u0437 UnifiedPush");
+        table.put("UnifiedPush: %1$s",
+                "UnifiedPush: %1$s");
     }
 
     private static void fillBg23(Map<String, String> table) {
-        table.put("UnifiedPush: %1$s",
-                "UnifiedPush: %1$s");
         table.put("Unknown",
                 "\u041d\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043d\u043e");
         table.put("Unlock",
                 "\u041e\u0442\u043a\u043b\u044e\u0447\u0438");
         table.put("Unlock Premium app icons",
                 "\u041e\u0442\u043a\u043b\u044e\u0447\u0432\u0430\u043d\u0435 \u043d\u0430 Premium \u0438\u043a\u043e\u043d\u0438\u0442\u0435 \u043d\u0430 \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435\u0442\u043e");
-        table.put("Unlock Premium features",
-                "\u041e\u0442\u043a\u043b\u044e\u0447\u0432\u0430\u043d\u0435 \u043d\u0430 \u0444\u0443\u043d\u043a\u0446\u0438\u0438\u0442\u0435 \u043d\u0430 Premium");
         table.put("Unlock canceled. Settings stay locked.",
                 "\u041e\u0442\u043a\u043b\u044e\u0447\u0432\u0430\u043d\u0435\u0442\u043e \u0435 \u043e\u0442\u043c\u0435\u043d\u0435\u043d\u043e. \u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438\u0442\u0435 \u043e\u0441\u0442\u0430\u0432\u0430\u0442 \u0437\u0430\u043a\u043b\u044e\u0447\u0435\u043d\u0438.");
         table.put("Unlock now",
@@ -3048,13 +3044,13 @@ public final class L10nTranslations {
                 "\u041a\u0430\u043a\u0432\u043e \u0434\u0430 \u0441\u0435 \u043a\u043e\u043f\u0438\u0440\u0430");
         table.put("What to forward",
                 "\u041a\u0430\u043a\u0432\u043e \u0434\u0430 \u0441\u0435 \u043f\u0440\u0435\u043f\u0440\u0430\u0449\u0430");
-    }
-
-    private static void fillBg24(Map<String, String> table) {
         table.put("What you type in the main search isn't sent to Telegram, except in the Posts tab. The Chats tab finds your chats and contacts on this phone, plus recent searches, but not messages or public accounts. Channels, Apps, the media tabs and chat or date filters don't search for typed text. Search inside a chat still goes to Telegram.",
                 "\u041d\u0430\u043f\u0438\u0441\u0430\u043d\u043e\u0442\u043e \u0432 \u043e\u0441\u043d\u043e\u0432\u043d\u043e\u0442\u043e \u0442\u044a\u0440\u0441\u0435\u043d\u0435 \u043d\u0435 \u0441\u0435 \u0438\u0437\u043f\u0440\u0430\u0449\u0430 \u043d\u0430 Telegram, \u043e\u0441\u0432\u0435\u043d \u0432 \u0440\u0430\u0437\u0434\u0435\u043b\u0430 \u201ePosts\u201c. \u0420\u0430\u0437\u0434\u0435\u043b\u044a\u0442 \u201eChats\u201c \u043d\u0430\u043c\u0438\u0440\u0430 \u0432\u0430\u0448\u0438\u0442\u0435 \u0447\u0430\u0442\u043e\u0432\u0435 \u0438 \u043a\u043e\u043d\u0442\u0430\u043a\u0442\u0438 \u043d\u0430 \u0442\u043e\u0437\u0438 \u0442\u0435\u043b\u0435\u0444\u043e\u043d, \u043f\u043b\u044e\u0441 \u0441\u043a\u043e\u0440\u043e\u0448\u043d\u0438 \u0442\u044a\u0440\u0441\u0435\u043d\u0438\u044f, \u043d\u043e \u043d\u0435 \u0438 \u0441\u044a\u043e\u0431\u0449\u0435\u043d\u0438\u044f \u0438\u043b\u0438 \u043f\u0443\u0431\u043b\u0438\u0447\u043d\u0438 \u0430\u043a\u0430\u0443\u043d\u0442\u0438. \u201eChannels\u201c, \u201eApps\u201c, \u0440\u0430\u0437\u0434\u0435\u043b\u0438\u0442\u0435 \u0441 \u043c\u0435\u0434\u0438\u044f \u0438 \u0444\u0438\u043b\u0442\u0440\u0438\u0442\u0435 \u0437\u0430 \u0447\u0430\u0442 \u0438\u043b\u0438 \u0434\u0430\u0442\u0430 \u043d\u0435 \u0442\u044a\u0440\u0441\u044f\u0442 \u043f\u043e \u043d\u0430\u043f\u0438\u0441\u0430\u043d \u0442\u0435\u043a\u0441\u0442. \u0422\u044a\u0440\u0441\u0435\u043d\u0435\u0442\u043e \u0432 \u0447\u0430\u0442 \u043f\u0430\u043a \u043e\u0442\u0438\u0432\u0430 \u0434\u043e Telegram.");
         table.put("When Telegram can't finish a crop, the editor stays open and asks you to try again, so the part you cropped out never gets sent. Covers photos and profile pictures. Videos crop as usual.",
                 "\u041a\u043e\u0433\u0430\u0442\u043e Telegram \u043d\u0435 \u043c\u043e\u0436\u0435 \u0434\u0430 \u0434\u043e\u0432\u044a\u0440\u0448\u0438 \u0438\u0437\u0440\u044f\u0437\u0432\u0430\u043d\u0435\u0442\u043e, \u0440\u0435\u0434\u0430\u043a\u0442\u043e\u0440\u044a\u0442 \u043e\u0441\u0442\u0430\u0432\u0430 \u043e\u0442\u0432\u043e\u0440\u0435\u043d \u0438 \u0442\u0435 \u043c\u043e\u043b\u0438 \u0434\u0430 \u043e\u043f\u0438\u0442\u0430\u0448 \u043e\u0442\u043d\u043e\u0432\u043e, \u0442\u0430\u043a\u0430 \u0447\u0435 \u0438\u0437\u0440\u044f\u0437\u0430\u043d\u0430\u0442\u0430 \u0447\u0430\u0441\u0442 \u043d\u0438\u043a\u043e\u0433\u0430 \u043d\u0435 \u0441\u0435 \u0438\u0437\u043f\u0440\u0430\u0449\u0430. \u0412\u0430\u0436\u0438 \u0437\u0430 \u0441\u043d\u0438\u043c\u043a\u0438 \u0438 \u043f\u0440\u043e\u0444\u0438\u043b\u043d\u0438 \u0441\u043d\u0438\u043c\u043a\u0438. \u0412\u0438\u0434\u0435\u0430\u0442\u0430 \u0441\u0435 \u0438\u0437\u0440\u044f\u0437\u0432\u0430\u0442 \u043a\u0430\u043a\u0442\u043e \u043e\u0431\u0438\u043a\u043d\u043e\u0432\u0435\u043d\u043e.");
+    }
+
+    private static void fillBg24(Map<String, String> table) {
         table.put("When a chat search lands on a match inside a collapsed quote, the quote opens so the highlighted match stays in view.",
                 "\u041a\u043e\u0433\u0430\u0442\u043e \u0442\u044a\u0440\u0441\u0435\u043d\u0435\u0442\u043e \u0432 \u0447\u0430\u0442\u0430 \u043f\u043e\u043f\u0430\u0434\u043d\u0435 \u043d\u0430 \u0441\u044a\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435 \u0432 \u0441\u0432\u0438\u0442 \u0446\u0438\u0442\u0430\u0442, \u0446\u0438\u0442\u0430\u0442\u044a\u0442 \u0441\u0435 \u0440\u0430\u0437\u0433\u044a\u0432\u0430, \u0442\u0430\u043a\u0430 \u0447\u0435 \u043c\u0430\u0440\u043a\u0438\u0440\u0430\u043d\u043e\u0442\u043e \u0441\u044a\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435 \u043e\u0441\u0442\u0430\u0432\u0430 \u0432\u0438\u0434\u0438\u043c\u043e.");
         table.put("When a group or channel removes or bans you, it stays in your chats with what this phone saved, and you can still open and scroll it. Delete it from the chat list to let it go.",
@@ -3171,13 +3167,13 @@ public final class L10nTranslations {
                 "\u0421\u043d\u0438\u043c\u043a\u0430\u0442\u0430 \u0432\u0438 \u0434\u043e \u043f\u043e\u043b\u0435\u0442\u043e \u0437\u0430 \u0441\u044a\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u0438\u0437\u0447\u0435\u0437\u0432\u0430 \u0432 \u0433\u0440\u0443\u043f\u0438 \u0438 \u043a\u0430\u043d\u0430\u043b\u0438, \u043a\u044a\u0434\u0435\u0442\u043e \u0431\u0438\u0445\u0442\u0435 \u043c\u043e\u0433\u043b\u0438 \u0434\u0430 \u043f\u0443\u0431\u043b\u0438\u043a\u0443\u0432\u0430\u0442\u0435 \u043a\u0430\u0442\u043e \u043a\u0430\u043d\u0430\u043b, \u0434\u043e\u043a\u0430\u0442\u043e \u043f\u0443\u0431\u043b\u0438\u043a\u0443\u0432\u0430\u0442\u0435 \u043a\u0430\u0442\u043e \u0441\u0435\u0431\u0435 \u0441\u0438. \u0421\u043b\u0435\u0434 \u043a\u0430\u0442\u043e \u0438\u0437\u0431\u0435\u0440\u0435\u0442\u0435 \u043a\u0430\u043d\u0430\u043b, \u043f\u0430\u043a \u0441\u0435 \u043f\u043e\u043a\u0430\u0437\u0432\u0430, \u0437\u0430 \u0434\u0430 \u0432\u0438\u0436\u0434\u0430\u0442\u0435 \u0432\u0438\u043d\u0430\u0433\u0438 \u043a\u0430\u0442\u043e \u043a\u043e\u0433\u043e \u043f\u0443\u0431\u043b\u0438\u043a\u0443\u0432\u0430\u0442\u0435. \u0417\u0430 \u0434\u0430 \u0438\u0437\u0431\u0435\u0440\u0435\u0442\u0435, \u043f\u044a\u0440\u0432\u043e \u0438\u0437\u043a\u043b\u044e\u0447\u0435\u0442\u0435 \u0442\u043e\u0432\u0430. \u0427\u0430\u0442\u044a\u0442 \u0433\u043e \u043e\u0442\u0447\u0438\u0442\u0430 \u043f\u0440\u0438 \u0441\u043b\u0435\u0434\u0432\u0430\u0449\u043e\u0442\u043e \u043e\u0442\u0432\u0430\u0440\u044f\u043d\u0435.");
         table.put("Your proxy lists",
                 "\u0412\u0430\u0448\u0438\u0442\u0435 \u0441\u043f\u0438\u0441\u044a\u0446\u0438 \u0441 \u043f\u0440\u043e\u043a\u0441\u0438\u0442\u0430");
-    }
-
-    private static void fillBg25(Map<String, String> table) {
         table.put("Your settings are locked. Tap to start the 24-hour wait. You can cancel it while it runs.",
                 "\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438\u0442\u0435 \u0441\u0430 \u0437\u0430\u043a\u043b\u044e\u0447\u0435\u043d\u0438. \u0414\u043e\u043a\u043e\u0441\u043d\u0435\u0442\u0435, \u0437\u0430 \u0434\u0430 \u0437\u0430\u043f\u043e\u0447\u043d\u0435 24-\u0447\u0430\u0441\u043e\u0432\u043e\u0442\u043e \u0447\u0430\u043a\u0430\u043d\u0435. \u041c\u043e\u0436\u0435\u0442\u0435 \u0434\u0430 \u0433\u043e \u043e\u0442\u043c\u0435\u043d\u0438\u0442\u0435, \u0434\u043e\u043a\u0430\u0442\u043e \u0442\u0435\u0447\u0435.");
         table.put("Your switches already match that file, so nothing will change.",
                 "\u041f\u0440\u0435\u0432\u043a\u043b\u044e\u0447\u0432\u0430\u0442\u0435\u043b\u0438\u0442\u0435 \u0432\u0438 \u0432\u0435\u0447\u0435 \u0441\u044a\u0432\u043f\u0430\u0434\u0430\u0442 \u0441 \u0444\u0430\u0439\u043b\u0430, \u0437\u0430\u0442\u043e\u0432\u0430 \u043d\u0438\u0449\u043e \u043d\u044f\u043c\u0430 \u0434\u0430 \u0441\u0435 \u043f\u0440\u043e\u043c\u0435\u043d\u0438.");
+    }
+
+    private static void fillBg25(Map<String, String> table) {
         table.put("Your switches are working.",
                 "\u041f\u0440\u0435\u0432\u043a\u043b\u044e\u0447\u0432\u0430\u0442\u0435\u043b\u0438\u0442\u0435 \u0432\u0438 \u0440\u0430\u0431\u043e\u0442\u044f\u0442.");
         table.put("Zero width joiner",
@@ -3294,13 +3290,13 @@ public final class L10nTranslations {
                 "\u0435\u043c\u043e\u0434\u0436\u0438 \u0434\u043e \u0437\u0430\u0433\u043b\u0430\u0432\u0438\u0435\u0442\u043e \u043d\u0430 \u0441\u043f\u0438\u0441\u044a\u043a\u0430 \u0441 \u0447\u0430\u0442\u043e\u0432\u0435");
         table.put("emoji statuses next to names",
                 "\u0435\u043c\u043e\u0434\u0436\u0438 \u0441\u0442\u0430\u0442\u0443\u0441\u0438 \u0434\u043e \u0438\u043c\u0435\u043d\u0430\u0442\u0430");
-    }
-
-    private static void fillBg26(Map<String, String> table) {
         table.put("external browser routing",
                 "\u043c\u0430\u0440\u0448\u0440\u0443\u0442\u0438\u0437\u0438\u0440\u0430\u043d\u0435 \u043a\u044a\u043c \u0432\u044a\u043d\u0448\u0435\u043d \u0431\u0440\u0430\u0443\u0437\u044a\u0440");
         table.put("favorite stickers kept on this phone",
                 "\u043b\u044e\u0431\u0438\u043c\u0438 \u0441\u0442\u0438\u043a\u0435\u0440\u0438, \u0437\u0430\u043f\u0430\u0437\u0435\u043d\u0438 \u043d\u0430 \u0442\u043e\u0437\u0438 \u0442\u0435\u043b\u0435\u0444\u043e\u043d");
+    }
+
+    private static void fillBg26(Map<String, String> table) {
         table.put("file icons and thumbnails in Shared media",
                 "\u0438\u043a\u043e\u043d\u043a\u0438\u0442\u0435 \u0438 \u043c\u0438\u043d\u0438\u0430\u0442\u044e\u0440\u0438\u0442\u0435 \u043d\u0430 \u0444\u0430\u0439\u043b\u043e\u0432\u0435 \u0432 \u0441\u043f\u043e\u0434\u0435\u043b\u0435\u043d\u0438\u0442\u0435 \u043c\u0435\u0434\u0438\u0438");
         table.put("file icons and thumbnails in chats",
@@ -3417,13 +3413,13 @@ public final class L10nTranslations {
                 "\u0431\u0443\u0442\u043e\u043d\u0430 \u0437\u0430 \u0441\u043f\u043e\u0434\u0435\u043b\u044f\u043d\u0435 \u0434\u043e \u043f\u0443\u0431\u043b\u0438\u043a\u0430\u0446\u0438\u0438\u0442\u0435 \u043d\u0430 \u043a\u0430\u043d\u0430\u043b\u0438");
         table.put("share sheet comments",
                 "\u043a\u043e\u043c\u0435\u043d\u0442\u0430\u0440\u0438 \u0432 \u043c\u0435\u043d\u044e\u0442\u043e \u0437\u0430 \u0441\u043f\u043e\u0434\u0435\u043b\u044f\u043d\u0435");
-    }
-
-    private static void fillBg27(Map<String, String> table) {
         table.put("shared link tracking",
                 "\u043f\u0440\u043e\u0441\u043b\u0435\u0434\u044f\u0432\u0430\u043d\u0435 \u043d\u0430 \u0441\u043f\u043e\u0434\u0435\u043b\u044f\u043d\u0438 \u0432\u0440\u044a\u0437\u043a\u0438");
         table.put("showing the Downloads button all the time",
                 "\u043f\u043e\u0441\u0442\u043e\u044f\u043d\u043d\u043e\u0442\u043e \u043f\u043e\u043a\u0430\u0437\u0432\u0430\u043d\u0435 \u043d\u0430 \u0431\u0443\u0442\u043e\u043d\u0430 \u0418\u0437\u0442\u0435\u0433\u043b\u044f\u043d\u0438\u044f");
+    }
+
+    private static void fillBg27(Map<String, String> table) {
         table.put("side menu",
                 "\u0441\u0442\u0440\u0430\u043d\u0438\u0447\u043d\u043e\u0442\u043e \u043c\u0435\u043d\u044e");
         table.put("similar channels and bots",
@@ -3507,7 +3503,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(3324);
+        Map<String, String> table = new HashMap<>(3320);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -5991,17 +5987,15 @@ public final class L10nTranslations {
                 "Telegram hat den Ordner \u201eAdmin\u201c behalten. Versuch es sp\u00e4ter noch mal.");
         table.put("Telegram no longer tells the other person in a secret chat when you take a screenshot.",
                 "Telegram teilt der anderen Person in einem geheimen Chat nicht mehr mit, wenn du einen Screenshot machst.");
-        table.put("Telegram on this phone treats your account as Premium, so the parts the app itself locks open up. Telegram's servers still know your real plan, so their limits stay the same.",
-                "Telegram auf diesem Handy behandelt dein Konto wie Premium, sodass die Teile, die die App selbst sperrt, freigeschaltet werden. Die Server von Telegram kennen trotzdem deinen echten Tarif, ihre Grenzen bleiben also gleich.");
         table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
                 "Telegram weichzeichnet Chat-Kopfzeilen und Leisten nur auf schnellen Handys. Das erlaubt es jedem Handy, sobald unter Energiesparen die Option Unsch\u00e4rfe im Chat an ist.");
         table.put("Telegram passcode",
                 "Telegram-Code");
+        table.put("Telegram refused it: %1$s",
+                "Telegram lehnte ab: %1$s");
     }
 
     private static void fillDe20(Map<String, String> table) {
-        table.put("Telegram refused it: %1$s",
-                "Telegram lehnte ab: %1$s");
         table.put("Telegram refused this app's ID",
                 "Telegram hat die ID dieser App abgelehnt");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
@@ -6120,11 +6114,11 @@ public final class L10nTranslations {
                 "Die Adresse muss mit https:// beginnen.");
         table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
                 "Das Fotoraster im Anhangmen\u00fc beginnt mit deinen Fotos statt mit einer Live-Kamerakachel. Ein Chat \u00fcbernimmt das beim n\u00e4chsten \u00d6ffnen.");
+        table.put("The bar at the bottom of a channel you've joined goes away, along with its Mute button and the Search and Info buttons beside it. Channels you haven't joined still show Join. To mute a channel, open its info. A channel picks this up the next time you open it.",
+                "Die Leiste unten in einem Kanal, dem du beigetreten bist, verschwindet, samt ihrer Stummschalten-Taste und den Tasten Suche und Info daneben. Kan\u00e4le, denen du nicht beigetreten bist, zeigen weiterhin Beitreten. Um einen Kanal stummzuschalten, \u00f6ffne seine Infos. Ein Kanal \u00fcbernimmt das beim n\u00e4chsten \u00d6ffnen.");
     }
 
     private static void fillDe21(Map<String, String> table) {
-        table.put("The bar at the bottom of a channel you've joined goes away, along with its Mute button and the Search and Info buttons beside it. Channels you haven't joined still show Join. To mute a channel, open its info. A channel picks this up the next time you open it.",
-                "Die Leiste unten in einem Kanal, dem du beigetreten bist, verschwindet, samt ihrer Stummschalten-Taste und den Tasten Suche und Info daneben. Kan\u00e4le, denen du nicht beigetreten bist, zeigen weiterhin Beitreten. Um einen Kanal stummzuschalten, \u00f6ffne seine Infos. Ein Kanal \u00fcbernimmt das beim n\u00e4chsten \u00d6ffnen.");
         table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
                 "Die Leiste unten auf dem Hauptbildschirm wird niedriger und nur so breit, wie ihre Tabs es brauchen. Die Tabs behalten ihre volle H\u00f6he, du triffst sie also genauso leicht. Starte Telegram neu, um die \u00c4nderung zu sehen.");
         table.put("The bar under a chat's top bar that shows pinned messages is gone, along with its counter and list button. Messages stay pinned and nothing is marked as read.",
@@ -6243,11 +6237,11 @@ public final class L10nTranslations {
                 "Dieses Handy hat keine Bildauswahl.");
         table.put("This song is instrumental.",
                 "Dieser Song ist instrumental.");
+        table.put("Those chats already have a rule.",
+                "F\u00fcr diese Chats gibt es schon eine Regel.");
     }
 
     private static void fillDe22(Map<String, String> table) {
-        table.put("Those chats already have a rule.",
-                "F\u00fcr diese Chats gibt es schon eine Regel.");
         table.put("Those messages aren't all loaded",
                 "Nicht alle sind geladen");
         table.put("Tick at least one kind of file.",
@@ -6366,19 +6360,17 @@ public final class L10nTranslations {
                 "Letzte Schnelleinstellung r\u00fcckg\u00e4ngig machen");
         table.put("UnifiedPush notifications",
                 "UnifiedPush-Benachrichtigungen");
+        table.put("UnifiedPush: %1$s",
+                "UnifiedPush: %1$s");
     }
 
     private static void fillDe23(Map<String, String> table) {
-        table.put("UnifiedPush: %1$s",
-                "UnifiedPush: %1$s");
         table.put("Unknown",
                 "Unbekannt");
         table.put("Unlock",
                 "Entsperren");
         table.put("Unlock Premium app icons",
                 "Premium-App-Symbole freischalten");
-        table.put("Unlock Premium features",
-                "Premium-Funktionen freischalten");
         table.put("Unlock canceled. Settings stay locked.",
                 "Entsperren abgebrochen. Die Einstellungen bleiben gesperrt.");
         table.put("Unlock now",
@@ -6489,13 +6481,13 @@ public final class L10nTranslations {
                 "Was kopiert wird");
         table.put("What to forward",
                 "Was weitergeleitet wird");
-    }
-
-    private static void fillDe24(Map<String, String> table) {
         table.put("What you type in the main search isn't sent to Telegram, except in the Posts tab. The Chats tab finds your chats and contacts on this phone, plus recent searches, but not messages or public accounts. Channels, Apps, the media tabs and chat or date filters don't search for typed text. Search inside a chat still goes to Telegram.",
                 "Was du in der Hauptsuche eingibst, wird nicht an Telegram gesendet, au\u00dfer im Tab \u201eBeitr\u00e4ge\u201c. Der Tab \u201eChats\u201c findet deine Chats und Kontakte auf diesem Handy und die letzten Suchen, aber keine Nachrichten oder \u00f6ffentlichen Konten. \u201eKan\u00e4le\u201c, \u201eApps\u201c, die Medien-Tabs und Chat- oder Datumsfilter suchen nicht nach eingegebenem Text. Die Suche in einem Chat geht weiter an Telegram.");
         table.put("When Telegram can't finish a crop, the editor stays open and asks you to try again, so the part you cropped out never gets sent. Covers photos and profile pictures. Videos crop as usual.",
                 "Wenn Telegram einen Zuschnitt nicht abschlie\u00dfen kann, bleibt der Editor offen und bittet dich, es noch einmal zu versuchen, damit der weggeschnittene Teil nie gesendet wird. Gilt f\u00fcr Fotos und Profilbilder. Videos werden wie gewohnt zugeschnitten.");
+    }
+
+    private static void fillDe24(Map<String, String> table) {
         table.put("When a chat search lands on a match inside a collapsed quote, the quote opens so the highlighted match stays in view.",
                 "Landet eine Chatsuche auf einem Treffer in einem eingeklappten Zitat, klappt das Zitat auf, damit der markierte Treffer sichtbar bleibt.");
         table.put("When a group or channel removes or bans you, it stays in your chats with what this phone saved, and you can still open and scroll it. Delete it from the chat list to let it go.",
@@ -6612,13 +6604,13 @@ public final class L10nTranslations {
                 "Dein Bild neben dem Eingabefeld verschwindet in Gruppen und Kan\u00e4len, in denen du als Kanal posten k\u00f6nntest, solange du als du selbst postest. Sobald du einen Kanal w\u00e4hlst, erscheint es wieder, damit du immer siehst, als wer du postest. Um einen zu w\u00e4hlen, schalte das zuerst aus. Ein Chat \u00fcbernimmt das beim n\u00e4chsten \u00d6ffnen.");
         table.put("Your proxy lists",
                 "Deine Proxy-Listen");
-    }
-
-    private static void fillDe25(Map<String, String> table) {
         table.put("Your settings are locked. Tap to start the 24-hour wait. You can cancel it while it runs.",
                 "Deine Einstellungen sind gesperrt. Tippe, um die Wartezeit von 24 Stunden zu starten. Du kannst sie abbrechen, solange sie l\u00e4uft.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Deine Schalter entsprechen bereits dieser Datei, es \u00e4ndert sich also nichts.");
+    }
+
+    private static void fillDe25(Map<String, String> table) {
         table.put("Your switches are working.",
                 "Deine Schalter sind aktiv.");
         table.put("Zero width joiner",
@@ -6735,13 +6727,13 @@ public final class L10nTranslations {
                 "Emoji neben dem Titel der Chatliste");
         table.put("emoji statuses next to names",
                 "Emoji-Status neben Namen");
-    }
-
-    private static void fillDe26(Map<String, String> table) {
         table.put("external browser routing",
                 "externe Browser-Aufrufe");
         table.put("favorite stickers kept on this phone",
                 "auf diesem Telefon behaltene Favoriten-Sticker");
+    }
+
+    private static void fillDe26(Map<String, String> table) {
         table.put("file icons and thumbnails in Shared media",
                 "Dateisymbole und Vorschaubilder in den geteilten Medien");
         table.put("file icons and thumbnails in chats",
@@ -6858,13 +6850,13 @@ public final class L10nTranslations {
                 "Teilen-Taste neben Kanalbeitr\u00e4gen");
         table.put("share sheet comments",
                 "Kommentare im Teilen-Men\u00fc");
-    }
-
-    private static void fillDe27(Map<String, String> table) {
         table.put("shared link tracking",
                 "Tracking bei geteilten Links");
         table.put("showing the Downloads button all the time",
                 "das st\u00e4ndige Anzeigen des Downloads-Buttons");
+    }
+
+    private static void fillDe27(Map<String, String> table) {
         table.put("side menu",
                 "Seitenmen\u00fc");
         table.put("similar channels and bots",
@@ -6948,7 +6940,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(3324);
+        Map<String, String> table = new HashMap<>(3320);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -9432,17 +9424,15 @@ public final class L10nTranslations {
                 "Telegram mantuvo la carpeta Admin. Int\u00e9ntalo m\u00e1s tarde.");
         table.put("Telegram no longer tells the other person in a secret chat when you take a screenshot.",
                 "Telegram ya no avisa a la otra persona de un chat secreto cuando haces una captura de pantalla.");
-        table.put("Telegram on this phone treats your account as Premium, so the parts the app itself locks open up. Telegram's servers still know your real plan, so their limits stay the same.",
-                "Telegram en este tel\u00e9fono trata tu cuenta como Premium, as\u00ed que se abren las partes que la propia app bloquea. Los servidores de Telegram siguen conociendo tu plan real, as\u00ed que sus l\u00edmites no cambian.");
         table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
                 "Telegram solo desenfoca las cabeceras y los paneles del chat en tel\u00e9fonos r\u00e1pidos. Esto permite que cualquier tel\u00e9fono lo haga, cuando Desenfoque en el chat est\u00e9 activado en Ahorro de energ\u00eda.");
         table.put("Telegram passcode",
                 "C\u00f3digo de Telegram");
+        table.put("Telegram refused it: %1$s",
+                "Telegram lo rechaz\u00f3: %1$s");
     }
 
     private static void fillEs20(Map<String, String> table) {
-        table.put("Telegram refused it: %1$s",
-                "Telegram lo rechaz\u00f3: %1$s");
         table.put("Telegram refused this app's ID",
                 "Telegram rechaz\u00f3 el ID de esta app");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
@@ -9561,11 +9551,11 @@ public final class L10nTranslations {
                 "La direcci\u00f3n tiene que empezar por https://.");
         table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
                 "La cuadr\u00edcula de fotos del men\u00fa de adjuntos empieza con tus fotos en lugar de un recuadro de c\u00e1mara en vivo. Un chat lo aplica la pr\u00f3xima vez que lo abras.");
+        table.put("The bar at the bottom of a channel you've joined goes away, along with its Mute button and the Search and Info buttons beside it. Channels you haven't joined still show Join. To mute a channel, open its info. A channel picks this up the next time you open it.",
+                "La barra inferior de un canal al que te has unido desaparece, junto con su bot\u00f3n Silenciar y los botones Buscar e Informaci\u00f3n que tiene al lado. Los canales a los que no te has unido siguen mostrando Unirse. Para silenciar un canal, abre su informaci\u00f3n. Un canal lo aplica la pr\u00f3xima vez que lo abras.");
     }
 
     private static void fillEs21(Map<String, String> table) {
-        table.put("The bar at the bottom of a channel you've joined goes away, along with its Mute button and the Search and Info buttons beside it. Channels you haven't joined still show Join. To mute a channel, open its info. A channel picks this up the next time you open it.",
-                "La barra inferior de un canal al que te has unido desaparece, junto con su bot\u00f3n Silenciar y los botones Buscar e Informaci\u00f3n que tiene al lado. Los canales a los que no te has unido siguen mostrando Unirse. Para silenciar un canal, abre su informaci\u00f3n. Un canal lo aplica la pr\u00f3xima vez que lo abras.");
         table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
                 "La barra inferior de la pantalla principal se vuelve m\u00e1s baja y solo tan ancha como necesitan sus pesta\u00f1as. Las pesta\u00f1as conservan toda su altura, as\u00ed que son igual de f\u00e1ciles de tocar. Reinicia Telegram para ver el cambio.");
         table.put("The bar under a chat's top bar that shows pinned messages is gone, along with its counter and list button. Messages stay pinned and nothing is marked as read.",
@@ -9684,11 +9674,11 @@ public final class L10nTranslations {
                 "Este tel\u00e9fono no tiene selector de galer\u00eda.");
         table.put("This song is instrumental.",
                 "Esta canci\u00f3n es instrumental.");
+        table.put("Those chats already have a rule.",
+                "Esos chats ya tienen una regla.");
     }
 
     private static void fillEs22(Map<String, String> table) {
-        table.put("Those chats already have a rule.",
-                "Esos chats ya tienen una regla.");
         table.put("Those messages aren't all loaded",
                 "No todos est\u00e1n cargados");
         table.put("Tick at least one kind of file.",
@@ -9807,19 +9797,17 @@ public final class L10nTranslations {
                 "Deshacer la \u00faltima configuraci\u00f3n");
         table.put("UnifiedPush notifications",
                 "Notificaciones por UnifiedPush");
+        table.put("UnifiedPush: %1$s",
+                "UnifiedPush: %1$s");
     }
 
     private static void fillEs23(Map<String, String> table) {
-        table.put("UnifiedPush: %1$s",
-                "UnifiedPush: %1$s");
         table.put("Unknown",
                 "Desconocido");
         table.put("Unlock",
                 "Desbloquear");
         table.put("Unlock Premium app icons",
                 "Desbloquear \u00edconos Premium de la app");
-        table.put("Unlock Premium features",
-                "Desbloquear funciones Premium");
         table.put("Unlock canceled. Settings stay locked.",
                 "Desbloqueo cancelado. La configuraci\u00f3n sigue bloqueada.");
         table.put("Unlock now",
@@ -9930,13 +9918,13 @@ public final class L10nTranslations {
                 "Qu\u00e9 copiar");
         table.put("What to forward",
                 "Qu\u00e9 reenviar");
-    }
-
-    private static void fillEs24(Map<String, String> table) {
         table.put("What you type in the main search isn't sent to Telegram, except in the Posts tab. The Chats tab finds your chats and contacts on this phone, plus recent searches, but not messages or public accounts. Channels, Apps, the media tabs and chat or date filters don't search for typed text. Search inside a chat still goes to Telegram.",
                 "Lo que escribes en la b\u00fasqueda principal no se env\u00eda a Telegram, salvo en la pesta\u00f1a Posts. La pesta\u00f1a Chats encuentra tus chats y contactos de este tel\u00e9fono, adem\u00e1s de las b\u00fasquedas recientes, pero no mensajes ni cuentas p\u00fablicas. Canales, Apps, las pesta\u00f1as de contenido y los filtros por chat o fecha no buscan el texto que escribes. La b\u00fasqueda dentro de un chat sigue yendo a Telegram.");
         table.put("When Telegram can't finish a crop, the editor stays open and asks you to try again, so the part you cropped out never gets sent. Covers photos and profile pictures. Videos crop as usual.",
                 "Si Telegram no puede terminar un recorte, el editor sigue abierto y te pide que lo intentes de nuevo, para que la parte que recortaste nunca se env\u00ede. Cubre fotos y fotos de perfil. Los videos se recortan como siempre.");
+    }
+
+    private static void fillEs24(Map<String, String> table) {
         table.put("When a chat search lands on a match inside a collapsed quote, the quote opens so the highlighted match stays in view.",
                 "Cuando una b\u00fasqueda en el chat cae en una coincidencia dentro de una cita contra\u00edda, la cita se abre para que la coincidencia resaltada siga a la vista.");
         table.put("When a group or channel removes or bans you, it stays in your chats with what this phone saved, and you can still open and scroll it. Delete it from the chat list to let it go.",
@@ -10053,13 +10041,13 @@ public final class L10nTranslations {
                 "Tu foto junto al cuadro de mensaje desaparece en grupos y canales donde podr\u00edas publicar como un canal, mientras publicas como t\u00fa. Cuando eliges un canal vuelve a aparecer, as\u00ed siempre ves como qui\u00e9n publicas. Para elegir uno, desactiva esto primero. Un chat lo aplica la pr\u00f3xima vez que lo abras.");
         table.put("Your proxy lists",
                 "Tus listas de proxies");
-    }
-
-    private static void fillEs25(Map<String, String> table) {
         table.put("Your settings are locked. Tap to start the 24-hour wait. You can cancel it while it runs.",
                 "Tu configuraci\u00f3n est\u00e1 bloqueada. Toca para iniciar la espera de 24 horas. Puedes cancelarla mientras dura.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Tus interruptores ya coinciden con ese archivo, as\u00ed que no cambiar\u00e1 nada.");
+    }
+
+    private static void fillEs25(Map<String, String> table) {
         table.put("Your switches are working.",
                 "Tus interruptores est\u00e1n funcionando.");
         table.put("Zero width joiner",
@@ -10176,13 +10164,13 @@ public final class L10nTranslations {
                 "el emoji junto al t\u00edtulo de la lista de chats");
         table.put("emoji statuses next to names",
                 "estados de emojis junto a los nombres");
-    }
-
-    private static void fillEs26(Map<String, String> table) {
         table.put("external browser routing",
                 "apertura en navegador externo");
         table.put("favorite stickers kept on this phone",
                 "stickers de Favoritos conservados en este tel\u00e9fono");
+    }
+
+    private static void fillEs26(Map<String, String> table) {
         table.put("file icons and thumbnails in Shared media",
                 "iconos y miniaturas en los archivos compartidos");
         table.put("file icons and thumbnails in chats",
@@ -10299,13 +10287,13 @@ public final class L10nTranslations {
                 "bot\u00f3n de compartir junto a las publicaciones de canales");
         table.put("share sheet comments",
                 "comentarios del men\u00fa de compartir");
-    }
-
-    private static void fillEs27(Map<String, String> table) {
         table.put("shared link tracking",
                 "seguimiento de enlaces compartidos");
         table.put("showing the Downloads button all the time",
                 "mostrar siempre el bot\u00f3n Descargas");
+    }
+
+    private static void fillEs27(Map<String, String> table) {
         table.put("side menu",
                 "men\u00fa lateral");
         table.put("similar channels and bots",
@@ -10389,7 +10377,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(3324);
+        Map<String, String> table = new HashMap<>(3320);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -12873,17 +12861,15 @@ public final class L10nTranslations {
                 "Telegram tetap menyimpan folder Admin. Coba lagi nanti.");
         table.put("Telegram no longer tells the other person in a secret chat when you take a screenshot.",
                 "Telegram tidak lagi memberi tahu lawan bicara di obrolan rahasia saat kamu mengambil tangkapan layar.");
-        table.put("Telegram on this phone treats your account as Premium, so the parts the app itself locks open up. Telegram's servers still know your real plan, so their limits stay the same.",
-                "Telegram di ponsel ini memperlakukan akunmu sebagai Premium, jadi bagian yang dikunci oleh aplikasinya sendiri terbuka. Server Telegram tetap tahu paket aslimu, jadi batasan mereka tetap sama.");
         table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
                 "Telegram hanya mengaburkan header dan panel obrolan di ponsel yang cepat. Ini memungkinkan ponsel apa pun melakukannya, setelah Blur di obrolan aktif di bawah Penghemat daya.");
         table.put("Telegram passcode",
                 "Kode sandi Telegram");
+        table.put("Telegram refused it: %1$s",
+                "Telegram menolaknya: %1$s");
     }
 
     private static void fillIn20(Map<String, String> table) {
-        table.put("Telegram refused it: %1$s",
-                "Telegram menolaknya: %1$s");
         table.put("Telegram refused this app's ID",
                 "Telegram menolak ID aplikasi ini");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
@@ -13002,11 +12988,11 @@ public final class L10nTranslations {
                 "Alamat harus diawali dengan https://.");
         table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
                 "Kisi foto di menu lampiran dimulai dengan foto Anda, bukan kotak kamera langsung. Obrolan akan menerapkannya saat Anda membukanya lagi.");
+        table.put("The bar at the bottom of a channel you've joined goes away, along with its Mute button and the Search and Info buttons beside it. Channels you haven't joined still show Join. To mute a channel, open its info. A channel picks this up the next time you open it.",
+                "Bilah di bagian bawah kanal yang sudah Anda ikuti hilang, bersama tombol Bisukan dan tombol Cari serta Info di sebelahnya. Kanal yang belum Anda ikuti tetap menampilkan Gabung. Untuk membisukan kanal, buka infonya. Kanal akan menerapkannya saat Anda membukanya lagi.");
     }
 
     private static void fillIn21(Map<String, String> table) {
-        table.put("The bar at the bottom of a channel you've joined goes away, along with its Mute button and the Search and Info buttons beside it. Channels you haven't joined still show Join. To mute a channel, open its info. A channel picks this up the next time you open it.",
-                "Bilah di bagian bawah kanal yang sudah Anda ikuti hilang, bersama tombol Bisukan dan tombol Cari serta Info di sebelahnya. Kanal yang belum Anda ikuti tetap menampilkan Gabung. Untuk membisukan kanal, buka infonya. Kanal akan menerapkannya saat Anda membukanya lagi.");
         table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
                 "Bilah di bagian bawah layar utama jadi lebih pendek dan hanya selebar yang dibutuhkan tabnya. Tab tetap setinggi semula, jadi tetap mudah diketuk. Mulai ulang Telegram untuk melihat perubahannya.");
         table.put("The bar under a chat's top bar that shows pinned messages is gone, along with its counter and list button. Messages stay pinned and nothing is marked as read.",
@@ -13125,11 +13111,11 @@ public final class L10nTranslations {
                 "Ponsel ini tidak punya pemilih galeri.");
         table.put("This song is instrumental.",
                 "Lagu ini instrumental.");
+        table.put("Those chats already have a rule.",
+                "Obrolan itu sudah punya aturan.");
     }
 
     private static void fillIn22(Map<String, String> table) {
-        table.put("Those chats already have a rule.",
-                "Obrolan itu sudah punya aturan.");
         table.put("Those messages aren't all loaded",
                 "Belum semua termuat");
         table.put("Tick at least one kind of file.",
@@ -13248,19 +13234,17 @@ public final class L10nTranslations {
                 "Urungkan penyiapan terakhir");
         table.put("UnifiedPush notifications",
                 "Notifikasi UnifiedPush");
+        table.put("UnifiedPush: %1$s",
+                "UnifiedPush: %1$s");
     }
 
     private static void fillIn23(Map<String, String> table) {
-        table.put("UnifiedPush: %1$s",
-                "UnifiedPush: %1$s");
         table.put("Unknown",
                 "Tidak diketahui");
         table.put("Unlock",
                 "Buka kunci");
         table.put("Unlock Premium app icons",
                 "Buka Kunci Ikon Aplikasi Premium");
-        table.put("Unlock Premium features",
-                "Buka fitur Premium");
         table.put("Unlock canceled. Settings stay locked.",
                 "Buka kunci dibatalkan. Pengaturan tetap terkunci.");
         table.put("Unlock now",
@@ -13371,13 +13355,13 @@ public final class L10nTranslations {
                 "Yang disalin");
         table.put("What to forward",
                 "Yang diteruskan");
-    }
-
-    private static void fillIn24(Map<String, String> table) {
         table.put("What you type in the main search isn't sent to Telegram, except in the Posts tab. The Chats tab finds your chats and contacts on this phone, plus recent searches, but not messages or public accounts. Channels, Apps, the media tabs and chat or date filters don't search for typed text. Search inside a chat still goes to Telegram.",
                 "Yang Anda ketik di pencarian utama tidak dikirim ke Telegram, kecuali di tab Postingan. Tab Obrolan menemukan obrolan dan kontak Anda di ponsel ini, serta pencarian terbaru, tetapi tidak menemukan pesan atau akun publik. Channel, Aplikasi, tab media, serta filter obrolan atau tanggal tidak mencari teks yang Anda ketik. Pencarian di dalam obrolan tetap dikirim ke Telegram.");
         table.put("When Telegram can't finish a crop, the editor stays open and asks you to try again, so the part you cropped out never gets sent. Covers photos and profile pictures. Videos crop as usual.",
                 "Saat Telegram tidak bisa menyelesaikan pemotongan, editor tetap terbuka dan memintamu mencoba lagi, jadi bagian yang kamu potong tidak pernah terkirim. Berlaku untuk foto dan foto profil. Video dipotong seperti biasa.");
+    }
+
+    private static void fillIn24(Map<String, String> table) {
         table.put("When a chat search lands on a match inside a collapsed quote, the quote opens so the highlighted match stays in view.",
                 "Saat pencarian chat menemukan kecocokan di dalam kutipan yang diciutkan, kutipan itu terbuka agar kecocokan yang disorot tetap terlihat.");
         table.put("When a group or channel removes or bans you, it stays in your chats with what this phone saved, and you can still open and scroll it. Delete it from the chat list to let it go.",
@@ -13494,13 +13478,13 @@ public final class L10nTranslations {
                 "Foto Anda di samping kotak pesan hilang di grup dan kanal tempat Anda bisa memposting sebagai kanal, selama Anda memposting sebagai diri sendiri. Setelah Anda memilih kanal, foto itu muncul lagi, jadi Anda selalu tahu sebagai siapa Anda memposting. Untuk memilih kanal, matikan ini dulu. Obrolan akan menerapkannya saat Anda membukanya lagi.");
         table.put("Your proxy lists",
                 "Daftar proxy Anda");
-    }
-
-    private static void fillIn25(Map<String, String> table) {
         table.put("Your settings are locked. Tap to start the 24-hour wait. You can cancel it while it runs.",
                 "Pengaturan Anda terkunci. Ketuk untuk memulai masa tunggu 24 jam. Anda bisa membatalkannya selama masih berjalan.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Sakelar Anda sudah sesuai dengan file itu, jadi tidak ada yang akan berubah.");
+    }
+
+    private static void fillIn25(Map<String, String> table) {
         table.put("Your switches are working.",
                 "Sakelar Anda aktif.");
         table.put("Zero width joiner",
@@ -13617,13 +13601,13 @@ public final class L10nTranslations {
                 "emoji di samping judul daftar obrolan");
         table.put("emoji statuses next to names",
                 "status emoji di samping nama");
-    }
-
-    private static void fillIn26(Map<String, String> table) {
         table.put("external browser routing",
                 "pengarahan ke browser eksternal");
         table.put("favorite stickers kept on this phone",
                 "stiker Favorit yang disimpan di ponsel ini");
+    }
+
+    private static void fillIn26(Map<String, String> table) {
         table.put("file icons and thumbnails in Shared media",
                 "ikon dan thumbnail file di media bersama");
         table.put("file icons and thumbnails in chats",
@@ -13740,13 +13724,13 @@ public final class L10nTranslations {
                 "tombol bagikan di samping postingan kanal");
         table.put("share sheet comments",
                 "komentar di lembar berbagi");
-    }
-
-    private static void fillIn27(Map<String, String> table) {
         table.put("shared link tracking",
                 "pelacakan tautan yang dibagikan");
         table.put("showing the Downloads button all the time",
                 "menampilkan tombol Unduhan setiap saat");
+    }
+
+    private static void fillIn27(Map<String, String> table) {
         table.put("side menu",
                 "menu samping");
         table.put("similar channels and bots",
@@ -13830,7 +13814,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIt() {
-        Map<String, String> table = new HashMap<>(3324);
+        Map<String, String> table = new HashMap<>(3320);
         fillIt0(table);
         fillIt1(table);
         fillIt2(table);
@@ -16314,17 +16298,15 @@ public final class L10nTranslations {
                 "Telegram ha mantenuto la cartella Admin. Riprova pi\u00f9 tardi.");
         table.put("Telegram no longer tells the other person in a secret chat when you take a screenshot.",
                 "Telegram non avvisa pi\u00f9 l'altra persona in una chat segreta quando fai uno screenshot.");
-        table.put("Telegram on this phone treats your account as Premium, so the parts the app itself locks open up. Telegram's servers still know your real plan, so their limits stay the same.",
-                "Telegram su questo telefono considera il tuo account come Premium, quindi si aprono le parti che l'app stessa blocca. I server di Telegram conoscono comunque il tuo piano reale, quindi i loro limiti restano gli stessi.");
         table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
                 "Telegram sfoca le intestazioni e i pannelli delle chat solo sui telefoni veloci. Questa opzione permette a qualsiasi telefono di farlo, quando Sfocatura nelle chat \u00e8 attiva in Risparmio energetico.");
         table.put("Telegram passcode",
                 "Codice Telegram");
+        table.put("Telegram refused it: %1$s",
+                "Telegram l'ha rifiutato: %1$s");
     }
 
     private static void fillIt20(Map<String, String> table) {
-        table.put("Telegram refused it: %1$s",
-                "Telegram l'ha rifiutato: %1$s");
         table.put("Telegram refused this app's ID",
                 "Telegram ha rifiutato l'ID di questa app");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
@@ -16443,11 +16425,11 @@ public final class L10nTranslations {
                 "L'indirizzo deve iniziare con https://.");
         table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
                 "La griglia di foto del menu degli allegati inizia con le tue foto invece di un riquadro della fotocamera in tempo reale. Una chat applica questa modifica la prossima volta che la apri.");
+        table.put("The bar at the bottom of a channel you've joined goes away, along with its Mute button and the Search and Info buttons beside it. Channels you haven't joined still show Join. To mute a channel, open its info. A channel picks this up the next time you open it.",
+                "La barra in fondo a un canale a cui ti sei unito scompare, insieme al suo pulsante Silenzia e ai pulsanti Cerca e Informazioni accanto. I canali a cui non ti sei unito mostrano ancora Unisciti. Per silenziare un canale, apri le sue informazioni. Un canale lo applica la prossima volta che lo apri.");
     }
 
     private static void fillIt21(Map<String, String> table) {
-        table.put("The bar at the bottom of a channel you've joined goes away, along with its Mute button and the Search and Info buttons beside it. Channels you haven't joined still show Join. To mute a channel, open its info. A channel picks this up the next time you open it.",
-                "La barra in fondo a un canale a cui ti sei unito scompare, insieme al suo pulsante Silenzia e ai pulsanti Cerca e Informazioni accanto. I canali a cui non ti sei unito mostrano ancora Unisciti. Per silenziare un canale, apri le sue informazioni. Un canale lo applica la prossima volta che lo apri.");
         table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
                 "La barra in fondo alla schermata principale diventa pi\u00f9 bassa e larga solo quanto serve alle sue schede. Le schede mantengono tutta la loro altezza, quindi restano facili da toccare. Riavvia Telegram per vedere la modifica.");
         table.put("The bar under a chat's top bar that shows pinned messages is gone, along with its counter and list button. Messages stay pinned and nothing is marked as read.",
@@ -16566,11 +16548,11 @@ public final class L10nTranslations {
                 "Questo telefono non ha un selettore per la galleria.");
         table.put("This song is instrumental.",
                 "Questo brano \u00e8 strumentale.");
+        table.put("Those chats already have a rule.",
+                "Quelle chat hanno gi\u00e0 una regola.");
     }
 
     private static void fillIt22(Map<String, String> table) {
-        table.put("Those chats already have a rule.",
-                "Quelle chat hanno gi\u00e0 una regola.");
         table.put("Those messages aren't all loaded",
                 "Non tutti i messaggi sono caricati");
         table.put("Tick at least one kind of file.",
@@ -16689,19 +16671,17 @@ public final class L10nTranslations {
                 "Annulla l'ultima configurazione");
         table.put("UnifiedPush notifications",
                 "Notifiche UnifiedPush");
+        table.put("UnifiedPush: %1$s",
+                "UnifiedPush: %1$s");
     }
 
     private static void fillIt23(Map<String, String> table) {
-        table.put("UnifiedPush: %1$s",
-                "UnifiedPush: %1$s");
         table.put("Unknown",
                 "Sconosciuto");
         table.put("Unlock",
                 "Sblocca");
         table.put("Unlock Premium app icons",
                 "Sblocca le icone Premium dell'app");
-        table.put("Unlock Premium features",
-                "Sblocca funzioni Premium");
         table.put("Unlock canceled. Settings stay locked.",
                 "Sblocco annullato. Le impostazioni restano bloccate.");
         table.put("Unlock now",
@@ -16812,13 +16792,13 @@ public final class L10nTranslations {
                 "Cosa copiare");
         table.put("What to forward",
                 "Cosa inoltrare");
-    }
-
-    private static void fillIt24(Map<String, String> table) {
         table.put("What you type in the main search isn't sent to Telegram, except in the Posts tab. The Chats tab finds your chats and contacts on this phone, plus recent searches, but not messages or public accounts. Channels, Apps, the media tabs and chat or date filters don't search for typed text. Search inside a chat still goes to Telegram.",
                 "Ci\u00f2 che digiti nella ricerca principale non viene inviato a Telegram, tranne nella scheda Post. La scheda Chat trova le tue chat e i tuoi contatti su questo telefono, oltre alle ricerche recenti, ma non i messaggi o gli account pubblici. Canali, App, le schede Media, Link, File, Musica e Voce e i filtri per chat o data non cercano il testo digitato. La ricerca all'interno di una chat va comunque a Telegram.");
         table.put("When Telegram can't finish a crop, the editor stays open and asks you to try again, so the part you cropped out never gets sent. Covers photos and profile pictures. Videos crop as usual.",
                 "Quando Telegram non riesce a completare un ritaglio, l'editor resta aperto e ti chiede di riprovare, cos\u00ec la parte che hai ritagliato non viene mai inviata. Vale per foto e foto del profilo. I video vengono ritagliati come al solito.");
+    }
+
+    private static void fillIt24(Map<String, String> table) {
         table.put("When a chat search lands on a match inside a collapsed quote, the quote opens so the highlighted match stays in view.",
                 "Quando una ricerca nella chat trova una corrispondenza in una citazione compressa, la citazione si apre cos\u00ec la corrispondenza evidenziata resta visibile.");
         table.put("When a group or channel removes or bans you, it stays in your chats with what this phone saved, and you can still open and scroll it. Delete it from the chat list to let it go.",
@@ -16935,13 +16915,13 @@ public final class L10nTranslations {
                 "La tua foto accanto al campo del messaggio scompare nei gruppi e nei canali dove potresti pubblicare come canale, mentre pubblichi come te stesso. Quando scegli un canale, riappare, cos\u00ec puoi sempre vedere per conto di chi pubblichi. Per sceglierne uno, disattiva prima questa opzione. Una chat lo applica la prossima volta che la apri.");
         table.put("Your proxy lists",
                 "Le tue liste proxy");
-    }
-
-    private static void fillIt25(Map<String, String> table) {
         table.put("Your settings are locked. Tap to start the 24-hour wait. You can cancel it while it runs.",
                 "Le tue impostazioni sono bloccate. Tocca per avviare l'attesa di 24 ore. Puoi annullarla mentre \u00e8 in corso.");
         table.put("Your switches already match that file, so nothing will change.",
                 "I tuoi interruttori corrispondono gi\u00e0 a quel file, quindi non cambier\u00e0 nulla.");
+    }
+
+    private static void fillIt25(Map<String, String> table) {
         table.put("Your switches are working.",
                 "I tuoi interruttori funzionano.");
         table.put("Zero width joiner",
@@ -17058,13 +17038,13 @@ public final class L10nTranslations {
                 "l'emoji accanto al titolo della lista chat");
         table.put("emoji statuses next to names",
                 "gli stati emoji accanto ai nomi");
-    }
-
-    private static void fillIt26(Map<String, String> table) {
         table.put("external browser routing",
                 "l'apertura nel browser esterno");
         table.put("favorite stickers kept on this phone",
                 "sticker dei Preferiti conservati su questo telefono");
+    }
+
+    private static void fillIt26(Map<String, String> table) {
         table.put("file icons and thumbnails in Shared media",
                 "le icone e le miniature dei file nei Media condivisi");
         table.put("file icons and thumbnails in chats",
@@ -17181,13 +17161,13 @@ public final class L10nTranslations {
                 "pulsante Condividi accanto ai post dei canali");
         table.put("share sheet comments",
                 "commenti del menu di condivisione");
-    }
-
-    private static void fillIt27(Map<String, String> table) {
         table.put("shared link tracking",
                 "il tracciamento dei link condivisi");
         table.put("showing the Downloads button all the time",
                 "il pulsante Download sempre visibile");
+    }
+
+    private static void fillIt27(Map<String, String> table) {
         table.put("side menu",
                 "menu laterale");
         table.put("similar channels and bots",
@@ -17271,7 +17251,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(3324);
+        Map<String, String> table = new HashMap<>(3320);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -19755,17 +19735,15 @@ public final class L10nTranslations {
                 "O Telegram manteve a pasta Admin. Tente de novo mais tarde.");
         table.put("Telegram no longer tells the other person in a secret chat when you take a screenshot.",
                 "O Telegram deixa de avisar a outra pessoa em um chat secreto quando voc\u00ea faz uma captura de tela.");
-        table.put("Telegram on this phone treats your account as Premium, so the parts the app itself locks open up. Telegram's servers still know your real plan, so their limits stay the same.",
-                "O Telegram neste celular trata sua conta como Premium, ent\u00e3o as partes que o pr\u00f3prio app bloqueia ficam liberadas. Os servidores do Telegram ainda sabem o seu plano real, ent\u00e3o os limites deles continuam os mesmos.");
         table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
                 "O Telegram s\u00f3 desfoca o cabe\u00e7alho e os pain\u00e9is da conversa em celulares r\u00e1pidos. Isso permite que qualquer celular fa\u00e7a isso, quando Desfoque no chat estiver ligado em Economia de energia.");
         table.put("Telegram passcode",
                 "Senha do Telegram");
+        table.put("Telegram refused it: %1$s",
+                "O Telegram recusou: %1$s");
     }
 
     private static void fillPt_rBR20(Map<String, String> table) {
-        table.put("Telegram refused it: %1$s",
-                "O Telegram recusou: %1$s");
         table.put("Telegram refused this app's ID",
                 "O Telegram recusou o ID deste app");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
@@ -19884,11 +19862,11 @@ public final class L10nTranslations {
                 "O endere\u00e7o precisa come\u00e7ar com https://.");
         table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
                 "A grade de fotos do menu de anexos come\u00e7a com suas fotos em vez de um bloco de c\u00e2mera ao vivo. Uma conversa aplica isso na pr\u00f3xima vez que voc\u00ea abri-la.");
+        table.put("The bar at the bottom of a channel you've joined goes away, along with its Mute button and the Search and Info buttons beside it. Channels you haven't joined still show Join. To mute a channel, open its info. A channel picks this up the next time you open it.",
+                "A barra na parte de baixo de um canal em que voc\u00ea entrou some, junto com o bot\u00e3o Silenciar e os bot\u00f5es Pesquisar e Informa\u00e7\u00f5es ao lado dele. Canais em que voc\u00ea n\u00e3o entrou continuam mostrando Entrar. Para silenciar um canal, abra as informa\u00e7\u00f5es dele. Um canal aplica isso na pr\u00f3xima vez que voc\u00ea abri-lo.");
     }
 
     private static void fillPt_rBR21(Map<String, String> table) {
-        table.put("The bar at the bottom of a channel you've joined goes away, along with its Mute button and the Search and Info buttons beside it. Channels you haven't joined still show Join. To mute a channel, open its info. A channel picks this up the next time you open it.",
-                "A barra na parte de baixo de um canal em que voc\u00ea entrou some, junto com o bot\u00e3o Silenciar e os bot\u00f5es Pesquisar e Informa\u00e7\u00f5es ao lado dele. Canais em que voc\u00ea n\u00e3o entrou continuam mostrando Entrar. Para silenciar um canal, abra as informa\u00e7\u00f5es dele. Um canal aplica isso na pr\u00f3xima vez que voc\u00ea abri-lo.");
         table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
                 "A barra na parte de baixo da tela principal fica mais baixa e s\u00f3 t\u00e3o larga quanto as abas precisam. As abas mant\u00eam a altura inteira, ent\u00e3o continuam f\u00e1ceis de tocar. Reinicie o Telegram para ver a mudan\u00e7a.");
         table.put("The bar under a chat's top bar that shows pinned messages is gone, along with its counter and list button. Messages stay pinned and nothing is marked as read.",
@@ -20007,11 +19985,11 @@ public final class L10nTranslations {
                 "Este celular n\u00e3o tem seletor de galeria.");
         table.put("This song is instrumental.",
                 "Esta m\u00fasica \u00e9 instrumental.");
+        table.put("Those chats already have a rule.",
+                "Essas conversas j\u00e1 t\u00eam uma regra.");
     }
 
     private static void fillPt_rBR22(Map<String, String> table) {
-        table.put("Those chats already have a rule.",
-                "Essas conversas j\u00e1 t\u00eam uma regra.");
         table.put("Those messages aren't all loaded",
                 "Nem todas est\u00e3o carregadas");
         table.put("Tick at least one kind of file.",
@@ -20130,19 +20108,17 @@ public final class L10nTranslations {
                 "Desfazer a \u00faltima configura\u00e7\u00e3o");
         table.put("UnifiedPush notifications",
                 "Notifica\u00e7\u00f5es pelo UnifiedPush");
+        table.put("UnifiedPush: %1$s",
+                "UnifiedPush: %1$s");
     }
 
     private static void fillPt_rBR23(Map<String, String> table) {
-        table.put("UnifiedPush: %1$s",
-                "UnifiedPush: %1$s");
         table.put("Unknown",
                 "Desconhecido");
         table.put("Unlock",
                 "Desbloquear");
         table.put("Unlock Premium app icons",
                 "Desbloquear \u00edcones Premium do app");
-        table.put("Unlock Premium features",
-                "Desbloquear recursos Premium");
         table.put("Unlock canceled. Settings stay locked.",
                 "Desbloqueio cancelado. As configura\u00e7\u00f5es continuam bloqueadas.");
         table.put("Unlock now",
@@ -20253,13 +20229,13 @@ public final class L10nTranslations {
                 "O que copiar");
         table.put("What to forward",
                 "O que encaminhar");
-    }
-
-    private static void fillPt_rBR24(Map<String, String> table) {
         table.put("What you type in the main search isn't sent to Telegram, except in the Posts tab. The Chats tab finds your chats and contacts on this phone, plus recent searches, but not messages or public accounts. Channels, Apps, the media tabs and chat or date filters don't search for typed text. Search inside a chat still goes to Telegram.",
                 "O que voc\u00ea digita na busca principal n\u00e3o \u00e9 enviado ao Telegram, exceto na aba Posts. A aba Chats encontra suas conversas e contatos neste celular, al\u00e9m das buscas recentes, mas n\u00e3o mensagens nem contas p\u00fablicas. Canais, Apps, as abas de m\u00eddia e os filtros de conversa ou data n\u00e3o buscam o texto digitado. A busca dentro de uma conversa continua indo para o Telegram.");
         table.put("When Telegram can't finish a crop, the editor stays open and asks you to try again, so the part you cropped out never gets sent. Covers photos and profile pictures. Videos crop as usual.",
                 "Quando o Telegram n\u00e3o consegue terminar um corte, o editor continua aberto e pede para voc\u00ea tentar de novo, assim a parte que voc\u00ea cortou nunca \u00e9 enviada. Vale para fotos e fotos de perfil. V\u00eddeos s\u00e3o cortados como sempre.");
+    }
+
+    private static void fillPt_rBR24(Map<String, String> table) {
         table.put("When a chat search lands on a match inside a collapsed quote, the quote opens so the highlighted match stays in view.",
                 "Quando uma busca no chat cai em um resultado dentro de uma cita\u00e7\u00e3o recolhida, a cita\u00e7\u00e3o se abre para que o resultado destacado continue vis\u00edvel.");
         table.put("When a group or channel removes or bans you, it stays in your chats with what this phone saved, and you can still open and scroll it. Delete it from the chat list to let it go.",
@@ -20376,13 +20352,13 @@ public final class L10nTranslations {
                 "Sua foto ao lado da caixa de mensagem some em grupos e canais onde voc\u00ea poderia publicar como um canal, enquanto voc\u00ea publica como voc\u00ea mesmo. Quando voc\u00ea escolhe um canal ela volta, para voc\u00ea sempre ver como quem est\u00e1 publicando. Para escolher um, desative isto antes. Uma conversa aplica isso na pr\u00f3xima vez que voc\u00ea abri-la.");
         table.put("Your proxy lists",
                 "Suas listas de proxies");
-    }
-
-    private static void fillPt_rBR25(Map<String, String> table) {
         table.put("Your settings are locked. Tap to start the 24-hour wait. You can cancel it while it runs.",
                 "Suas configura\u00e7\u00f5es est\u00e3o bloqueadas. Toque para iniciar a espera de 24 horas. Voc\u00ea pode cancelar enquanto ela corre.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Suas op\u00e7\u00f5es j\u00e1 correspondem \u00e0s desse arquivo, ent\u00e3o nada ser\u00e1 alterado.");
+    }
+
+    private static void fillPt_rBR25(Map<String, String> table) {
         table.put("Your switches are working.",
                 "Suas op\u00e7\u00f5es est\u00e3o funcionando.");
         table.put("Zero width joiner",
@@ -20499,13 +20475,13 @@ public final class L10nTranslations {
                 "o emoji ao lado do t\u00edtulo da lista de conversas");
         table.put("emoji statuses next to names",
                 "emojis de status ao lado dos nomes");
-    }
-
-    private static void fillPt_rBR26(Map<String, String> table) {
         table.put("external browser routing",
                 "abertura em navegador externo");
         table.put("favorite stickers kept on this phone",
                 "figurinhas dos Favoritos mantidas neste telefone");
+    }
+
+    private static void fillPt_rBR26(Map<String, String> table) {
         table.put("file icons and thumbnails in Shared media",
                 "\u00edcones e miniaturas de arquivos na m\u00eddia compartilhada");
         table.put("file icons and thumbnails in chats",
@@ -20622,13 +20598,13 @@ public final class L10nTranslations {
                 "bot\u00e3o de compartilhar ao lado das publica\u00e7\u00f5es de canais");
         table.put("share sheet comments",
                 "coment\u00e1rios ao compartilhar");
-    }
-
-    private static void fillPt_rBR27(Map<String, String> table) {
         table.put("shared link tracking",
                 "rastreamento de links compartilhados");
         table.put("showing the Downloads button all the time",
                 "o bot\u00e3o Downloads sempre vis\u00edvel");
+    }
+
+    private static void fillPt_rBR27(Map<String, String> table) {
         table.put("side menu",
                 "menu lateral");
         table.put("similar channels and bots",
@@ -20712,7 +20688,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(3324);
+        Map<String, String> table = new HashMap<>(3320);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -23196,17 +23172,15 @@ public final class L10nTranslations {
                 "Telegram Y\u00f6netici klas\u00f6r\u00fcn\u00fc tuttu. Daha sonra tekrar dene.");
         table.put("Telegram no longer tells the other person in a secret chat when you take a screenshot.",
                 "Telegram, ekran g\u00f6r\u00fcnt\u00fcs\u00fc ald\u0131\u011f\u0131nda gizli sohbetteki di\u011fer ki\u015fiye art\u0131k haber vermez.");
-        table.put("Telegram on this phone treats your account as Premium, so the parts the app itself locks open up. Telegram's servers still know your real plan, so their limits stay the same.",
-                "Bu telefondaki Telegram hesab\u0131n\u0131 Premium sayar, b\u00f6ylece uygulaman\u0131n kendisinin kilitledi\u011fi k\u0131s\u0131mlar a\u00e7\u0131l\u0131r. Telegram sunucular\u0131 ger\u00e7ek plan\u0131n\u0131 yine bilir, bu y\u00fczden onlar\u0131n s\u0131n\u0131rlar\u0131 ayn\u0131 kal\u0131r.");
         table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
                 "Telegram sohbet ba\u015fl\u0131\u011f\u0131n\u0131 ve panelleri yaln\u0131zca h\u0131zl\u0131 telefonlarda bulan\u0131kla\u015ft\u0131r\u0131r. Bu, G\u00fc\u00e7 tasarrufu alt\u0131nda Sohbette bulan\u0131kl\u0131k a\u00e7\u0131ld\u0131\u011f\u0131nda her telefonun bunu yapmas\u0131n\u0131 sa\u011flar.");
         table.put("Telegram passcode",
                 "Telegram parolas\u0131");
+        table.put("Telegram refused it: %1$s",
+                "Telegram reddetti: %1$s");
     }
 
     private static void fillTr20(Map<String, String> table) {
-        table.put("Telegram refused it: %1$s",
-                "Telegram reddetti: %1$s");
         table.put("Telegram refused this app's ID",
                 "Telegram bu uygulaman\u0131n kimli\u011fini reddetti");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
@@ -23325,11 +23299,11 @@ public final class L10nTranslations {
                 "Adres https:// ile ba\u015flamal\u0131.");
         table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
                 "Ek men\u00fcs\u00fcndeki foto\u011fraf \u0131zgaras\u0131, canl\u0131 kamera kutucu\u011fu yerine foto\u011fraflar\u0131n\u0131zla ba\u015flar. Bir sohbet bunu bir sonraki a\u00e7\u0131\u015f\u0131n\u0131zda uygular.");
+        table.put("The bar at the bottom of a channel you've joined goes away, along with its Mute button and the Search and Info buttons beside it. Channels you haven't joined still show Join. To mute a channel, open its info. A channel picks this up the next time you open it.",
+                "Kat\u0131ld\u0131\u011f\u0131n\u0131z bir kanal\u0131n alt\u0131ndaki \u00e7ubuk, Sessize al d\u00fc\u011fmesi ve yan\u0131ndaki Ara ile Bilgi d\u00fc\u011fmeleriyle birlikte kalkar. Kat\u0131lmad\u0131\u011f\u0131n\u0131z kanallarda Kat\u0131l g\u00f6r\u00fcnmeye devam eder. Bir kanal\u0131 sessize almak i\u00e7in bilgilerini a\u00e7\u0131n. Bir kanal bunu bir sonraki a\u00e7\u0131\u015f\u0131n\u0131zda uygular.");
     }
 
     private static void fillTr21(Map<String, String> table) {
-        table.put("The bar at the bottom of a channel you've joined goes away, along with its Mute button and the Search and Info buttons beside it. Channels you haven't joined still show Join. To mute a channel, open its info. A channel picks this up the next time you open it.",
-                "Kat\u0131ld\u0131\u011f\u0131n\u0131z bir kanal\u0131n alt\u0131ndaki \u00e7ubuk, Sessize al d\u00fc\u011fmesi ve yan\u0131ndaki Ara ile Bilgi d\u00fc\u011fmeleriyle birlikte kalkar. Kat\u0131lmad\u0131\u011f\u0131n\u0131z kanallarda Kat\u0131l g\u00f6r\u00fcnmeye devam eder. Bir kanal\u0131 sessize almak i\u00e7in bilgilerini a\u00e7\u0131n. Bir kanal bunu bir sonraki a\u00e7\u0131\u015f\u0131n\u0131zda uygular.");
         table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
                 "Ana ekran\u0131n alt\u0131ndaki \u00e7ubuk k\u0131sal\u0131r ve yaln\u0131zca sekmelerinin ihtiya\u00e7 duydu\u011fu kadar geni\u015f olur. Sekmeler tam y\u00fcksekliklerini korur, bu y\u00fczden onlara dokunmak yine ayn\u0131 kolayl\u0131ktad\u0131r. De\u011fi\u015fikli\u011fi g\u00f6rmek i\u00e7in Telegram'\u0131 yeniden ba\u015flat\u0131n.");
         table.put("The bar under a chat's top bar that shows pinned messages is gone, along with its counter and list button. Messages stay pinned and nothing is marked as read.",
@@ -23448,11 +23422,11 @@ public final class L10nTranslations {
                 "Bu telefonda galeri se\u00e7ici yok.");
         table.put("This song is instrumental.",
                 "Bu \u015fark\u0131 enstr\u00fcmantal.");
+        table.put("Those chats already have a rule.",
+                "Bu sohbetler i\u00e7in zaten bir kural var.");
     }
 
     private static void fillTr22(Map<String, String> table) {
-        table.put("Those chats already have a rule.",
-                "Bu sohbetler i\u00e7in zaten bir kural var.");
         table.put("Those messages aren't all loaded",
                 "Hepsi y\u00fcklenmedi");
         table.put("Tick at least one kind of file.",
@@ -23571,19 +23545,17 @@ public final class L10nTranslations {
                 "Son kurulumu geri al");
         table.put("UnifiedPush notifications",
                 "UnifiedPush bildirimleri");
+        table.put("UnifiedPush: %1$s",
+                "UnifiedPush: %1$s");
     }
 
     private static void fillTr23(Map<String, String> table) {
-        table.put("UnifiedPush: %1$s",
-                "UnifiedPush: %1$s");
         table.put("Unknown",
                 "Bilinmiyor");
         table.put("Unlock",
                 "Kilidi a\u00e7");
         table.put("Unlock Premium app icons",
                 "Premium uygulama simgelerinin kilidini a\u00e7");
-        table.put("Unlock Premium features",
-                "Premium \u00f6zelliklerinin kilidini a\u00e7");
         table.put("Unlock canceled. Settings stay locked.",
                 "Kilit a\u00e7ma iptal edildi. Ayarlar kilitli kal\u0131yor.");
         table.put("Unlock now",
@@ -23694,13 +23666,13 @@ public final class L10nTranslations {
                 "Neler kopyalanacak");
         table.put("What to forward",
                 "Neler iletilsin");
-    }
-
-    private static void fillTr24(Map<String, String> table) {
         table.put("What you type in the main search isn't sent to Telegram, except in the Posts tab. The Chats tab finds your chats and contacts on this phone, plus recent searches, but not messages or public accounts. Channels, Apps, the media tabs and chat or date filters don't search for typed text. Search inside a chat still goes to Telegram.",
                 "Ana aramaya yazd\u0131klar\u0131n\u0131z, Yay\u0131nlar sekmesi d\u0131\u015f\u0131nda Telegram'a g\u00f6nderilmez. Sohbetler sekmesi bu telefondaki sohbetlerinizi ve ki\u015filerinizi, ayr\u0131ca son aramalar\u0131 bulur ama mesajlar\u0131 ve herkese a\u00e7\u0131k hesaplar\u0131 bulmaz. Kanallar, Uygulamalar, medya sekmeleri ve sohbet ya da tarih filtreleri yazd\u0131\u011f\u0131n\u0131z metni aramaz. Sohbet i\u00e7indeki arama yine Telegram'a gider.");
         table.put("When Telegram can't finish a crop, the editor stays open and asks you to try again, so the part you cropped out never gets sent. Covers photos and profile pictures. Videos crop as usual.",
                 "Telegram bir k\u0131rpmay\u0131 bitiremezse d\u00fczenleyici a\u00e7\u0131k kal\u0131r ve tekrar denemeni ister, b\u00f6ylece k\u0131rpt\u0131\u011f\u0131n k\u0131s\u0131m asla g\u00f6nderilmez. Foto\u011fraflar\u0131 ve profil foto\u011fraflar\u0131n\u0131 kapsar. Videolar her zamanki gibi k\u0131rp\u0131l\u0131r.");
+    }
+
+    private static void fillTr24(Map<String, String> table) {
         table.put("When a chat search lands on a match inside a collapsed quote, the quote opens so the highlighted match stays in view.",
                 "Sohbet aramas\u0131 daralt\u0131lm\u0131\u015f bir al\u0131nt\u0131n\u0131n i\u00e7indeki bir e\u015fle\u015fmeye denk geldi\u011finde, vurgulanan e\u015fle\u015fme g\u00f6r\u00fcn\u00fcr kals\u0131n diye al\u0131nt\u0131 a\u00e7\u0131l\u0131r.");
         table.put("When a group or channel removes or bans you, it stays in your chats with what this phone saved, and you can still open and scroll it. Delete it from the chat list to let it go.",
@@ -23817,13 +23789,13 @@ public final class L10nTranslations {
                 "Kanal olarak payla\u015f\u0131m yapabilece\u011finiz grup ve kanallarda, kendi ad\u0131n\u0131za payla\u015f\u0131rken mesaj kutusunun yan\u0131ndaki resminiz kaybolur. Bir kanal se\u00e7ti\u011finizde yeniden g\u00f6r\u00fcn\u00fcr, b\u00f6ylece kimin ad\u0131na payla\u015ft\u0131\u011f\u0131n\u0131z\u0131 her zaman g\u00f6r\u00fcrs\u00fcn\u00fcz. Bir kanal se\u00e7mek i\u00e7in \u00f6nce bunu kapat\u0131n. Bir sohbet bunu bir sonraki a\u00e7\u0131\u015f\u0131n\u0131zda uygular.");
         table.put("Your proxy lists",
                 "Proxy listeleriniz");
-    }
-
-    private static void fillTr25(Map<String, String> table) {
         table.put("Your settings are locked. Tap to start the 24-hour wait. You can cancel it while it runs.",
                 "Ayarlar\u0131n kilitli. 24 saatlik beklemeyi ba\u015flatmak i\u00e7in dokun. S\u00fcrerken iptal edebilirsin.");
         table.put("Your switches already match that file, so nothing will change.",
                 "Anahtarlar\u0131n zaten o dosyayla ayn\u0131, bu y\u00fczden hi\u00e7bir \u015fey de\u011fi\u015fmeyecek.");
+    }
+
+    private static void fillTr25(Map<String, String> table) {
         table.put("Your switches are working.",
                 "Anahtarlar\u0131n\u0131z \u00e7al\u0131\u015f\u0131yor.");
         table.put("Zero width joiner",
@@ -23940,13 +23912,13 @@ public final class L10nTranslations {
                 "sohbet listesi ba\u015fl\u0131\u011f\u0131n\u0131n yan\u0131ndaki emoji");
         table.put("emoji statuses next to names",
                 "adlar\u0131n yan\u0131ndaki durum ifadeleri");
-    }
-
-    private static void fillTr26(Map<String, String> table) {
         table.put("external browser routing",
                 "harici taray\u0131c\u0131ya y\u00f6nlendirme");
         table.put("favorite stickers kept on this phone",
                 "bu telefonda saklanan favori \u00e7\u0131kartmalar");
+    }
+
+    private static void fillTr26(Map<String, String> table) {
         table.put("file icons and thumbnails in Shared media",
                 "payla\u015f\u0131lan medyadaki dosya simgeleri ve k\u00fc\u00e7\u00fck resimler");
         table.put("file icons and thumbnails in chats",
@@ -24063,13 +24035,13 @@ public final class L10nTranslations {
                 "kanal g\u00f6nderilerinin yan\u0131ndaki payla\u015f d\u00fc\u011fmesi");
         table.put("share sheet comments",
                 "payla\u015f\u0131m sayfas\u0131 yorumlar\u0131");
-    }
-
-    private static void fillTr27(Map<String, String> table) {
         table.put("shared link tracking",
                 "payla\u015f\u0131lan ba\u011flant\u0131lar\u0131n takibi");
         table.put("showing the Downloads button all the time",
                 "\u0130ndir d\u00fc\u011fmesinin her zaman g\u00f6sterilmesini");
+    }
+
+    private static void fillTr27(Map<String, String> table) {
         table.put("side menu",
                 "yan men\u00fc");
         table.put("similar channels and bots",
@@ -24153,7 +24125,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildZh_Hans() {
-        Map<String, String> table = new HashMap<>(3324);
+        Map<String, String> table = new HashMap<>(3320);
         fillZh_Hans0(table);
         fillZh_Hans1(table);
         fillZh_Hans2(table);
@@ -26637,17 +26609,15 @@ public final class L10nTranslations {
                 "Telegram \u4fdd\u7559\u4e86\u201c\u7ba1\u7406\u201d\u6587\u4ef6\u5939\u3002\u8bf7\u7a0d\u540e\u518d\u8bd5.");
         table.put("Telegram no longer tells the other person in a secret chat when you take a screenshot.",
                 "\u4f60\u5728\u79c1\u5bc6\u804a\u5929\u4e2d\u622a\u5c4f\u65f6\uff0cTelegram \u4e0d\u518d\u901a\u77e5\u5bf9\u65b9.");
-        table.put("Telegram on this phone treats your account as Premium, so the parts the app itself locks open up. Telegram's servers still know your real plan, so their limits stay the same.",
-                "\u8fd9\u90e8\u624b\u673a\u4e0a\u7684 Telegram \u4f1a\u628a\u4f60\u7684\u8d26\u53f7\u5f53\u4f5c Premium\uff0c\u56e0\u6b64\u5e94\u7528\u81ea\u8eab\u9501\u5b9a\u7684\u90e8\u5206\u4f1a\u5f00\u653e\u3002Telegram \u7684\u670d\u52a1\u5668\u4ecd\u77e5\u9053\u4f60\u7684\u771f\u5b9e\u5957\u9910\uff0c\u6240\u4ee5\u670d\u52a1\u5668\u7aef\u7684\u9650\u5236\u4e0d\u53d8.");
         table.put("Telegram only blurs chat headers and panels on fast phones. This lets any phone do it, once Blur in chat is on under Power saving.",
                 "Telegram \u53ea\u5728\u6027\u80fd\u597d\u7684\u624b\u673a\u4e0a\u6a21\u7cca\u804a\u5929\u9876\u680f\u548c\u9762\u677f\u3002\u5f00\u542f\u540e\uff0c\u53ea\u8981\u5728\u201c\u7701\u7535\u201d\u4e2d\u5f00\u542f\u4e86\u201c\u5728\u804a\u5929\u4e2d\u6a21\u7cca\u201d\uff0c\u4efb\u4f55\u624b\u673a\u90fd\u80fd\u4f7f\u7528.");
         table.put("Telegram passcode",
                 "Telegram \u9501\u5b9a\u7801");
+        table.put("Telegram refused it: %1$s",
+                "Telegram \u62d2\u7edd\u4e86\uff1a%1$s");
     }
 
     private static void fillZh_Hans20(Map<String, String> table) {
-        table.put("Telegram refused it: %1$s",
-                "Telegram \u62d2\u7edd\u4e86\uff1a%1$s");
         table.put("Telegram refused this app's ID",
                 "Telegram \u62d2\u7edd\u4e86\u8fd9\u4e2a\u5e94\u7528\u7684 ID");
         table.put("Telegram stops offering updates from telegram.org. Those can't install over this patched build, so patch each new version in Morphe Manager instead.",
@@ -26766,11 +26736,11 @@ public final class L10nTranslations {
                 "\u5730\u5740\u5fc5\u987b\u4ee5 https:// \u5f00\u5934.");
         table.put("The attachment menu's photo grid starts with your photos instead of a live camera tile. A chat picks this up the next time you open it.",
                 "\u9644\u4ef6\u83dc\u5355\u7684\u7167\u7247\u7f51\u683c\u76f4\u63a5\u4ece\u4f60\u7684\u7167\u7247\u5f00\u59cb\uff0c\u4e0d\u518d\u663e\u793a\u5b9e\u65f6\u76f8\u673a\u56fe\u5757\u3002\u4e0b\u6b21\u6253\u5f00\u804a\u5929\u65f6\u751f\u6548.");
+        table.put("The bar at the bottom of a channel you've joined goes away, along with its Mute button and the Search and Info buttons beside it. Channels you haven't joined still show Join. To mute a channel, open its info. A channel picks this up the next time you open it.",
+                "\u4f60\u5df2\u52a0\u5165\u7684\u9891\u9053\u5e95\u90e8\u7684\u680f\u4f1a\u6d88\u5931\uff0c\u8fde\u540c\u5176\u4e2d\u7684\u201c\u9759\u97f3\u201d\u6309\u94ae\u4ee5\u53ca\u65c1\u8fb9\u7684\u201c\u641c\u7d22\u201d\u548c\u201c\u4fe1\u606f\u201d\u6309\u94ae\u3002\u672a\u52a0\u5165\u7684\u9891\u9053\u4ecd\u663e\u793a\u201c\u52a0\u5165\u201d\u3002\u8981\u5c06\u9891\u9053\u9759\u97f3\uff0c\u8bf7\u6253\u5f00\u9891\u9053\u4fe1\u606f\u3002\u4e0b\u6b21\u6253\u5f00\u9891\u9053\u65f6\u751f\u6548.");
     }
 
     private static void fillZh_Hans21(Map<String, String> table) {
-        table.put("The bar at the bottom of a channel you've joined goes away, along with its Mute button and the Search and Info buttons beside it. Channels you haven't joined still show Join. To mute a channel, open its info. A channel picks this up the next time you open it.",
-                "\u4f60\u5df2\u52a0\u5165\u7684\u9891\u9053\u5e95\u90e8\u7684\u680f\u4f1a\u6d88\u5931\uff0c\u8fde\u540c\u5176\u4e2d\u7684\u201c\u9759\u97f3\u201d\u6309\u94ae\u4ee5\u53ca\u65c1\u8fb9\u7684\u201c\u641c\u7d22\u201d\u548c\u201c\u4fe1\u606f\u201d\u6309\u94ae\u3002\u672a\u52a0\u5165\u7684\u9891\u9053\u4ecd\u663e\u793a\u201c\u52a0\u5165\u201d\u3002\u8981\u5c06\u9891\u9053\u9759\u97f3\uff0c\u8bf7\u6253\u5f00\u9891\u9053\u4fe1\u606f\u3002\u4e0b\u6b21\u6253\u5f00\u9891\u9053\u65f6\u751f\u6548.");
         table.put("The bar at the bottom of the main screen gets shorter and only as wide as its tabs need. The tabs keep their full height, so they're just as easy to tap. Restart Telegram to see the change.",
                 "\u4e3b\u5c4f\u5e55\u5e95\u90e8\u7684\u680f\u4f1a\u53d8\u77ee\uff0c\u5bbd\u5ea6\u4e5f\u53ea\u591f\u5bb9\u7eb3\u5176\u6807\u7b7e\u9875\u3002\u6807\u7b7e\u9875\u4fdd\u6301\u5b8c\u6574\u9ad8\u5ea6\uff0c\u540c\u6837\u5bb9\u6613\u70b9\u6309\u3002\u91cd\u542f Telegram \u540e\u751f\u6548.");
         table.put("The bar under a chat's top bar that shows pinned messages is gone, along with its counter and list button. Messages stay pinned and nothing is marked as read.",
@@ -26889,11 +26859,11 @@ public final class L10nTranslations {
                 "\u8fd9\u90e8\u624b\u673a\u6ca1\u6709\u76f8\u518c\u9009\u62e9\u5668.");
         table.put("This song is instrumental.",
                 "\u8fd9\u662f\u4e00\u9996\u7eaf\u97f3\u4e50.");
+        table.put("Those chats already have a rule.",
+                "\u8fd9\u4e24\u4e2a\u804a\u5929\u5df2\u7ecf\u6709\u89c4\u5219\u4e86.");
     }
 
     private static void fillZh_Hans22(Map<String, String> table) {
-        table.put("Those chats already have a rule.",
-                "\u8fd9\u4e24\u4e2a\u804a\u5929\u5df2\u7ecf\u6709\u89c4\u5219\u4e86.");
         table.put("Those messages aren't all loaded",
                 "\u8fd9\u4e9b\u6d88\u606f\u5c1a\u672a\u5168\u90e8\u52a0\u8f7d");
         table.put("Tick at least one kind of file.",
@@ -27012,19 +26982,17 @@ public final class L10nTranslations {
                 "\u64a4\u9500\u4e0a\u6b21\u8bbe\u7f6e");
         table.put("UnifiedPush notifications",
                 "UnifiedPush \u901a\u77e5");
+        table.put("UnifiedPush: %1$s",
+                "UnifiedPush\uff1a%1$s");
     }
 
     private static void fillZh_Hans23(Map<String, String> table) {
-        table.put("UnifiedPush: %1$s",
-                "UnifiedPush\uff1a%1$s");
         table.put("Unknown",
                 "\u672a\u77e5");
         table.put("Unlock",
                 "\u89e3\u9501");
         table.put("Unlock Premium app icons",
                 "\u89e3\u9501 Premium \u5e94\u7528\u56fe\u6807");
-        table.put("Unlock Premium features",
-                "\u89e3\u9501 Premium \u529f\u80fd");
         table.put("Unlock canceled. Settings stay locked.",
                 "\u5df2\u53d6\u6d88\u89e3\u9501\u3002\u8bbe\u7f6e\u4fdd\u6301\u9501\u5b9a.");
         table.put("Unlock now",
@@ -27135,13 +27103,13 @@ public final class L10nTranslations {
                 "\u590d\u5236\u54ea\u4e9b\u6587\u4ef6");
         table.put("What to forward",
                 "\u8f6c\u53d1\u54ea\u4e9b\u6d88\u606f");
-    }
-
-    private static void fillZh_Hans24(Map<String, String> table) {
         table.put("What you type in the main search isn't sent to Telegram, except in the Posts tab. The Chats tab finds your chats and contacts on this phone, plus recent searches, but not messages or public accounts. Channels, Apps, the media tabs and chat or date filters don't search for typed text. Search inside a chat still goes to Telegram.",
                 "\u4f60\u5728\u4e3b\u641c\u7d22\u4e2d\u8f93\u5165\u7684\u5185\u5bb9\u4e0d\u4f1a\u53d1\u9001\u7ed9 Telegram\uff0c\u201c\u5e16\u5b50\u201d\u6807\u7b7e\u9875\u9664\u5916\u3002\u201c\u804a\u5929\u201d\u6807\u7b7e\u9875\u4f1a\u67e5\u627e\u8fd9\u90e8\u624b\u673a\u4e0a\u7684\u804a\u5929\u548c\u8054\u7cfb\u4eba\u4ee5\u53ca\u6700\u8fd1\u7684\u641c\u7d22\uff0c\u4f46\u4e0d\u4f1a\u67e5\u627e\u6d88\u606f\u6216\u516c\u5f00\u8d26\u53f7\u3002\u201c\u9891\u9053\u201d\u3001\u201c\u5e94\u7528\u201d\u3001\u5404\u4e2a\u5a92\u4f53\u6807\u7b7e\u9875\u4ee5\u53ca\u804a\u5929\u6216\u65e5\u671f\u7b5b\u9009\u4e0d\u4f1a\u641c\u7d22\u4f60\u8f93\u5165\u7684\u6587\u5b57\u3002\u5728\u804a\u5929\u5185\u641c\u7d22\u4ecd\u4f1a\u53d1\u9001\u7ed9 Telegram.");
         table.put("When Telegram can't finish a crop, the editor stays open and asks you to try again, so the part you cropped out never gets sent. Covers photos and profile pictures. Videos crop as usual.",
                 "Telegram \u65e0\u6cd5\u5b8c\u6210\u88c1\u526a\u65f6\uff0c\u7f16\u8f91\u5668\u4f1a\u4fdd\u6301\u6253\u5f00\u5e76\u8bf7\u4f60\u91cd\u8bd5\uff0c\u8fd9\u6837\u4f60\u88c1\u6389\u7684\u90e8\u5206\u7edd\u4e0d\u4f1a\u88ab\u53d1\u9001\u51fa\u53bb\u3002\u9002\u7528\u4e8e\u7167\u7247\u548c\u5934\u50cf\u3002\u89c6\u9891\u7167\u5e38\u88c1\u526a.");
+    }
+
+    private static void fillZh_Hans24(Map<String, String> table) {
         table.put("When a chat search lands on a match inside a collapsed quote, the quote opens so the highlighted match stays in view.",
                 "\u804a\u5929\u641c\u7d22\u7684\u5339\u914d\u9879\u4f4d\u4e8e\u6298\u53e0\u7684\u5f15\u7528\u4e2d\u65f6\uff0c\u8be5\u5f15\u7528\u4f1a\u5c55\u5f00\uff0c\u8ba9\u9ad8\u4eae\u7684\u5339\u914d\u5185\u5bb9\u4fdd\u6301\u53ef\u89c1.");
         table.put("When a group or channel removes or bans you, it stays in your chats with what this phone saved, and you can still open and scroll it. Delete it from the chat list to let it go.",
@@ -27258,13 +27226,13 @@ public final class L10nTranslations {
                 "\u5728\u4f60\u53ef\u4ee5\u4ee5\u9891\u9053\u8eab\u4efd\u53d1\u8a00\u7684\u7fa4\u7ec4\u548c\u9891\u9053\u4e2d\uff0c\u5f53\u4f60\u4ee5\u81ea\u5df1\u8eab\u4efd\u53d1\u8a00\u65f6\uff0c\u8f93\u5165\u6846\u65c1\u7684\u5934\u50cf\u4f1a\u6d88\u5931\u3002\u9009\u62e9\u9891\u9053\u540e\u5b83\u4f1a\u91cd\u65b0\u51fa\u73b0\uff0c\u6240\u4ee5\u4f60\u603b\u80fd\u770b\u5230\u81ea\u5df1\u4ee5\u4ec0\u4e48\u8eab\u4efd\u53d1\u8a00\u3002\u8981\u9009\u62e9\u9891\u9053\uff0c\u8bf7\u5148\u5173\u95ed\u6b64\u5f00\u5173\u3002\u4e0b\u6b21\u6253\u5f00\u804a\u5929\u65f6\u751f\u6548.");
         table.put("Your proxy lists",
                 "\u4f60\u7684\u4ee3\u7406\u5217\u8868");
-    }
-
-    private static void fillZh_Hans25(Map<String, String> table) {
         table.put("Your settings are locked. Tap to start the 24-hour wait. You can cancel it while it runs.",
                 "\u4f60\u7684\u8bbe\u7f6e\u5df2\u9501\u5b9a\u3002\u70b9\u6309\u5f00\u59cb 24 \u5c0f\u65f6\u7b49\u5f85\u3002\u7b49\u5f85\u671f\u95f4\u53ef\u4ee5\u53d6\u6d88.");
         table.put("Your switches already match that file, so nothing will change.",
                 "\u4f60\u7684\u5f00\u5173\u5df2\u4e0e\u8be5\u6587\u4ef6\u4e00\u81f4\uff0c\u56e0\u6b64\u4e0d\u4f1a\u6709\u4efb\u4f55\u66f4\u6539.");
+    }
+
+    private static void fillZh_Hans25(Map<String, String> table) {
         table.put("Your switches are working.",
                 "\u4f60\u7684\u5f00\u5173\u6b63\u5728\u751f\u6548.");
         table.put("Zero width joiner",
@@ -27381,13 +27349,13 @@ public final class L10nTranslations {
                 "\u804a\u5929\u5217\u8868\u6807\u9898\u65c1\u7684\u8868\u60c5");
         table.put("emoji statuses next to names",
                 "\u540d\u5b57\u65c1\u8fb9\u7684\u8868\u60c5\u7b26\u53f7\u72b6\u6001");
-    }
-
-    private static void fillZh_Hans26(Map<String, String> table) {
         table.put("external browser routing",
                 "\u5916\u90e8\u6d4f\u89c8\u5668\u8df3\u8f6c");
         table.put("favorite stickers kept on this phone",
                 "\u4fdd\u7559\u5728\u8fd9\u90e8\u624b\u673a\u4e0a\u7684\u6536\u85cf\u8d34\u7eb8");
+    }
+
+    private static void fillZh_Hans26(Map<String, String> table) {
         table.put("file icons and thumbnails in Shared media",
                 "\u5206\u4eab\u7684\u5a92\u4f53\u4e2d\u7684\u6587\u4ef6\u56fe\u6807\u548c\u7f29\u7565\u56fe");
         table.put("file icons and thumbnails in chats",
@@ -27504,13 +27472,13 @@ public final class L10nTranslations {
                 "\u9891\u9053\u5e16\u5b50\u65c1\u7684\u5206\u4eab\u6309\u94ae");
         table.put("share sheet comments",
                 "\u5206\u4eab\u9762\u677f\u4e2d\u7684\u8bc4\u8bba");
-    }
-
-    private static void fillZh_Hans27(Map<String, String> table) {
         table.put("shared link tracking",
                 "\u5df2\u5206\u4eab\u94fe\u63a5\u7684\u8ddf\u8e2a\u53c2\u6570");
         table.put("showing the Downloads button all the time",
                 "\u59cb\u7ec8\u663e\u793a\u4e0b\u8f7d\u6309\u94ae");
+    }
+
+    private static void fillZh_Hans27(Map<String, String> table) {
         table.put("side menu",
                 "\u4fa7\u8fb9\u83dc\u5355");
         table.put("similar channels and bots",

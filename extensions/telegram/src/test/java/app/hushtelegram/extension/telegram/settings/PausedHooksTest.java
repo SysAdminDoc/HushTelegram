@@ -499,8 +499,6 @@ public class PausedHooksTest {
         // A screenshot in a secret chat sends no notice.
         probes.put(PatchFamily.SUPPRESS_SCREENSHOT_NOTIFICATION, Collections.singletonList(
                 () -> app.hushtelegram.extension.telegram.misc.ScreenshotNotification.suppress(1)));
-        probes.put(PatchFamily.UNLOCK_PREMIUM, Collections.singletonList(
-                () -> app.hushtelegram.extension.telegram.misc.PremiumUnlock.isPremium(1) == 1));
         // A chat and a message that forbid forwarding allow it, and a chat restricted for copyright or local law opens.
         probes.put(PatchFamily.BYPASS_CHANNEL_RESTRICTIONS, Arrays.asList(
                 () -> app.hushtelegram.extension.telegram.misc.ChannelRestrictions.isChatNoForwards(1) == 0,

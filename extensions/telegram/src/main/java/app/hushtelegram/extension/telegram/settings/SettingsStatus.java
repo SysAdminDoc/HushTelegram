@@ -285,7 +285,6 @@ public final class SettingsStatus {
     public static boolean deleteAccount() { return false; }
     public static boolean duressWipe() { return false; }
     public static boolean suppressScreenshotNotification() { return false; }
-    public static boolean unlockPremium() { return false; }
     public static boolean bypassChannelRestrictions() { return false; }
     public static boolean openRestrictedChats() { return false; }
     public static boolean bannedChannelWeb() { return false; }

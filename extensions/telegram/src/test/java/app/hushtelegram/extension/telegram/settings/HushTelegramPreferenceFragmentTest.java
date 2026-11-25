@@ -207,7 +207,6 @@ public class HushTelegramPreferenceFragmentTest {
         ROW_TITLES.put(PatchFamily.TEST_SERVER_SIGN_IN, "Test server sign-in");
         ROW_TITLES.put(PatchFamily.BOT_TOKEN_SIGN_IN, "Bot token sign-in");
         ROW_TITLES.put(PatchFamily.SUPPRESS_SCREENSHOT_NOTIFICATION, "Suppress screenshot notification");
-        ROW_TITLES.put(PatchFamily.UNLOCK_PREMIUM, "Unlock Premium features");
         ROW_TITLES.put(PatchFamily.BYPASS_CHANNEL_RESTRICTIONS, "Bypass channel restrictions");
         ROW_TITLES.put(PatchFamily.BYPASS_INTEGRITY_CHECK, "Bypass integrity check");
         ROW_TITLES.put(PatchFamily.AUTO_FORWARDING, "Auto-forwarding rules");

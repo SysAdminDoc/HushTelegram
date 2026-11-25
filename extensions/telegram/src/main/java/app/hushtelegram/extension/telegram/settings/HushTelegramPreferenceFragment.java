@@ -1997,13 +1997,6 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                     PatchFamily.SUPPRESS_SCREENSHOT_NOTIFICATION.coverageSummary(L10n.t(
                             "Telegram no longer tells the other person in a secret chat when you take a screenshot."))));
         }
-        if (build.contains(PatchFamily.UNLOCK_PREMIUM)) {
-            on(pages, PatchFamily.UNLOCK_PREMIUM).addPreference(toggle(context, Settings.UNLOCK_PREMIUM,
-                    L10n.t("Unlock Premium features"),
-                    PatchFamily.UNLOCK_PREMIUM.coverageSummary(L10n.t(
-                            "Telegram on this phone treats your account as Premium, so the parts the app itself locks "
-                                    + "open up. Telegram's servers still know your real plan, so their limits stay the same."))));
-        }
         if (build.contains(PatchFamily.BYPASS_CHANNEL_RESTRICTIONS)) {
             on(pages, PatchFamily.BYPASS_CHANNEL_RESTRICTIONS).addPreference(toggle(context,
                     Settings.BYPASS_CHANNEL_RESTRICTIONS, L10n.t("Bypass channel restrictions"),

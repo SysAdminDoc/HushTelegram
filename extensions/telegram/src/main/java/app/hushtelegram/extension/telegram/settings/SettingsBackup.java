@@ -316,7 +316,6 @@ public final class SettingsBackup {
             Settings.REPAIR_FIREBASE_PUSH,
             Settings.KEEP_ALIVE_RUNNING,
             Settings.SUPPRESS_SCREENSHOT_NOTIFICATION,
-            Settings.UNLOCK_PREMIUM,
             Settings.BYPASS_CHANNEL_RESTRICTIONS,
             Settings.OPEN_RESTRICTED_CHATS,
             Settings.BYPASS_INTEGRITY_CHECK,

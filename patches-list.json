@@ -4361,63 +4361,6 @@
       "options": []
     },
     {
-      "name": "Unlock Premium features",
-      "description": "Makes Telegram on your phone treat your account as Premium, so the parts the app itself locks behind Premium open up. Telegram's servers still know your real plan, so their limits, like upload size, stay the same. Starts off. Turn it on in HushTelegram settings > Privacy.",
-      "category": "Privacy",
-      "use": true,
-      "dependencies": [
-        "BytecodePatch",
-        "HushTelegram settings"
-      ],
-      "compatiblePackages": {
-        "org.telegram.messenger": [
-          "13.2.2"
-        ],
-        "org.telegram.messenger.web": [
-          "13.2.2"
-        ]
-      },
-      "compatibility": [
-        {
-          "name": "Telegram",
-          "packageName": "org.telegram.messenger",
-          "description": null,
-          "appIconColor": 2796526,
-          "signatures": [
-            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
-          ],
-          "targets": [
-            {
-              "version": "13.2.2",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 73031
-              }
-            }
-          ]
-        },
-        {
-          "name": "Telegram (telegram.org)",
-          "packageName": "org.telegram.messenger.web",
-          "description": null,
-          "appIconColor": 2796526,
-          "signatures": [
-            "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1"
-          ],
-          "targets": [
-            {
-              "version": "13.2.2",
-              "experimental": false,
-              "versionCodes": {
-                "ARM64_V8A": 73039
-              }
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
       "name": "Use normal paste",
       "description": "Pastes text exactly as you copied it, without Telegram adding formatting, tables or code styling. A second switch, Mention by ID, turns @ and a user ID typed in the message box into a real mention of people the app has already seen. Both start off. Turn them on in HushTelegram settings > Conversations.",
       "category": "Writing",
