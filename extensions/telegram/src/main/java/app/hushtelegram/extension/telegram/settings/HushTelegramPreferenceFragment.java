@@ -1765,11 +1765,6 @@ public final class HushTelegramPreferenceFragment extends AbstractPreferenceFrag
                                 + "download again. Clearing the cache yourself still removes them.")));
             }
             if (PatchFamily.Capability.STICKER_PANEL_SIZE.installed()) page.addPreference(stickerPanelRow(context));
-            if (PatchFamily.Capability.KEEP_MORE_FAVORITES.installed()) {
-                page.addPreference(toggle(context, Settings.KEEP_MORE_FAVORITES, L10n.t("Keep more favorite stickers"),
-                        L10n.t("A favorite sticker Telegram drops when you add one past its limit stays on this phone, after "
-                                + "Telegram's own in your favorites. Removing one from favorites removes it from this phone only.")));
-            }
         }
         if (build.contains(PatchFamily.HIDE_CHANNEL_BUTTONS)) {
             on(pages, PatchFamily.HIDE_CHANNEL_BUTTONS).addPreference(toggle(context, Settings.HIDE_CHANNEL_BUTTONS, L10n.t("Hide channel bar buttons"),

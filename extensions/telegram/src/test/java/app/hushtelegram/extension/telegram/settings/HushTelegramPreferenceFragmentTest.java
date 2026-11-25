@@ -999,12 +999,6 @@ public class HushTelegramPreferenceFragmentTest {
             assertEquals("Telegram's size. A bigger size shows fewer, bigger stickers in the sticker panel and its search. "
                     + "A chat picks this up the next time you open it.",
                     String.valueOf(page.findPreference(HushTelegramPreferenceFragment.STICKER_PANEL_ROW).getSummary()));
-            assertEquals("Keep more favorite stickers", String.valueOf(page.findPreference(Settings.KEEP_MORE_FAVORITES.key).getTitle()));
-            assertEquals("A favorite sticker Telegram drops when you add one past its limit stays on this phone, after "
-                    + "Telegram's own in your favorites. Removing one from favorites removes it from this phone only.",
-                    String.valueOf(page.findPreference(Settings.KEEP_MORE_FAVORITES.key).getSummary()));
-            // Telegram drops its oldest favorite as before until the switch is turned on.
-            assertFalse(((SwitchPreference) page.findPreference(Settings.KEEP_MORE_FAVORITES.key)).isChecked());
             assertEquals("Ignore mentions in muted chats", String.valueOf(page.findPreference(Settings.IGNORE_MUTED_MENTIONS.key).getTitle()));
             assertEquals("Mentions and replies in groups or channels you've muted no longer notify you. Chats you "
                     + "haven't muted notify as before.",
@@ -1633,7 +1627,7 @@ public class HushTelegramPreferenceFragmentTest {
      * Change sticker size brings a Sticker panel size row after Keep downloaded stickers when the
      * panel's hooks went in (#110). A tap lists Telegram's size, Large and Larger with the saved one
      * checked, and a pick saves it at once and closes the list. A build whose panel couldn't take the
-     * hooks has no row. Keep more favorite stickers follows it, and goes the same way without its hooks.
+     * hooks has no row.
      */
     @Test
     public void theStickerPanelSizeRowListsTheSizesAndSavesThePick() throws Exception {
@@ -1641,7 +1635,6 @@ public class HushTelegramPreferenceFragmentTest {
         PatchFamily.capabilitiesForTests = EnumSet.of(PatchFamily.Capability.KEEP_STICKER_CACHE);
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
             assertNull(pageOf(controller).findPreference(HushTelegramPreferenceFragment.STICKER_PANEL_ROW));
-            assertNull(pageOf(controller).findPreference(Settings.KEEP_MORE_FAVORITES.key));
         }
         PatchFamily.capabilitiesForTests = EnumSet.allOf(PatchFamily.Capability.class);
         try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup()) {
@@ -1650,7 +1643,6 @@ public class HushTelegramPreferenceFragmentTest {
             int cache = indexOfKey(rows, Settings.KEEP_STICKER_CACHE.key);
             Preference panel = rows.get(cache + 1);
             assertEquals(HushTelegramPreferenceFragment.STICKER_PANEL_ROW, panel.getKey());
-            assertEquals(Settings.KEEP_MORE_FAVORITES.key, rows.get(cache + 2).getKey());
             assertEquals("Look and feel", String.valueOf(panel.getParent().getTitle()));
             assertFalse("it stores nothing itself", panel.isPersistent());
 

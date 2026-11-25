@@ -161,7 +161,6 @@ public final class SettingsStatus {
     public static boolean stickerSize() { return false; }
     public static boolean keepStickerCache() { return false; }
     public static boolean stickerPanelSize() { return false; }
-    public static boolean keepMoreFavorites() { return false; }
     public static boolean hideFeaturesAndInvite() { return false; }
     public static boolean messageMenuRepeat() { return false; }
     public static boolean keepDeleted() { return false; }

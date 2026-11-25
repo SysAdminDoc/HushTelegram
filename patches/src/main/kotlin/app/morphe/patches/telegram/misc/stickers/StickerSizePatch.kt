@@ -64,8 +64,7 @@ val stickerSizePatch = bytecodePatch(
     description = "Shows stickers in chats smaller or larger than Telegram does, at a size you pick. Animated emoji " +
         "and dice keep their size. A second switch, Keep downloaded stickers, keeps sticker files out of Telegram's " +
         "automatic cache cleanup, so packs you've used don't download again. A Sticker panel size row shows fewer, " +
-        "bigger stickers in the sticker panel and its search. Keep more favorite stickers keeps a favorite Telegram " +
-        "drops at its limit on this phone, after Telegram's own. All four start off. Change them in HushTelegram " +
+        "bigger stickers in the sticker panel and its search. All three start off. Change them in HushTelegram " +
         "settings > Look and feel.",
     default = true,
 ) {
@@ -102,14 +101,6 @@ val stickerSizePatch = bytecodePatch(
         } catch (failed: Exception) {
             "the sticker panel's hooks don't build (${failed.javaClass.simpleName}: ${failed.message})"
         }
-        // And Keep more favorite stickers, which favorites without their shape leave out alone.
-        val favorites = resolveKeptFavorites()
-        val unfavored = favorites.missing ?: try {
-            favorites.rehearse(this)
-            null
-        } catch (failed: Exception) {
-            "the favorite stickers' hooks don't build (${failed.javaClass.simpleName}: ${failed.message})"
-        }
         insertStickerSize(plan.method, plan)
         enableStatus("stickerSize")
         if (uncached == null) {
@@ -123,12 +114,6 @@ val stickerSizePatch = bytecodePatch(
             enableCapability("stickerPanelSize")
         } else {
             patchLog.warning("Change sticker size: $unpanelled. The patch goes on without Sticker panel size.")
-        }
-        if (unfavored == null) {
-            favorites.apply(this)
-            enableCapability("keepMoreFavorites")
-        } else {
-            patchLog.warning("Change sticker size: $unfavored. The patch goes on without Keep more favorite stickers.")
         }
     }
 }

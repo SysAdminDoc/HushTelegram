@@ -2594,9 +2594,3 @@ Larger	Maior
 %1$s. A bigger size shows fewer, bigger stickers in the sticker panel and its search. A chat picks this up the next time you open it.	%1$s. Um tamanho maior mostra menos figurinhas, só que maiores, no painel de figurinhas e na busca dele. Uma conversa aplica isso na próxima vez que você abrir.
 # context: Lowercase noun phrase in a status line. It names the part of Change sticker size that sets how big stickers show in the sticker panel.
 sticker size in the sticker panel	tamanho das figurinhas no painel de figurinhas
-# context: Look and feel page switch title, under Change sticker size. When on, a favorite sticker Telegram drops because its favorites limit (5, or 10 with Premium) was reached stays on this phone. Favorites is Telegram's FavoriteStickers label, the sticker panel's section of favorite stickers.
-Keep more favorite stickers	Manter mais figurinhas nos Favoritos
-# context: that switch's summary. Favorites (Telegram's FavoriteStickers label) is the sticker panel's section of favorite stickers; the kept ones show after Telegram's own there. Removing a kept one changes nothing on Telegram's side.
-A favorite sticker Telegram drops when you add one past its limit stays on this phone, after Telegram's own in your favorites. Removing one from favorites removes it from this phone only.	Uma figurinha que o Telegram tira dos seus Favoritos quando você adiciona uma além do limite fica neste telefone, depois das do Telegram nos seus Favoritos. Se você a tirar dos Favoritos, ela sai só deste telefone.
-# context: Lowercase noun phrase in a status line. It names the part of Change sticker size that keeps favorite stickers past Telegram's limit on this phone.
-favorite stickers kept on this phone	figurinhas dos Favoritos mantidas neste telefone

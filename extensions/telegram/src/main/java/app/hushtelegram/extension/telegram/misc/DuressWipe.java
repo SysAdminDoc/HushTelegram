@@ -464,12 +464,12 @@ public final class DuressWipe {
         });
         // Each of these is kept per account by its user id, so it shows which accounts used this phone.
         step("duress account picks", () -> {
-            // Emoji status on this phone and Move All Chats are gone, but a phone that used them still holds their picks.
+            // Emoji status on this phone, Move All Chats and Keep more favorite stickers are gone, but a phone
+            // that used them still holds their picks.
             for (String name : new String[]{SongDates.PREFS, "hushtelegram_local_emoji_status", LaunchFolder.PREFS,
-                    "hushtelegram_all_chats_place", AdminFolder.PREFS, ChatTypeFolders.PREFS, KeptFavorites.PREFS}) {
+                    "hushtelegram_all_chats_place", AdminFolder.PREFS, ChatTypeFolders.PREFS, "hushtelegram_kept_favorites"}) {
                 clearPrefs(context, name);
             }
-            KeptFavorites.forget();
         });
         step("duress saved lists", () -> {
             for (Setting<?> list : new Setting<?>[]{Settings.KEPT_REMOVED_CHATS,
