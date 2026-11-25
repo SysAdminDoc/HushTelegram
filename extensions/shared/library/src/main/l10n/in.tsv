@@ -235,10 +235,6 @@ Hide emoji statuses	Sembunyikan Status Emoji
 The emoji a Premium account puts next to its name goes away in chats, the chat list and profiles, and the Premium star shows instead. Your own status hides too but stays set for everyone else. A chat picks this up the next time you open it.	Emoji yang dipasang akun Premium di samping namanya hilang di obrolan, daftar obrolan, dan profil, lalu bintang Premium muncul sebagai gantinya. Status Anda sendiri juga disembunyikan, tetapi tetap terpasang bagi orang lain. Obrolan akan menerapkannya saat Anda membukanya lagi.
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Premium, gifts and Stars that hides emoji statuses.
 emoji statuses next to names	status emoji di samping nama
-# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Premium, gifts and Stars that unlocks the Premium app icons.
-Premium icons in the App Icon list	ikon Premium di daftar Ikon Aplikasi
-# context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the part of Hide Premium, gifts and Stars that keeps your emoji status on this phone.
-your emoji status on this phone	Status Emoji Anda di ponsel ini
 # context: a switch under Hide Premium, gifts and Stars. An emoji status is the emoji a Premium account sets next to its name; use the applied translation of Telegram's term (key PremiumPreviewEmojiStatus, "Emoji Status"), in the plural. Animated statuses play twice and then stop; this switch keeps them playing.
 Keep emoji statuses moving	Biarkan Status Emoji Terus Bergerak
 # context: that switch's summary. A play is one run of a status's animation.
@@ -1255,8 +1251,6 @@ Recording stopped	Perekaman dihentikan
 Record call	Rekam panggilan
 # context: Lowercase noun phrase filling %1$s or %2$s in "This patched app changes %1$s but not %2$s." It names the record button on the call screen.
 call record button	tombol rekam panggilan
-# context: Switch on the Conversations page that adds Telegram's Save to Gallery to a story's three-dot menu (#52). The label is Telegram's applied translation of SaveToGallery.
-Save to Gallery in stories	Simpan ke Galeri di Cerita
 # context: Switch on the Conversations page (Discussion #34). Turned on, screenshots and screen recording work in chats, channels, their photos, profiles and stories whose owner turned on Telegram's content protection. Secret chats, view-once media and the passcode lock stay protected.
 Allow screenshots in chats that don't allow saving	Izinkan tangkapan layar di obrolan yang tidak mengizinkan penyimpanan
 Screenshots and screen recording work in those chats, their photos, profiles and stories. Telegram doesn't tell anyone. Secret chats need Also allow screenshots in secret chats. View-once media and the passcode screen stay blocked.	Tangkapan layar dan rekaman layar berfungsi di obrolan tersebut, beserta foto, profil, dan ceritanya. Telegram tidak memberi tahu siapa pun. Obrolan rahasia memerlukan Izinkan juga tangkapan layar di obrolan rahasia. Media sekali lihat dan layar kode sandi tetap diblokir.
