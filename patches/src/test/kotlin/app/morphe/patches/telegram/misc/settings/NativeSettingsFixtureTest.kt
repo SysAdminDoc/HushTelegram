@@ -213,9 +213,9 @@ class NativeSettingsFixtureTest {
             val before = operations(method)
             val warnings = PatchLogCapture.warnings { hideCommercePatch.execute(context) }
             // Only Settings is loaded here: the profile, channel, Wallet menu, Send Gram and Premium
-            // sticker targets each report themselves missing, and so do the emoji status, Premium
-            // app icon, local emoji status and moving emoji status switches.
-            assertEquals(CommerceTarget.entries.size - 1 + PremiumStickerTarget.entries.size + 4, warnings.size)
+            // sticker targets each report themselves missing, and so do the emoji status and moving
+            // emoji status switches.
+            assertEquals(CommerceTarget.entries.size - 1 + PremiumStickerTarget.entries.size + 2, warnings.size)
             assertEquals(1, method.body().count { it.ref()?.contains("->$NATIVE_ROW_BRIDGE(") == true })
             assertEquals(5, method.body().count { it.ref()?.contains("->addSettingsRow(") == true })
             val body = method.body()
